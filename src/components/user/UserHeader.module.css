@@ -1,0 +1,145 @@
+.header {
+  background: var(--color-background-primary);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  border-bottom: 1px solid var(--color-border);
+  padding: 0 2rem;
+  height: 64px;
+  display: flex;
+  align-items: center;
+}
+
+.container {
+  max-width: 1440px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  width: 100%;
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.platformName {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+}
+
+.nav {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+.tab {
+  color: var(--color-text);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  padding: 0.5rem 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  background: transparent;
+  position: relative;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+  opacity: 0.8;
+}
+
+.tab:hover {
+  opacity: 1;
+}
+
+.tab.active {
+  color: var(--color-theme);
+  font-weight: 600;
+  opacity: 1;
+}
+
+.tabHighlight {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-theme);
+  transform: scaleX(0);
+  transition: transform 0.2s ease;
+  transform-origin: center;
+}
+
+.tab:hover .tabHighlight {
+  transform: scaleX(0.4);
+}
+
+.tab.active .tabHighlight {
+  transform: scaleX(1);
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.userDropdownLink {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text);
+  transition: color 0.2s ease;
+}
+
+.userDropdownLink:hover {
+  color: var(--color-theme);
+}
+
+.userName {
+  font-weight: 500;
+}
+
+@media (max-width: 1024px) {
+  .nav {
+    gap: 1.5rem;
+  }
+  
+  .tab {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 0 1rem;
+  }
+
+  .nav {
+    display: none;
+  }
+
+  .platformName {
+    font-size: 1.125rem;
+  }
+
+  .userName {
+    display: none;
+  }
+}
