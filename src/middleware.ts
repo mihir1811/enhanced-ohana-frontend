@@ -1,18 +1,25 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+// src/middleware.ts
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  // Add your middleware logic here
-  return NextResponse.next();
+  const role = request.cookies.get('role')?.value
+  const pathname = request.nextUrl.pathname
+
+  // ✅ Protect /seller routes
+  if (pathname.startsWith('/seller') && role !== 'seller') {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+
+  // ✅ Protect /admin routes
+  if (pathname.startsWith('/admin') && role !== 'admin') {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+
+  return NextResponse.next()
 }
 
+// ✅ Config stays as-is to match everything except internal routes
 export const config = {
-  /*
-   * Match all request paths except for the ones starting with:
-   * - api (API routes)
-   * - _next/static (static files)
-   * - _next/image (image optimization files)
-   * - favicon.ico (favicon file)
-   */
   matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
-};
+}
