@@ -1,43 +1,22 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import NavigationSeller from './Navigation/NavigationSeller'
-import NavigationAdmin from './Navigation/NavigationAdmin'
-import NavigationUser from './Navigation/NavigationUser'
-import ThemeSwitcher from './ThemeSwitcher'
-import { useAppSelector } from '@/store/hooks'
 
+// This component is now deprecated since navigation is handled by role-specific layouts
+// Each layout (user, seller, admin) now includes its own navigation component
 export default function ConditionalNavigation() {
   const pathname = usePathname()
-  const { role } = useAppSelector((state) => state.auth) // role comes from Redux
   const authPages = ['/login', '/register']
 
-  // Hide nav on auth pages
+  // Hide on auth pages - this component now serves minimal purpose
+  // Navigation is handled by individual layouts based on route structure
   if (authPages.includes(pathname)) return null
 
-  // No role => user not logged in
-  if (!role) return null
-
-  let NavigationComponent: React.ReactNode = null
-
-  switch (role) {
-    case 'seller':
-      NavigationComponent = <NavigationSeller />
-      break
-    case 'admin':
-      NavigationComponent = <NavigationAdmin />
-      break
-    case 'user':
-      NavigationComponent = <NavigationUser />
-      break
-    default:
-      NavigationComponent = null
-  }
-
-  return (
-    <div className="flex items-center justify-between p-4 border-b bg-background">
-      {NavigationComponent}
-      <ThemeSwitcher />
-    </div>
-  )
+  // Navigation is now handled by:
+  // - /user/* routes: user/layout.tsx with NavigationUser
+  // - /seller/* routes: seller/layout.tsx with NavigationSeller  
+  // - /admin/* routes: admin/layout.tsx with NavigationAdmin
+  // - Public pages: PublicPageLayout.tsx with NavigationUser
+  
+  return null
 }

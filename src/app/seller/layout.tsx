@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import NavigationSeller from '../../components/Navigation/NavigationSeller'
 
 export const metadata: Metadata = {
   title: 'Seller Dashboard - Ohana Gems',
@@ -12,10 +13,13 @@ export default function SellerLayout({
 }) {
   return (
     <div className="min-h-screen bg-background">
-      {/* Seller-specific layout wrapper */}
-      <div className="seller-layout">
+      {/* Navigation Header */}
+      <NavigationSeller />
+      
+      {/* Main Content */}
+      <main className="seller-layout">
         {children}
-      </div>
+      </main>
     </div>
   )
 }

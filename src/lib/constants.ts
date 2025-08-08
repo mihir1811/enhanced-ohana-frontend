@@ -1,0 +1,1 @@
+export const SECTION_WIDTH = 1400;
