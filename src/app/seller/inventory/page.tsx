@@ -1,28 +1,4 @@
-'use client'
-
-import { useEffect } from 'react'
-import { useLoading } from '@/hooks/useLoading'
-import { TableLoader } from '@/components/seller/Loader'
-
-export default function SellerOrdersPage() {
-  const { setPageLoading, isPageLoading } = useLoading()
-  const isLoading = isPageLoading('orders')
-
-  useEffect(() => {
-    setPageLoading('orders', true)
-    
-    // Simulate loading orders data
-    const timer = setTimeout(() => {
-      setPageLoading('orders', false)
-    }, 1800)
-
-    return () => clearTimeout(timer)
-  }, []) // Empty dependency array - only run once on mount
-
-  if (isLoading) {
-    return <TableLoader rows={8} />
-  }
-
+export default function SellerInventoryPage() {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -31,13 +7,13 @@ export default function SellerOrdersPage() {
             className="text-3xl font-bold tracking-tight"
             style={{ color: 'var(--foreground)' }}
           >
-            Orders
+            Inventory
           </h1>
           <p 
             className="mt-2 text-lg"
             style={{ color: 'var(--muted-foreground)' }}
           >
-            Track and manage your customer orders.
+            Manage your stock levels and product availability.
           </p>
         </div>
         <div className="flex items-center space-x-3">
@@ -49,7 +25,7 @@ export default function SellerOrdersPage() {
               backgroundColor: 'transparent'
             }}
           >
-            Export Orders
+            Import Stock
           </button>
           <button 
             className="px-4 py-2 rounded-lg font-medium transition-colors"
@@ -58,7 +34,7 @@ export default function SellerOrdersPage() {
               color: 'var(--primary-foreground)'
             }}
           >
-            Filter Orders
+            Update Stock
           </button>
         </div>
       </div>
@@ -74,13 +50,13 @@ export default function SellerOrdersPage() {
           className="text-xl font-semibold mb-2"
           style={{ color: 'var(--card-foreground)' }}
         >
-          Orders Management
+          Inventory Management
         </h3>
         <p 
           className="text-base"
           style={{ color: 'var(--muted-foreground)' }}
         >
-          Order tracking and management functionality will be implemented here.
+          Stock tracking, low inventory alerts, and inventory management tools will be available here.
         </p>
       </div>
     </div>

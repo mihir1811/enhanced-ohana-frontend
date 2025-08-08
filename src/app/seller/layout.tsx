@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import NavigationSeller from '../../components/Navigation/NavigationSeller'
+import SellerLayoutWrapper from '../../components/seller/SellerLayoutWrapper'
 
 export const metadata: Metadata = {
   title: 'Seller Dashboard - Ohana Gems',
@@ -11,15 +11,5 @@ export default function SellerLayout({
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation Header */}
-      <NavigationSeller />
-      
-      {/* Main Content */}
-      <main className="seller-layout">
-        {children}
-      </main>
-    </div>
-  )
+  return <SellerLayoutWrapper>{children}</SellerLayoutWrapper>
 }

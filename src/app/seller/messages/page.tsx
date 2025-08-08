@@ -2,25 +2,25 @@
 
 import { useEffect } from 'react'
 import { useLoading } from '@/hooks/useLoading'
-import { TableLoader } from '@/components/seller/Loader'
+import { PageLoader } from '@/components/seller/Loader'
 
-export default function SellerOrdersPage() {
+export default function SellerMessagesPage() {
   const { setPageLoading, isPageLoading } = useLoading()
-  const isLoading = isPageLoading('orders')
+  const isLoading = isPageLoading('messages')
 
   useEffect(() => {
-    setPageLoading('orders', true)
+    setPageLoading('messages', true)
     
-    // Simulate loading orders data
+    // Simulate loading messages data
     const timer = setTimeout(() => {
-      setPageLoading('orders', false)
-    }, 1800)
+      setPageLoading('messages', false)
+    }, 1400)
 
     return () => clearTimeout(timer)
   }, []) // Empty dependency array - only run once on mount
 
   if (isLoading) {
-    return <TableLoader rows={8} />
+    return <PageLoader />
   }
 
   return (
@@ -31,13 +31,13 @@ export default function SellerOrdersPage() {
             className="text-3xl font-bold tracking-tight"
             style={{ color: 'var(--foreground)' }}
           >
-            Orders
+            Messages
           </h1>
           <p 
             className="mt-2 text-lg"
             style={{ color: 'var(--muted-foreground)' }}
           >
-            Track and manage your customer orders.
+            Communicate with your customers and support team.
           </p>
         </div>
         <div className="flex items-center space-x-3">
@@ -49,7 +49,7 @@ export default function SellerOrdersPage() {
               backgroundColor: 'transparent'
             }}
           >
-            Export Orders
+            Mark All Read
           </button>
           <button 
             className="px-4 py-2 rounded-lg font-medium transition-colors"
@@ -58,7 +58,7 @@ export default function SellerOrdersPage() {
               color: 'var(--primary-foreground)'
             }}
           >
-            Filter Orders
+            New Message
           </button>
         </div>
       </div>
@@ -74,13 +74,13 @@ export default function SellerOrdersPage() {
           className="text-xl font-semibold mb-2"
           style={{ color: 'var(--card-foreground)' }}
         >
-          Orders Management
+          Message Center
         </h3>
         <p 
           className="text-base"
           style={{ color: 'var(--muted-foreground)' }}
         >
-          Order tracking and management functionality will be implemented here.
+          Customer messages, support tickets, and communication tools will be displayed here.
         </p>
       </div>
     </div>

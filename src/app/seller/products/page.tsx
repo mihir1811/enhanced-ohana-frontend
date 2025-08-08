@@ -2,25 +2,25 @@
 
 import { useEffect } from 'react'
 import { useLoading } from '@/hooks/useLoading'
-import { TableLoader } from '@/components/seller/Loader'
+import { PageLoader } from '@/components/seller/Loader'
 
-export default function SellerOrdersPage() {
+export default function SellerProductsPage() {
   const { setPageLoading, isPageLoading } = useLoading()
-  const isLoading = isPageLoading('orders')
+  const isLoading = isPageLoading('products')
 
   useEffect(() => {
-    setPageLoading('orders', true)
+    setPageLoading('products', true)
     
-    // Simulate loading orders data
+    // Simulate loading products data
     const timer = setTimeout(() => {
-      setPageLoading('orders', false)
-    }, 1800)
+      setPageLoading('products', false)
+    }, 2000)
 
     return () => clearTimeout(timer)
   }, []) // Empty dependency array - only run once on mount
 
   if (isLoading) {
-    return <TableLoader rows={8} />
+    return <PageLoader />
   }
 
   return (
@@ -31,36 +31,24 @@ export default function SellerOrdersPage() {
             className="text-3xl font-bold tracking-tight"
             style={{ color: 'var(--foreground)' }}
           >
-            Orders
+            Products
           </h1>
           <p 
             className="mt-2 text-lg"
             style={{ color: 'var(--muted-foreground)' }}
           >
-            Track and manage your customer orders.
+            Manage your product catalog and inventory.
           </p>
         </div>
-        <div className="flex items-center space-x-3">
-          <button 
-            className="px-4 py-2 rounded-lg font-medium transition-colors border"
-            style={{ 
-              borderColor: 'var(--border)',
-              color: 'var(--foreground)',
-              backgroundColor: 'transparent'
-            }}
-          >
-            Export Orders
-          </button>
-          <button 
-            className="px-4 py-2 rounded-lg font-medium transition-colors"
-            style={{ 
-              backgroundColor: 'var(--primary)',
-              color: 'var(--primary-foreground)'
-            }}
-          >
-            Filter Orders
-          </button>
-        </div>
+        <button 
+          className="px-4 py-2 rounded-lg font-medium transition-colors"
+          style={{ 
+            backgroundColor: 'var(--primary)',
+            color: 'var(--primary-foreground)'
+          }}
+        >
+          Add New Product
+        </button>
       </div>
 
       <div 
@@ -74,13 +62,13 @@ export default function SellerOrdersPage() {
           className="text-xl font-semibold mb-2"
           style={{ color: 'var(--card-foreground)' }}
         >
-          Orders Management
+          Products Page
         </h3>
         <p 
           className="text-base"
           style={{ color: 'var(--muted-foreground)' }}
         >
-          Order tracking and management functionality will be implemented here.
+          Product management functionality will be implemented here.
         </p>
       </div>
     </div>

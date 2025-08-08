@@ -1,0 +1,198 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Menu, Bell, Search, User, Settings, LogOut } from 'lucide-react'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { logout } from '@/features/auth/authSlice'
+import { useRouter } from 'next/navigation'
+import Loader from './Loader'
+
+interface SellerHeaderProps {
+  setSidebarOpen: (open: boolean) => void
+}
+
+export default function SellerHeader({ setSidebarOpen }: SellerHeaderProps) {
+  const dispatch = useAppDispatch()
+  const router = useRouter()
+  const { user } = useAppSelector((state) => state.auth)
+  const [notificationsLoading, setNotificationsLoading] = useState(true)
+  const [notificationCount, setNotificationCount] = useState(0)
+
+  useEffect(() => {
+    // Simulate notification loading
+    const timer = setTimeout(() => {
+      setNotificationsLoading(false)
+      setNotificationCount(3)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  const handleLogout = () => {
+    dispatch(logout())
+    router.push('/')
+  }
+
+  return (
+    <div 
+      className="sticky top-0 z-40 border-b"
+      style={{ 
+        backgroundColor: 'var(--background)',
+        borderColor: 'var(--border)'
+      }}
+    >
+      <div className="flex h-16 items-center gap-x-4 px-4 sm:gap-x-6 sm:px-6 lg:px-8">
+        {/* Mobile menu button */}
+        <button
+          type="button"
+          className="p-2.5 lg:hidden"
+          onClick={() => setSidebarOpen(true)}
+          style={{ color: 'var(--foreground)' }}
+        >
+          <span className="sr-only">Open sidebar</span>
+          <Menu className="h-6 w-6" />
+        </button>
+
+        {/* Separator */}
+        <div 
+          className="h-6 w-px lg:hidden"
+          style={{ backgroundColor: 'var(--border)' }}
+        />
+
+        <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
+          {/* Search */}
+          <form className="relative flex flex-1" action="#" method="GET">
+            <label htmlFor="search-field" className="sr-only">
+              Search
+            </label>
+            <Search 
+              className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 pl-3"
+              style={{ color: 'var(--muted-foreground)' }}
+            />
+            <input
+              id="search-field"
+              className="block h-full w-full border-0 py-0 pl-11 pr-0 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
+              placeholder="Search products, orders..."
+              type="search"
+              name="search"
+              style={{ 
+                backgroundColor: 'transparent',
+                color: 'var(--foreground)'
+              }}
+            />
+          </form>
+          
+          <div className="flex items-center gap-x-4 lg:gap-x-6">
+            {/* Notifications */}
+            <button
+              type="button"
+              className="relative p-2.5 hover:bg-opacity-10 rounded-lg transition-colors"
+              style={{ color: 'var(--foreground)' }}
+            >
+              <span className="sr-only">View notifications</span>
+              <Bell className="h-6 w-6" />
+              {/* Notification badge */}
+              {notificationsLoading ? (
+                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center">
+                  <Loader size="sm" />
+                </div>
+              ) : notificationCount > 0 ? (
+                <span 
+                  className="absolute -top-1 -right-1 h-4 w-4 rounded-full text-xs font-medium flex items-center justify-center animate-pulse"
+                  style={{ 
+                    backgroundColor: 'var(--destructive)',
+                    color: 'var(--destructive-foreground)'
+                  }}
+                >
+                  {notificationCount}
+                </span>
+              ) : null}
+            </button>
+
+            {/* Separator */}
+            <div 
+              className="hidden lg:block lg:h-6 lg:w-px"
+              style={{ backgroundColor: 'var(--border)' }}
+            />
+
+            {/* Profile dropdown */}
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center gap-x-3 p-1.5 text-sm leading-6 hover:bg-opacity-10 rounded-lg transition-colors"
+                  style={{ color: 'var(--foreground)' }}
+                >
+                  <div 
+                    className="h-8 w-8 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: 'var(--muted)' }}
+                  >
+                    <User className="h-5 w-5" style={{ color: 'var(--muted-foreground)' }} />
+                  </div>
+                  <span className="hidden lg:flex lg:items-center">
+                    <span 
+                      className="ml-2 text-sm font-semibold leading-6"
+                      style={{ color: 'var(--foreground)' }}
+                    >
+                      {user?.name || 'Seller'}
+                    </span>
+                    <svg 
+                      className="ml-2 h-5 w-5" 
+                      viewBox="0 0 20 20" 
+                      fill="currentColor"
+                      style={{ color: 'var(--muted-foreground)' }}
+                    >
+                      <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                    </svg>
+                  </span>
+                </button>
+              </DropdownMenu.Trigger>
+
+              <DropdownMenu.Portal>
+                <DropdownMenu.Content
+                  className="min-w-[220px] rounded-md p-2 shadow-lg border"
+                  style={{ 
+                    backgroundColor: 'var(--popover)',
+                    borderColor: 'var(--border)'
+                  }}
+                  sideOffset={5}
+                >
+                  <DropdownMenu.Item 
+                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-sm cursor-pointer hover:bg-opacity-10 transition-colors"
+                    style={{ color: 'var(--popover-foreground)' }}
+                  >
+                    <User className="h-4 w-4" />
+                    View Profile
+                  </DropdownMenu.Item>
+                  
+                  <DropdownMenu.Item 
+                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-sm cursor-pointer hover:bg-opacity-10 transition-colors"
+                    style={{ color: 'var(--popover-foreground)' }}
+                  >
+                    <Settings className="h-4 w-4" />
+                    Settings
+                  </DropdownMenu.Item>
+                  
+                  <DropdownMenu.Separator 
+                    className="my-2 h-px"
+                    style={{ backgroundColor: 'var(--border)' }}
+                  />
+                  
+                  <DropdownMenu.Item 
+                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-sm cursor-pointer hover:bg-opacity-10 transition-colors"
+                    style={{ color: 'var(--destructive)' }}
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign out
+                  </DropdownMenu.Item>
+                </DropdownMenu.Content>
+              </DropdownMenu.Portal>
+            </DropdownMenu.Root>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

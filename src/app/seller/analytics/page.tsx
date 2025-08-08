@@ -1,26 +1,32 @@
 'use client'
 
 import { useEffect } from 'react'
+import { CardLoader } from '@/components/seller/Loader'
 import { useLoading } from '@/hooks/useLoading'
-import { TableLoader } from '@/components/seller/Loader'
 
-export default function SellerOrdersPage() {
+export default function SellerAnalyticsPage() {
   const { setPageLoading, isPageLoading } = useLoading()
-  const isLoading = isPageLoading('orders')
+  const isLoading = isPageLoading('analytics')
 
   useEffect(() => {
-    setPageLoading('orders', true)
+    setPageLoading('analytics', true)
     
-    // Simulate loading orders data
+    // Simulate loading analytics data
     const timer = setTimeout(() => {
-      setPageLoading('orders', false)
-    }, 1800)
+      setPageLoading('analytics', false)
+    }, 2200)
 
     return () => clearTimeout(timer)
   }, []) // Empty dependency array - only run once on mount
 
   if (isLoading) {
-    return <TableLoader rows={8} />
+    return (
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <CardLoader key={i} />
+        ))}
+      </div>
+    )
   }
 
   return (
@@ -31,13 +37,13 @@ export default function SellerOrdersPage() {
             className="text-3xl font-bold tracking-tight"
             style={{ color: 'var(--foreground)' }}
           >
-            Orders
+            Analytics
           </h1>
           <p 
             className="mt-2 text-lg"
             style={{ color: 'var(--muted-foreground)' }}
           >
-            Track and manage your customer orders.
+            Track your store performance and sales insights.
           </p>
         </div>
         <div className="flex items-center space-x-3">
@@ -49,7 +55,7 @@ export default function SellerOrdersPage() {
               backgroundColor: 'transparent'
             }}
           >
-            Export Orders
+            Export Report
           </button>
           <button 
             className="px-4 py-2 rounded-lg font-medium transition-colors"
@@ -58,7 +64,7 @@ export default function SellerOrdersPage() {
               color: 'var(--primary-foreground)'
             }}
           >
-            Filter Orders
+            Date Range
           </button>
         </div>
       </div>
@@ -74,13 +80,13 @@ export default function SellerOrdersPage() {
           className="text-xl font-semibold mb-2"
           style={{ color: 'var(--card-foreground)' }}
         >
-          Orders Management
+          Analytics Dashboard
         </h3>
         <p 
           className="text-base"
           style={{ color: 'var(--muted-foreground)' }}
         >
-          Order tracking and management functionality will be implemented here.
+          Sales analytics, charts, and performance metrics will be displayed here.
         </p>
       </div>
     </div>
