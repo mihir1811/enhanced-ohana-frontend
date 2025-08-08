@@ -1,29 +1,43 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import Navigation from './Navigation'
+import NavigationSeller from './Navigation/NavigationSeller'
+import NavigationAdmin from './Navigation/NavigationAdmin'
+import NavigationUser from './Navigation/NavigationUser'
+import ThemeSwitcher from './ThemeSwitcher'
+import { useAppSelector } from '@/store/hooks'
 
 export default function ConditionalNavigation() {
   const pathname = usePathname()
-  const [shouldShowNav, setShouldShowNav] = useState(false)
+  const { role } = useAppSelector((state) => state.auth) // role comes from Redux
+  const authPages = ['/login', '/register']
 
-  useEffect(() => {
-    // Don't show navigation on login/register pages
-    const authPages = ['/login', '/register']
-    const isAuthPage = authPages.includes(pathname)
-    
-    // Check if user is logged in by checking for role cookie
-    const cookies = document.cookie.split(';')
-    const roleCookie = cookies.find(cookie => cookie.trim().startsWith('role='))
-    const hasRole = roleCookie && roleCookie.split('=')[1] !== '' && roleCookie.split('=')[1] !== 'undefined'
-    
-    setShouldShowNav(!isAuthPage && Boolean(hasRole))
-  }, [pathname])
+  // Hide nav on auth pages
+  if (authPages.includes(pathname)) return null
 
-  if (!shouldShowNav) {
-    return null
+  // No role => user not logged in
+  if (!role) return null
+
+  let NavigationComponent: React.ReactNode = null
+
+  switch (role) {
+    case 'seller':
+      NavigationComponent = <NavigationSeller />
+      break
+    case 'admin':
+      NavigationComponent = <NavigationAdmin />
+      break
+    case 'user':
+      NavigationComponent = <NavigationUser />
+      break
+    default:
+      NavigationComponent = null
   }
 
-  return <Navigation />
+  return (
+    <div className="flex items-center justify-between p-4 border-b bg-background">
+      {NavigationComponent}
+      <ThemeSwitcher />
+    </div>
+  )
 }

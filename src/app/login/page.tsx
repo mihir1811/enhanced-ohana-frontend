@@ -11,7 +11,7 @@ export default function LoginPage() {
   const dispatch = useDispatch()
   
   const [formData, setFormData] = useState({
-    email: '',
+    userName: '',
     password: ''
   })
   const [isLoading, setIsLoading] = useState(false)
@@ -34,24 +34,25 @@ export default function LoginPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Accept: 'application/json',
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       })
 
-      const data = await response.json()
+      const result = await response.json()
 
-      if (response.ok) {
+      if (response.ok && result.success) {
+        const { user, accessToken } = result.data
+
         // Save to Redux store
-        dispatch(setCredentials({
-          user: data.user,
-          token: data.token
-        }))
+        dispatch(setCredentials({ user, token: accessToken }))
 
-        // Set cookie for role-based routing
-        document.cookie = `role=${data.user.role}; path=/`
-        
+        // Save cookies for middleware
+        document.cookie = `role=${user.role}; path=/`
+        document.cookie = `token=${accessToken}; path=/`
+
         // Redirect based on role
-        switch (data.user.role) {
+        switch (user.role) {
           case 'admin':
             router.push('/admin')
             break
@@ -59,10 +60,10 @@ export default function LoginPage() {
             router.push('/seller/dashboard')
             break
           default:
-            router.push('/user')
+            router.push('/')
         }
       } else {
-        setError(data.message || 'Login failed. Please check your credentials.')
+        setError(result.message || 'Login failed. Please check your credentials.')
       }
     } catch (err) {
       console.error('Login error:', err)
@@ -197,22 +198,22 @@ export default function LoginPage() {
                   </div>
                 )}
 
-                {/* Email Field */}
+                {/* Username Field */}
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium text-slate-300">
-                    Email Address
+                  <label htmlFor="userName" className="text-sm font-medium text-slate-300">
+                    Username
                   </label>
                   <div className="relative group">
                     <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     <input
-                      id="email"
-                      name="email"
-                      type="email"
+                      id="userName"
+                      name="userName"
+                      type="text"
                       required
-                      value={formData.email}
+                      value={formData.userName}
                       onChange={handleInputChange}
                       className="relative w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-400 focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duration-300 backdrop-blur-sm"
-                      placeholder="your@email.com"
+                      placeholder="Enter your username"
                     />
                   </div>
                 </div>
