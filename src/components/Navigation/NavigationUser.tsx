@@ -228,27 +228,48 @@ export default function NavigationUser() {
                   </div>
                   <div className="absolute -top-1 -right-1 w-3 h-3 lg:w-4 lg:h-4 bg-green-500 rounded-full animate-pulse" style={{ backgroundColor: 'var(--chart-2)' }}></div>
                 </div>
-                <div className="hidden sm:block">
-                  <h1 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent dark:from-amber-300 dark:to-orange-400" style={{ color: 'var(--foreground)' }}>
-                    Ohana Diamonds
-                  </h1>
-                  <p className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>Premium Diamond & Jewelry Marketplace</p>
-                </div>
               </Link>
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center space-x-1 flex-1 justify-center min-w-0 overflow-hidden">
-              <div className="flex items-center space-x-1 max-w-fit">
+            <div className="hidden lg:flex items-center space-x-2 flex-1 justify-center min-w-0 overflow-hidden">
+              <div className="flex items-center space-x-2 max-w-fit">
                 {navigationItems.map((item) => (
                   <Link 
                     key={item.href}
                     href={item.href} 
-                    className="relative group px-3 py-2 text-slate-300 hover:text-white transition-all duration-300 font-medium text-sm"
+                    className="relative group px-4 py-2.5 transition-all duration-300 font-medium text-sm rounded-lg hover:scale-[1.02]"
+                    style={{ 
+                      color: 'var(--muted-foreground)',
+                      borderRadius: 'var(--radius-lg)'
+                    }}
                   >
-                    <span className="relative z-10">{item.label}</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-amber-500/0 via-amber-500/10 to-amber-500/0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ backgroundColor: 'var(--accent)', borderRadius: 'var(--radius-md)' }}></div>
-                    <div className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-amber-400 group-hover:w-full group-hover:left-0 transition-all duration-300" style={{ backgroundColor: 'var(--chart-1)' }}></div>
+                    <span 
+                      className="relative z-10 group-hover:font-semibold transition-all duration-300"
+                      style={{ 
+                        color: 'var(--foreground)',
+                        filter: 'brightness(0.8)'
+                      }}
+                    >{item.label}</span>
+                    
+                    {/* Modern hover background */}
+                    <div 
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300" 
+                      style={{ 
+                        background: 'var(--accent)',
+                        borderRadius: 'var(--radius-lg)',
+                        backdropFilter: 'blur(8px)'
+                      }}
+                    ></div>
+                    
+                    {/* Professional underline indicator */}
+                    <div 
+                      className="absolute bottom-1 left-1/2 w-0 h-0.5 group-hover:w-3/4 group-hover:left-[12.5%] transition-all duration-300 rounded-full" 
+                      style={{ 
+                        backgroundColor: 'var(--primary)',
+                        borderRadius: 'var(--radius-sm)'
+                      }}
+                    ></div>
                   </Link>
                 ))}
               </div>
@@ -367,7 +388,7 @@ export default function NavigationUser() {
               </Link>
 
               {/* Shopping Cart */}
-              <Link href="/cart" className="relative group p-2 transition-all duration-300 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit" style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}>
+              <Link href="/user/cart" className="relative group p-2 transition-all duration-300 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit" style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m-2.4 0L3 3H1m6 10v6a1 1 0 001 1h8a1 1 0 001-1v-6M7 13l-1.4-7M7 13l1.5 7m8.5-7L15 20" />
                 </svg>
@@ -379,7 +400,7 @@ export default function NavigationUser() {
               </Link>
 
               {/* Wishlist */}
-              <Link href="/wishlist" className="relative group p-2 transition-all duration-300 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit" style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}>
+              <Link href="/user/wishlist" className="relative group p-2 transition-all duration-300 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit" style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
@@ -447,7 +468,21 @@ export default function NavigationUser() {
                       {/* Menu Items */}
                       <div className="py-2 space-y-1">
                         <Link 
-                          href="/profile" 
+                          href="/user" 
+                          className="flex items-center space-x-3 px-3 py-3 text-slate-700 dark:text-slate-200 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 group" 
+                          style={{ color: 'var(--popover-foreground)', borderRadius: 'var(--radius-lg)' }}
+                          role="menuitem"
+                          onClick={() => setIsDropdownOpen(false)}
+                        >
+                          <svg className="w-5 h-5 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5v4m8-4v4" />
+                          </svg>
+                          <span className="font-medium">Dashboard</span>
+                        </Link>
+                        
+                        <Link 
+                          href="/user/profile" 
                           className="flex items-center space-x-3 px-3 py-3 text-slate-700 dark:text-slate-200 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 group" 
                           style={{ color: 'var(--popover-foreground)', borderRadius: 'var(--radius-lg)' }}
                           role="menuitem"
@@ -460,7 +495,7 @@ export default function NavigationUser() {
                         </Link>
                         
                         <Link 
-                          href="/orders" 
+                          href="/user/orders" 
                           className="flex items-center space-x-3 px-3 py-3 text-slate-700 dark:text-slate-200 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 group" 
                           style={{ color: 'var(--popover-foreground)', borderRadius: 'var(--radius-lg)' }}
                           role="menuitem"
@@ -473,7 +508,20 @@ export default function NavigationUser() {
                         </Link>
                         
                         <Link 
-                          href="/wishlist" 
+                          href="/user/cart" 
+                          className="flex items-center space-x-3 px-3 py-3 text-slate-700 dark:text-slate-200 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 group" 
+                          style={{ color: 'var(--popover-foreground)', borderRadius: 'var(--radius-lg)' }}
+                          role="menuitem"
+                          onClick={() => setIsDropdownOpen(false)}
+                        >
+                          <svg className="w-5 h-5 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m-2.4 0L3 3H1m6 10v6a1 1 0 001 1h8a1 1 0 001-1v-6M7 13l-1.4-7M7 13l1.5 7m8.5-7L15 20" />
+                          </svg>
+                          <span className="font-medium">Shopping Cart</span>
+                        </Link>
+                        
+                        <Link 
+                          href="/user/wishlist" 
                           className="flex items-center space-x-3 px-3 py-3 text-slate-700 dark:text-slate-200 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 group" 
                           style={{ color: 'var(--popover-foreground)', borderRadius: 'var(--radius-lg)' }}
                           role="menuitem"
@@ -486,7 +534,20 @@ export default function NavigationUser() {
                         </Link>
                         
                         <Link 
-                          href="/settings" 
+                          href="/user/reviews" 
+                          className="flex items-center space-x-3 px-3 py-3 text-slate-700 dark:text-slate-200 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 group" 
+                          style={{ color: 'var(--popover-foreground)', borderRadius: 'var(--radius-lg)' }}
+                          role="menuitem"
+                          onClick={() => setIsDropdownOpen(false)}
+                        >
+                          <svg className="w-5 h-5 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                          </svg>
+                          <span className="font-medium">My Reviews</span>
+                        </Link>
+                        
+                        <Link 
+                          href="/user/settings" 
                           className="flex items-center space-x-3 px-3 py-3 text-slate-700 dark:text-slate-200 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 group" 
                           style={{ color: 'var(--popover-foreground)', borderRadius: 'var(--radius-lg)' }}
                           role="menuitem"
