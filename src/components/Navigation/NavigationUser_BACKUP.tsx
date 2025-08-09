@@ -15,8 +15,6 @@ export default function NavigationUser() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 })
   const [activeNavDropdown, setActiveNavDropdown] = useState<string | null>(null)
-  const [dropdownPositions, setDropdownPositions] = useState<{[key: string]: {left: number, top: number}}>({})
-  const [mouseLeaveTimeout, setMouseLeaveTimeout] = useState<NodeJS.Timeout | null>(null)
   const [cartItems] = useState(3) // Mock cart count
   const [notifications] = useState(2) // Mock notification count
   const [suggestedProducts] = useState([
@@ -97,11 +95,6 @@ export default function NavigationUser() {
       if (searchRef.current && !searchRef.current.contains(target)) {
         setIsSearchFocused(false)
       }
-      
-      // Close navigation dropdown if clicking outside
-      if (!target || !(target as Element).closest('.nav-dropdown-container')) {
-        setActiveNavDropdown(null)
-      }
     }
 
     const handleEscapeKey = (event: KeyboardEvent) => {
@@ -109,49 +102,19 @@ export default function NavigationUser() {
         setIsDropdownOpen(false)
         setIsSearchFocused(false)
         setIsOpen(false)
-        setActiveNavDropdown(null)
-      }
-    }
-
-    const handleScroll = () => {
-      // Recalculate dropdown positions on scroll
-      if (activeNavDropdown) {
-        const element = document.querySelector(`[data-nav-item="${activeNavDropdown}"]`) as HTMLElement
-        if (element) {
-          calculateNavDropdownPosition(element, activeNavDropdown)
-        }
-      }
-    }
-
-    const handleResize = () => {
-      // Recalculate dropdown positions on resize
-      if (activeNavDropdown) {
-        const element = document.querySelector(`[data-nav-item="${activeNavDropdown}"]`) as HTMLElement
-        if (element) {
-          calculateNavDropdownPosition(element, activeNavDropdown)
-        }
       }
     }
 
     // Add event listeners
     document.addEventListener('mousedown', handleClickOutside)
     document.addEventListener('keydown', handleEscapeKey)
-    window.addEventListener('scroll', handleScroll)
-    window.addEventListener('resize', handleResize)
     
     // Cleanup
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
       document.removeEventListener('keydown', handleEscapeKey)
-      window.removeEventListener('scroll', handleScroll)
-      window.removeEventListener('resize', handleResize)
-      
-      // Clear any pending timeout
-      if (mouseLeaveTimeout) {
-        clearTimeout(mouseLeaveTimeout)
-      }
     }
-  }, [setIsSearchFocused, activeNavDropdown, mouseLeaveTimeout])
+  }, [setIsSearchFocused])
 
   // Recalculate position on window resize
   useEffect(() => {
@@ -214,8 +177,8 @@ export default function NavigationUser() {
       hasDropdown: true,
       dropdownItems: [
         { href: '/products/diamonds/single', label: 'Single Diamond', description: 'Individual certified diamonds' },
-        { href: '/products/diamonds/melee', label: 'Melee Diamonds', description: 'Small diamonds for jewelry making' },
-        { href: '/products/diamonds/lab-grown', label: 'Lab Grown Diamonds', description: 'Sustainable lab-created diamonds' }
+        { href: '/products/diamonds/melee', label: 'Melee Diamond', description: 'Small diamonds for jewelry making' },
+        { href: '/products/diamonds/lab-grown', label: 'Lab Grown Diamond', description: 'Sustainable lab-created diamonds' }
       ]
     },
     { 
@@ -223,72 +186,27 @@ export default function NavigationUser() {
       label: 'Gemstones',
       hasDropdown: true,
       dropdownItems: [
-        { href: '/products/gemstones/single', label: 'Single Gemstones', description: 'Individual certified gemstones' },
-        { href: '/products/gemstones/melee', label: 'Melee Gemstones', description: 'Small gemstones for jewelry making' }
+        { href: '/products/gemstones/ruby', label: 'Ruby', description: 'Premium red gemstones' },
+        { href: '/products/gemstones/sapphire', label: 'Sapphire', description: 'Blue and fancy sapphires' },
+        { href: '/products/gemstones/emerald', label: 'Emerald', description: 'Vibrant green emeralds' },
+        { href: '/products/gemstones/precious', label: 'Precious Stones', description: 'All premium gemstones' }
       ]
     },
-    { href: '/products/jewelry', label: 'Jewelry' },
-    { href: '/auction', label: 'Auction' },
-    { href: '/products/lab-grown', label: 'Lab Grown Diamonds' },
-    { href: '/diamond-education', label: 'Diamond Education' }
+    { 
+      href: '/products/jewelry', 
+      label: 'Jewelry',
+      hasDropdown: true,
+      dropdownItems: [
+        { href: '/products/jewelry/rings', label: 'Rings', description: 'Engagement & wedding rings' },
+        { href: '/products/jewelry/necklaces', label: 'Necklaces', description: 'Diamond & gemstone necklaces' },
+        { href: '/products/jewelry/earrings', label: 'Earrings', description: 'Elegant earring collections' },
+        { href: '/products/jewelry/bracelets', label: 'Bracelets', description: 'Tennis & charm bracelets' }
+      ]
+    },
+    { href: '/auction', label: 'Auction', hasDropdown: false },
+    { href: '/products/lab-grown', label: 'Lab Grown Diamonds', hasDropdown: false },
+    { href: '/diamond-education', label: 'Diamond Education', hasDropdown: false }
   ], [])
-
-  const calculateNavDropdownPosition = (element: HTMLElement, itemHref: string) => {
-    try {
-      const rect = element.getBoundingClientRect()
-      const dropdownWidth = 320 // 20rem (w-80)
-      const viewportWidth = window.innerWidth
-      
-      // Calculate the center position of the link
-      const linkCenter = rect.left + (rect.width / 2)
-      
-      // Calculate ideal left position (centered on link)
-      let leftPosition = linkCenter - (dropdownWidth / 2)
-      
-      // Ensure dropdown doesn't go off-screen on the left
-      if (leftPosition < 16) {
-        leftPosition = 16
-      }
-      
-      // Ensure dropdown doesn't go off-screen on the right
-      if (leftPosition + dropdownWidth > viewportWidth - 16) {
-        leftPosition = viewportWidth - dropdownWidth - 16
-      }
-      
-      setDropdownPositions(prev => ({
-        ...prev,
-        [itemHref]: { 
-          left: leftPosition,
-          top: rect.bottom + 8 // 8px gap below the link
-        }
-      }))
-    } catch (error) {
-      console.error('Error calculating dropdown position:', error)
-    }
-  }
-
-  const handleNavMouseEnter = (itemId: string, event: React.MouseEvent<HTMLElement>) => {
-    // Clear any existing timeout
-    if (mouseLeaveTimeout) {
-      clearTimeout(mouseLeaveTimeout)
-      setMouseLeaveTimeout(null)
-    }
-    
-    const target = event.currentTarget as HTMLElement
-    // Small delay to ensure the element is properly rendered
-    requestAnimationFrame(() => {
-      calculateNavDropdownPosition(target, itemId)
-      setActiveNavDropdown(itemId)
-    })
-  }
-
-  const handleNavMouseLeave = () => {
-    // Small delay to prevent flickering when moving between elements
-    const timeout = setTimeout(() => {
-      setActiveNavDropdown(null)
-    }, 150)
-    setMouseLeaveTimeout(timeout)
-  }
 
   return (
     <>
@@ -327,7 +245,7 @@ export default function NavigationUser() {
 
       {/* Main Navigation Header */}
       <header className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 shadow-lg w-full" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)' }}>
-        <nav className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <nav className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 w-full relative">
           <div className="flex items-center justify-between h-16 lg:h-20 w-full min-w-0 gap-4">
             {/* Brand Logo */}
             <div className="flex items-center space-x-3 flex-shrink-0 min-w-fit">
@@ -344,45 +262,47 @@ export default function NavigationUser() {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center space-x-2 flex-1 justify-center min-w-0 overflow-hidden">
+            <div className="hidden lg:flex items-center space-x-2 flex-1 justify-center min-w-0 overflow-visible">
               <div className="flex items-center space-x-2 max-w-fit">
                 {navigationItems.map((item) => (
-                  <div 
+                  <div
                     key={item.href}
-                    className="relative nav-dropdown-container"
-                    data-nav-item={item.href}
-                    onMouseEnter={(e) => item.hasDropdown && handleNavMouseEnter(item.href, e)}
-                    onMouseLeave={handleNavMouseLeave}
+                    className="relative group"
+                    onMouseEnter={() => item.hasDropdown && setActiveNavDropdown(item.label)}
+                    onMouseLeave={() => item.hasDropdown && setActiveNavDropdown(null)}
                   >
                     <Link 
                       href={item.href} 
-                      className="relative group px-4 py-2.5 transition-all duration-300 font-medium text-sm rounded-lg hover:scale-[1.02] block nav-item"
+                      className="relative group px-4 py-2.5 transition-all duration-300 font-medium text-sm rounded-lg hover:scale-[1.02] flex items-center space-x-1"
                       style={{ 
                         color: 'var(--muted-foreground)',
                         borderRadius: 'var(--radius-lg)'
                       }}
                     >
                       <span 
-                        className="relative z-10 group-hover:font-semibold transition-all duration-300 flex items-center gap-1"
+                        className="relative z-10 group-hover:font-semibold transition-all duration-300"
                         style={{ 
                           color: 'var(--foreground)',
                           filter: 'brightness(0.8)'
                         }}
-                      >
-                        {item.label}
-                        {item.hasDropdown && (
-                          <svg 
-                            className={`w-3 h-3 dropdown-arrow ${
-                              activeNavDropdown === item.href ? 'active' : ''
-                            }`}
-                            fill="none" 
-                            stroke="currentColor" 
-                            viewBox="0 0 24 24"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        )}
-                      </span>
+                      >{item.label}</span>
+                      
+                      {item.hasDropdown && (
+                        <svg 
+                          className={`w-3 h-3 transition-transform duration-300 ${
+                            activeNavDropdown === item.label ? 'rotate-180' : ''
+                          }`} 
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                          style={{ 
+                            color: 'var(--foreground)',
+                            filter: 'brightness(0.8)'
+                          }}
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      )}
                       
                       {/* Modern hover background */}
                       <div 
@@ -404,56 +324,426 @@ export default function NavigationUser() {
                       ></div>
                     </Link>
 
-                    {/* Desktop Dropdown */}
-                    {item.hasDropdown && activeNavDropdown === item.href && (
-                      <>
-                        {/* Bridge area to prevent dropdown from closing */}
-                        <div className="absolute top-full left-0 right-0 h-2 bg-transparent"></div>
+                    {/* Revolutionary Dropdown Menu */}
+                    {item.hasDropdown && activeNavDropdown === item.label && (
+                      <div 
+                        className="absolute top-full left-1/2 transform -translate-x-1/2 pt-3 w-96"
+                        style={{ zIndex: 9999 }}
+                      >
+                        {/* Invisible bridge to prevent dropdown from closing */}
+                        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-full h-3 bg-transparent"></div>
                         
                         <div 
-                          className="fixed w-80 rounded-lg shadow-xl border z-50 overflow-hidden nav-dropdown-animate"
+                          className="rounded-2xl border-2 shadow-2xl backdrop-blur-xl overflow-hidden"
                           style={{ 
-                            backgroundColor: 'var(--background)',
-                            borderColor: 'var(--border)',
-                            left: dropdownPositions[item.href]?.left || 'auto',
-                            top: dropdownPositions[item.href]?.top || 'auto',
-                            visibility: dropdownPositions[item.href] ? 'visible' : 'hidden'
+                            backgroundColor: 'var(--popover)', 
+                            borderColor: 'var(--border)', 
+                            borderRadius: 'var(--radius-2xl)',
+                            boxShadow: '0 32px 64px -12px rgba(0, 0, 0, 0.35), 0 16px 32px -8px rgba(0, 0, 0, 0.15)',
+                            backdropFilter: 'blur(24px)',
+                            WebkitBackdropFilter: 'blur(24px)'
                           }}
                         >
-                          <div className="p-4">
-                            <div className="flex items-center gap-2 mb-3">
-                              <span className="text-2xl">{item.label === 'Diamonds' ? '💎' : '🔮'}</span>
-                              <h3 className="font-semibold text-lg" style={{ color: 'var(--foreground)' }}>
-                                {item.label}
-                              </h3>
-                            </div>
-                            <div className="grid gap-2">
-                              {item.dropdownItems?.map((dropdownItem) => (
-                                <Link 
-                                  key={dropdownItem.href}
-                                  href={dropdownItem.href}
-                                  className="block p-3 rounded-lg transition-all duration-200 hover:scale-[1.02]"
-                                  style={{ 
-                                    backgroundColor: 'var(--muted)',
-                                    color: 'var(--foreground)'
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'var(--accent)'
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'var(--muted)'
-                                  }}
+                        {/* Header Section */}
+                        <div 
+                          className="px-6 py-4 border-b"
+                          style={{ 
+                            background: 'linear-gradient(135deg, var(--accent), var(--muted))',
+                            borderColor: 'var(--border)'
+                          }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <div 
+                                className="w-10 h-10 rounded-xl flex items-center justify-center text-2xl"
+                                style={{ 
+                                  background: 'linear-gradient(135deg, var(--primary), var(--chart-1))',
+                                  color: 'var(--primary-foreground)'
+                                }}
+                              >
+                                {item.label === 'Diamonds' ? '💎' : item.label === 'Gemstones' ? '🔮' : '💍'}
+                              </div>
+                              <div>
+                                <h3 
+                                  className="text-lg font-bold"
+                                  style={{ color: 'var(--popover-foreground)' }}
                                 >
-                                  <div className="font-medium text-sm">{dropdownItem.label}</div>
-                                  <div className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
-                                    {dropdownItem.description}
-                                  </div>
-                                </Link>
-                              ))}
+                                  {item.label}
+                                </h3>
+                                <p 
+                                  className="text-sm"
+                                  style={{ color: 'var(--muted-foreground)' }}
+                                >
+                                  {item.label === 'Diamonds' ? 'Certified Excellence' : 
+                                   item.label === 'Gemstones' ? 'Natural Beauty' : 
+                                   'Crafted Perfection'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <div 
+                                className="px-3 py-1 text-xs font-bold rounded-full"
+                                style={{ 
+                                  background: 'linear-gradient(90deg, var(--chart-2), var(--chart-3))',
+                                  color: 'var(--primary-foreground)'
+                                }}
+                              >
+                                PREMIUM
+                              </div>
+                              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                             </div>
                           </div>
                         </div>
-                      </>
+
+                        {/* Content Grid */}
+                        <div className="p-6">
+                          <div className="grid grid-cols-1 gap-4">
+                            {item.dropdownItems?.map((dropdownItem, index) => {
+                              const getIcon = () => {
+                                if (item.label === 'Diamonds') {
+                                  return ['💎', '✨', '🌱'][index] || '💎'
+                                } else if (item.label === 'Gemstones') {
+                                  return ['🔴', '🔵', '🟢', '🟣'][index] || '💎'
+                                } else {
+                                  return ['💍', '📿', '👂', '🔗'][index] || '💍'
+                                }
+                              }
+                              
+                              const getGradient = () => {
+                                const gradients = [
+                                  'from-blue-500 to-cyan-500',
+                                  'from-purple-500 to-pink-500', 
+                                  'from-green-500 to-emerald-500',
+                                  'from-orange-500 to-red-500'
+                                ]
+                                return gradients[index] || gradients[0]
+                              }
+
+                              return (
+                                <Link
+                                  key={index}
+                                  href={dropdownItem.href}
+                                  className="group block p-4 rounded-xl transition-all duration-300 hover:scale-[1.02] border border-transparent hover:shadow-xl"
+                                  style={{ 
+                                    borderRadius: 'var(--radius-xl)'
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = 'var(--accent)'
+                                    e.currentTarget.style.borderColor = 'var(--primary)'
+                                    e.currentTarget.style.transform = 'translateY(-2px) scale(1.01)'
+                                    e.currentTarget.style.boxShadow = '0 20px 40px -12px rgba(0, 0, 0, 0.25)'
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = 'transparent'
+                                    e.currentTarget.style.borderColor = 'transparent'
+                                    e.currentTarget.style.transform = 'translateY(0px) scale(1)'
+                                    e.currentTarget.style.boxShadow = 'none'
+                                  }}
+                                >
+                                  <div className="flex items-center space-x-4">
+                                    <div 
+                                      className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getGradient()} flex items-center justify-center text-xl shadow-lg group-hover:scale-110 transition-transform duration-300`}
+                                    >
+                                      {getIcon()}
+                                    </div>
+                                    <div className="flex-1">
+                                      <div 
+                                        className="font-bold text-base group-hover:text-lg transition-all duration-300"
+                                        style={{ color: 'var(--popover-foreground)' }}
+                                      >
+                                        {dropdownItem.label}
+                                      </div>
+                                      <div 
+                                        className="text-sm mt-1 leading-relaxed group-hover:text-base transition-all duration-300"
+                                        style={{ color: 'var(--muted-foreground)' }}
+                                      >
+                                        {dropdownItem.description}
+                                      </div>
+                                      <div className="flex items-center space-x-2 mt-2">
+                                        <div className="flex items-center space-x-1 text-xs" style={{ color: 'var(--chart-1)' }}>
+                                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                          </svg>
+                                          <span className="font-medium">Premium Quality</span>
+                                        </div>
+                                        <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                                        <span className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>
+                                          {Math.floor(Math.random() * 500) + 100}+ Items
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <div className="flex flex-col items-center space-y-2">
+                                      <svg 
+                                        className="w-5 h-5 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" 
+                                        fill="none" 
+                                        stroke="currentColor" 
+                                        viewBox="0 0 24 24"
+                                        style={{ color: 'var(--primary)' }}
+                                      >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                      </svg>
+                                      <div 
+                                        className="w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
+                                        style={{ backgroundColor: 'var(--chart-2)' }}
+                                      >
+                                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </Link>
+                              )
+                            })}
+                          </div>
+                          
+                          {/* Footer CTA */}
+                          <div className="mt-6 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="flex items-center space-x-4">
+                                <div className="flex items-center space-x-2 text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                  <span className="font-medium">Live Inventory</span>
+                                </div>
+                                <div className="flex items-center space-x-2 text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                  </svg>
+                                  <span className="font-medium">GIA Certified</span>
+                                </div>
+                                <div className="flex items-center space-x-2 text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+                                  </svg>
+                                  <span className="font-medium">Expert Verified</span>
+                                </div>
+                              </div>
+                            </div>
+                            <Link
+                              href={item.href}
+                              className="block px-6 py-4 rounded-xl text-center font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                              style={{ 
+                                background: 'linear-gradient(135deg, var(--primary), var(--chart-1), var(--chart-4))',
+                                color: 'var(--primary-foreground)',
+                                borderRadius: 'var(--radius-xl)'
+                              }}
+                            >
+                              <div className="flex items-center justify-center space-x-3">
+                                <span className="text-lg">Explore All {item.label}</span>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                </svg>
+                              </div>
+                              <div className="text-sm mt-1 opacity-90">
+                                {item.label === 'Diamonds' ? 'Browse 10,000+ certified diamonds' : 
+                                 item.label === 'Gemstones' ? 'Discover rare precious stones' : 
+                                 'Shop handcrafted jewelry'}
+                              </div>
+                            </Link>
+                          </div>
+                        </div>
+                        </div>
+                      </div>
+                    )}
+                        {/* Header Section */}
+                        <div 
+                          className="px-6 py-4 border-b"
+                          style={{ 
+                            background: 'linear-gradient(135deg, var(--accent), var(--muted))',
+                            borderColor: 'var(--border)'
+                          }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <div 
+                                className="w-10 h-10 rounded-xl flex items-center justify-center text-2xl"
+                                style={{ 
+                                  background: 'linear-gradient(135deg, var(--primary), var(--chart-1))',
+                                  color: 'var(--primary-foreground)'
+                                }}
+                              >
+                                {item.label === 'Diamonds' ? '💎' : item.label === 'Gemstones' ? '🔮' : '💍'}
+                              </div>
+                              <div>
+                                <h3 
+                                  className="text-lg font-bold"
+                                  style={{ color: 'var(--popover-foreground)' }}
+                                >
+                                  {item.label}
+                                </h3>
+                                <p 
+                                  className="text-sm"
+                                  style={{ color: 'var(--muted-foreground)' }}
+                                >
+                                  {item.label === 'Diamonds' ? 'Certified Excellence' : 
+                                   item.label === 'Gemstones' ? 'Natural Beauty' : 
+                                   'Crafted Perfection'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <div 
+                                className="px-3 py-1 text-xs font-bold rounded-full"
+                                style={{ 
+                                  background: 'linear-gradient(90deg, var(--chart-2), var(--chart-3))',
+                                  color: 'var(--primary-foreground)'
+                                }}
+                              >
+                                PREMIUM
+                              </div>
+                              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Content Grid */}
+                        <div className="p-6">
+                          <div className="grid grid-cols-1 gap-4">
+                            {item.dropdownItems?.map((dropdownItem, index) => {
+                              const getIcon = () => {
+                                if (item.label === 'Diamonds') {
+                                  return ['💎', '✨', '🌱'][index] || '💎'
+                                } else if (item.label === 'Gemstones') {
+                                  return ['🔴', '🔵', '🟢', '🟣'][index] || '💎'
+                                } else {
+                                  return ['💍', '📿', '👂', '🔗'][index] || '💍'
+                                }
+                              }
+                              
+                              const getGradient = () => {
+                                const gradients = [
+                                  'from-blue-500 to-cyan-500',
+                                  'from-purple-500 to-pink-500', 
+                                  'from-green-500 to-emerald-500',
+                                  'from-orange-500 to-red-500'
+                                ]
+                                return gradients[index] || gradients[0]
+                              }
+
+                              return (
+                                <Link
+                                  key={index}
+                                  href={dropdownItem.href}
+                                  className="group block p-4 rounded-xl transition-all duration-300 hover:scale-[1.02] border border-transparent hover:shadow-xl"
+                                  style={{ 
+                                    borderRadius: 'var(--radius-xl)'
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = 'var(--accent)'
+                                    e.currentTarget.style.borderColor = 'var(--primary)'
+                                    e.currentTarget.style.transform = 'translateY(-2px) scale(1.01)'
+                                    e.currentTarget.style.boxShadow = '0 20px 40px -12px rgba(0, 0, 0, 0.25)'
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = 'transparent'
+                                    e.currentTarget.style.borderColor = 'transparent'
+                                    e.currentTarget.style.transform = 'translateY(0px) scale(1)'
+                                    e.currentTarget.style.boxShadow = 'none'
+                                  }}
+                                >
+                                  <div className="flex items-center space-x-4">
+                                    <div 
+                                      className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getGradient()} flex items-center justify-center text-xl shadow-lg group-hover:scale-110 transition-transform duration-300`}
+                                    >
+                                      {getIcon()}
+                                    </div>
+                                    <div className="flex-1">
+                                      <div 
+                                        className="font-bold text-base group-hover:text-lg transition-all duration-300"
+                                        style={{ color: 'var(--popover-foreground)' }}
+                                      >
+                                        {dropdownItem.label}
+                                      </div>
+                                      <div 
+                                        className="text-sm mt-1 leading-relaxed group-hover:text-base transition-all duration-300"
+                                        style={{ color: 'var(--muted-foreground)' }}
+                                      >
+                                        {dropdownItem.description}
+                                      </div>
+                                      <div className="flex items-center space-x-2 mt-2">
+                                        <div className="flex items-center space-x-1 text-xs" style={{ color: 'var(--chart-1)' }}>
+                                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                          </svg>
+                                          <span className="font-medium">Premium Quality</span>
+                                        </div>
+                                        <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                                        <span className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>
+                                          {Math.floor(Math.random() * 500) + 100}+ Items
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <div className="flex flex-col items-center space-y-2">
+                                      <svg 
+                                        className="w-5 h-5 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" 
+                                        fill="none" 
+                                        stroke="currentColor" 
+                                        viewBox="0 0 24 24"
+                                        style={{ color: 'var(--primary)' }}
+                                      >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                      </svg>
+                                      <div 
+                                        className="w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
+                                        style={{ backgroundColor: 'var(--chart-2)' }}
+                                      >
+                                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </Link>
+                              )
+                            })}
+                          </div>
+                          
+                          {/* Footer CTA */}
+                          <div className="mt-6 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="flex items-center space-x-4">
+                                <div className="flex items-center space-x-2 text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                  <span className="font-medium">Live Inventory</span>
+                                </div>
+                                <div className="flex items-center space-x-2 text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                  </svg>
+                                  <span className="font-medium">GIA Certified</span>
+                                </div>
+                                <div className="flex items-center space-x-2 text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+                                  </svg>
+                                  <span className="font-medium">Expert Verified</span>
+                                </div>
+                              </div>
+                            </div>
+                            <Link
+                              href={item.href}
+                              className="block px-6 py-4 rounded-xl text-center font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                              style={{ 
+                                background: 'linear-gradient(135deg, var(--primary), var(--chart-1), var(--chart-4))',
+                                color: 'var(--primary-foreground)',
+                                borderRadius: 'var(--radius-xl)'
+                              }}
+                            >
+                              <div className="flex items-center justify-center space-x-3">
+                                <span className="text-lg">Explore All {item.label}</span>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                </svg>
+                              </div>
+                              <div className="text-sm mt-1 opacity-90">
+                                {item.label === 'Diamonds' ? 'Browse 10,000+ certified diamonds' : 
+                                 item.label === 'Gemstones' ? 'Discover rare precious stones' : 
+                                 'Shop handcrafted jewelry'}
+                              </div>
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
                     )}
                   </div>
                 ))}
@@ -741,7 +1031,7 @@ export default function NavigationUser() {
                           <svg className="w-5 h-5 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hello. Together. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. 
+                          </svg>
                           <span className="font-medium">Settings</span>
                         </Link>
                       </div>
@@ -786,88 +1076,17 @@ export default function NavigationUser() {
           </div>
 
           {/* Tablet Navigation - Below Header */}
-          <div className="hidden md:flex lg:hidden items-center justify-center py-3 border-t overflow-visible relative" style={{ borderColor: 'var(--border)' }}>
+          <div className="hidden md:flex lg:hidden items-center justify-center py-3 border-t overflow-hidden" style={{ borderColor: 'var(--border)' }}>
             <div className="flex items-center space-x-6 overflow-x-auto scrollbar-hide px-4 max-w-full">
               {navigationItems.map((item) => (
-                <div 
+                <Link 
                   key={item.href}
-                  className="relative nav-dropdown-container"
-                  data-nav-item={item.href}
-                  onMouseEnter={(e) => item.hasDropdown && handleNavMouseEnter(item.href, e)}
-                  onMouseLeave={handleNavMouseLeave}
+                  href={item.href} 
+                  className="whitespace-nowrap px-4 py-2 text-sm font-medium hover:text-amber-500 transition-colors" 
+                  style={{ color: 'var(--foreground)' }}
                 >
-                  <Link 
-                    href={item.href} 
-                    className="whitespace-nowrap px-4 py-2 text-sm font-medium hover:text-amber-500 transition-colors flex items-center gap-1" 
-                    style={{ color: 'var(--foreground)' }}
-                  >
-                    {item.label}
-                    {item.hasDropdown && (
-                      <svg 
-                        className={`w-3 h-3 dropdown-arrow ${
-                          activeNavDropdown === item.href ? 'active' : ''
-                        }`}
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    )}
-                  </Link>
-
-                  {/* Tablet Dropdown */}
-                  {item.hasDropdown && activeNavDropdown === item.href && (
-                    <>
-                      {/* Bridge area to prevent dropdown from closing */}
-                      <div className="absolute top-full left-0 right-0 h-2 bg-transparent"></div>
-                      
-                      <div 
-                        className="fixed w-80 rounded-lg shadow-xl border z-50 overflow-hidden nav-dropdown-animate"
-                        style={{ 
-                          backgroundColor: 'var(--background)',
-                          borderColor: 'var(--border)',
-                          left: dropdownPositions[item.href]?.left || 'auto',
-                          top: dropdownPositions[item.href]?.top || 'auto',
-                          visibility: dropdownPositions[item.href] ? 'visible' : 'hidden'
-                        }}
-                      >
-                        <div className="p-4">
-                          <div className="flex items-center gap-2 mb-3">
-                            <span className="text-2xl">{item.label === 'Diamonds' ? '💎' : '🔮'}</span>
-                            <h3 className="font-semibold text-lg" style={{ color: 'var(--foreground)' }}>
-                              {item.label}
-                            </h3>
-                          </div>
-                          <div className="grid gap-2">
-                            {item.dropdownItems?.map((dropdownItem) => (
-                              <Link 
-                                key={dropdownItem.href}
-                                href={dropdownItem.href}
-                                className="block p-3 rounded-lg transition-all duration-200 hover:scale-[1.02]"
-                                style={{ 
-                                  backgroundColor: 'var(--muted)',
-                                  color: 'var(--foreground)'
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.backgroundColor = 'var(--accent)'
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.backgroundColor = 'var(--muted)'
-                                }}
-                              >
-                                <div className="font-medium text-sm">{dropdownItem.label}</div>
-                                <div className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
-                                  {dropdownItem.description}
-                                </div>
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
+                  {item.label}
+                </Link>
               ))}
               <Link href="/products/bullions" className="whitespace-nowrap px-4 py-2 text-sm font-medium hover:text-amber-500 transition-colors" style={{ color: 'var(--foreground)' }}>
                 Bullions

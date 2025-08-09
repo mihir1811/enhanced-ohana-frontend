@@ -124,6 +124,23 @@
   }
 }
 
+/* Enhanced dropdown slide in for navigation dropdowns */
+@keyframes navDropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Navigation dropdown specific animation */
+.nav-dropdown-animate {
+  animation: navDropdownSlideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 /* Ensure dropdown appears above all other elements */
 .user-dropdown {
   z-index: 9999 !important;
@@ -170,4 +187,58 @@ body:has(.dropdown-enter) {
   .search-input:focus {
     box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
   }
+}
+
+/* Navigation Dropdown Positioning */
+.nav-dropdown {
+  /* Ensure dropdown stays within viewport */
+  max-width: calc(100vw - 32px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* For dropdowns that would overflow on the left */
+.nav-dropdown.overflow-left {
+  left: 16px;
+  transform: none;
+}
+
+/* For dropdowns that would overflow on the right */
+.nav-dropdown.overflow-right {
+  left: auto;
+  right: 16px;
+  transform: none;
+}
+
+/* Smooth dropdown appearance */
+.nav-dropdown {
+  animation: dropdownSlideIn 0.15s ease-out;
+}
+
+/* Ensure proper z-index layering */
+.nav-dropdown {
+  z-index: 100;
+  position: absolute;
+}
+
+/* Dropdown Arrow Styling */
+.dropdown-arrow {
+  transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
+  opacity: 0.7;
+}
+
+.dropdown-arrow.active {
+  transform: rotate(180deg);
+  opacity: 1;
+}
+
+/* Navigation item hover effects for arrows */
+.nav-item:hover .dropdown-arrow {
+  opacity: 1;
+  color: var(--primary);
+}
+
+/* Arrow animation on dropdown state change */
+.dropdown-arrow {
+  will-change: transform;
 }

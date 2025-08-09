@@ -12,3 +12,7 @@ export const getCookie = (name: string) => {
     .find((row) => row.startsWith(name + '='))
     ?.split('=')[1]
 }
+
+export const deleteCookie = (name: string) => {
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`
+}
