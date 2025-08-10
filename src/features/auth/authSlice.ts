@@ -1,5 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import { PURGE } from 'redux-persist'
+import { userService, UpdateUserRequest } from '@/services/userService'
 
 // Base User interface - every user has these properties
 interface BaseUser {
@@ -67,6 +68,84 @@ const initialState: AuthState = {
   isAdmin: false,
 }
 
+// Async thunk for updating user profile via API
+export const updateUserProfileAsync = createAsyncThunk(
+  'auth/updateUserProfile',
+  async (updateData: UpdateUserRequest, { getState, rejectWithValue }) => {
+    try {
+      const state = getState() as { auth: AuthState }
+      const token = state.auth.token
+      
+      if (!token) {
+        return rejectWithValue('No authentication token found')
+      }
+      
+      const response = await userService.updateUserInfo(updateData, token)
+      
+      if (!response.success) {
+        return rejectWithValue(response.message)
+      }
+      
+      return response.data
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Failed to update profile')
+    }
+  }
+)
+
+// Async thunk for updating profile picture
+export const updateProfilePictureAsync = createAsyncThunk(
+  'auth/updateProfilePicture',
+  async (profilePicture: File, { getState, rejectWithValue }) => {
+    try {
+      const state = getState() as { auth: AuthState }
+      const token = state.auth.token
+      
+      if (!token) {
+        return rejectWithValue('No authentication token found')
+      }
+      
+      const response = await userService.updateProfilePicture(profilePicture, token)
+      
+      if (!response.success) {
+        return rejectWithValue(response.message)
+      }
+      
+      return response.data
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Failed to update profile picture')
+    }
+  }
+)
+
+// Async thunk for logout
+export const logoutAsync = createAsyncThunk(
+  'auth/logout',
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const state = getState() as { auth: AuthState }
+      const token = state.auth.token
+      
+      if (!token) {
+        // If no token, just clear local data
+        return { message: 'Logged out locally' }
+      }
+      
+      const response = await userService.logout(token)
+      
+      if (!response.success) {
+        return rejectWithValue(response.message)
+      }
+      
+      return response.data
+    } catch (error) {
+      // Even if logout API fails, we should clear local data
+      console.warn('Logout API failed, clearing local data anyway:', error)
+      return { message: 'Logged out locally due to API error' }
+    }
+  }
+)
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -132,9 +211,47 @@ const authSlice = createSlice({
   },
   
   extraReducers: (builder) => {
-    builder.addCase(PURGE, () => {
-      return initialState
-    })
+    builder
+      .addCase(PURGE, () => {
+        return initialState
+      })
+      .addCase(updateUserProfileAsync.fulfilled, (state, action) => {
+        // Update the user data with the response from API
+        if (state.user && action.payload) {
+          state.user = { ...state.user, ...action.payload }
+        }
+      })
+      .addCase(updateUserProfileAsync.rejected, (state, action) => {
+        // Handle error - you could add error state here if needed
+        console.error('Failed to update user profile:', action.payload)
+      })
+      .addCase(updateProfilePictureAsync.fulfilled, (state, action) => {
+        // Update the user's profile picture with the response from API
+        if (state.user && action.payload && action.payload.profilePicture) {
+          state.user.profilePicture = action.payload.profilePicture
+        }
+      })
+      .addCase(updateProfilePictureAsync.rejected, (state, action) => {
+        // Handle error - you could add error state here if needed
+        console.error('Failed to update profile picture:', action.payload)
+      })
+      .addCase(logoutAsync.fulfilled, (state, action) => {
+        // Clear all auth data on successful logout
+        state.user = null
+        state.role = null
+        state.token = null
+        state.isSeller = false
+        state.isAdmin = false
+      })
+      .addCase(logoutAsync.rejected, (state, action) => {
+        // Even if logout fails, clear local data for security
+        console.warn('Logout API failed, clearing local data anyway:', action.payload)
+        state.user = null
+        state.role = null
+        state.token = null
+        state.isSeller = false
+        state.isAdmin = false
+      })
   },
 })
 

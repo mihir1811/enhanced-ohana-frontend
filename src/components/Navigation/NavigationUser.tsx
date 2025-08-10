@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
 import { RootState } from '@/store'
+import { useAppDispatch } from '@/store/hooks'
+import { logoutAsync } from '@/features/auth/authSlice'
 import ThemeSwitcher from '../ThemeSwitcher'
 import MobileSidebar from './MobileSidebar'
 import useNavigation from '@/hooks/useNavigation'
@@ -17,6 +19,7 @@ export default function NavigationUser() {
   const [activeNavDropdown, setActiveNavDropdown] = useState<string | null>(null)
   const [dropdownPositions, setDropdownPositions] = useState<{[key: string]: {left: number, top: number}}>({})
   const [mouseLeaveTimeout, setMouseLeaveTimeout] = useState<NodeJS.Timeout | null>(null)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [cartItems] = useState(3) // Mock cart count
   const [notifications] = useState(2) // Mock notification count
   const [suggestedProducts] = useState([
@@ -27,6 +30,7 @@ export default function NavigationUser() {
     'Gold Wedding Bands'
   ])
   const { user } = useSelector((state: RootState) => state.auth)
+  const dispatch = useAppDispatch()
   const router = useRouter()
   const dropdownRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLDivElement>(null)
@@ -189,11 +193,24 @@ export default function NavigationUser() {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  const handleLogout = useCallback(() => {
-    document.cookie = 'role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
-    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
-    router.push('/')
-  }, [router])
+  const handleLogout = useCallback(async () => {
+    setIsLoggingOut(true)
+    try {
+      // Call async logout to invalidate token on server
+      await dispatch(logoutAsync()).unwrap()
+    } catch (error) {
+      // Even if API fails, we'll continue with local logout
+      console.warn('Logout API failed, continuing with local logout:', error)
+    } finally {
+      // Clear all local storage, cookies, and redirect
+      document.cookie = 'role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
+      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
+      localStorage.clear()
+      sessionStorage.clear()
+      setIsLoggingOut(false)
+      router.push('/')
+    }
+  }, [dispatch, router])
 
   const handleSearch = useCallback((e: React.FormEvent) => {
     e.preventDefault()
@@ -741,7 +758,7 @@ export default function NavigationUser() {
                           <svg className="w-5 h-5 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hello. Together. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. Hey, Cortana. 
+                          </svg>
                           <span className="font-medium">Settings</span>
                         </Link>
                       </div>
@@ -752,14 +769,22 @@ export default function NavigationUser() {
                             handleLogout()
                             setIsDropdownOpen(false)
                           }}
-                          className="flex items-center space-x-3 px-3 py-3 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all duration-300 w-full group" 
+                          disabled={isLoggingOut}
+                          className="flex items-center space-x-3 px-3 py-3 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all duration-300 w-full group disabled:opacity-50 disabled:cursor-not-allowed" 
                           style={{ borderRadius: 'var(--radius-lg)' }}
                           role="menuitem"
                         >
-                          <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                          </svg>
-                          <span className="font-medium">Sign Out</span>
+                          {isLoggingOut ? (
+                            <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                          ) : (
+                            <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                          )}
+                          <span className="font-medium">{isLoggingOut ? 'Signing Out...' : 'Sign Out'}</span>
                         </button>
                       </div>
                     </div>
@@ -887,6 +912,7 @@ export default function NavigationUser() {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         handleLogout={handleLogout}
+        isLoggingOut={isLoggingOut}
         recentSearches={recentSearches}
         handleSearchSuggestion={handleSearchSuggestion}
         clearSearch={clearSearch}

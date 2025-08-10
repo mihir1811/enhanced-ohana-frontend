@@ -1,5 +1,4 @@
 // Central API service configuration
-import { store } from '@/store'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1'
 
@@ -27,11 +26,9 @@ class ApiService {
 
   private async request<T>(
     endpoint: string, 
-    options: RequestInit = {}
+    options: RequestInit = {},
+    token?: string
   ): Promise<ApiResponse<T>> {
-    const state = store.getState()
-    const token = state.auth.token
-
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
@@ -58,43 +55,40 @@ class ApiService {
   }
 
   // Generic CRUD operations
-  async get<T>(endpoint: string, params?: Record<string, any>): Promise<ApiResponse<T>> {
+  async get<T>(endpoint: string, params?: Record<string, any>, token?: string): Promise<ApiResponse<T>> {
     const queryString = params ? '?' + new URLSearchParams(params).toString() : ''
-    return this.request<T>(`${endpoint}${queryString}`)
+    return this.request<T>(`${endpoint}${queryString}`, {}, token)
   }
 
-  async post<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
+  async post<T>(endpoint: string, data?: any, token?: string): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: JSON.stringify(data),
-    })
+    }, token)
   }
 
-  async put<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
+  async put<T>(endpoint: string, data?: any, token?: string): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'PUT',
       body: JSON.stringify(data),
-    })
+    }, token)
   }
 
-  async patch<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
+  async patch<T>(endpoint: string, data?: any, token?: string): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'PATCH',
       body: JSON.stringify(data),
-    })
+    }, token)
   }
 
-  async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
+  async delete<T>(endpoint: string, token?: string): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'DELETE',
-    })
+    }, token)
   }
 
   // File upload
-  async upload<T>(endpoint: string, formData: FormData): Promise<ApiResponse<T>> {
-    const state = store.getState()
-    const token = state.auth.token
-
+  async upload<T>(endpoint: string, formData: FormData, token?: string): Promise<ApiResponse<T>> {
     const config: RequestInit = {
       method: 'POST',
       headers: {

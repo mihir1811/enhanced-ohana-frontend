@@ -4,9 +4,10 @@ import storage from 'redux-persist/lib/storage' // localStorage
 import { combineReducers } from '@reduxjs/toolkit'
 import authReducer from '../features/auth/authSlice'
 import loadingReducer from './loading'
-import productReducer from '../features/products/productSlice'
-import orderReducer from '../features/orders/orderSlice'
-import cartReducer from '../features/cart/cartSlice'
+// Temporarily comment out problematic imports to fix circular dependency
+// import productReducer from '../features/products/productSlice'
+// import orderReducer from '../features/orders/orderSlice'
+// import cartReducer from '../features/cart/cartSlice'
 
 // Persist configuration for auth slice
 const authPersistConfig = {
@@ -16,27 +17,27 @@ const authPersistConfig = {
 }
 
 // Persist configuration for cart slice
-const cartPersistConfig = {
-  key: 'cart',
-  storage,
-  whitelist: ['items', 'summary'], // Persist cart items and summary
-}
+// const cartPersistConfig = {
+//   key: 'cart',
+//   storage,
+//   whitelist: ['items', 'summary'], // Persist cart items and summary
+// }
 
 // Root persist configuration
 const rootPersistConfig = {
   key: 'root',
   storage,
-  whitelist: ['auth', 'cart'], // Only persist auth and cart
-  blacklist: ['loading', 'products', 'orders'], // Don't persist these (they should be fresh)
+  whitelist: ['auth'], // Only persist auth for now
+  blacklist: ['loading'], // Don't persist loading
 }
 
 // Combine all reducers
 const rootReducer = combineReducers({
   auth: persistReducer(authPersistConfig, authReducer),
-  cart: persistReducer(cartPersistConfig, cartReducer),
+  // cart: persistReducer(cartPersistConfig, cartReducer),
   loading: loadingReducer,
-  products: productReducer,
-  orders: orderReducer,
+  // products: productReducer,
+  // orders: orderReducer,
 })
 
 // Create persisted reducer

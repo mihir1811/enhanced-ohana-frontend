@@ -11,6 +11,7 @@ interface MobileSidebarProps {
   searchQuery: string
   setSearchQuery: (query: string) => void
   handleLogout: () => void
+  isLoggingOut?: boolean
   recentSearches: string[]
   handleSearchSuggestion: (suggestion: string) => void
   clearSearch: () => void
@@ -22,6 +23,7 @@ export default function MobileSidebar({
   searchQuery, 
   setSearchQuery, 
   handleLogout,
+  isLoggingOut = false,
   recentSearches,
   handleSearchSuggestion,
   clearSearch
@@ -253,7 +255,8 @@ export default function MobileSidebar({
             {/* Logout Button */}
             <button
               onClick={handleLogout}
-              className="group w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] text-left border" 
+              disabled={isLoggingOut}
+              className="group w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] text-left border disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100" 
               style={{ 
                 color: 'var(--destructive-foreground)', 
                 backgroundColor: 'var(--destructive)',
@@ -261,10 +264,16 @@ export default function MobileSidebar({
                 borderColor: 'var(--destructive)'
               }}
             >
-              <span className="font-medium">Sign Out</span>
-              <svg className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
+              <span className="font-medium">
+                {isLoggingOut ? 'Signing Out...' : 'Sign Out'}
+              </span>
+              {isLoggingOut ? (
+                <div className="ml-auto animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent" />
+              ) : (
+                <svg className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1" />
+                </svg>
+              )}
             </button>
 
             {/* App Version */}
