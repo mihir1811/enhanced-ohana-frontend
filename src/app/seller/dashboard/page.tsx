@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { TrendingUp, Package, ShoppingCart, DollarSign, Eye, Heart, MessageSquare, Star } from 'lucide-react'
 import { CardLoader } from '@/components/seller/Loader'
 
 export default function SellerDashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
     // Simple loading - just one timer
@@ -15,6 +17,10 @@ export default function SellerDashboardPage() {
 
     return () => clearTimeout(timer)
   }, [])
+
+  const handleAddProduct = () => {
+    router.push('/seller/add-product')
+  }
 
   return (
     <div className="space-y-8">
@@ -47,7 +53,8 @@ export default function SellerDashboardPage() {
             Export Data
           </button>
           <button 
-            className="px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+            onClick={handleAddProduct}
+            className="px-4 py-2 rounded-lg font-medium transition-colors hover:opacity-90 disabled:opacity-50"
             style={{ 
               backgroundColor: 'var(--primary)',
               color: 'var(--primary-foreground)'
@@ -199,13 +206,14 @@ export default function SellerDashboardPage() {
           </h3>
           <div className="grid grid-cols-2 gap-4">
             {[
-              { name: 'Add Product', icon: <Package className="w-5 h-5" />, href: '/seller/products/new' },
+              { name: 'Add Product', icon: <Package className="w-5 h-5" />, href: '/seller/add-product' },
               { name: 'View Orders', icon: <ShoppingCart className="w-5 h-5" />, href: '/seller/orders' },
               { name: 'Analytics', icon: <TrendingUp className="w-5 h-5" />, href: '/seller/analytics' },
               { name: 'Messages', icon: <MessageSquare className="w-5 h-5" />, href: '/seller/messages' },
             ].map((action) => (
               <button
                 key={action.name}
+                onClick={() => router.push(action.href)}
                 className="flex flex-col items-center p-4 rounded-lg border transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
                 style={{ 
                   borderColor: 'var(--border)',

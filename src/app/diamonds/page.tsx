@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Search, Gem, Leaf, Sparkles, Filter } from 'lucide-react'
 import NavigationUser from '@/components/Navigation/NavigationUser'
 import Footer from '@/components/Footer'
@@ -98,16 +98,43 @@ const LOCATIONS = ['New York', 'Antwerp', 'Mumbai', 'Tel Aviv', 'Hong Kong', 'Ba
 
 export default function DiamondsSearchPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
+  
+  // Helper functions defined before they're used
+  // Update carat ranges based on category
+  const getCaratRange = (category: 'single' | 'melee') => {
+    if (category === 'melee') {
+      return { min: 0.001, max: 0.30 }
+    }
+    return { min: 0.30, max: 5.00 }
+  }
+
+  // Update price ranges based on type and category
+  const getPriceRange = (diamondType: 'natural' | 'lab-grown', category: 'single' | 'melee') => {
+    if (category === 'melee') {
+      return diamondType === 'natural' 
+        ? { min: 10, max: 500 }
+        : { min: 5, max: 200 }
+    }
+    return diamondType === 'natural'
+      ? { min: 1000, max: 100000 }
+      : { min: 500, max: 50000 }
+  }
+  
+  // Read URL parameters
+  const urlDiamondType = searchParams.get('diamondType') as 'natural' | 'lab-grown' || 'natural'
+  const urlCategory = searchParams.get('category') as 'single' | 'melee' || 'single'
+  
   const [searchForm, setSearchForm] = useState<DiamondSearchForm>({
-    diamondType: 'natural',
-    category: 'single',
+    diamondType: urlDiamondType,
+    category: urlCategory,
     shape: [],
-    caratWeight: { min: 0.30, max: 5.00 },
+    caratWeight: getCaratRange(urlCategory),
     color: [],
     clarity: [],
     cut: [],
-    priceRange: { min: 1000, max: 100000 },
+    priceRange: getPriceRange(urlDiamondType, urlCategory),
     certification: [],
     fluorescence: [],
     grownMethod: [],
@@ -128,25 +155,22 @@ export default function DiamondsSearchPage() {
     }
   })
 
-  // Update carat ranges based on category
-  const getCaratRange = (category: 'single' | 'melee') => {
-    if (category === 'melee') {
-      return { min: 0.001, max: 0.30 }
+  // Add effect to update state when URL parameters change
+  useEffect(() => {
+    const newDiamondType = searchParams.get('diamondType') as 'natural' | 'lab-grown' || 'natural'
+    const newCategory = searchParams.get('category') as 'single' | 'melee' || 'single'
+    
+    // Only update if values have changed
+    if (newDiamondType !== searchForm.diamondType || newCategory !== searchForm.category) {
+      setSearchForm(prev => ({
+        ...prev,
+        diamondType: newDiamondType,
+        category: newCategory,
+        caratWeight: getCaratRange(newCategory),
+        priceRange: getPriceRange(newDiamondType, newCategory)
+      }))
     }
-    return { min: 0.30, max: 5.00 }
-  }
-
-  // Update price ranges based on type and category
-  const getPriceRange = (diamondType: 'natural' | 'lab-grown', category: 'single' | 'melee') => {
-    if (category === 'melee') {
-      return diamondType === 'natural' 
-        ? { min: 10, max: 500 }
-        : { min: 5, max: 200 }
-    }
-    return diamondType === 'natural'
-      ? { min: 1000, max: 100000 }
-      : { min: 500, max: 50000 }
-  }
+  }, [searchParams, searchForm.diamondType, searchForm.category])
 
   const handleDiamondTypeChange = (type: 'natural' | 'lab-grown') => {
     const newCaratRange = getCaratRange(searchForm.category)
@@ -283,38 +307,35 @@ export default function DiamondsSearchPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       {/* Navigation */}
-      <NavigationUser />
+      <div className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-slate-900/70 shadow-lg">
+        <NavigationUser />
+      </div>
       
-      {/* Hero Section */}
+      {/* Hero Section with Glassmorphism */}
       <div className="relative">
-        <div 
-          className="h-96 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center"
-          style={{ 
-            background: 'linear-gradient(135deg, var(--chart-1), var(--chart-3), var(--chart-5))'
-          }}
-        >
+        <div className="h-96 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center">
           <div className="text-center text-white max-w-4xl mx-auto px-4">
             <div className="flex items-center justify-center mb-6">
               <Gem className="w-16 h-16 mr-4" />
-              <h1 className="text-5xl md:text-6xl font-bold">Find Your Perfect Diamond</h1>
+              <h1 className="text-5xl md:text-6xl font-bold drop-shadow-lg">Find Your Perfect Diamond</h1>
             </div>
             <p className="text-xl md:text-2xl opacity-90 mb-8">
               Search from thousands of certified diamonds with advanced filtering tools
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div>
+              <div className="backdrop-blur-xl bg-white/20 rounded-xl p-4 shadow-lg border border-white/30">
                 <div className="text-3xl font-bold">10,000+</div>
                 <div className="text-sm opacity-80">Certified Diamonds</div>
               </div>
-              <div>
+              <div className="backdrop-blur-xl bg-white/20 rounded-xl p-4 shadow-lg border border-white/30">
                 <div className="text-3xl font-bold">50+</div>
                 <div className="text-sm opacity-80">Trusted Suppliers</div>
               </div>
-              <div>
+              <div className="backdrop-blur-xl bg-white/20 rounded-xl p-4 shadow-lg border border-white/30">
                 <div className="text-3xl font-bold">24/7</div>
                 <div className="text-sm opacity-80">Expert Support</div>
               </div>
-              <div>
+              <div className="backdrop-blur-xl bg-white/20 rounded-xl p-4 shadow-lg border border-white/30">
                 <div className="text-3xl font-bold">100%</div>
                 <div className="text-sm opacity-80">Certified Authentic</div>
               </div>
@@ -325,7 +346,7 @@ export default function DiamondsSearchPage() {
 
       {/* Search Form */}
       <div className="max-w-[1400px] mx-auto px-4 py-12">
-        <div className="bg-white rounded-2xl shadow-2xl border p-8" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+  <div className="bg-white/80 dark:bg-slate-900/80 rounded-2xl shadow-2xl border p-8 backdrop-blur-xl" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
           <div className="flex items-center mb-8">
             <Search className="w-8 h-8 mr-3" style={{ color: 'var(--primary)' }} />
             <h2 className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>Diamond Search</h2>
@@ -341,15 +362,13 @@ export default function DiamondsSearchPage() {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => handleDiamondTypeChange('natural')}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    searchForm.diamondType === 'natural'
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`p-4 rounded-lg border-2 transition-all ${searchForm.diamondType === 'natural' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'} ${searchForm.diamondType === 'natural' ? 'cursor-default' : 'cursor-pointer'}`}
                   style={{
                     backgroundColor: searchForm.diamondType === 'natural' ? 'var(--primary)/10' : 'var(--card)',
-                    borderColor: searchForm.diamondType === 'natural' ? 'var(--primary)' : 'var(--border)'
+                    borderColor: searchForm.diamondType === 'natural' ? 'var(--primary)' : 'var(--border)',
+                    opacity: searchForm.diamondType === 'natural' ? 1 : 0.8
                   }}
+                  disabled={searchForm.diamondType === 'natural'}
                 >
                   <Gem className="w-6 h-6 mx-auto mb-2" style={{ color: 'var(--primary)' }} />
                   <div className="font-medium" style={{ color: 'var(--foreground)' }}>Natural</div>
@@ -357,15 +376,13 @@ export default function DiamondsSearchPage() {
                 </button>
                 <button
                   onClick={() => handleDiamondTypeChange('lab-grown')}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    searchForm.diamondType === 'lab-grown'
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`p-4 rounded-lg border-2 transition-all ${searchForm.diamondType === 'lab-grown' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'} ${searchForm.diamondType === 'lab-grown' ? 'cursor-default' : 'cursor-pointer'}`}
                   style={{
                     backgroundColor: searchForm.diamondType === 'lab-grown' ? 'var(--chart-2)/10' : 'var(--card)',
-                    borderColor: searchForm.diamondType === 'lab-grown' ? 'var(--chart-2)' : 'var(--border)'
+                    borderColor: searchForm.diamondType === 'lab-grown' ? 'var(--chart-2)' : 'var(--border)',
+                    opacity: searchForm.diamondType === 'lab-grown' ? 1 : 0.8
                   }}
+                  disabled={searchForm.diamondType === 'lab-grown'}
                 >
                   <Leaf className="w-6 h-6 mx-auto mb-2" style={{ color: 'var(--chart-2)' }} />
                   <div className="font-medium" style={{ color: 'var(--foreground)' }}>Lab-Grown</div>
@@ -383,15 +400,13 @@ export default function DiamondsSearchPage() {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => handleCategoryChange('single')}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    searchForm.category === 'single'
-                      ? 'border-purple-500 bg-purple-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`p-4 rounded-lg border-2 transition-all ${searchForm.category === 'single' ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-gray-300'} ${searchForm.category === 'single' ? 'cursor-default' : 'cursor-pointer'}`}
                   style={{
                     backgroundColor: searchForm.category === 'single' ? 'var(--chart-3)/10' : 'var(--card)',
-                    borderColor: searchForm.category === 'single' ? 'var(--chart-3)' : 'var(--border)'
+                    borderColor: searchForm.category === 'single' ? 'var(--chart-3)' : 'var(--border)',
+                    opacity: searchForm.category === 'single' ? 1 : 0.8
                   }}
+                  disabled={searchForm.category === 'single'}
                 >
                   <Sparkles className="w-6 h-6 mx-auto mb-2" style={{ color: 'var(--chart-3)' }} />
                   <div className="font-medium" style={{ color: 'var(--foreground)' }}>Single Diamonds</div>
@@ -399,15 +414,13 @@ export default function DiamondsSearchPage() {
                 </button>
                 <button
                   onClick={() => handleCategoryChange('melee')}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    searchForm.category === 'melee'
-                      ? 'border-orange-500 bg-orange-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`p-4 rounded-lg border-2 transition-all ${searchForm.category === 'melee' ? 'border-orange-500 bg-orange-50' : 'border-gray-200 hover:border-gray-300'} ${searchForm.category === 'melee' ? 'cursor-default' : 'cursor-pointer'}`}
                   style={{
                     backgroundColor: searchForm.category === 'melee' ? 'var(--chart-4)/10' : 'var(--card)',
-                    borderColor: searchForm.category === 'melee' ? 'var(--chart-4)' : 'var(--border)'
+                    borderColor: searchForm.category === 'melee' ? 'var(--chart-4)' : 'var(--border)',
+                    opacity: searchForm.category === 'melee' ? 1 : 0.8
                   }}
+                  disabled={searchForm.category === 'melee'}
                 >
                   <div className="w-6 h-6 mx-auto mb-2 grid grid-cols-2 gap-0.5">
                     <div className="w-2 h-2 bg-current rounded-full" style={{ color: 'var(--chart-4)' }}></div>
@@ -1123,17 +1136,17 @@ export default function DiamondsSearchPage() {
           </div>
         </div>
 
-        {/* Quick Search Options */}
+        {/* Quick Search Options with Glassmorphism */}
         <div className="mt-12">
           <h3 className="text-2xl font-bold mb-6 text-center" style={{ color: 'var(--foreground)' }}>
             Popular Searches
           </h3>
-          <div className="grid md:grid-cols-4 gap-4">
-            {[
-              { type: 'natural', category: 'single', label: 'Engagement Rings', subtitle: '1-2 Carat Natural' },
-              { type: 'lab-grown', category: 'single', label: 'Eco-Friendly', subtitle: 'Lab-Grown Singles' },
-              { type: 'natural', category: 'melee', label: 'Luxury Settings', subtitle: 'Natural Melee' },
-              { type: 'lab-grown', category: 'melee', label: 'Sustainable Choice', subtitle: 'Lab-Grown Melee' }
+          <div className="grid md:grid-cols-4 gap-6">
+            {[{
+              type: 'natural', category: 'single', label: 'Engagement Rings', subtitle: '1-2 Carat Natural', icon: <Sparkles className="w-8 h-8 text-blue-500 mb-2" /> },
+              { type: 'lab-grown', category: 'single', label: 'Eco-Friendly', subtitle: 'Lab-Grown Singles', icon: <Leaf className="w-8 h-8 text-green-500 mb-2" /> },
+              { type: 'natural', category: 'melee', label: 'Luxury Settings', subtitle: 'Natural Melee', icon: <Gem className="w-8 h-8 text-purple-500 mb-2" /> },
+              { type: 'lab-grown', category: 'melee', label: 'Sustainable Choice', subtitle: 'Lab-Grown Melee', icon: <Leaf className="w-8 h-8 text-green-500 mb-2" /> }
             ].map((option, index) => (
               <button
                 key={index}
@@ -1145,9 +1158,10 @@ export default function DiamondsSearchPage() {
                   }))
                   setTimeout(handleSearch, 100)
                 }}
-                className="p-6 border rounded-xl hover:shadow-lg transition-all text-left"
-                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+                className="p-6 border rounded-xl hover:shadow-2xl transition-all text-left bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex flex-col items-start gap-2"
+                style={{ borderColor: 'var(--border)' }}
               >
+                {option.icon}
                 <div className="font-medium mb-1" style={{ color: 'var(--foreground)' }}>{option.label}</div>
                 <div className="text-sm" style={{ color: 'var(--muted-foreground)' }}>{option.subtitle}</div>
               </button>

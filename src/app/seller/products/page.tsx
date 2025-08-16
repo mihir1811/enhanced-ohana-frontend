@@ -1,11 +1,14 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useLoading } from '@/hooks/useLoading'
 import { PageLoader } from '@/components/seller/Loader'
+import { useSelector } from 'react-redux'
 
 export default function SellerProductsPage() {
   const { setPageLoading, isPageLoading } = useLoading()
+  const router = useRouter()
   const isLoading = isPageLoading('products')
 
   useEffect(() => {
@@ -18,6 +21,10 @@ export default function SellerProductsPage() {
 
     return () => clearTimeout(timer)
   }, []) // Empty dependency array - only run once on mount
+
+  const handleAddProduct = () => {
+    router.push('/seller/add-product')
+  }
 
   if (isLoading) {
     return <PageLoader />
@@ -41,7 +48,8 @@ export default function SellerProductsPage() {
           </p>
         </div>
         <button 
-          className="px-4 py-2 rounded-lg font-medium transition-colors"
+          onClick={handleAddProduct}
+          className="px-4 py-2 rounded-lg font-medium transition-colors hover:opacity-90"
           style={{ 
             backgroundColor: 'var(--primary)',
             color: 'var(--primary-foreground)'
