@@ -62,25 +62,28 @@ export default function SellerHeader({ setSidebarOpen }: SellerHeaderProps) {
 
         <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
           {/* Search */}
-          <form className="relative flex flex-1" action="#" method="GET">
+          <form className="relative flex flex-1 justify-between w-full items-center" action="#" method="GET">
             <label htmlFor="search-field" className="sr-only">
               Search
             </label>
-            <Search 
-              className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 pl-3"
-              style={{ color: 'var(--muted-foreground)' }}
-            />
-            <input
-              id="search-field"
-              className="block h-full w-full border-0 py-0 pl-11 pr-0 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
-              placeholder="Search products, orders..."
-              type="search"
-              name="search"
-              style={{ 
-                backgroundColor: 'transparent',
-                color: 'var(--foreground)'
-              }}
-            />
+            <div className="relative max-w-2xl">
+              <Search 
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4"
+                style={{ color: 'var(--muted-foreground)' }}
+              />
+              <input
+                id="search-field"
+                className="block w-full pl-10 pr-3 py-2 rounded-full border border-gray-200 bg-white dark:bg-[#23272f] shadow-sm placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary text-sm transition hover:border-gray-400"
+                placeholder="Search products, orders..."
+                type="search"
+                name="search"
+                style={{
+                  color: 'var(--foreground)',
+                  borderColor: 'var(--border)',
+                  backgroundColor: 'var(--input, #fff)'
+                }}
+              />
+            </div>
           </form>
           
           <div className="flex items-center gap-x-4 lg:gap-x-6">
