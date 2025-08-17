@@ -23,29 +23,49 @@ interface BaseUser {
 }
 
 // Seller-specific additional data
-interface SellerData {
-  businessName: string
-  businessRegistration: string
-  taxId?: string
-  businessAddress: {
-    street: string
-    city: string
-    state: string
-    zipCode: string
-    country: string
-  }
-  certifications: string[]
-  isVerifiedSeller: boolean
-  sellerRating: number
-  totalSales: number
-  joinedAsSellerDate: string
-  businessDescription?: string
-  website?: string
-  specializations: string[] // e.g., ['diamonds', 'gemstones', 'jewelry']
+// export interface SellerData {
+//   businessName: string
+//   businessRegistration: string
+//   taxId?: string
+//   businessAddress: {
+//     street: string
+//     city: string
+//     state: string
+//     zipCode: string
+//     country: string
+//   }
+//   certifications: string[]
+//   isVerifiedSeller: boolean
+//   sellerRating: number
+//   totalSales: number
+//   joinedAsSellerDate: string
+//   businessDescription?: string
+//   website?: string
+//   specializations: string[] // e.g., ['diamonds', 'gemstones', 'jewelry']
+// }
+export interface SellerData {
+    addressLine1: string
+  addressLine2: string
+  city: string
+  companyLogo: string
+  companyName: string
+  country: string
+  createdAt: string
+  gstNumber: string
+  id: string
+  isBlocked: boolean
+  isDeleted: boolean
+  isVerified: boolean
+  panCard: string
+  sellerType: string
+  state: string
+  updatedAt: string
+  userId: string
+  zipCode: string
 }
 
 // Combined User type that includes seller data when role is 'seller'
-interface User extends BaseUser {
+export interface User extends BaseUser {
   role: 'user' | 'seller' | 'admin'
   // Seller data is only present when role is 'seller'
   sellerData?: SellerData
@@ -267,4 +287,4 @@ export const {
 export default authSlice.reducer
 
 // Type exports for use in components
-export type { User, BaseUser, SellerData }
+// ...existing code...

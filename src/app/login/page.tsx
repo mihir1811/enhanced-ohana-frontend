@@ -3,12 +3,15 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDispatch } from 'react-redux'
+import { useAppDispatch } from '@/store/hooks'
+import { fetchSellerInfo } from '@/features/seller/sellerSlice'
 import Link from 'next/link'
 import { setCredentials } from '../../features/auth/authSlice'
 
 export default function LoginPage() {
   const router = useRouter()
   const dispatch = useDispatch()
+  const appDispatch = useAppDispatch()
   
   const [formData, setFormData] = useState({
     userName: '',
@@ -46,6 +49,12 @@ export default function LoginPage() {
 
         // Save to Redux store
         dispatch(setCredentials({ user, token: accessToken }))
+
+
+        // If seller, fetch and store seller profile in sellerSlice
+        if (user.role === 'seller') {
+          appDispatch(fetchSellerInfo(result?.data?.sellerId))
+        }
 
         // Save cookies for middleware
         document.cookie = `role=${user.role}; path=/`
