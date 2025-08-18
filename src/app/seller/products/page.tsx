@@ -1,10 +1,12 @@
 'use client'
 
+
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLoading } from '@/hooks/useLoading'
 import { PageLoader } from '@/components/seller/Loader'
 import { useSelector } from 'react-redux'
+import { RootState } from '@/store'
 
 export default function SellerProductsPage() {
   const { setPageLoading, isPageLoading } = useLoading()
@@ -13,7 +15,7 @@ export default function SellerProductsPage() {
 
   useEffect(() => {
     setPageLoading('products', true)
-    
+
     // Simulate loading products data
     const timer = setTimeout(() => {
       setPageLoading('products', false)
@@ -22,63 +24,71 @@ export default function SellerProductsPage() {
     return () => clearTimeout(timer)
   }, []) // Empty dependency array - only run once on mount
 
+
+  // Get sellerType from redux state
+  const sellerType = useSelector((state: RootState) => state.seller.profile?.sellerType)
+
   const handleAddProduct = () => {
     router.push('/seller/add-product')
   }
 
+  console.log(sellerType, "Efwefwefwefwefawefwe")
+
   if (isLoading) {
     return <PageLoader />
   }
+  function getListingComponent(sellerType?: string) {
+    switch (sellerType) {
+      case 'naturalDiamond':
+        return <h1>diamond list</h1>
+      case 'gemstone':
+        return <h1>gemstone list</h1>
+      case 'jewelry':
+        return <h1>jewelry list</h1>
+      default:
+        return (
+          <div className="rounded-xl border p-8 text-center">
+            <h3 className="text-xl font-semibold mb-2">Products Page</h3>
+            <p className="text-base">No seller type found.</p>
+          </div>
+        )
+    }
+  }
+
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        {/* Title + Description */}
         <div>
-          <h1 
-            className="text-3xl font-bold tracking-tight"
-            style={{ color: 'var(--foreground)' }}
-          >
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             Products
           </h1>
-          <p 
-            className="mt-2 text-lg"
-            style={{ color: 'var(--muted-foreground)' }}
-          >
+          <p className="mt-1 text-sm sm:text-base text-muted-foreground">
             Manage your product catalog and inventory.
           </p>
         </div>
-        <button 
+
+        {/* Button */}
+        <button
           onClick={handleAddProduct}
-          className="px-4 py-2 rounded-lg font-medium transition-colors hover:opacity-90"
-          style={{ 
-            backgroundColor: 'var(--primary)',
-            color: 'var(--primary-foreground)'
-          }}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium shadow-sm 
+               bg-primary text-primary-foreground hover:bg-primary/90 transition"
         >
-          Add New Product
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          Add Product
         </button>
       </div>
-
-      <div 
-        className="rounded-xl border p-8 text-center"
-        style={{ 
-          backgroundColor: 'var(--card)',
-          borderColor: 'var(--border)'
-        }}
-      >
-        <h3 
-          className="text-xl font-semibold mb-2"
-          style={{ color: 'var(--card-foreground)' }}
-        >
-          Products Page
-        </h3>
-        <p 
-          className="text-base"
-          style={{ color: 'var(--muted-foreground)' }}
-        >
-          Product management functionality will be implemented here.
-        </p>
-      </div>
+      {isLoading ? <PageLoader /> : getListingComponent(sellerType)}
     </div>
   )
 }
