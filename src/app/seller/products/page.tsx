@@ -88,7 +88,21 @@ export default function SellerProductsPage() {
           Add Product
         </button>
       </div>
-      {isLoading ? <PageLoader /> : getListingComponent(sellerType)}
+{isLoading ? (
+  <PageLoader />
+) : 1 > 0 ? (
+  getListingComponent(sellerType)
+) : (
+  <div className="rounded-xl border p-8 text-center" 
+       style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+    <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--card-foreground)' }}>
+      No Products Found
+    </h3>
+    <p className="text-base" style={{ color: 'var(--muted-foreground)' }}>
+      You haven’t added any products yet. Click "Add New Product" to get started.
+    </p>
+  </div>
+)}
     </div>
   )
 }

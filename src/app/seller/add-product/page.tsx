@@ -2,29 +2,21 @@
 
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-
-// Placeholder forms for each seller type
-function DiamondAddProductForm() {
-  return <div>Diamond Add Product Form</div>;
-}
-function GemstoneAddProductForm() {
-  return <div>Gemstone Add Product Form</div>;
-}
-function JewelryAddProductForm() {
-  return <div>Jewelry Add Product Form</div>;
-}
+import AddDiamondForm from '@/components/seller/addProductForms/AddDiamondForm';
+import AddGemstoneForm from '@/components/seller/addProductForms/AddGemstoneForm';
+import AddJewelryForm from '@/components/seller/addProductForms/AddJewelryForm';
 
 // Helper function to get correct form
 function renderAddProductForm(sellerType?: string) {
   switch (sellerType) {
     case 'naturalDiamond':
-      return <DiamondAddProductForm />;
+      return <AddDiamondForm />;
     case 'labGrownDiamond':
-      return <DiamondAddProductForm />;
+      return <AddDiamondForm />;
     case 'gemstone':
-      return <GemstoneAddProductForm />;
+      return <AddGemstoneForm />;
     case 'jewellery':
-      return <JewelryAddProductForm />;
+      return <AddJewelryForm />;
     default:
       return (
         <div className="text-red-500 font-medium">
