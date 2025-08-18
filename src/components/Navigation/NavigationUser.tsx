@@ -673,10 +673,10 @@ export default function NavigationUser() {
 
                     {isDropdownOpen && (
                       <div
-                        className="fixed w-64 bg-white dark:bg-slate-900 rounded-2xl border shadow-2xl z-[9999] dropdown-enter"
+                        className="absolute w-64 bg-white dark:bg-slate-900 rounded-2xl border shadow-2xl z-[9999] dropdown-enter"
                         style={{
-                          top: `${dropdownPosition.top}px`,
-                          right: `${dropdownPosition.right}px`,
+                          top: 'calc(100% + 8px)',
+                          right: 0,
                           backgroundColor: 'var(--popover)',
                           borderColor: 'var(--border)',
                           borderRadius: 'var(--radius-xl)',
