@@ -19,7 +19,7 @@ interface DiamondSearchForm {
   certification: string[]
   fluorescence: string[]
   grownMethod: string[] // Added for lab-grown diamonds
-  
+
   // Advanced filters (like RapNet/VDB)
   polish: string[]
   symmetry: string[]
@@ -100,7 +100,7 @@ export default function DiamondsSearchPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
-  
+
   // Helper functions defined before they're used
   // Update carat ranges based on category
   const getCaratRange = (category: 'single' | 'melee') => {
@@ -113,7 +113,7 @@ export default function DiamondsSearchPage() {
   // Update price ranges based on type and category
   const getPriceRange = (diamondType: 'natural' | 'lab-grown', category: 'single' | 'melee') => {
     if (category === 'melee') {
-      return diamondType === 'natural' 
+      return diamondType === 'natural'
         ? { min: 10, max: 500 }
         : { min: 5, max: 200 }
     }
@@ -121,11 +121,11 @@ export default function DiamondsSearchPage() {
       ? { min: 1000, max: 100000 }
       : { min: 500, max: 50000 }
   }
-  
+
   // Read URL parameters
   const urlDiamondType = searchParams.get('diamondType') as 'natural' | 'lab-grown' || 'natural'
   const urlCategory = searchParams.get('category') as 'single' | 'melee' || 'single'
-  
+
   const [searchForm, setSearchForm] = useState<DiamondSearchForm>({
     diamondType: urlDiamondType,
     category: urlCategory,
@@ -138,7 +138,7 @@ export default function DiamondsSearchPage() {
     certification: [],
     fluorescence: [],
     grownMethod: [],
-    
+
     // Advanced filters
     polish: [],
     symmetry: [],
@@ -159,7 +159,7 @@ export default function DiamondsSearchPage() {
   useEffect(() => {
     const newDiamondType = searchParams.get('diamondType') as 'natural' | 'lab-grown' || 'natural'
     const newCategory = searchParams.get('category') as 'single' | 'melee' || 'single'
-    
+
     // Only update if values have changed
     if (newDiamondType !== searchForm.diamondType || newCategory !== searchForm.category) {
       setSearchForm(prev => ({
@@ -175,7 +175,7 @@ export default function DiamondsSearchPage() {
   const handleDiamondTypeChange = (type: 'natural' | 'lab-grown') => {
     const newCaratRange = getCaratRange(searchForm.category)
     const newPriceRange = getPriceRange(type, searchForm.category)
-    
+
     setSearchForm(prev => ({
       ...prev,
       diamondType: type,
@@ -187,7 +187,7 @@ export default function DiamondsSearchPage() {
   const handleCategoryChange = (category: 'single' | 'melee') => {
     const newCaratRange = getCaratRange(category)
     const newPriceRange = getPriceRange(searchForm.diamondType, category)
-    
+
     setSearchForm(prev => ({
       ...prev,
       category,
@@ -231,7 +231,7 @@ export default function DiamondsSearchPage() {
   const handleSearch = () => {
     // Build query parameters
     const params = new URLSearchParams()
-    
+
     // Add basic filter parameters
     if (searchForm.shape.length > 0) params.set('shape', searchForm.shape.join(','))
     if (searchForm.color.length > 0) params.set('color', searchForm.color.join(','))
@@ -240,14 +240,14 @@ export default function DiamondsSearchPage() {
     if (searchForm.certification.length > 0) params.set('certification', searchForm.certification.join(','))
     if (searchForm.fluorescence.length > 0) params.set('fluorescence', searchForm.fluorescence.join(','))
     if (searchForm.grownMethod.length > 0) params.set('grownMethod', searchForm.grownMethod.join(','))
-    
+
     // Add advanced filter parameters
     if (searchForm.polish.length > 0) params.set('polish', searchForm.polish.join(','))
     if (searchForm.symmetry.length > 0) params.set('symmetry', searchForm.symmetry.join(','))
     if (searchForm.girdle.length > 0) params.set('girdle', searchForm.girdle.join(','))
     if (searchForm.culet.length > 0) params.set('culet', searchForm.culet.join(','))
     if (searchForm.location.length > 0) params.set('location', searchForm.location.join(','))
-    
+
     // Add range parameters
     params.set('caratMin', searchForm.caratWeight.min.toString())
     params.set('caratMax', searchForm.caratWeight.max.toString())
@@ -259,7 +259,7 @@ export default function DiamondsSearchPage() {
     params.set('depthMax', searchForm.depthPercent.max.toString())
     params.set('pricePerCaratMin', searchForm.pricePerCarat.min.toString())
     params.set('pricePerCaratMax', searchForm.pricePerCarat.max.toString())
-    
+
     // Add measurement parameters
     params.set('lengthMin', searchForm.measurements.length.min.toString())
     params.set('lengthMax', searchForm.measurements.length.max.toString())
@@ -276,7 +276,7 @@ export default function DiamondsSearchPage() {
   const resetFilters = () => {
     const newCaratRange = getCaratRange(searchForm.category)
     const newPriceRange = getPriceRange(searchForm.diamondType, searchForm.category)
-    
+
     setSearchForm({
       ...searchForm,
       shape: [],
@@ -310,7 +310,7 @@ export default function DiamondsSearchPage() {
       <div className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-slate-900/70 shadow-lg">
         <NavigationUser />
       </div>
-      
+
       {/* Hero Section with Glassmorphism */}
       <div className="relative">
         <div className="h-96 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center">
@@ -346,7 +346,7 @@ export default function DiamondsSearchPage() {
 
       {/* Search Form */}
       <div className="max-w-[1400px] mx-auto px-4 py-12">
-  <div className="bg-white/80 dark:bg-slate-900/80 rounded-2xl shadow-2xl border p-8 backdrop-blur-xl" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+        <div className="bg-white/80 dark:bg-slate-900/80 rounded-2xl shadow-sm border p-8 backdrop-blur-xl relative" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
           <div className="flex items-center mb-8">
             <Search className="w-8 h-8 mr-3" style={{ color: 'var(--primary)' }} />
             <h2 className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>Diamond Search</h2>
@@ -436,37 +436,36 @@ export default function DiamondsSearchPage() {
           </div>
 
 
-            {/* Growth Method - Only for Lab-Grown */}
-            {searchForm.diamondType === 'lab-grown' && (
-              <div className='mb-4'>
-                <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
-                  Growth Method (CVD / HPHT)
-                </label>
-                <div className="grid grid-cols-2 gap-4">
-                  {GROWTH_METHODS.map(method => (
-                    <button
-                      key={method}
-                      onClick={() => handleMultiSelect('grownMethod', method)}
-                      className={`p-4 rounded-lg border-2 text-sm font-medium transition-all ${
-                        searchForm.grownMethod.includes(method)
-                          ? 'border-green-500 bg-green-50 text-green-700'
-                          : 'border-gray-200 hover:border-gray-300'
+          {/* Growth Method - Only for Lab-Grown */}
+          {searchForm.diamondType === 'lab-grown' && (
+            <div className='mb-4'>
+              <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
+                Growth Method (CVD / HPHT)
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                {GROWTH_METHODS.map(method => (
+                  <button
+                    key={method}
+                    onClick={() => handleMultiSelect('grownMethod', method)}
+                    className={`p-4 rounded-lg border-2 text-sm font-medium transition-all ${searchForm.grownMethod.includes(method)
+                        ? 'border-green-500 bg-green-50 text-green-700'
+                        : 'border-gray-200 hover:border-gray-300'
                       }`}
-                      style={{
-                        backgroundColor: searchForm.grownMethod.includes(method) ? 'var(--chart-2)/10' : 'var(--card)',
-                        borderColor: searchForm.grownMethod.includes(method) ? 'var(--chart-2)' : 'var(--border)',
-                        color: searchForm.grownMethod.includes(method) ? 'var(--chart-2)' : 'var(--foreground)'
-                      }}
-                    >
-                      <div className="font-bold text-lg mb-1">{method}</div>
-                      <div className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                        {method === 'CVD' ? 'Chemical Vapor Deposition' : 'High Pressure High Temperature'}
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                    style={{
+                      backgroundColor: searchForm.grownMethod.includes(method) ? 'var(--chart-2)/10' : 'var(--card)',
+                      borderColor: searchForm.grownMethod.includes(method) ? 'var(--chart-2)' : 'var(--border)',
+                      color: searchForm.grownMethod.includes(method) ? 'var(--chart-2)' : 'var(--foreground)'
+                    }}
+                  >
+                    <div className="font-bold text-lg mb-1">{method}</div>
+                    <div className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                      {method === 'CVD' ? 'Chemical Vapor Deposition' : 'High Pressure High Temperature'}
+                    </div>
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
+          )}
 
           {/* Basic Filters */}
           <div className="space-y-6">
@@ -480,11 +479,10 @@ export default function DiamondsSearchPage() {
                   <button
                     key={shape}
                     onClick={() => handleMultiSelect('shape', shape)}
-                    className={`p-3 rounded-lg border text-sm transition-all ${
-                      searchForm.shape.includes(shape)
+                    className={`p-3 rounded-lg border text-sm transition-all ${searchForm.shape.includes(shape)
                         ? 'border-blue-500 bg-blue-50 text-blue-700'
                         : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                      }`}
                     style={{
                       backgroundColor: searchForm.shape.includes(shape) ? 'var(--primary)/10' : 'var(--card)',
                       borderColor: searchForm.shape.includes(shape) ? 'var(--primary)' : 'var(--border)',
@@ -544,11 +542,10 @@ export default function DiamondsSearchPage() {
                   <button
                     key={color}
                     onClick={() => handleMultiSelect('color', color)}
-                    className={`p-3 rounded-lg border text-sm font-medium transition-all ${
-                      searchForm.color.includes(color)
+                    className={`p-3 rounded-lg border text-sm font-medium transition-all ${searchForm.color.includes(color)
                         ? 'border-blue-500 bg-blue-50 text-blue-700'
                         : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                      }`}
                     style={{
                       backgroundColor: searchForm.color.includes(color) ? 'var(--primary)/10' : 'var(--card)',
                       borderColor: searchForm.color.includes(color) ? 'var(--primary)' : 'var(--border)',
@@ -571,11 +568,10 @@ export default function DiamondsSearchPage() {
                   <button
                     key={clarity}
                     onClick={() => handleMultiSelect('clarity', clarity)}
-                    className={`p-3 rounded-lg border text-sm font-medium transition-all ${
-                      searchForm.clarity.includes(clarity)
+                    className={`p-3 rounded-lg border text-sm font-medium transition-all ${searchForm.clarity.includes(clarity)
                         ? 'border-blue-500 bg-blue-50 text-blue-700'
                         : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                      }`}
                     style={{
                       backgroundColor: searchForm.clarity.includes(clarity) ? 'var(--primary)/10' : 'var(--card)',
                       borderColor: searchForm.clarity.includes(clarity) ? 'var(--primary)' : 'var(--border)',
@@ -598,11 +594,10 @@ export default function DiamondsSearchPage() {
                   <button
                     key={fluorescence}
                     onClick={() => handleMultiSelect('fluorescence', fluorescence)}
-                    className={`p-3 rounded-lg border text-sm font-medium transition-all ${
-                      searchForm.fluorescence.includes(fluorescence)
+                    className={`p-3 rounded-lg border text-sm font-medium transition-all ${searchForm.fluorescence.includes(fluorescence)
                         ? 'border-purple-500 bg-purple-50 text-purple-700'
                         : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                      }`}
                     style={{
                       backgroundColor: searchForm.fluorescence.includes(fluorescence) ? 'var(--chart-3)/10' : 'var(--card)',
                       borderColor: searchForm.fluorescence.includes(fluorescence) ? 'var(--chart-3)' : 'var(--border)',
@@ -652,52 +647,54 @@ export default function DiamondsSearchPage() {
           </div>
 
           {/* Advanced Filters Toggle */}
-          <div className="mt-8 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
-            <button
-              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              className="flex items-center justify-center w-full p-4 rounded-lg border transition-all duration-200 hover:bg-gray-50"
-              style={{ 
-                backgroundColor: 'var(--card)', 
-                borderColor: 'var(--border)',
-                color: 'var(--foreground)'
-              }}
-            >
-              <span className="font-medium mr-2">Advanced Filters</span>
-              <svg 
-                className={`w-5 h-5 transform transition-transform duration-200 ${showAdvancedFilters ? 'rotate-180' : ''}`}
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
+          <div className="mt-2" style={{ borderColor: 'var(--border)' }}>
+            <div className='flex justify-center relative'>
+              <button
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                className="flex items-center justify-center w-[200px] p-2 rounded-full border transition-all duration-200 hover:bg-gray-50 absolute top-[11px]"
+                style={{
+                  backgroundColor: 'var(--card)',
+                  borderColor: 'var(--border)',
+                  color: 'var(--foreground)'
+                }}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+                <span className="font-medium mr-2">Advanced Filters</span>
+                <svg
+                  className={`w-5 h-5 transform transition-transform duration-200 ${showAdvancedFilters ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
 
             {/* Advanced Filters Content */}
             {showAdvancedFilters && (
-              <div className="mt-6 space-y-8 p-8 border-2 rounded-xl shadow-lg" style={{ 
-                backgroundColor: 'var(--card)', 
-                borderColor: 'var(--border)',
-                backgroundImage: 'linear-gradient(135deg, var(--muted)/5, var(--muted)/10)'
+              <div className="mt-[30px] space-y-8 pt-8 rounded-xl" style={{
+                // backgroundColor: 'var(--card)',
+                // borderColor: 'var(--border)',
+                // backgroundImage: 'linear-gradient(135deg, var(--muted)/5, var(--muted)/10)'
               }}>
-                
+
                 {/* Section Header */}
-                <div className="text-center">
+                {/* <div className="text-center">
                   <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>
                     Professional Diamond Specifications
                   </h3>
                   <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                     Industry-standard filters used by professional diamond traders worldwide
                   </p>
-                </div>
+                </div> */}
 
                 {/* Cut Quality Section */}
                 <div className="space-y-6">
                   <div className="flex items-center space-x-3 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--chart-1)' }}></div>
+                    {/* <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--chart-1)' }}></div> */}
                     <h4 className="font-semibold text-lg" style={{ color: 'var(--foreground)' }}>Cut Quality Assessment</h4>
                   </div>
-                  
+
                   <div className="grid md:grid-cols-2 gap-8">
                     <div className="space-y-4">
                       <div className="flex items-center space-x-2">
@@ -711,11 +708,10 @@ export default function DiamondsSearchPage() {
                           <button
                             key={polish}
                             onClick={() => handleMultiSelect('polish', polish)}
-                            className={`p-3 rounded-lg border-2 text-sm font-medium transition-all duration-200 hover:shadow-md ${
-                              searchForm.polish.includes(polish)
+                            className={`p-3 rounded-lg border-2 text-sm font-medium transition-all duration-200 hover:shadow-md ${searchForm.polish.includes(polish)
                                 ? 'transform scale-105'
                                 : 'hover:scale-102'
-                            }`}
+                              }`}
                             style={{
                               backgroundColor: searchForm.polish.includes(polish) ? 'var(--chart-1)/10' : 'var(--card)',
                               borderColor: searchForm.polish.includes(polish) ? 'var(--chart-1)' : 'var(--border)',
@@ -741,11 +737,10 @@ export default function DiamondsSearchPage() {
                           <button
                             key={symmetry}
                             onClick={() => handleMultiSelect('symmetry', symmetry)}
-                            className={`p-3 rounded-lg border-2 text-sm font-medium transition-all duration-200 hover:shadow-md ${
-                              searchForm.symmetry.includes(symmetry)
+                            className={`p-3 rounded-lg border-2 text-sm font-medium transition-all duration-200 hover:shadow-md ${searchForm.symmetry.includes(symmetry)
                                 ? 'transform scale-105'
                                 : 'hover:scale-102'
-                            }`}
+                              }`}
                             style={{
                               backgroundColor: searchForm.symmetry.includes(symmetry) ? 'var(--chart-2)/10' : 'var(--card)',
                               borderColor: searchForm.symmetry.includes(symmetry) ? 'var(--chart-2)' : 'var(--border)',
@@ -764,7 +759,7 @@ export default function DiamondsSearchPage() {
                 {/* Proportions Section */}
                 <div className="space-y-6">
                   <div className="flex items-center space-x-3 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--chart-3)' }}></div>
+                    {/* <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--chart-3)' }}></div> */}
                     <h4 className="font-semibold text-lg" style={{ color: 'var(--foreground)' }}>Proportions & Measurements</h4>
                   </div>
 
@@ -773,9 +768,9 @@ export default function DiamondsSearchPage() {
                       <div className="p-4 rounded-lg border" style={{ backgroundColor: 'var(--muted)/20', borderColor: 'var(--border)' }}>
                         <div className="flex items-center justify-between mb-3">
                           <label className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Table %</label>
-                          <span className="text-sm font-bold px-3 py-1 rounded-full" style={{ 
-                            backgroundColor: 'var(--chart-3)/10', 
-                            color: 'var(--chart-3)' 
+                          <span className="text-sm font-bold px-3 py-1 rounded-full" style={{
+                            backgroundColor: 'var(--chart-3)/10',
+                            color: 'var(--chart-3)'
                           }}>
                             {searchForm.tablePercent.min}% - {searchForm.tablePercent.max}%
                           </span>
@@ -790,9 +785,9 @@ export default function DiamondsSearchPage() {
                               value={searchForm.tablePercent.min}
                               onChange={(e) => handleRangeChange('tablePercent', 'min', parseFloat(e.target.value) || 50)}
                               className="w-full p-3 border-2 rounded-lg font-medium transition-all focus:ring-2 focus:ring-offset-0"
-                              style={{ 
-                                backgroundColor: 'var(--card)', 
-                                borderColor: 'var(--border)', 
+                              style={{
+                                backgroundColor: 'var(--card)',
+                                borderColor: 'var(--border)',
                                 color: 'var(--foreground)',
                                 '--tw-ring-color': 'var(--chart-3)'
                               } as React.CSSProperties}
@@ -807,9 +802,9 @@ export default function DiamondsSearchPage() {
                               value={searchForm.tablePercent.max}
                               onChange={(e) => handleRangeChange('tablePercent', 'max', parseFloat(e.target.value) || 70)}
                               className="w-full p-3 border-2 rounded-lg font-medium transition-all focus:ring-2 focus:ring-offset-0"
-                              style={{ 
-                                backgroundColor: 'var(--card)', 
-                                borderColor: 'var(--border)', 
+                              style={{
+                                backgroundColor: 'var(--card)',
+                                borderColor: 'var(--border)',
                                 color: 'var(--foreground)',
                                 '--tw-ring-color': 'var(--chart-3)'
                               } as React.CSSProperties}
@@ -823,9 +818,9 @@ export default function DiamondsSearchPage() {
                       <div className="p-4 rounded-lg border" style={{ backgroundColor: 'var(--muted)/20', borderColor: 'var(--border)' }}>
                         <div className="flex items-center justify-between mb-3">
                           <label className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Depth %</label>
-                          <span className="text-sm font-bold px-3 py-1 rounded-full" style={{ 
-                            backgroundColor: 'var(--chart-4)/10', 
-                            color: 'var(--chart-4)' 
+                          <span className="text-sm font-bold px-3 py-1 rounded-full" style={{
+                            backgroundColor: 'var(--chart-4)/10',
+                            color: 'var(--chart-4)'
                           }}>
                             {searchForm.depthPercent.min}% - {searchForm.depthPercent.max}%
                           </span>
@@ -840,9 +835,9 @@ export default function DiamondsSearchPage() {
                               value={searchForm.depthPercent.min}
                               onChange={(e) => handleRangeChange('depthPercent', 'min', parseFloat(e.target.value) || 55)}
                               className="w-full p-3 border-2 rounded-lg font-medium transition-all focus:ring-2 focus:ring-offset-0"
-                              style={{ 
-                                backgroundColor: 'var(--card)', 
-                                borderColor: 'var(--border)', 
+                              style={{
+                                backgroundColor: 'var(--card)',
+                                borderColor: 'var(--border)',
                                 color: 'var(--foreground)',
                                 '--tw-ring-color': 'var(--chart-4)'
                               } as React.CSSProperties}
@@ -857,9 +852,9 @@ export default function DiamondsSearchPage() {
                               value={searchForm.depthPercent.max}
                               onChange={(e) => handleRangeChange('depthPercent', 'max', parseFloat(e.target.value) || 75)}
                               className="w-full p-3 border-2 rounded-lg font-medium transition-all focus:ring-2 focus:ring-offset-0"
-                              style={{ 
-                                backgroundColor: 'var(--card)', 
-                                borderColor: 'var(--border)', 
+                              style={{
+                                backgroundColor: 'var(--card)',
+                                borderColor: 'var(--border)',
                                 color: 'var(--foreground)',
                                 '--tw-ring-color': 'var(--chart-4)'
                               } as React.CSSProperties}
@@ -874,7 +869,7 @@ export default function DiamondsSearchPage() {
                 {/* Physical Characteristics Section */}
                 <div className="space-y-6">
                   <div className="flex items-center space-x-3 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--chart-5)' }}></div>
+                    {/* <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--chart-5)' }}></div> */}
                     <h4 className="font-semibold text-lg" style={{ color: 'var(--foreground)' }}>Physical Characteristics</h4>
                   </div>
 
@@ -891,11 +886,10 @@ export default function DiamondsSearchPage() {
                           <button
                             key={girdle}
                             onClick={() => handleMultiSelect('girdle', girdle)}
-                            className={`p-3 rounded-lg border-2 text-xs font-medium transition-all duration-200 hover:shadow-md ${
-                              searchForm.girdle.includes(girdle)
+                            className={`p-3 rounded-lg border-2 text-xs font-medium transition-all duration-200 hover:shadow-md ${searchForm.girdle.includes(girdle)
                                 ? 'transform scale-105'
                                 : 'hover:scale-102'
-                            }`}
+                              }`}
                             style={{
                               backgroundColor: searchForm.girdle.includes(girdle) ? 'var(--chart-5)/10' : 'var(--card)',
                               borderColor: searchForm.girdle.includes(girdle) ? 'var(--chart-5)' : 'var(--border)',
@@ -921,11 +915,10 @@ export default function DiamondsSearchPage() {
                           <button
                             key={culet}
                             onClick={() => handleMultiSelect('culet', culet)}
-                            className={`p-3 rounded-lg border-2 text-xs font-medium transition-all duration-200 hover:shadow-md ${
-                              searchForm.culet.includes(culet)
+                            className={`p-3 rounded-lg border-2 text-xs font-medium transition-all duration-200 hover:shadow-md ${searchForm.culet.includes(culet)
                                 ? 'transform scale-105'
                                 : 'hover:scale-102'
-                            }`}
+                              }`}
                             style={{
                               backgroundColor: searchForm.culet.includes(culet) ? 'var(--primary)/10' : 'var(--card)',
                               borderColor: searchForm.culet.includes(culet) ? 'var(--primary)' : 'var(--border)',
@@ -944,7 +937,7 @@ export default function DiamondsSearchPage() {
                 {/* Market Information Section */}
                 <div className="space-y-6">
                   <div className="flex items-center space-x-3 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--chart-2)' }}></div>
+                    {/* <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--chart-2)' }}></div> */}
                     <h4 className="font-semibold text-lg" style={{ color: 'var(--foreground)' }}>Market Information</h4>
                   </div>
 
@@ -961,11 +954,10 @@ export default function DiamondsSearchPage() {
                         <button
                           key={location}
                           onClick={() => handleMultiSelect('location', location)}
-                          className={`p-3 rounded-lg border-2 text-xs font-medium transition-all duration-200 hover:shadow-md ${
-                            searchForm.location.includes(location)
+                          className={`p-3 rounded-lg border-2 text-xs font-medium transition-all duration-200 hover:shadow-md ${searchForm.location.includes(location)
                               ? 'transform scale-105'
                               : 'hover:scale-102'
-                          }`}
+                            }`}
                           style={{
                             backgroundColor: searchForm.location.includes(location) ? 'var(--chart-2)/10' : 'var(--card)',
                             borderColor: searchForm.location.includes(location) ? 'var(--chart-2)' : 'var(--border)',
@@ -984,9 +976,9 @@ export default function DiamondsSearchPage() {
                     <div className="p-4 rounded-lg border" style={{ backgroundColor: 'var(--muted)/20', borderColor: 'var(--border)' }}>
                       <div className="flex items-center justify-between mb-3">
                         <label className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Price Per Carat</label>
-                        <span className="text-sm font-bold px-3 py-1 rounded-full" style={{ 
-                          backgroundColor: 'var(--chart-2)/10', 
-                          color: 'var(--chart-2)' 
+                        <span className="text-sm font-bold px-3 py-1 rounded-full" style={{
+                          backgroundColor: 'var(--chart-2)/10',
+                          color: 'var(--chart-2)'
                         }}>
                           ${searchForm.pricePerCarat.min.toLocaleString()} - ${searchForm.pricePerCarat.max.toLocaleString()}
                         </span>
@@ -999,9 +991,9 @@ export default function DiamondsSearchPage() {
                             value={searchForm.pricePerCarat.min}
                             onChange={(e) => handleRangeChange('pricePerCarat', 'min', parseInt(e.target.value) || 500)}
                             className="w-full p-3 border-2 rounded-lg font-medium transition-all focus:ring-2 focus:ring-offset-0"
-                            style={{ 
-                              backgroundColor: 'var(--card)', 
-                              borderColor: 'var(--border)', 
+                            style={{
+                              backgroundColor: 'var(--card)',
+                              borderColor: 'var(--border)',
                               color: 'var(--foreground)',
                               '--tw-ring-color': 'var(--chart-2)'
                             } as React.CSSProperties}
@@ -1014,9 +1006,9 @@ export default function DiamondsSearchPage() {
                             value={searchForm.pricePerCarat.max}
                             onChange={(e) => handleRangeChange('pricePerCarat', 'max', parseInt(e.target.value) || 50000)}
                             className="w-full p-3 border-2 rounded-lg font-medium transition-all focus:ring-2 focus:ring-offset-0"
-                            style={{ 
-                              backgroundColor: 'var(--card)', 
-                              borderColor: 'var(--border)', 
+                            style={{
+                              backgroundColor: 'var(--card)',
+                              borderColor: 'var(--border)',
                               color: 'var(--foreground)',
                               '--tw-ring-color': 'var(--chart-2)'
                             } as React.CSSProperties}
@@ -1030,7 +1022,7 @@ export default function DiamondsSearchPage() {
                 {/* Measurements Section */}
                 <div className="space-y-6">
                   <div className="flex items-center space-x-3 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--chart-4)' }}></div>
+                    {/* <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--chart-4)' }}></div> */}
                     <h4 className="font-semibold text-lg" style={{ color: 'var(--foreground)' }}>Precise Measurements</h4>
                   </div>
 
@@ -1058,9 +1050,9 @@ export default function DiamondsSearchPage() {
                                 value={searchForm.measurements[key].min}
                                 onChange={(e) => handleMeasurementChange(key, 'min', parseFloat(e.target.value) || 0)}
                                 className="w-full p-2 border rounded-lg text-sm font-medium transition-all focus:ring-2 focus:ring-offset-0"
-                                style={{ 
-                                  backgroundColor: 'var(--card)', 
-                                  borderColor: 'var(--border)', 
+                                style={{
+                                  backgroundColor: 'var(--card)',
+                                  borderColor: 'var(--border)',
                                   color: 'var(--foreground)',
                                   '--tw-ring-color': color
                                 } as React.CSSProperties}
@@ -1075,9 +1067,9 @@ export default function DiamondsSearchPage() {
                                 value={searchForm.measurements[key].max}
                                 onChange={(e) => handleMeasurementChange(key, 'max', parseFloat(e.target.value) || (key === 'depth' ? 15 : 20))}
                                 className="w-full p-2 border rounded-lg text-sm font-medium transition-all focus:ring-2 focus:ring-offset-0"
-                                style={{ 
-                                  backgroundColor: 'var(--card)', 
-                                  borderColor: 'var(--border)', 
+                                style={{
+                                  backgroundColor: 'var(--card)',
+                                  borderColor: 'var(--border)',
                                   color: 'var(--foreground)',
                                   '--tw-ring-color': color
                                 } as React.CSSProperties}
@@ -1091,8 +1083,8 @@ export default function DiamondsSearchPage() {
                 </div>
 
                 {/* Professional Tip */}
-                <div className="p-6 rounded-xl border-2 border-dashed" style={{ 
-                  backgroundColor: 'var(--primary)/5', 
+                <div className="p-6 rounded-xl border-2 border-dashed" style={{
+                  backgroundColor: 'var(--primary)/5',
                   borderColor: 'var(--primary)/30'
                 }}>
                   <div className="flex items-start space-x-4">
@@ -1104,7 +1096,7 @@ export default function DiamondsSearchPage() {
                     <div>
                       <h5 className="font-semibold mb-1" style={{ color: 'var(--primary)' }}>Professional Tip</h5>
                       <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-                        These advanced filters match the specifications used by major diamond trading platforms like RapNet and VDB. 
+                        These advanced filters match the specifications used by major diamond trading platforms like RapNet and VDB.
                         Use Polish and Symmetry grades to ensure optimal light performance, and Table/Depth percentages for precise proportions.
                       </p>
                     </div>
@@ -1115,25 +1107,26 @@ export default function DiamondsSearchPage() {
             )}
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col md:flex-row gap-4 mt-8 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
-            <button
-              onClick={handleSearch}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-medium text-lg transition-colors flex items-center justify-center"
-              style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-            >
-              <Search className="w-5 h-5 mr-2" />
-              Find Diamonds
-            </button>
-            <button
-              onClick={resetFilters}
-              className="md:w-auto px-8 py-4 border rounded-lg font-medium transition-colors flex items-center justify-center"
-              style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
-            >
-              <Filter className="w-5 h-5 mr-2" />
-              Reset Filters
-            </button>
-          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col md:flex-row gap-4 mt-8 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
+          <button
+            onClick={handleSearch}
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-medium text-lg transition-colors flex items-center justify-center"
+            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+          >
+            <Search className="w-5 h-5 mr-2" />
+            Find Diamonds
+          </button>
+          <button
+            onClick={resetFilters}
+            className="md:w-auto px-8 py-4 border rounded-lg font-medium transition-colors flex items-center justify-center"
+            style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+          >
+            <Filter className="w-5 h-5 mr-2" />
+            Reset Filters
+          </button>
         </div>
 
         {/* Quick Search Options with Glassmorphism */}
@@ -1143,10 +1136,11 @@ export default function DiamondsSearchPage() {
           </h3>
           <div className="grid md:grid-cols-4 gap-6">
             {[{
-              type: 'natural', category: 'single', label: 'Engagement Rings', subtitle: '1-2 Carat Natural', icon: <Sparkles className="w-8 h-8 text-blue-500 mb-2" /> },
-              { type: 'lab-grown', category: 'single', label: 'Eco-Friendly', subtitle: 'Lab-Grown Singles', icon: <Leaf className="w-8 h-8 text-green-500 mb-2" /> },
-              { type: 'natural', category: 'melee', label: 'Luxury Settings', subtitle: 'Natural Melee', icon: <Gem className="w-8 h-8 text-purple-500 mb-2" /> },
-              { type: 'lab-grown', category: 'melee', label: 'Sustainable Choice', subtitle: 'Lab-Grown Melee', icon: <Leaf className="w-8 h-8 text-green-500 mb-2" /> }
+              type: 'natural', category: 'single', label: 'Engagement Rings', subtitle: '1-2 Carat Natural', icon: <Sparkles className="w-8 h-8 text-blue-500 mb-2" />
+            },
+            { type: 'lab-grown', category: 'single', label: 'Eco-Friendly', subtitle: 'Lab-Grown Singles', icon: <Leaf className="w-8 h-8 text-green-500 mb-2" /> },
+            { type: 'natural', category: 'melee', label: 'Luxury Settings', subtitle: 'Natural Melee', icon: <Gem className="w-8 h-8 text-purple-500 mb-2" /> },
+            { type: 'lab-grown', category: 'melee', label: 'Sustainable Choice', subtitle: 'Lab-Grown Melee', icon: <Leaf className="w-8 h-8 text-green-500 mb-2" /> }
             ].map((option, index) => (
               <button
                 key={index}
