@@ -42,7 +42,7 @@ export default function SellerHeader({ setSidebarOpen }: SellerHeaderProps) {
         borderColor: 'var(--border)'
       }}
     >
-      <div className="flex h-16 items-center gap-x-4 px-4 sm:gap-x-6 sm:px-6 lg:px-8">
+      <div className="flex h-16 items-center gap-x-4 px-4 sm:gap-x-6 sm:px-6 lg:px-6">
         {/* Mobile menu button */}
         <button
           type="button"
