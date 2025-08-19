@@ -4,6 +4,7 @@ import "./globals.css";
 import { AppProviders } from "../provider";
 import ConditionalNavigation from "../components";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,6 +29,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AppProviders>
+            <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
             {children}
           </AppProviders>
         </ThemeProvider>

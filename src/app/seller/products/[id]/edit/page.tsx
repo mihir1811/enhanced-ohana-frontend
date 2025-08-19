@@ -1,0 +1,56 @@
+"use client";
+
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { diamondService } from "@/services/diamondService";
+import EditDiamondForm from "@/components/seller/editDiamondForms/EditDiamondForm";
+// import EditGemstoneForm from "@/components/seller/editGemstoneForms/EditGemstoneForm";
+// import EditJewelryForm from "@/components/seller/editJewelryForms/EditJewelryForm";
+import { useAppSelector } from '@/store/hooks';
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
+
+export default function EditProductPage() {
+  const { id } = useParams();
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+    const sellerType = useSelector(
+    (state: RootState) => state.seller.profile?.sellerType
+  );
+
+
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    diamondService.getDiamondById(id as string)
+      .then((res) => setProduct(res?.data || null))
+      .catch((err) => setError(err.message || "Failed to fetch product"))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) return <div className="py-10 text-center">Loading...</div>;
+  if (error) return <div className="py-10 text-center text-red-600">{error}</div>;
+  if (!product) return <div className="py-10 text-center">Product not found.</div>;
+
+  function renderEditForm() {
+    switch (sellerType) {
+      case 'naturalDiamond':
+      case 'labGrownDiamond':
+        return <EditDiamondForm initialData={product} />;
+      case 'gemstone':
+        return <h1>edit gemstones</h1>;
+      case 'jewellery':
+        return <h1>edit jewellery</h1>;
+      default:
+        return <div className="text-red-500 font-medium">Please complete your seller profile to edit products.</div>;
+    }
+  }
+
+  return (
+    <div className="w-full mx-auto py-2">
+      {/* <h1 className="text-3xl font-bold mb-8 text-gray-800">Edit Product</h1> */}
+      {renderEditForm()}
+    </div>
+  );
+}

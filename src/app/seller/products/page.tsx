@@ -7,6 +7,7 @@ import { useLoading } from '@/hooks/useLoading'
 import { PageLoader } from '@/components/seller/Loader'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
+import DiamondsListing from '@/components/seller/productListings/DiamondsListing'
 
 export default function SellerProductsPage() {
   const { setPageLoading, isPageLoading } = useLoading()
@@ -40,7 +41,7 @@ export default function SellerProductsPage() {
   function getListingComponent(sellerType?: string) {
     switch (sellerType) {
       case 'naturalDiamond':
-        return <h1>diamond list</h1>
+        return <DiamondsListing />
       case 'gemstone':
         return <h1>gemstone list</h1>
       case 'jewelry':
