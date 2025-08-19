@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import BulkUploadModal from './BulkUploadModal';
+import { toast } from 'react-hot-toast';
 import { diamondService } from '@/services/diamondService';
 import DiamondProductCard, { DiamondProduct } from './DiamondProductCard';
 
@@ -10,6 +12,12 @@ const DiamondsListing = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
+  const [bulkModalOpen, setBulkModalOpen] = useState(false);
+  const handleBulkFileSelect = (file: File) => {
+    // TODO: Implement actual upload logic (API call or client-side parse)
+    toast.success(`Selected file: ${file.name}`);
+    setBulkModalOpen(false);
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -52,8 +60,20 @@ const DiamondsListing = () => {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">Diamonds</h2>
-        <div className="flex gap-2 relative">
-          {/* List View Icon Button */}
+        <div className="flex gap-2 items-center relative">
+          {/* Bulk Upload Button */}
+          <button
+            className="px-4 py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 transition"
+            onClick={() => setBulkModalOpen(true)}
+            type="button"
+          >
+            Bulk Upload
+          </button>
+          <BulkUploadModal
+            open={bulkModalOpen}
+            onClose={() => setBulkModalOpen(false)}
+            onFileSelect={handleBulkFileSelect}
+          />
           <button
             className={`relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group
               ${view === 'list' ? 'bg-blue-600 text-white border-blue-600 shadow' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'}`}
