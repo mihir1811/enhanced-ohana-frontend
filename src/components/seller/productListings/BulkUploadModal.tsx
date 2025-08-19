@@ -1,4 +1,5 @@
 import React from "react";
+import { toast } from 'react-hot-toast';
 
 interface BulkUploadModalProps {
   open: boolean;
@@ -22,10 +23,21 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     }
   };
 
-  const handleUpload = () => {
-    if (selectedFile) {
-      onFileSelect(selectedFile);
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    try {
+      const res = await fetch('/api/v1/products/upload-excel', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) throw new Error('Upload failed');
+      toast.success('Excel uploaded successfully!');
       setSelectedFile(null);
+      onFileSelect(selectedFile);
+    } catch (err) {
+      toast.error('Failed to upload Excel file');
     }
   };
 
