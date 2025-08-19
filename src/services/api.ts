@@ -1,3 +1,4 @@
+  // File upload with PUT
 // Central API service configuration
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1'
@@ -18,6 +19,30 @@ export interface ApiResponse<T = any> {
 }
 
 class ApiService {
+  // File upload with PATCH
+  async uploadPatch<T>(endpoint: string, formData: FormData, token?: string): Promise<ApiResponse<T>> {
+    const config: RequestInit = {
+      method: 'PATCH',
+      headers: {
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+      },
+      body: formData,
+    };
+
+    try {
+      const response = await fetch(`${this.baseURL}${endpoint}`, config);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Upload PATCH Error:', error);
+      throw error;
+    }
+  }
   private baseURL: string
 
   constructor(baseURL: string) {

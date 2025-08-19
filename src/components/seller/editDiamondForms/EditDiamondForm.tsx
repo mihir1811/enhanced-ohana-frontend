@@ -1,289 +1,138 @@
-
-import React, { useState, useRef } from 'react';
-import { toast } from 'react-hot-toast';
-import { diamondService } from '@/services/diamondService';
+import React, { useEffect, useState, useRef } from 'react';
 import { getCookie } from '@/lib/cookie-utils';
+import {
+  diamondColors, fancyColors, fancyIntensities, fancyOvertones, cutGrades, clarities, shades, shapes, fluorescences, processes, treatments, certificateCompanies
+} from '@/constants/diamondDropdowns';
 
-// Dropdown options
-const diamondColors = [
-  { value: 'D', label: 'D (Colorless)' },
-  { value: 'E', label: 'E (Colorless)' },
-  { value: 'F', label: 'F (Colorless)' },
-  { value: 'G', label: 'G (Near Colorless)' },
-  { value: 'H', label: 'H (Near Colorless)' },
-  { value: 'I', label: 'I (Near Colorless)' },
-  { value: 'J', label: 'J (Near Colorless)' },
-  { value: 'K', label: 'K (Faint)' },
-  { value: 'L', label: 'L (Faint)' },
-  { value: 'M', label: 'M (Faint)' },
-  { value: 'N', label: 'N (Very Light)' },
-  { value: 'O', label: 'O (Very Light)' },
-  { value: 'P', label: 'P (Very Light)' },
-  { value: 'Q', label: 'Q (Very Light)' },
-  { value: 'R', label: 'R (Very Light)' },
-  { value: 'S', label: 'S (Light)' },
-  { value: 'T', label: 'T (Light)' },
-  { value: 'U', label: 'U (Light)' },
-  { value: 'V', label: 'V (Light)' },
-  { value: 'W', label: 'W (Light)' },
-  { value: 'X', label: 'X (Light)' },
-  { value: 'Y', label: 'Y (Light)' },
-  { value: 'Z', label: 'Z (Light)' },
-];
-const fancyColors = [
-  { value: 'Fancy Yellow', label: 'Fancy Yellow' },
-  { value: 'Fancy Pink', label: 'Fancy Pink' },
-  { value: 'Fancy Blue', label: 'Fancy Blue' },
-  { value: 'Fancy Green', label: 'Fancy Green' },
-  { value: 'Fancy Brown', label: 'Fancy Brown' },
-  { value: 'Fancy Orange', label: 'Fancy Orange' },
-  { value: 'Fancy Purple', label: 'Fancy Purple' },
-  { value: 'Fancy Red', label: 'Fancy Red' },
-  { value: 'Fancy Gray', label: 'Fancy Gray' },
-  { value: 'Fancy Black', label: 'Fancy Black' },
-];
-const fancyIntensities = [
-  { value: 'Faint', label: 'Faint' },
-  { value: 'Very Light', label: 'Very Light' },
-  { value: 'Light', label: 'Light' },
-  { value: 'Fancy Light', label: 'Fancy Light' },
-  { value: 'Fancy', label: 'Fancy' },
-  { value: 'Fancy Intense', label: 'Fancy Intense' },
-  { value: 'Fancy Vivid', label: 'Fancy Vivid' },
-  { value: 'Fancy Deep', label: 'Fancy Deep' },
-  { value: 'Fancy Dark', label: 'Fancy Dark' },
-];
-const fancyOvertones = [
-  { value: 'None', label: 'None' },
-  { value: 'Brownish', label: 'Brownish' },
-  { value: 'Orangish', label: 'Orangish' },
-  { value: 'Pinkish', label: 'Pinkish' },
-  { value: 'Purplish', label: 'Purplish' },
-  { value: 'Grayish', label: 'Grayish' },
-  { value: 'Greenish', label: 'Greenish' },
-  { value: 'Bluish', label: 'Bluish' },
-  { value: 'Yellowish', label: 'Yellowish' },
-];
-const cutGrades = [
-  { value: 'Excellent', label: 'Excellent' },
-  { value: 'Very Good', label: 'Very Good' },
-  { value: 'Good', label: 'Good' },
-  { value: 'Fair', label: 'Fair' },
-  { value: 'Poor', label: 'Poor' },
-];
-const clarities = [
-  { value: 'FL', label: 'FL' },
-  { value: 'IF', label: 'IF' },
-  { value: 'VVS1', label: 'VVS1' },
-  { value: 'VVS2', label: 'VVS2' },
-  { value: 'VS1', label: 'VS1' },
-  { value: 'VS2', label: 'VS2' },
-  { value: 'SI1', label: 'SI1' },
-  { value: 'SI2', label: 'SI2' },
-  { value: 'I1', label: 'I1' },
-  { value: 'I2', label: 'I2' },
-  { value: 'I3', label: 'I3' },
-];
-const shades = [
-  { value: 'White', label: 'White' },
-  { value: 'Yellow', label: 'Yellow' },
-  { value: 'Brown', label: 'Brown' },
-  { value: 'Pink', label: 'Pink' },
-  { value: 'Blue', label: 'Blue' },
-  { value: 'Green', label: 'Green' },
-  { value: 'Gray', label: 'Gray' },
-  { value: 'Black', label: 'Black' },
-];
-const shapes = [
-  { value: 'Round', label: 'Round' },
-  { value: 'Princess', label: 'Princess' },
-  { value: 'Emerald', label: 'Emerald' },
-  { value: 'Asscher', label: 'Asscher' },
-  { value: 'Cushion', label: 'Cushion' },
-  { value: 'Cushion Modified', label: 'Cushion Modified' },
-  { value: 'Cushion Brilliant', label: 'Cushion Brilliant' },
-  { value: 'Radiant', label: 'Radiant' },
-  { value: 'Oval', label: 'Oval' },
-  { value: 'Pear', label: 'Pear' },
-  { value: 'Marquise', label: 'Marquise' },
-  { value: 'Heart', label: 'Heart' },
-  { value: 'Trilliant', label: 'Trilliant' },
-  { value: 'Baguette', label: 'Baguette' },
-  { value: 'Tapered Baguette', label: 'Tapered Baguette' },
-  { value: 'Half-moon', label: 'Half-moon' },
-  { value: 'Flanders', label: 'Flanders' },
-  { value: 'French', label: 'French' },
-  { value: 'Lozenge', label: 'Lozenge' },
-  { value: 'Bullet', label: 'Bullet' },
-  { value: 'Kite', label: 'Kite' },
-  { value: 'Shield', label: 'Shield' },
-  { value: 'Star Cut', label: 'Star Cut' },
-  { value: 'Rose Cut', label: 'Rose Cut' },
-  { value: 'Old Miner', label: 'Old Miner' },
-  { value: 'Old European', label: 'Old European' },
-  { value: 'Euro Cut', label: 'Euro Cut' },
-  { value: 'Briolette', label: 'Briolette' },
-  { value: 'Trapezoid', label: 'Trapezoid' },
-  { value: 'Pentagonal Cut', label: 'Pentagonal Cut' },
-  { value: 'Hexagonal Cut', label: 'Hexagonal Cut' },
-  { value: 'Octagonal Cut', label: 'Octagonal Cut' },
-  { value: 'Portuguese Cut', label: 'Portuguese Cut' },
-];
-const fluorescences = [
-  { value: 'None', label: 'None' },
-  { value: 'Faint', label: 'Faint' },
-  { value: 'Medium', label: 'Medium' },
-  { value: 'Strong', label: 'Strong' },
-  { value: 'Very Strong', label: 'Very Strong' },
-];
-const processes = [
-  { value: 'Natural', label: 'Natural' },
-  { value: 'HPHT', label: 'HPHT (High Pressure High Temperature) – Lab-grown' },
-  { value: 'CVD', label: 'CVD (Chemical Vapor Deposition) – Lab-grown' },
-];
-const treatments = [
-  { value: 'Natural', label: 'Natural / Untreated' },
-  { value: 'laserDrilled', label: 'Laser Drilled' },
-  { value: 'fractureFilled', label: 'Fracture Filled' },
-  { value: 'HPHT', label: 'HPHT (Color Treatment)' },
-  { value: 'Irradiated', label: 'Irradiated' },
-  { value: 'heatTreated', label: 'Annealed / Heat Treated' },
-  { value: 'Coated', label: 'Coated' },
-  { value: 'HPHT', label: 'Lab-Grown HPHT' },
-  { value: 'CVD', label: 'Lab-Grown CVD' },
-];
-const certificateCompanies = [
-  { value: '1', label: 'GIA' },
-  { value: '2', label: 'IGI' },
-  { value: '3', label: 'AGS' },
-  { value: '4', label: 'HRD' },
-  { value: '5', label: 'Other' },
-];
-
-type DiamondFormState = {
-  name: string,
-  stoneType: string,
-  description: string,
-  images: File[],
-  videoURL: string,
-  stockNumber: string,
-  sellerSKU: string,
-  origin: string,
-  rap: string,
-  price: string,
-  discount: string,
-  color: string,
-  fancyColor: string,
-  fancyIntencity: string,
-  fancyOvertone: string,
-  caratWeight: string,
-  cut: string,
-  clarity: string,
-  shade: string,
-  shape: string,
-  polish: string,
-  symmetry: string,
-  fluorescence: string,
-  treatment: string,
-  process: string,
-  measurement: string,
-  diameter: string,
-  ratio: string,
-  table: string,
-  depth: string,
-  gridleMin: string,
-  gridleMax: string,
-  gridlePercentage: string,
-  crownHeight: string,
-  crownAngle: string,
-  pavilionAngle: string,
-  pavilionDepth: string,
-  culetSize: string,
-  certificateCompanyId: string,
-  certificateNumber: string,
-  inscription: string,
-  certification: File | null,
-}
-
-const initialState: DiamondFormState = {
-  name: '',
-  stoneType: '',
-  description: '',
-  images: [],
-  videoURL: '',
-  stockNumber: '',
-  sellerSKU: '',
-  origin: '',
-  rap: '',
-  price: '',
-  discount: '',
-  color: '',
-  fancyColor: '',
-  fancyIntencity: '',
-  fancyOvertone: '',
-  caratWeight: '',
-  cut: '',
-  clarity: '',
-  shade: '',
-  shape: '',
-  polish: '',
-  symmetry: '',
-  fluorescence: '',
-  treatment: '',
-  process: '',
-  measurement: '',
-  diameter: '',
-  ratio: '',
-  table: '',
-  depth: '',
-  gridleMin: '',
-  gridleMax: '',
-  gridlePercentage: '',
-  crownHeight: '',
-  crownAngle: '',
-  pavilionAngle: '',
-  pavilionDepth: '',
-  culetSize: '',
-  certificateCompanyId: '',
-  certificateNumber: '',
-  inscription: '',
-  certification: null,
-  // end of initialState
+type EditDiamondFormProps = {
+  initialData?: any;
 };
 
-function AddDiamondForm() {
-  const [form, setForm] = useState<DiamondFormState>(initialState);
+const initialState = {
+  name: '', stoneType: '', description: '', images: [] as File[], videoURL: '', stockNumber: '', sellerSKU: '', origin: '', rap: '', price: '', discount: '', color: '', fancyColor: '', fancyIntencity: '', fancyOvertone: '', caratWeight: '', cut: '', clarity: '', shade: '', shape: '', polish: '', symmetry: '', fluorescence: '', treatment: '', process: '', measurement: '', diameter: '', ratio: '', table: '', depth: '', gridleMin: '', gridleMax: '', gridlePercentage: '', crownHeight: '', crownAngle: '', pavilionAngle: '', pavilionDepth: '', culetSize: '', certificateCompanyId: '', certificateNumber: '', inscription: '', certification: null as File | null
+};
+
+
+const normalizeImages = (data: any) => {
+  // Collect image1–image6 into an array, filter null/empty
+  return [data.image1, data.image2, data.image3, data.image4, data.image5, data.image6].filter(Boolean);
+};
+
+const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
+  // Helper to map API string to dropdown value (case-insensitive, handle camelCase, spaces, etc)
+  function normalizeApiValue(val: string | undefined) {
+    if (!val) return '';
+    // Convert camelCase or snake_case to spaced words, then title case
+    let s = val.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/_/g, ' ');
+    s = s.replace(/\b\w/g, c => c.toUpperCase());
+    return s.trim();
+  }
+  function getDropdownValue(options: { value: string; label: string }[], apiValue: string | undefined, field?: string) {
+    if (!apiValue) return '';
+    // Try direct match
+    let found = options.find(opt => opt.value === apiValue || opt.label === apiValue);
+    if (found) return found.value;
+    // Try normalized match
+    const norm = normalizeApiValue(apiValue);
+    found = options.find(opt => opt.value.toLowerCase() === norm.toLowerCase() || opt.label.toLowerCase() === norm.toLowerCase());
+    if (found) return found.value;
+    // Try lowercased, spaceless, and camelCase-insensitive match
+    const apiValLower = apiValue.toLowerCase().replace(/\s+/g, '');
+    found = options.find(opt =>
+      opt.value.toLowerCase().replace(/\s+/g, '') === apiValLower ||
+      opt.label.toLowerCase().replace(/\s+/g, '') === apiValLower
+    );
+    if (found) return found.value;
+    // Try matching ignoring case and non-alphanumeric
+    const apiValAlpha = apiValue.toLowerCase().replace(/[^a-z0-9]/g, '');
+    found = options.find(opt =>
+      opt.value.toLowerCase().replace(/[^a-z0-9]/g, '') === apiValAlpha ||
+      opt.label.toLowerCase().replace(/[^a-z0-9]/g, '') === apiValAlpha
+    );
+    if (found) return found.value;
+    // Special mapping for process field (e.g. 'annealed' => 'Natural')
+    if (field === 'process') {
+      if (apiValue.toLowerCase() === 'annealed') {
+        found = options.find(opt => opt.value.toLowerCase() === 'natural');
+        if (found) return found.value;
+      }
+    }
+    return apiValue;
+  }
+
+  const [form, setForm] = useState(() => {
+    if (initialData) {
+      const { images, ...rest } = initialData;
+      return {
+        ...initialState,
+        ...rest,
+        fancyColor: getDropdownValue(fancyColors, rest.fancyColor),
+        fancyIntencity: getDropdownValue(fancyIntensities, rest.fancyIntencity),
+        fancyOvertone: getDropdownValue(fancyOvertones, rest.fancyOvertone),
+        shade: getDropdownValue(shades, rest.shade),
+        fluorescence: getDropdownValue(fluorescences, rest.fluorescence),
+        treatment: getDropdownValue(treatments, rest.treatment),
+        process: getDropdownValue(processes, rest.process, 'process'),
+        images: []
+      };
+    }
+    return initialState;
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [existingImages, setExistingImages] = useState<string[]>(initialData ? normalizeImages(initialData) : []);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  useEffect(() => {
+    if (initialData) {
+      const { images, ...rest } = initialData;
+      setForm({
+        ...initialState,
+        ...rest,
+        fancyColor: getDropdownValue(fancyColors, rest.fancyColor),
+        fancyIntencity: getDropdownValue(fancyIntensities, rest.fancyIntencity),
+        fancyOvertone: getDropdownValue(fancyOvertones, rest.fancyOvertone),
+        shade: getDropdownValue(shades, rest.shade),
+        fluorescence: getDropdownValue(fluorescences, rest.fluorescence),
+        treatment: getDropdownValue(treatments, rest.treatment),
+        process: getDropdownValue(processes, rest.process, 'process'),
+        images: []
+      });
+      setExistingImages(normalizeImages(initialData));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialData]);
+
+  // Handlers
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    setForm(prev => ({ ...prev, [name]: type === 'number' ? Number(value) : value }));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, files } = e.target;
-    if (!files) return;
-    if (name === 'images') {
-      let fileArr = Array.from(files);
-      // Enforce 6-image limit
-      if (form.images.length + fileArr.length > 6) {
-        fileArr = fileArr.slice(0, 6 - form.images.length);
-        setError('You can upload a maximum of 6 images.');
-      } else {
-        setError('');
-      }
-      setForm(prev => ({ ...prev, images: [...prev.images, ...fileArr].slice(0, 6) }));
-      // Reset input value so same file can be reselected if removed
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    } else if (name === 'certification') {
-      setForm(prev => ({ ...prev, certification: files[0] }));
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setForm((prev: typeof form) => ({ ...prev, [name]: checked }));
+    } else {
+      setForm((prev: typeof form) => ({ ...prev, [name]: value }));
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { files } = e.target;
+    if (!files) return;
+    let fileArr = Array.from(files);
+    if (form.images.length + fileArr.length > 6) {
+      fileArr = fileArr.slice(0, 6 - form.images.length);
+      setError('You can upload a maximum of 6 images.');
+    } else {
+      setError('');
+    }
+    setForm((prev: typeof form) => ({ ...prev, images: [...prev.images, ...fileArr].slice(0, 6) }));
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const handleRemoveImage = (idx: number) => {
-    setForm(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }));
+    setForm((prev: typeof form) => ({ ...prev, images: prev.images.filter((_: File, i: number) => i !== idx) }));
+  };
+  const handleRemoveExistingImage = (idx: number) => {
+    setExistingImages((prev: string[]) => prev.filter((_: string, i: number) => i !== idx));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -292,9 +141,8 @@ function AddDiamondForm() {
     setError('');
     try {
       const formData = new FormData();
-      // List of all fields as per API curl
       const fields = [
-        'stockNumber', 'name', 'description', 'origin', 'rap', 'price', 'discount', 'caratWeight', 'cut', 'color', 'shade', 'fancyColor', 'fancyIntencity', 'fancyOvertone', 'shape', 'symmetry', 'diameter', 'clarity', 'fluorescence', 'measurement', 'ratio', 'table', 'depth', 'gridleMin', 'gridleMax', 'gridlePercentage', 'crownHeight', 'crownAngle', 'pavilionAngle', 'pavilionDepth', 'culetSize', 'polish', 'treatment', 'inscription', 'certificateNumber', 'stoneType', 'process', 'certificateCompanyId', 'videoURL', 'sellerSKU'
+        'stockNumber','name','description','origin','rap','price','discount','caratWeight','cut','color','shade','fancyColor','fancyIntencity','fancyOvertone','shape','symmetry','diameter','clarity','fluorescence','measurement','ratio','table','depth','gridleMin','gridleMax','gridlePercentage','crownHeight','crownAngle','pavilionAngle','pavilionDepth','culetSize','polish','treatment','inscription','certificateNumber','stoneType','process','certificateCompanyId','videoURL','sellerSKU','isOnAuction','isSold'
       ];
       fields.forEach((key) => {
         const value = (form as any)[key];
@@ -302,9 +150,9 @@ function AddDiamondForm() {
           formData.append(key, String(value));
         }
       });
-      // Append images as image1, image2, ...
+      // Append new images
       if (form.images && form.images.length > 0) {
-        form.images.forEach((file, idx) => {
+        form.images.forEach((file: File, idx: number) => {
           formData.append(`image${idx + 1}`, file);
         });
       }
@@ -312,26 +160,29 @@ function AddDiamondForm() {
       if (form.certification) {
         formData.append('certification', form.certification);
       }
-      // Get Bearer token from cookie
+      // Existing images (if API supports keeping them)
+      existingImages.forEach((url, idx) => {
+        formData.append(`existingImage${idx + 1}`, url);
+      });
       const token = getCookie('token');
       if (!token) throw new Error('User not authenticated');
-      const response = await diamondService.addDiamond(formData, token);
+      const response = await import('@/services/diamondService').then(m => m.diamondService.updateDiamond(initialData.id, formData, token));
       if (!response || !response.success) {
-        throw new Error(response?.message || 'Failed to add diamond');
+        throw new Error(response?.message || 'Failed to update diamond');
       }
-      toast.success('Diamond added successfully!');
-      setForm(initialState);
+      alert('Diamond updated successfully!');
     } catch (err: any) {
       setError(err.message || 'Failed to submit');
-      toast.error(err.message || 'Failed to add diamond');
     } finally {
       setLoading(false);
     }
   };
 
+  // UI
   return (
     <form className="w-full mx-auto p-6 bg-white rounded-2xl shadow flex flex-col gap-8" onSubmit={handleSubmit}>
-      <h2 className="text-2xl font-bold mb-2">Add Diamond</h2>
+      <h2 className="text-2xl font-bold mb-2">Edit Diamond</h2>
+
       {/* Basic Information */}
       <section>
         <h3 className="text-lg font-semibold mb-2">Basic Information</h3>
@@ -358,20 +209,32 @@ function AddDiamondForm() {
               type="file"
               accept="image/*"
               multiple
-              required
               onChange={handleFileChange}
               className="input"
               max={6}
               ref={fileInputRef}
-              disabled={form.images.length >= 6}
+              disabled={form.images.length + existingImages.length >= 6}
             />
             {/* Image preview grid */}
-            {form.images && form.images.length > 0 && (
+            {(existingImages.length > 0 || form.images.length > 0) && (
               <div className="flex flex-wrap gap-3 mt-3">
+                {existingImages.map((img, idx) => (
+                  <div key={img} className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center relative group">
+                    <img src={img} alt={`Preview ${idx + 1}`} className="object-cover w-full h-full" />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveExistingImage(idx)}
+                      className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 shadow text-gray-700 hover:bg-red-500 hover:text-white transition"
+                      title="Remove image"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
                 {form.images.map((img: File, idx: number) => {
                   const url = URL.createObjectURL(img);
                   return (
-                    <div key={idx} className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center relative group">
+                    <div key={url} className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center relative group">
                       <img
                         src={url}
                         alt={`Preview ${idx + 1}`}
@@ -631,11 +494,9 @@ function AddDiamondForm() {
               className="input"
             >
               <option value="">Select certificate company</option>
-              <option value="1">GIA</option>
-              <option value="2">IGI</option>
-              <option value="3">AGS</option>
-              <option value="4">HRD</option>
-              <option value="5">Other</option>
+              {certificateCompanies.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
             </select>
           </div>
           <div>
@@ -648,17 +509,32 @@ function AddDiamondForm() {
           </div>
           <div className="md:col-span-3">
             <label className="block font-medium mb-1">Certification Document *</label>
-            <input name="certification" type="file" accept=".pdf,.jpg,.jpeg,.png" required onChange={handleFileChange} className="input" placeholder="e.g. Upload certificate file" />
+            <input name="certification" type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} className="input" placeholder="e.g. Upload certificate file" />
           </div>
         </div>
       </section>
 
-      {error && <div className="text-red-600 font-medium">{error}</div>}
-        <div className="flex justify-end gap-4 mt-4">
-        <button type="reset" className="btn-secondary" onClick={() => setForm(initialState)} disabled={loading}>Cancel</button>
-        <button type="submit" className="btn-primary" disabled={loading}>{loading ? 'Saving...' : 'Add Diamond'}</button>
-      </div>
+      {/* Auction Data Section */}
+      {initialData?.auction && (
+        <section className="bg-blue-50 border border-blue-200 rounded p-4 mb-4">
+          <h3 className="font-semibold text-blue-700 mb-2">Auction Details</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div><span className="font-medium">Auction ID:</span> {initialData.auction.id}</div>
+            <div><span className="font-medium">Product Type:</span> {initialData.auction.productType}</div>
+            <div><span className="font-medium">Start Time:</span> {new Date(initialData.auction.startTime).toLocaleString()}</div>
+            <div><span className="font-medium">End Time:</span> {new Date(initialData.auction.endTime).toLocaleString()}</div>
+            <div><span className="font-medium">Is Active:</span> {initialData.auction.isActive ? 'Yes' : 'No'}</div>
+            <div><span className="font-medium">Is Sold:</span> {initialData.auction.isSold ? 'Yes' : 'No'}</div>
+            <div><span className="font-medium">Bids:</span> {initialData.auction.bids?.length ?? 0}</div>
+          </div>
+        </section>
+      )}
 
+      {error && <div className="text-red-600 font-medium">{error}</div>}
+      <div className="flex justify-end gap-4 mt-4">
+        <button type="reset" className="btn-secondary" disabled={loading}>Cancel</button>
+        <button type="submit" className="btn-primary" disabled={loading}>{loading ? 'Saving...' : 'Save Changes'}</button>
+      </div>
       {/* Tailwind input/button styles */}
       <style jsx>{`
         .input {
@@ -700,6 +576,6 @@ function AddDiamondForm() {
       `}</style>
     </form>
   );
-}
+};
 
-export default AddDiamondForm;
+export default EditDiamondForm;
