@@ -3,12 +3,14 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { diamondService } from "@/services/diamondService";
+import { gemstoneService } from "@/services/gemstoneService";
 import EditDiamondForm from "@/components/seller/editDiamondForms/EditDiamondForm";
-// import EditGemstoneForm from "@/components/seller/editGemstoneForms/EditGemstoneForm";
+
 // import EditJewelryForm from "@/components/seller/editJewelryForms/EditJewelryForm";
 import { useAppSelector } from '@/store/hooks';
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
+import EditGemstoneForm from "@/components/seller/editDiamondForms/EditGemstoneForm";
 
 export default function EditProductPage() {
   const { id } = useParams();
@@ -19,15 +21,20 @@ export default function EditProductPage() {
     (state: RootState) => state.seller.profile?.sellerType
   );
 
-
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    diamondService.getDiamondById(id as string)
+    let fetcher: Promise<any>;
+    if (sellerType === 'gemstone') {
+      fetcher = gemstoneService.getGemstoneById(id as string);
+    } else {
+      fetcher = diamondService.getDiamondById(id as string);
+    }
+    fetcher
       .then((res) => setProduct(res?.data || null))
       .catch((err) => setError(err.message || "Failed to fetch product"))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, sellerType]);
 
   if (loading) return <div className="py-10 text-center">Loading...</div>;
   if (error) return <div className="py-10 text-center text-red-600">{error}</div>;
@@ -39,7 +46,7 @@ export default function EditProductPage() {
       case 'labGrownDiamond':
         return <EditDiamondForm initialData={product} />;
       case 'gemstone':
-        return <h1>edit gemstones</h1>;
+        return <EditGemstoneForm initialData={product} />;
       case 'jewellery':
         return <h1>edit jewellery</h1>;
       default:

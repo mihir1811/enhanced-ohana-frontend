@@ -8,6 +8,7 @@ import { PageLoader } from '@/components/seller/Loader'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
 import DiamondsListing from '@/components/seller/productListings/DiamondsListing'
+import GemstonesListing from '@/components/seller/productListings/GemstonesListing'
 
 export default function SellerProductsPage() {
   const { setPageLoading, isPageLoading } = useLoading()
@@ -43,7 +44,7 @@ export default function SellerProductsPage() {
       case 'naturalDiamond':
         return <DiamondsListing />
       case 'gemstone':
-        return <h1>gemstone list</h1>
+        return <GemstonesListing />
       case 'jewelry':
         return <h1>jewelry list</h1>
       default:
