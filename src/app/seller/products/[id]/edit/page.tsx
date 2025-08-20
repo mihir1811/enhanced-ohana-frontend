@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { diamondService } from "@/services/diamondService";
 import { gemstoneService } from "@/services/gemstoneService";
+import { jewelryService } from "@/services/jewelryService";
 import EditDiamondForm from "@/components/seller/editDiamondForms/EditDiamondForm";
 
 // import EditJewelryForm from "@/components/seller/editJewelryForms/EditJewelryForm";
@@ -11,6 +12,7 @@ import { useAppSelector } from '@/store/hooks';
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import EditGemstoneForm from "@/components/seller/editDiamondForms/EditGemstoneForm";
+import EditJewelryForm from "@/components/seller/editDiamondForms/EditJewelryForm";
 
 export default function EditProductPage() {
   const { id } = useParams();
@@ -27,6 +29,8 @@ export default function EditProductPage() {
     let fetcher: Promise<any>;
     if (sellerType === 'gemstone') {
       fetcher = gemstoneService.getGemstoneById(id as string);
+    } else if (sellerType === 'jewellery') {
+      fetcher = jewelryService.getJewelryById(id as string);
     } else {
       fetcher = diamondService.getDiamondById(id as string);
     }
@@ -48,7 +52,7 @@ export default function EditProductPage() {
       case 'gemstone':
         return <EditGemstoneForm initialData={product} />;
       case 'jewellery':
-        return <h1>edit jewellery</h1>;
+        return <EditJewelryForm initialData={product} />;
       default:
         return <div className="text-red-500 font-medium">Please complete your seller profile to edit products.</div>;
     }
