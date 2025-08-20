@@ -659,9 +659,17 @@ export default function NavigationUser() {
                       aria-expanded={isDropdownOpen}
                       aria-haspopup="true"
                     >
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-lg" style={{ background: 'linear-gradient(135deg, var(--chart-1), var(--chart-4))', color: 'var(--primary-foreground)', borderRadius: 'var(--radius-md)' }}>
-                        {user?.name?.charAt(0) || 'U'}
-                      </div>
+                      {user?.profilePicture ? (
+                        <img
+                          src={user.profilePicture}
+                          alt={user?.name || 'User'}
+                          className="w-8 h-8 rounded-lg object-cover shadow-lg border border-slate-200 dark:border-slate-700"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-lg" style={{ background: 'linear-gradient(135deg, var(--chart-1), var(--chart-4))', color: 'var(--primary-foreground)', borderRadius: 'var(--radius-md)' }}>
+                          {user?.name?.charAt(0) || 'U'}
+                        </div>
+                      )}
                       <div className="hidden lg:block text-left">
                         <div className="font-medium text-sm" style={{ color: isDropdownOpen ? 'var(--chart-1)' : 'var(--foreground)' }}>{user?.name || 'User'}</div>
                         <div className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Premium</div>
