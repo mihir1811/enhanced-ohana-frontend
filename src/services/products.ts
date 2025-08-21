@@ -116,6 +116,13 @@ class ProductService {
     return apiService.upload(`/products/${productId}/images`, formData)
   }
 
+  // Bulk upload via Excel/CSV
+  async uploadBulkExcel(file: File): Promise<ApiResponse<{ count: number }>> {
+    const formData = new FormData()
+    formData.append('file', file)
+    return apiService.upload(`/products/upload-excel`, formData)
+  }
+
   // Search products
   async searchProducts(query: string, filters?: Omit<ProductFilters, 'search'>): Promise<ApiResponse<Product[]>> {
     return apiService.get('/products/search', { search: query, ...filters })

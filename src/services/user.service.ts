@@ -1,5 +1,5 @@
-import { BaseUser, SellerData, User } from '../features/auth/authSlice'
-import { ApiResponse } from './api'
+import { BaseUser, SellerData, User } from '@/types/user'
+import { apiService, ApiResponse } from './api'
 
 export interface UserProfileUpdateData {
   name?: string
@@ -33,19 +33,7 @@ export interface SellerRegistrationData {
 class UserService {
   // Get user profile
   async getUserProfile(userId: string): Promise<ApiResponse<User>> {
-    const response = await fetch(`/api/users/${userId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch user profile')
-    }
-
-    return response.json()
+    return apiService.get(`/users/${userId}`)
   }
 
   // Update basic user profile
@@ -53,20 +41,7 @@ class UserService {
     userId: string, 
     data: UserProfileUpdateData
   ): Promise<ApiResponse<User>> {
-    const response = await fetch(`/api/users/${userId}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-      body: JSON.stringify(data),
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to update user profile')
-    }
-
-    return response.json()
+    return apiService.patch(`/users/${userId}`, data)
   }
 
   // Register as seller (upgrade from user to seller)
@@ -74,20 +49,7 @@ class UserService {
     userId: string,
     sellerData: SellerRegistrationData
   ): Promise<ApiResponse<User>> {
-    const response = await fetch(`/api/users/${userId}/upgrade-to-seller`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-      body: JSON.stringify(sellerData),
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to register as seller')
-    }
-
-    return response.json()
+    return apiService.post(`/users/${userId}/upgrade-to-seller`, sellerData)
   }
 
   // Update seller data (only for existing sellers)
@@ -95,20 +57,7 @@ class UserService {
     userId: string,
     sellerData: Partial<SellerData>
   ): Promise<ApiResponse<User>> {
-    const response = await fetch(`/api/users/${userId}/seller-data`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-      body: JSON.stringify(sellerData),
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to update seller data')
-    }
-
-    return response.json()
+    return apiService.patch(`/users/${userId}/seller-data`, sellerData)
   }
 
   // Get seller public profile (for other users to view)
@@ -116,18 +65,7 @@ class UserService {
     user: BaseUser
     sellerData: Omit<SellerData, 'taxId' | 'businessRegistration'>
   }>> {
-    const response = await fetch(`/api/sellers/${sellerId}/profile`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch seller profile')
-    }
-
-    return response.json()
+    return apiService.get(`/sellers/${sellerId}/profile`)
   }
 
   // Get all verified sellers (public listing)
@@ -148,25 +86,12 @@ class UserService {
       totalPages: number
     }
   }>> {
-    const queryParams = new URLSearchParams()
-    
-    if (params?.page) queryParams.append('page', params.page.toString())
-    if (params?.limit) queryParams.append('limit', params.limit.toString())
-    if (params?.specialization) queryParams.append('specialization', params.specialization)
-    if (params?.location) queryParams.append('location', params.location)
-
-    const response = await fetch(`/api/sellers?${queryParams.toString()}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    return apiService.get(`/sellers`, {
+      page: params?.page,
+      limit: params?.limit,
+      specialization: params?.specialization,
+      location: params?.location,
     })
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch sellers')
-    }
-
-    return response.json()
   }
 
   // Upload profile picture
@@ -176,20 +101,7 @@ class UserService {
   ): Promise<ApiResponse<{ profilePicture: string }>> {
     const formData = new FormData()
     formData.append('profilePicture', file)
-
-    const response = await fetch(`/api/users/${userId}/profile-picture`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-      body: formData,
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to upload profile picture')
-    }
-
-    return response.json()
+    return apiService.upload(`/users/${userId}/profile-picture`, formData)
   }
 
   // Verify seller account (admin only)
@@ -197,20 +109,7 @@ class UserService {
     sellerId: string,
     verified: boolean
   ): Promise<ApiResponse<User>> {
-    const response = await fetch(`/api/admin/sellers/${sellerId}/verify`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-      body: JSON.stringify({ verified }),
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to verify seller account')
-    }
-
-    return response.json()
+    return apiService.patch(`/admin/sellers/${sellerId}/verify`, { verified })
   }
 
   // Get user's orders (for profile page)
@@ -222,25 +121,11 @@ class UserService {
       status?: string
     }
   ): Promise<ApiResponse<any>> {
-    const queryParams = new URLSearchParams()
-    
-    if (params?.page) queryParams.append('page', params.page.toString())
-    if (params?.limit) queryParams.append('limit', params.limit.toString())
-    if (params?.status) queryParams.append('status', params.status)
-
-    const response = await fetch(`/api/users/${userId}/orders?${queryParams.toString()}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
+    return apiService.get(`/users/${userId}/orders`, {
+      page: params?.page,
+      limit: params?.limit,
+      status: params?.status,
     })
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch user orders')
-    }
-
-    return response.json()
   }
 
   // Get seller's sales (for seller dashboard)
@@ -254,27 +139,13 @@ class UserService {
       endDate?: string
     }
   ): Promise<ApiResponse<any>> {
-    const queryParams = new URLSearchParams()
-    
-    if (params?.page) queryParams.append('page', params.page.toString())
-    if (params?.limit) queryParams.append('limit', params.limit.toString())
-    if (params?.status) queryParams.append('status', params.status)
-    if (params?.startDate) queryParams.append('startDate', params.startDate)
-    if (params?.endDate) queryParams.append('endDate', params.endDate)
-
-    const response = await fetch(`/api/sellers/${sellerId}/sales?${queryParams.toString()}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
+    return apiService.get(`/sellers/${sellerId}/sales`, {
+      page: params?.page,
+      limit: params?.limit,
+      status: params?.status,
+      startDate: params?.startDate,
+      endDate: params?.endDate,
     })
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch seller sales')
-    }
-
-    return response.json()
   }
 }
 

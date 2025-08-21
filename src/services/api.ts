@@ -19,6 +19,30 @@ export interface ApiResponse<T = any> {
 }
 
 class ApiService {
+  // PUT with FormData
+  async uploadPut<T>(endpoint: string, formData: FormData, token?: string): Promise<ApiResponse<T>> {
+    const config: RequestInit = {
+      method: 'PUT',
+      headers: {
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+      },
+      body: formData,
+    };
+
+    try {
+      const response = await fetch(`${this.baseURL}${endpoint}`, config);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Upload PUT Error:', error);
+      throw error;
+    }
+  }
   // File upload with PATCH
   async uploadPatch<T>(endpoint: string, formData: FormData, token?: string): Promise<ApiResponse<T>> {
     const config: RequestInit = {
@@ -135,6 +159,26 @@ class ApiService {
       console.error('Upload Error:', error)
       throw error
     }
+  }
+
+  // Download blob helper
+  async getBlob(endpoint: string, token?: string): Promise<Blob> {
+    const config: RequestInit = {
+      headers: {
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+      },
+    }
+
+    const response = await fetch(`${this.baseURL}${endpoint}`, config)
+    if (!response.ok) {
+      let message = `HTTP error! status: ${response.status}`
+      try {
+        const data = await response.json()
+        message = data?.message || message
+      } catch {}
+      throw new Error(message)
+    }
+    return response.blob()
   }
 }
 

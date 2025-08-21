@@ -145,13 +145,8 @@ class OrderService {
   }
 
   // Download order invoice
-  async downloadInvoice(orderId: string): Promise<Blob> {
-    const response = await fetch(`/api/orders/${orderId}/invoice`, {
-      headers: {
-        'Authorization': `Bearer ${apiService}`
-      }
-    })
-    return response.blob()
+  async downloadInvoice(orderId: string, token?: string): Promise<Blob> {
+    return apiService.getBlob(`/orders/${orderId}/invoice`, token)
   }
 }
 

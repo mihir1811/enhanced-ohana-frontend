@@ -1,4 +1,4 @@
-import { ApiResponse } from './api';
+import { apiService, ApiResponse } from './api';
 
 export interface UpdateSellerInfoPayload {
   companyName: string;
@@ -30,33 +30,11 @@ class SellerService {
     if (data.panCard) formData.append('panCard', data.panCard);
     if (data.gstNumber) formData.append('gstNumber', data.gstNumber);
 
-    const response = await fetch('http://localhost:3000/api/v1/seller/update', {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-        // 'Content-Type' is omitted for FormData
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to update seller info');
-    }
-    return response.json();
+    return apiService.uploadPut('/seller/update', formData, token);
   }
 
   async getSellerInfo(sellerId: string): Promise<ApiResponse<any>> {
-    const response = await fetch(`http://localhost:3000/api/v1/seller/get-seller-info?seller_id=${sellerId}`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-    if (!response.ok) {
-      throw new Error('Failed to fetch seller info');
-    }
-    return response.json();
+    return apiService.get(`/seller/get-seller-info`, { seller_id: sellerId });
   }
 }
 

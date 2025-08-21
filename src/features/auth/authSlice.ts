@@ -1,75 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import { PURGE } from 'redux-persist'
 import { userService, UpdateUserRequest } from '@/services/userService'
-
-// Base User interface - every user has these properties
-interface BaseUser {
-  id: string
-  name: string
-  email: string
-  userName: string
-  profilePicture?: string
-  phone?: string
-  address?: {
-    street: string
-    city: string
-    state: string
-    zipCode: string
-    country: string
-  }
-  createdAt: string
-  updatedAt: string
-  isVerified: boolean
-}
-
-// Seller-specific additional data
-// export interface SellerData {
-//   businessName: string
-//   businessRegistration: string
-//   taxId?: string
-//   businessAddress: {
-//     street: string
-//     city: string
-//     state: string
-//     zipCode: string
-//     country: string
-//   }
-//   certifications: string[]
-//   isVerifiedSeller: boolean
-//   sellerRating: number
-//   totalSales: number
-//   joinedAsSellerDate: string
-//   businessDescription?: string
-//   website?: string
-//   specializations: string[] // e.g., ['diamonds', 'gemstones', 'jewelry']
-// }
-export interface SellerData {
-    addressLine1: string
-  addressLine2: string
-  city: string
-  companyLogo: string
-  companyName: string
-  country: string
-  createdAt: string
-  gstNumber: string
-  id: string
-  isBlocked: boolean
-  isDeleted: boolean
-  isVerified: boolean
-  panCard: string
-  sellerType: string
-  state: string
-  updatedAt: string
-  userId: string
-  zipCode: string
-}
-
-// Combined User type that includes seller data when role is 'seller'
-export interface User extends BaseUser {
-  role: 'user' | 'seller' | 'admin'
-  // Seller data is only present when role is 'seller'
-  sellerData?: SellerData
-}
+import { BaseUser, SellerData, User } from '@/types/user'
 
 interface AuthState {
   role: User['role'] | null

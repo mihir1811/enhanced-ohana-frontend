@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { SellerData } from '../auth/authSlice';
+import { SellerData } from '@/types/user';
 import { userService } from '@/services/user.service';
 import { sellerService, UpdateSellerInfoPayload } from '@/services/sellerService';
 // Fetch seller info using new API
