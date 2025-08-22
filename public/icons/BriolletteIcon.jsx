@@ -1,4 +1,4 @@
-const BriolletteIcon = (props) => (
+const BriollietteIcon  = (props) => (
   <svg
     viewBox="0 0 14.16 14.16"
     xmlns="http://www.w3.org/2000/svg"
@@ -444,4 +444,4 @@ const BriolletteIcon = (props) => (
     </g>
   </svg>
 );
-export default BriolletteIcon;
+export default BriollietteIcon ;

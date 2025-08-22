@@ -8,125 +8,8 @@ import DiamondResults, { Diamond } from '@/components/diamonds/DiamondResults'
 import NavigationUser from '@/components/Navigation/NavigationUser'
 import Footer from '@/components/Footer'
 
-// Sample data for natural single diamonds
-const sampleNaturalSingleDiamonds: Diamond[] = [
-  {
-    id: 'nat-single-1',
-    shape: 'Round',
-    caratWeight: 1.25,
-    color: 'E',
-    clarity: 'VVS1',
-    cut: 'Excellent',
-    price: 12500,
-    certification: 'GIA',
-    reportNumber: 'GIA-2141234567',
-    fluorescence: 'None',
-    polish: 'Excellent',
-    symmetry: 'Excellent',
-    measurements: { length: 6.89, width: 6.87, depth: 4.21 },
-    tablePercent: 57,
-    depthPercent: 61.2,
-    girdle: 'Medium to Slightly Thick',
-    culet: 'None',
-    location: 'Antwerp',
-    supplier: {
-      name: 'Premium Diamonds International',
-      verified: true,
-      rating: 4.9
-    },
-    images: ['/api/placeholder/400/400'],
-    availability: 'available',
-    createdAt: '2024-01-15T00:00:00Z',
-    updatedAt: '2024-01-15T00:00:00Z'
-  },
-  {
-    id: 'nat-single-2',
-    shape: 'Princess',
-    caratWeight: 1.50,
-    color: 'F',
-    clarity: 'VS1',
-    cut: 'Excellent',
-    price: 15750,
-    certification: 'GIA',
-    reportNumber: 'GIA-5172345678',
-    fluorescence: 'None',
-    polish: 'Excellent',
-    symmetry: 'Very Good',
-    measurements: { length: 6.45, width: 6.42, depth: 4.68 },
-    tablePercent: 64,
-    depthPercent: 72.7,
-    girdle: 'Medium',
-    culet: 'None',
-    location: 'New York',
-    supplier: {
-      name: 'Diamond Artisans NYC',
-      verified: true,
-      rating: 4.8
-    },
-    images: ['/api/placeholder/400/400'],
-    availability: 'available',
-    createdAt: '2024-01-16T00:00:00Z',
-    updatedAt: '2024-01-16T00:00:00Z'
-  },
-  {
-    id: 'nat-single-3',
-    shape: 'Cushion',
-    caratWeight: 2.01,
-    color: 'G',
-    clarity: 'VS2',
-    cut: 'Very Good',
-    price: 18900,
-    certification: 'GIA',
-    reportNumber: 'GIA-6183456789',
-    fluorescence: 'Faint',
-    polish: 'Very Good',
-    symmetry: 'Good',
-    measurements: { length: 7.42, width: 7.35, depth: 4.89 },
-    tablePercent: 61,
-    depthPercent: 66.4,
-    girdle: 'Medium to Slightly Thick',
-    culet: 'Very Small',
-    location: 'Mumbai',
-    supplier: {
-      name: 'Royal Diamond House',
-      verified: true,
-      rating: 4.7
-    },
-    images: ['/api/placeholder/400/400'],
-    availability: 'available',
-    createdAt: '2024-01-17T00:00:00Z',
-    updatedAt: '2024-01-17T00:00:00Z'
-  },
-  {
-    id: 'nat-single-4',
-    shape: 'Oval',
-    caratWeight: 1.75,
-    color: 'D',
-    clarity: 'FL',
-    cut: 'Excellent',
-    price: 22000,
-    certification: 'GIA',
-    reportNumber: 'GIA-7194567890',
-    fluorescence: 'None',
-    polish: 'Excellent',
-    symmetry: 'Excellent',
-    measurements: { length: 8.12, width: 5.94, depth: 3.68 },
-    tablePercent: 56,
-    depthPercent: 62.0,
-    girdle: 'Medium',
-    culet: 'None',
-    location: 'Tel Aviv',
-    supplier: {
-      name: 'Elite Gemstone Trading',
-      verified: true,
-      rating: 4.9
-    },
-    images: ['/api/placeholder/400/400'],
-    availability: 'available',
-    createdAt: '2024-01-18T00:00:00Z',
-    updatedAt: '2024-01-18T00:00:00Z'
-  }
-]
+
+import { diamondService } from '@/services/diamondService'
 
 export default function NaturalSingleDiamondsPage() {
   const searchParams = useSearchParams()
@@ -185,10 +68,13 @@ export default function NaturalSingleDiamondsPage() {
     }
   }
 
+
   const [filters, setFilters] = useState<DiamondFilterValues>(getInitialFilters())
-  const [filteredDiamonds, setFilteredDiamonds] = useState<Diamond[]>(sampleNaturalSingleDiamonds)
+  const [diamonds, setDiamonds] = useState<Diamond[]>([])
+  const [filteredDiamonds, setFilteredDiamonds] = useState<Diamond[]>([])
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
   const [showMobileFilters, setShowMobileFilters] = useState(false)
   const pageSize = 20
 
@@ -197,67 +83,25 @@ export default function NaturalSingleDiamondsPage() {
     return searchParams.toString().length > 0
   }
 
-  // Filter diamonds based on current filter values
+
+  // Fetch diamonds from API when filters or page changes
   useEffect(() => {
     setLoading(true)
-    
-    const timer = setTimeout(() => {
-      let filtered = [...sampleNaturalSingleDiamonds]
-
-      // Apply filters
-      if (filters.shape.length > 0) {
-        filtered = filtered.filter(d => filters.shape.includes(d.shape))
-      }
-      
-      if (filters.color.length > 0) {
-        filtered = filtered.filter(d => filters.color.includes(d.color))
-      }
-      
-      if (filters.clarity.length > 0) {
-        filtered = filtered.filter(d => filters.clarity.includes(d.clarity))
-      }
-      
-      if (filters.cut.length > 0) {
-        filtered = filtered.filter(d => filters.cut.includes(d.cut))
-      }
-      
-      if (filters.certification.length > 0) {
-        filtered = filtered.filter(d => filters.certification.includes(d.certification))
-      }
-
-      filtered = filtered.filter(d => 
-        d.caratWeight >= filters.caratWeight.min && 
-        d.caratWeight <= filters.caratWeight.max
-      )
-      
-      filtered = filtered.filter(d => 
-        d.price >= filters.priceRange.min && 
-        d.price <= filters.priceRange.max
-      )
-
-      if (filters.searchTerm) {
-        const searchLower = filters.searchTerm.toLowerCase()
-        filtered = filtered.filter(d => 
-          d.shape.toLowerCase().includes(searchLower) ||
-          d.color.toLowerCase().includes(searchLower) ||
-          d.clarity.toLowerCase().includes(searchLower) ||
-          d.supplier.name.toLowerCase().includes(searchLower)
-        )
-      }
-
-      if (filters.reportNumber) {
-        filtered = filtered.filter(d => 
-          d.reportNumber.toLowerCase().includes(filters.reportNumber.toLowerCase())
-        )
-      }
-
-      setFilteredDiamonds(filtered)
-      setCurrentPage(1)
-      setLoading(false)
-    }, 500)
-
-    return () => clearTimeout(timer)
-  }, [filters])
+    diamondService.getDiamonds()
+      .then((res) => {
+        const data = res?.data?.data || []
+        setDiamonds(data)
+        setFilteredDiamonds(data)
+        setTotalCount(res?.data?.meta?.total || data.length)
+        setLoading(false)
+      })
+      .catch(() => {
+        setDiamonds([])
+        setFilteredDiamonds([])
+        setTotalCount(0)
+        setLoading(false)
+      })
+  }, [filters, currentPage])
 
   const handleDiamondSelect = (diamond: Diamond) => {
     console.log('Selected natural single diamond:', diamond)
@@ -271,10 +115,7 @@ export default function NaturalSingleDiamondsPage() {
     console.log('Add natural single to cart:', diamondId)
   }
 
-  const currentDiamonds = filteredDiamonds.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  )
+  const currentDiamonds = filteredDiamonds
 
   const goBackToSearch = () => {
     router.push('/diamonds')
@@ -321,7 +162,7 @@ export default function NaturalSingleDiamondsPage() {
       {/* Results Header */}
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6">
-          <div>
+          {/* <div>
             <h1 className="text-3xl font-bold flex items-center" style={{ color: 'var(--foreground)' }}>
               <Crown className="w-8 h-8 mr-3" style={{ color: 'var(--chart-1)' }} />
               Natural Single Diamonds
@@ -333,9 +174,9 @@ export default function NaturalSingleDiamondsPage() {
                 <>Premium natural diamonds for engagement rings and luxury jewelry</>
               )}
             </p>
-          </div>
+          </div> */}
           
-          {hasAppliedFilters() && (
+          {/* {hasAppliedFilters() && (
             <div className="text-right">
               <div className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                 {getAppliedFiltersCount()} filters applied
@@ -348,11 +189,11 @@ export default function NaturalSingleDiamondsPage() {
                 Modify Search
               </button>
             </div>
-          )}
+          )} */}
         </div>
 
         {/* Applied Filters Summary */}
-        {hasAppliedFilters() && (
+        {/* {hasAppliedFilters() && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <h3 className="font-medium text-blue-900 mb-2">Applied Filters:</h3>
             <div className="flex flex-wrap gap-2">
@@ -384,10 +225,10 @@ export default function NaturalSingleDiamondsPage() {
               </span>
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-white rounded-lg p-4 shadow border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex items-center space-x-3">
               <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--chart-1)', color: 'var(--primary-foreground)' }}>
@@ -435,7 +276,7 @@ export default function NaturalSingleDiamondsPage() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Filters Sidebar - Desktop */}
@@ -470,7 +311,7 @@ export default function NaturalSingleDiamondsPage() {
             <DiamondResults
               diamonds={currentDiamonds}
               loading={loading}
-              totalCount={filteredDiamonds.length}
+              totalCount={totalCount}
               currentPage={currentPage}
               pageSize={pageSize}
               onPageChange={setCurrentPage}

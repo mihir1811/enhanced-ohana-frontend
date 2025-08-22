@@ -1,7 +1,11 @@
 'use client'
 
+
 import { useState } from 'react'
 import { Eye, Heart, ShoppingCart, Download, Grid, List, ArrowUpDown, ChevronDown } from 'lucide-react'
+import Pagination from '../ui/Pagination';
+import * as ShapeIcons from '@/../public/icons';
+
 
 export interface Diamond {
   id: string
@@ -71,6 +75,112 @@ export default function DiamondResults({
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [sortBy, setSortBy] = useState<SortOption>('price-asc')
   const [showSortDropdown, setShowSortDropdown] = useState(false)
+  const [selectedShapes, setSelectedShapes] = useState<string[]>(['All'])
+
+
+  // Map shape names to icon components (default fallback if not found)
+  // Full list of 32 diamond shapes
+  const DIAMOND_SHAPES = [
+    "Round",
+    "Pear",
+    "Emerald",
+    "Oval",
+    "Heart",
+    "Marquise",
+    "Asscher",
+    "Cushion",
+    "Cushion modified",
+    "Cushion brilliant",
+    "Radiant",
+    "Princess",
+    "French",
+    "Trilliant",
+    "Euro cut",
+    "Old Miner",
+    "Briollette",
+    "Rose cut",
+    "Lozenge",
+    "Baguette",
+    "Tapered baguette",
+    "Half-moon",
+    "Flanders",
+    "Trapezoid",
+    "Bullet",
+    "Kite",
+    "Shield",
+    "Star cut",
+    "Pentagonal cut",
+    "Hexagonal cut",
+    "Octagonal cut",
+    "Portugeese cut"
+  ];
+
+  // Map shape names to icon components (default fallback if not found)
+  // Make shapeIconMap case-insensitive by using lowercase keys
+  const shapeIconMap: Record<string, React.ComponentType<any>> = {
+    'round': ShapeIcons.RoundIcon,
+    'pear': ShapeIcons.PearIcon,
+    'emerald': ShapeIcons.EmeraldIcon,
+    'oval': ShapeIcons.OvalIcon,
+    'heart': ShapeIcons.HeartIcon,
+    'marquise': ShapeIcons.MarquiseIcon,
+    'asscher': ShapeIcons.AsscherIcon,
+    'cushion': ShapeIcons.CushionIcon,
+    'cushion modified': ShapeIcons.CushionModifiedIcon,
+    'cushion brilliant': ShapeIcons.CushionBrilliantIcon,
+    'radiant': ShapeIcons.RadiantIcon,
+    'princess': ShapeIcons.PrincessIcon,
+    'french': ShapeIcons.FrenchIcon,
+    'trilliant': ShapeIcons.TrilliantIcon,
+    'euro cut': ShapeIcons.EurocutIcon,
+    'old miner': ShapeIcons.OldMinerIcon,
+    'briollette': ShapeIcons.BriolletteIcon,
+    'rose cut': ShapeIcons.RosecutIcon,
+    'lozenge': ShapeIcons.LozengeIcon,
+    'baguette': ShapeIcons.BaguetteIcon,
+    'tapered baguette': ShapeIcons.TaperedBaguetteIcon,
+    'half-moon': ShapeIcons.HalfmoonIcon,
+    'flanders': ShapeIcons.FlandersIcon,
+    'trapezoid': ShapeIcons.TrapezoidIcon,
+    'bullet': ShapeIcons.BulletIcon,
+    'kite': ShapeIcons.KiteIcon,
+    'shield': ShapeIcons.ShieldIcon,
+    'star cut': ShapeIcons.StarcutIcon,
+    'pentagonal cut': ShapeIcons.PentagonalIcon,
+    'hexagonal cut': ShapeIcons.HexagonalIcon,
+    'octagonal cut': ShapeIcons.OctagonalIcon,
+    'portugeese cut': ShapeIcons.PortugeeseIcon,
+    // fallback
+    'default': ShapeIcons.DefaultIcon
+  };
+
+
+
+  const shapeOptions = [
+    { value: 'All', label: 'All', icon: <ShapeIcons.DefaultIcon width={20} height={20} /> },
+    ...DIAMOND_SHAPES.map(shape => {
+      const Icon = shapeIconMap[shape.toLowerCase()] || shapeIconMap['default'];
+      return {
+        value: shape,
+        label: shape,
+        icon: <Icon width={20} height={20} />
+      };
+    })
+  ];
+
+
+  // Helper to get shape icon component for a given shape (case-insensitive)
+  const getShapeIcon = (shape: string) => {
+    const Icon = shapeIconMap[shape?.toLowerCase?.()] || shapeIconMap['default'];
+    return <Icon width={20} height={20} />;
+  };
+
+  const filteredDiamonds =
+    selectedShapes.includes('All')
+      ? diamonds
+      : diamonds.filter(d =>
+          d.shape && selectedShapes.some(sel => d.shape.toLowerCase() === sel.toLowerCase())
+        );
 
   const sortOptions = [
     { value: 'price-asc', label: 'Price: Low to High' },
@@ -101,89 +211,216 @@ export default function DiamondResults({
     }
   }
 
-  const DiamondCard = ({ diamond }: { diamond: Diamond }) => (
-    <div 
-      className="border rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer group"
-      style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
-      onClick={() => onDiamondSelect(diamond)}
-    >
-      {/* Diamond Image */}
-      <div className="relative mb-3">
-        <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-          {diamond.images && diamond.images.length > 0 ? (
-            <img 
-              src={diamond.images[0]} 
-              alt={`${diamond.shape} Diamond`}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: 'var(--muted)' }}>
-              <span className="text-4xl">💎</span>
-            </div>
-          )}
-        </div>
-        
-        {/* Availability Badge */}
-        <div className={`absolute top-2 left-2 px-2 py-1 text-xs font-medium rounded-full ${getAvailabilityColor(diamond.availability)} bg-white shadow-sm`}>
-          {diamond.availability.charAt(0).toUpperCase() + diamond.availability.slice(1)}
-        </div>
+  // Grid view: tile card (image on top, details below, floating favorite button)
+  const DiamondGridCard = ({ diamond }: { diamond: Diamond }) => {
+    // Support both diamond.images and legacy image1-image6
+    const allImages = [
+      ...(diamond.images || []),
+      (diamond as any).image1, (diamond as any).image2, (diamond as any).image3, (diamond as any).image4, (diamond as any).image5, (diamond as any).image6
+    ].filter((img, i, arr) => img && typeof img === 'string' && img.trim() && arr.indexOf(img) === i);
+    const [imgIdx, setImgIdx] = useState(0);
+    const hasImages = allImages.length > 0;
 
-        {/* Action Buttons */}
-        <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+    const prevImg = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setImgIdx(idx => (idx - 1 + allImages.length) % allImages.length);
+    };
+    const nextImg = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setImgIdx(idx => (idx + 1) % allImages.length);
+    };
+
+    return (
+      <div
+        className="relative border rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer group flex flex-col overflow-hidden"
+        style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
+        onClick={() => onDiamondSelect(diamond)}
+      >
+        {/* Image Carousel & Favorite */}
+        <div className="relative w-full aspect-square flex items-center justify-center bg-gray-50"
+          style={{ background: 'var(--muted)' }}>
+          {hasImages ? (
+            <>
+              <img
+                src={allImages[imgIdx]}
+                alt={`${diamond.shape} Diamond`}
+                className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 bg-white"
+                loading="lazy"
+                style={{ objectFit: 'contain', background: 'white', borderRadius: 8, maxHeight: '100%', maxWidth: '100%' }}
+                onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+              {allImages.length > 1 && (
+                <>
+                  <button
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow border z-10"
+                    style={{ borderColor: 'var(--border)' }}
+                    onClick={prevImg}
+                    tabIndex={-1}
+                  >
+                    <ChevronDown className="w-5 h-5 rotate-90" />
+                  </button>
+                  <button
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow border z-10"
+                    style={{ borderColor: 'var(--border)' }}
+                    onClick={nextImg}
+                    tabIndex={-1}
+                  >
+                    <ChevronDown className="w-5 h-5 -rotate-90" />
+                  </button>
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+                    {allImages.map((img, i) => (
+                      <span key={i} className={`inline-block w-2 h-2 rounded-full ${i === imgIdx ? 'bg-primary' : 'bg-gray-300'}`}></span>
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          ) : (
+            <span className="text-5xl" style={{ color: 'var(--muted-foreground)' }}>💎</span>
+          )}
+          {/* Favorite Button (always visible, top right) */}
           <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onAddToWishlist(diamond.id)
-            }}
-            className="p-1.5 bg-white rounded-full shadow-sm hover:bg-gray-50 transition-colors"
+            onClick={e => { e.stopPropagation(); onAddToWishlist(diamond.id); }}
+            className="absolute top-2 right-2 p-2 rounded-full shadow hover:bg-pink-100 transition-colors z-10 border"
+            style={{ background: 'var(--card)', borderColor: 'var(--border)' }}
+            title="Add to Favourites"
           >
-            <Heart className="w-4 h-4 text-gray-600" />
+            <Heart className="w-5 h-5" style={{ color: 'var(--primary)' }} />
           </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onAddToCart(diamond.id)
-            }}
-            className="p-1.5 bg-white rounded-full shadow-sm hover:bg-gray-50 transition-colors"
-          >
-            <ShoppingCart className="w-4 h-4 text-gray-600" />
-          </button>
+          {/* Availability Badge */}
+          <span className={`absolute bottom-2 left-2 px-2 py-1 text-xs font-semibold rounded-full shadow`} style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--primary)' }}>
+            {(diamond.availability || 'available').charAt(0).toUpperCase() + (diamond.availability || 'available').slice(1)}
+          </span>
+        </div>
+        {/* Details */}
+        <div className="flex-1 flex flex-col justify-between p-4">
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="font-semibold text-base truncate" style={{ color: 'var(--foreground)' }}>
+              {diamond.caratWeight}ct {diamond.shape}
+            </h3>
+            <span className="text-base font-bold" style={{ color: 'var(--primary)' }}>
+              {formatPrice(diamond.price)}
+            </span>
+          </div>
+          {/* Reference Number */}
+          <div className="text-xs mb-2" style={{ color: 'var(--muted-foreground)' }}>
+            Ref: <span className="font-mono">{diamond.reportNumber || 'N/A'}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2 text-xs mb-2">
+            <div className="truncate">Color: <span className="font-medium" style={{ color: 'var(--foreground)' }}>{diamond.color}</span></div>
+            <div className="truncate">Clarity: <span className="font-medium" style={{ color: 'var(--foreground)' }}>{diamond.clarity}</span></div>
+            <div className="truncate flex items-center gap-1">Shape: <span className="inline-block align-middle w-5 h-5 text-primary">{getShapeIcon(diamond.shape)}</span> <span className="font-medium" style={{ color: 'var(--foreground)' }}>{diamond.shape}</span></div>
+            <div className="truncate">Carat: <span className="font-medium" style={{ color: 'var(--foreground)' }}>{diamond.caratWeight}</span></div>
+          </div>
+          {/* Supplier & Actions */}
+          <div className="flex items-center justify-between pt-2 border-t mt-2" style={{ borderColor: 'var(--border)' }}>
+            <div className="flex items-center space-x-2">
+              <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                {(diamond.supplier && diamond.supplier.name) ? diamond.supplier.name : 'Unknown Supplier'}
+              </span>
+              {diamond.supplier && diamond.supplier.verified && (
+                <span className="text-xs px-1.5 py-0.5 rounded font-semibold" style={{ background: 'var(--accent)', color: 'var(--accent-foreground)' }}>
+                  Verified
+                </span>
+              )}
+            </div>
+            <button
+              onClick={e => { e.stopPropagation(); onAddToCart(diamond.id); }}
+              className="px-3 py-1 rounded-lg font-medium transition-colors text-xs"
+              style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
+              title="Add to Cart"
+            >
+              <ShoppingCart className="w-4 h-4 inline mr-1" />Add to Cart
+            </button>
+          </div>
         </div>
       </div>
+    );
+  };
 
-      {/* Diamond Details */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-lg" style={{ color: 'var(--foreground)' }}>
+  // List view: horizontal card (as before)
+  const DiamondListCard = ({ diamond }: { diamond: Diamond }) => (
+    <div
+      className="relative border rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer group flex flex-row overflow-hidden"
+      style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
+      onClick={() => onDiamondSelect(diamond)}
+    >
+      {/* Left: Image & Favorite */}
+      <div className="relative w-36 min-w-36 h-36 flex items-center justify-center"
+        style={{ background: 'var(--muted)' }}>
+        {diamond.images && diamond.images.length > 0 ? (
+          <img
+            src={diamond.images[0]}
+            alt={`${diamond.shape} Diamond`}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            loading="lazy"
+          />
+        ) : (
+          <span className="text-5xl" style={{ color: 'var(--muted-foreground)' }}>💎</span>
+        )}
+        {/* Favorite Button (always visible, top right) */}
+        <button
+          onClick={e => { e.stopPropagation(); onAddToWishlist(diamond.id); }}
+          className="absolute top-2 right-2 p-2 rounded-full shadow hover:bg-pink-100 transition-colors z-10 border"
+          style={{ background: 'var(--card)', borderColor: 'var(--border)' }}
+          title="Add to Favourites"
+        >
+          <Heart className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+        </button>
+        {/* Availability Badge */}
+        <span className={`absolute bottom-2 left-2 px-2 py-1 text-xs font-semibold rounded-full shadow`} style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--primary)' }}>
+          {(diamond.availability || 'available').charAt(0).toUpperCase() + (diamond.availability || 'available').slice(1)}
+        </span>
+      </div>
+      {/* Right: Details */}
+      <div className="flex-1 flex flex-col justify-between p-4">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="font-semibold text-lg truncate" style={{ color: 'var(--foreground)' }}>
             {diamond.caratWeight}ct {diamond.shape}
           </h3>
           <span className="text-lg font-bold" style={{ color: 'var(--primary)' }}>
             {formatPrice(diamond.price)}
           </span>
         </div>
-
-        <div className="grid grid-cols-2 gap-2 text-sm" style={{ color: 'var(--muted-foreground)' }}>
-          <div>Color: <span style={{ color: 'var(--foreground)' }}>{diamond.color}</span></div>
-          <div>Clarity: <span style={{ color: 'var(--foreground)' }}>{diamond.clarity}</span></div>
-          <div>Cut: <span style={{ color: 'var(--foreground)' }}>{diamond.cut}</span></div>
-          <div>Cert: <span style={{ color: 'var(--foreground)' }}>{diamond.certification}</span></div>
+        {/* Reference Number */}
+        <div className="text-xs mb-2" style={{ color: 'var(--muted-foreground)' }}>
+          Ref: <span className="font-mono">{diamond.reportNumber || 'N/A'}</span>
         </div>
-
-        {/* Supplier Info */}
-        <div className="flex items-center justify-between pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
+        <div className="grid grid-cols-4 gap-2 text-sm mb-2">
+          <div className="truncate">Color: <span className="font-medium" style={{ color: 'var(--foreground)' }}>{diamond.color}</span></div>
+          <div className="truncate">Clarity: <span className="font-medium" style={{ color: 'var(--foreground)' }}>{diamond.clarity}</span></div>
+          <div className="truncate flex items-center gap-1">Shape: <span className="inline-block align-middle w-5 h-5 text-primary">{getShapeIcon(diamond.shape)}</span> <span className="font-medium" style={{ color: 'var(--foreground)' }}>{diamond.shape}</span></div>
+          <div className="truncate">Carat: <span className="font-medium" style={{ color: 'var(--foreground)' }}>{diamond.caratWeight}</span></div>
+        </div>
+        {/* Supplier & Actions */}
+        <div className="flex items-center justify-between pt-2 border-t mt-2" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center space-x-2">
             <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-              {diamond.supplier.name}
+              {(diamond.supplier && diamond.supplier.name) ? diamond.supplier.name : 'Unknown Supplier'}
             </span>
-            {diamond.supplier.verified && (
-              <span className="text-xs px-1.5 py-0.5 bg-green-100 text-green-700 rounded">
+            {diamond.supplier && diamond.supplier.verified && (
+              <span className="text-xs px-1.5 py-0.5 rounded font-semibold" style={{ background: 'var(--accent)', color: 'var(--accent-foreground)' }}>
                 Verified
               </span>
             )}
           </div>
-          <button className="text-xs px-2 py-1 rounded transition-colors" style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}>
-            View Details
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={e => { e.stopPropagation(); onAddToCart(diamond.id); }}
+              className="px-3 py-1 rounded-lg font-medium transition-colors text-xs"
+              style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
+              title="Add to Cart"
+            >
+              <ShoppingCart className="w-4 h-4 inline mr-1" />Add to Cart
+            </button>
+            <button
+              className="text-xs px-3 py-1 rounded-lg font-medium transition-colors"
+              style={{ background: 'var(--muted)', color: 'var(--foreground)' }}
+              onClick={e => e.stopPropagation()}
+            >
+              View Details
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -248,8 +485,8 @@ export default function DiamondResults({
             <div className="font-bold text-lg" style={{ color: 'var(--primary)' }}>
               {formatPrice(diamond.price)}
             </div>
-            <div className={`text-xs ${getAvailabilityColor(diamond.availability)}`}>
-              {diamond.availability}
+            <div className={`text-xs ${getAvailabilityColor(diamond.availability || 'available')}`}>
+              {(diamond.availability || 'available')}
             </div>
           </div>
         </div>
@@ -357,15 +594,48 @@ export default function DiamondResults({
           </div>
 
           {/* Export Button */}
-          <button className="flex items-center space-x-2 px-3 py-2 border rounded-lg transition-colors hover:bg-opacity-80" style={{ backgroundColor: 'var(--muted)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
+          {/* <button className="flex items-center space-x-2 px-3 py-2 border rounded-lg transition-colors hover:bg-opacity-80" style={{ backgroundColor: 'var(--muted)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
             <Download className="w-4 h-4" />
             <span className="text-sm">Export</span>
-          </button>
+          </button> */}
         </div>
       </div>
 
+      {/* Diamond Shape Filter Bar */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-4 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-thumb-muted-foreground/30">
+        {shapeOptions.map(opt => {
+          const isSelected = selectedShapes.includes(opt.value);
+          return (
+            <button
+              key={opt.value}
+              onClick={() => {
+                if (opt.value === 'All') {
+                  setSelectedShapes(['All']);
+                } else {
+                  setSelectedShapes(prev => {
+                    let next;
+                    if (prev.includes(opt.value)) {
+                      next = prev.filter(s => s !== opt.value);
+                    } else {
+                      next = prev.filter(s => s !== 'All').concat(opt.value);
+                    }
+                    return next.length === 0 ? ['All'] : next;
+                  });
+                }
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-colors ${isSelected ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border hover:bg-muted'}`}
+              style={isSelected ? { background: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { background: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
+              type="button"
+            >
+              <span className="text-lg">{opt.icon}</span>
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Results Grid/List */}
-      {diamonds.length === 0 ? (
+      {filteredDiamonds.length === 0 ? (
         <div className="text-center py-12 border rounded-lg" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
           <div className="text-6xl mb-4">💎</div>
           <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
@@ -376,57 +646,29 @@ export default function DiamondResults({
           </p>
         </div>
       ) : (
-        <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4' : 'space-y-4'}>
-          {diamonds.map((diamond) => (
-            viewMode === 'grid' ? (
-              <DiamondCard key={diamond.id} diamond={diamond} />
-            ) : (
-              <DiamondListItem key={diamond.id} diamond={diamond} />
-            )
-          ))}
-        </div>
+        <>
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredDiamonds.map((diamond) => (
+                <DiamondGridCard key={diamond.id} diamond={diamond} />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredDiamonds.map((diamond) => (
+                <DiamondListCard key={diamond.id} diamond={diamond} />
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center space-x-2 pt-6">
-          <button
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-3 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
-          >
-            Previous
-          </button>
-          
-          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-            const page = i + 1
-            return (
-              <button
-                key={page}
-                onClick={() => onPageChange(page)}
-                className={`px-3 py-2 border rounded-lg transition-colors ${currentPage === page ? 'bg-opacity-100' : 'bg-opacity-0'}`}
-                style={{ 
-                  backgroundColor: currentPage === page ? 'var(--primary)' : 'var(--background)', 
-                  borderColor: 'var(--border)', 
-                  color: currentPage === page ? 'var(--primary-foreground)' : 'var(--foreground)' 
-                }}
-              >
-                {page}
-              </button>
-            )
-          })}
-          
-          <button
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="px-3 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={onPageChange}
+      />
     </div>
   )
 }

@@ -89,15 +89,15 @@ const shapeIconMap: Record<string, React.ComponentType<any>> = {
   'French': ShapeIcons.FrenchIcon,
   'Trilliant': ShapeIcons.TrilliantIcon,
   'Euro cut': ShapeIcons.EurocutIcon,
-  'Old Miner': ShapeIcons.OldminarIcon,
-  'Briollette': ShapeIcons.BriollietteIcon,
+  'Old Miner': ShapeIcons.OldMinerIcon,
+  'Briollette': ShapeIcons.BriolletteIcon,
   'Rose cut': ShapeIcons.RosecutIcon,
   'Lozenge': ShapeIcons.LozengeIcon,
   'Baguette': ShapeIcons.BaguetteIcon,
-  'Tapered baguette': ShapeIcons.TaperedBaguatteIcon,
+  'Tapered baguette': ShapeIcons.TaperedBaguetteIcon,
   'Half-moon': ShapeIcons.HalfmoonIcon,
   'Flanders': ShapeIcons.FlandersIcon,
-  'Trapezoid': ShapeIcons.TrapazoidIcon,
+  'Trapezoid': ShapeIcons.TrapezoidIcon,
   'Bullet': ShapeIcons.BulletIcon,
   'Kite': ShapeIcons.KiteIcon,
   'Shield': ShapeIcons.ShieldIcon,
@@ -511,36 +511,61 @@ export default function DiamondsSearchPage() {
               <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
                 Shape
               </label>
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                {SHAPES.map(shape => {
-                  const Icon = shapeIconMap[shape] || shapeIconMap['Default'];
-                  const selected = searchForm.shape.includes(shape);
-                  return (
-                    <button
-                      key={shape}
-                      onClick={() => handleMultiSelect('shape', shape)}
-                      className={`flex flex-col items-center justify-center p-3 duration-75 rounded-xl border transition-all group relative focus:outline-none focus:ring-2 focus:ring-blue-400 ${selected ? 'border-blue-500 bg-blue-50 shadow-lg' : 'border-gray-200 hover:border-gray-300 hover:shadow-md'}`}
-                      style={{
-                        backgroundColor: selected ? 'var(--primary)/10' : 'var(--card)',
-                        borderColor: selected ? 'var(--primary)' : 'var(--border)',
-                        color: selected ? 'var(--primary)' : 'var(--foreground)',
-                        transition: 'box-shadow 0.2s, transform 0.2s'
-                      }}
-                      title={shape}
-                    >
-                      <span className={`w-12 h-12 flex items-center justify-center mb-1 rounded-full transition-all bg-transparent`}
-                      >
-                        <Icon width={40} height={40} />
-                      </span>
-                      <span className="text-xs font-medium text-center truncate w-full">{shape}</span>
-                      {/* Tooltip for better UX on hover */}
-                      <span className="absolute z-10 left-1/2 -translate-x-1/2 bottom-[-2.2rem] px-2 py-1 rounded bg-black text-white text-xs opacity-0 group-hover:opacity-100 pointer-events-none transition-all whitespace-nowrap shadow-lg" style={{ minWidth: 60 }}>
-                        {shape}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+              {(() => {
+                const [showAllShapes, setShowAllShapes] = React.useState(false);
+                const visibleShapes = showAllShapes ? SHAPES : SHAPES.slice(0, 9);
+                return (
+                  <>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                      {visibleShapes.map(shape => {
+                        const Icon = shapeIconMap[shape] || shapeIconMap['Default'];
+                        const selected = searchForm.shape.includes(shape);
+                        return (
+                          <button
+                            key={shape}
+                            onClick={() => handleMultiSelect('shape', shape)}
+                            className={`flex flex-col items-center justify-center p-3 duration-75 rounded-xl border transition-all group relative focus:outline-none focus:ring-2 focus:ring-blue-400 ${selected ? 'border-blue-500 bg-blue-50 shadow-lg' : 'border-gray-200 hover:border-gray-300 hover:shadow-md'}`}
+                            style={{
+                              backgroundColor: selected ? 'var(--primary)/10' : 'var(--card)',
+                              borderColor: selected ? 'var(--primary)' : 'var(--border)',
+                              color: selected ? 'var(--primary)' : 'var(--foreground)',
+                              transition: 'box-shadow 0.2s, transform 0.2s'
+                            }}
+                            title={shape}
+                          >
+                            <span className={`w-12 h-12 flex items-center justify-center mb-1 rounded-full transition-all bg-transparent`}
+                            >
+                              <Icon width={40} height={40} />
+                            </span>
+                            <span className="text-xs font-medium text-center truncate w-full">{shape}</span>
+                            {/* Tooltip for better UX on hover */}
+                            <span className="absolute z-10 left-1/2 -translate-x-1/2 bottom-[-2.2rem] px-2 py-1 rounded bg-black text-white text-xs opacity-0 group-hover:opacity-100 pointer-events-none transition-all whitespace-nowrap shadow-lg" style={{ minWidth: 60 }}>
+                              {shape}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {SHAPES.length > 9 && (
+                      <div className="flex justify-center mt-3">
+                        <button
+                          type="button"
+                          className="px-4 py-1 rounded-full border text-xs font-medium transition-colors"
+                          style={{
+                            backgroundColor: 'var(--card)',
+                            borderColor: 'var(--border)',
+                            color: 'var(--primary)',
+                            minWidth: 100
+                          }}
+                          onClick={() => setShowAllShapes(v => !v)}
+                        >
+                          {showAllShapes ? 'Show Less' : 'Show More'}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
 
             {/* Carat Weight */}
