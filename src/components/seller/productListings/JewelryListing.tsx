@@ -16,11 +16,10 @@ const JewelryListing = () => {
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
-
+  const [refreshKey, setRefreshKey] = useState(0);
   const handleBulkFileSelect = (file: File) => {
-    // TODO: Implement actual upload logic (API call or client-side parse)
-    toast.success(`Selected file: ${file.name}`);
     setBulkModalOpen(false);
+    setRefreshKey((k) => k + 1);
   };
   const sellerId = useSelector((state: any) => state.seller.profile?.id) || 'default-seller-id'; // Replace with actual sellerId from auth/user context
 
@@ -72,7 +71,7 @@ const JewelryListing = () => {
         setJewelry([]);
       })
       .finally(() => setLoading(false));
-  }, [sellerId, page, limit]);
+  }, [sellerId, page, limit, refreshKey]);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
