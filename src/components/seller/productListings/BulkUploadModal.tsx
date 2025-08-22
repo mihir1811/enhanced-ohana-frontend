@@ -1,5 +1,9 @@
 import React from "react";
-import { toast } from 'react-hot-toast';
+import { toast } from "react-hot-toast";
+import { diamondService } from "@/services/diamondService";
+import { getCookie } from "@/lib/cookie-utils";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 
 interface BulkUploadModalProps {
   open: boolean;
@@ -14,39 +18,58 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 }) => {
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+  const sellerType = useSelector((state: RootState) => state.seller.profile?.sellerType);
+  // Determine productType based on sellerType (switch/case style)
+  let productType = 'diamond';
+  switch (sellerType) {
+    case 'naturalDiamond':
+      productType = 'diamond';
+      break;
+    case 'labGrownDiamond':
+      productType = 'lab-grown-diamond';
+      break;
+    case 'gemstone':
+      productType = 'gemstone';
+      break;
+    case 'jewellery':
+      productType = 'jewellery';
+      break;
+    default:
+      productType = 'diamond';
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
+  const [uploading, setUploading] = React.useState(false);
   const handleUpload = async () => {
     if (!selectedFile) return;
-    const formData = new FormData();
-    formData.append('file', selectedFile);
+    setUploading(true);
     try {
-      const res = await fetch('/api/v1/products/upload-excel', {
-        method: 'POST',
-        body: formData,
-      });
-      if (!res.ok) throw new Error('Upload failed');
-      toast.success('Excel uploaded successfully!');
+      const token = getCookie("token");
+      if (!token) throw new Error("User not authenticated");
+      await diamondService.uploadExcel(selectedFile, productType, token);
+      toast.success("Excel uploaded successfully!");
+      onFileSelect(selectedFile); // Notify parent if needed
       setSelectedFile(null);
-      onFileSelect(selectedFile);
     } catch (err) {
-      toast.error('Failed to upload Excel file');
+      toast.error("Failed to upload Excel file");
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleSampleDownload = () => {
     // Use the correct sample file path and name
-    const sampleUrl = '/sample-diamond.xlsx';
-    const link = document.createElement('a');
+    const sampleUrl = "/sample-diamond.xlsx";
+    const link = document.createElement("a");
     link.href = sampleUrl;
-    link.download = 'sample-diamond.xlsx';
+    link.download = "sample-diamond.xlsx";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -97,8 +120,11 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
           <div
             className="w-full border-2 border-dashed border-blue-400 rounded-lg p-6 text-center cursor-pointer bg-blue-50 hover:bg-blue-100 transition"
             onClick={() => fileInputRef.current?.click()}
-            onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
-            onDrop={e => {
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onDrop={(e) => {
               e.preventDefault();
               e.stopPropagation();
               const file = e.dataTransfer.files?.[0];
@@ -106,11 +132,26 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             }}
           >
             <div className="flex flex-col items-center justify-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5-5m0 0l5 5m-5-5v12" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-8 w-8 text-blue-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5-5m0 0l5 5m-5-5v12"
+                />
               </svg>
-              <span className="text-blue-700 font-medium">Click or drag and drop Excel/CSV file here</span>
-              <span className="text-xs text-gray-500">.csv, .xlsx supported</span>
+              <span className="text-blue-700 font-medium">
+                Click or drag and drop Excel/CSV file here
+              </span>
+              <span className="text-xs text-gray-500">
+                .csv, .xlsx supported
+              </span>
             </div>
           </div>
           {selectedFile && (
@@ -129,9 +170,9 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             className="px-4 py-2 bg-green-600 text-white rounded font-semibold hover:bg-green-700 transition w-full disabled:opacity-50"
             onClick={handleUpload}
             type="button"
-            disabled={!selectedFile}
+            disabled={!selectedFile || uploading}
           >
-            Upload
+            {uploading ? "Uploading..." : "Upload"}
           </button>
           <button
             className="px-4 py-2 bg-gray-200 text-gray-700 rounded font-semibold hover:bg-gray-300 transition w-full"
@@ -140,7 +181,9 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
           >
             Download Sample Excel
           </button>
-          <p className="text-sm text-gray-500">Upload an Excel or CSV file to add multiple diamonds at once.</p>
+          <p className="text-sm text-gray-500">
+            Upload an Excel or CSV file to add multiple diamonds at once.
+          </p>
         </div>
       </div>
     </div>

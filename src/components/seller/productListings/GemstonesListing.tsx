@@ -28,9 +28,10 @@ const GemstonesListing = () => {
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const handleBulkFileSelect = (file: File) => {
-    toast.success(`Selected file: ${file.name}`);
     setBulkModalOpen(false);
+    setRefreshKey((k) => k + 1);
   };
   const sellerId = useSelector((state: any) => state.seller.profile?.id) || 'default-seller-id'; // Replace with actual sellerId from auth/user context
 
@@ -51,7 +52,7 @@ const GemstonesListing = () => {
         setGemstones([]);
       })
       .finally(() => setLoading(false));
-  }, [page, limit, sellerId]);
+  }, [page, limit, sellerId, refreshKey]);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
