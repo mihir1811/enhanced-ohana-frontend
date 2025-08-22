@@ -64,6 +64,8 @@ interface DiamondFiltersProps {
   className?: string
 }
 
+import * as ShapeIcons from '@/../public/icons';
+
 const DIAMOND_SHAPES = [
   "Round",
   "Pear",
@@ -98,6 +100,44 @@ const DIAMOND_SHAPES = [
   "Octagonal cut",
   "Portugeese cut"
 ]
+
+// Map shape names to icon components (default fallback if not found)
+const shapeIconMap: Record<string, React.ComponentType<any>> = {
+  'Round': ShapeIcons.RoundIcon,
+  'Pear': ShapeIcons.PearIcon,
+  'Emerald': ShapeIcons.EmeraldIcon,
+  'Oval': ShapeIcons.OvalIcon,
+  'Heart': ShapeIcons.HeartIcon,
+  'Marquise': ShapeIcons.MarquiseIcon,
+  'Asscher': ShapeIcons.AsscherIcon,
+  'Cushion': ShapeIcons.CushionIcon,
+  'Cushion modified': ShapeIcons.CushionModifiedIcon,
+  'Cushion brilliant': ShapeIcons.CushionBrilliantIcon,
+  'Radiant': ShapeIcons.RadiantIcon,
+  'Princess': ShapeIcons.PrincessIcon,
+  'French': ShapeIcons.FrenchIcon,
+  'Trilliant': ShapeIcons.TrilliantIcon,
+  'Euro cut': ShapeIcons.EurocutIcon,
+  'Old Miner': ShapeIcons.OldminarIcon,
+  'Briollette': ShapeIcons.BriollietteIcon,
+  'Rose cut': ShapeIcons.RosecutIcon,
+  'Lozenge': ShapeIcons.LozengeIcon,
+  'Baguette': ShapeIcons.BaguetteIcon,
+  'Tapered baguette': ShapeIcons.TaperedBaguatteIcon,
+  'Half-moon': ShapeIcons.HalfmoonIcon,
+  'Flanders': ShapeIcons.FlandersIcon,
+  'Trapezoid': ShapeIcons.TrapazoidIcon,
+  'Bullet': ShapeIcons.BulletIcon,
+  'Kite': ShapeIcons.KiteIcon,
+  'Shield': ShapeIcons.ShieldIcon,
+  'Star cut': ShapeIcons.StarcutIcon,
+  'Pentagonal cut': ShapeIcons.PentagonalIcon,
+  'Hexagonal cut': ShapeIcons.HexagonalIcon,
+  'Octagonal cut': ShapeIcons.OctagonalIcon,
+  'Portugeese cut': ShapeIcons.PortugeeseIcon,
+  // fallback
+  'Default': ShapeIcons.DefaultIcon
+};
 
 // Industry-standard shape categories based on your inventory
 const SHAPE_CATEGORIES = {
@@ -312,28 +352,33 @@ export default function DiamondFilters({
               {category}
             </div>
             <div className="grid grid-cols-2 gap-1">
-              {SHAPE_CATEGORIES[category as keyof typeof SHAPE_CATEGORIES].map(shape => (
-                <button
-                  key={shape}
-                  onClick={() => toggleShape(shape)}
-                  className={`text-xs p-2 rounded border transition-all text-left ${
-                    selected.includes(shape)
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                  style={{
-                    backgroundColor: selected.includes(shape) ? 'var(--primary)/10' : 'var(--card)',
-                    borderColor: selected.includes(shape) ? 'var(--primary)' : 'var(--border)',
-                    color: selected.includes(shape) ? 'var(--primary)' : 'var(--foreground)'
-                  }}
-                >
-                  {shape}
-                </button>
-              ))}
+              {SHAPE_CATEGORIES[category as keyof typeof SHAPE_CATEGORIES].map(shape => {
+                const Icon = shapeIconMap[shape] || shapeIconMap['Default'];
+                return (
+                  <button
+                    key={shape}
+                    onClick={() => toggleShape(shape)}
+                    className={`flex items-center gap-2 text-xs p-2 rounded border transition-all text-left ${
+                      selected.includes(shape)
+                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    style={{
+                      backgroundColor: selected.includes(shape) ? 'var(--primary)/10' : 'var(--card)',
+                      borderColor: selected.includes(shape) ? 'var(--primary)' : 'var(--border)',
+                      color: selected.includes(shape) ? 'var(--primary)' : 'var(--foreground)'
+                    }}
+                  >
+                    <span className="w-5 h-5 flex items-center justify-center">
+                      <Icon width={18} height={18} />
+                    </span>
+                    {shape}
+                  </button>
+                );
+              })}
             </div>
           </div>
         ))}
-        
         <button
           onClick={() => setShowAllCategories(!showAllCategories)}
           className="text-xs hover:underline w-full text-left"
@@ -341,7 +386,6 @@ export default function DiamondFilters({
         >
           {showAllCategories ? 'Show Less Shapes' : `Show All Shapes (${DIAMOND_SHAPES.length} total)`}
         </button>
-        
         {selected.length > 0 && (
           <div className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
             {selected.length} shape{selected.length > 1 ? 's' : ''} selected
