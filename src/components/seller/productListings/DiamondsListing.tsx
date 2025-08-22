@@ -13,10 +13,11 @@ const DiamondsListing = () => {
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const handleBulkFileSelect = (file: File) => {
-    // TODO: Implement actual upload logic (API call or client-side parse)
-    toast.success(`Selected file: ${file.name}`);
+    // Called after successful upload in modal
     setBulkModalOpen(false);
+    setRefreshKey((k) => k + 1);
   };
 
   useEffect(() => {
@@ -52,7 +53,7 @@ const DiamondsListing = () => {
         setDiamonds([]);
       })
       .finally(() => setLoading(false));
-  }, [page, limit]);
+  }, [page, limit, refreshKey]);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 

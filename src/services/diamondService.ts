@@ -10,6 +10,12 @@ export interface DiamondFilters {
 }
 
 class DiamondService {
+  // Bulk upload diamonds via Excel
+  async uploadExcel(file: File, token?: string): Promise<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return apiService.upload('/products/upload-excel?productType=diamond', formData, token);
+  }
   // Delete diamond by ID
   async deleteDiamond(id: string | number, token?: string): Promise<any> {
     return apiService.delete(`/diamond/${id}`, token);

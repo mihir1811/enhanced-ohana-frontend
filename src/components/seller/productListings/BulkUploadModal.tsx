@@ -1,5 +1,7 @@
 import React from "react";
 import { toast } from 'react-hot-toast';
+import { diamondService } from '@/services/diamondService';
+import { getCookie } from "@/lib/cookie-utils";
 
 interface BulkUploadModalProps {
   open: boolean;
@@ -23,21 +25,21 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     }
   };
 
+  const [uploading, setUploading] = React.useState(false);
   const handleUpload = async () => {
     if (!selectedFile) return;
-    const formData = new FormData();
-    formData.append('file', selectedFile);
+    setUploading(true);
     try {
-      const res = await fetch('/api/v1/products/upload-excel', {
-        method: 'POST',
-        body: formData,
-      });
-      if (!res.ok) throw new Error('Upload failed');
+            const token = getCookie('token');
+            if (!token) throw new Error('User not authenticated');
+      await diamondService.uploadExcel(selectedFile, token);
       toast.success('Excel uploaded successfully!');
+      onFileSelect(selectedFile); // Notify parent if needed
       setSelectedFile(null);
-      onFileSelect(selectedFile);
     } catch (err) {
       toast.error('Failed to upload Excel file');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -129,9 +131,9 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             className="px-4 py-2 bg-green-600 text-white rounded font-semibold hover:bg-green-700 transition w-full disabled:opacity-50"
             onClick={handleUpload}
             type="button"
-            disabled={!selectedFile}
+            disabled={!selectedFile || uploading}
           >
-            Upload
+            {uploading ? 'Uploading...' : 'Upload'}
           </button>
           <button
             className="px-4 py-2 bg-gray-200 text-gray-700 rounded font-semibold hover:bg-gray-300 transition w-full"
