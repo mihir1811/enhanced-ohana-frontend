@@ -26,18 +26,7 @@ export function getDefaultDiamondFilters(diamondType: 'natural-single' | 'natura
     culet: [],
     origin: [],
     treatment: [],
-    milkyness: [],
-    matching: null,
     pricePerCarat: { min: 0, max: 10000 },
-    availability: [],
-    delivery: [],
-    brilliance: [],
-    fire: [],
-    scintillation: [],
-    grownMethod: [],
-    searchTerm: '',
-    reportNumber: '',
-    stoneId: '',
   };
 }
 
