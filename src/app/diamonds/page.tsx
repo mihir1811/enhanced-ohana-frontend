@@ -38,6 +38,7 @@ interface DiamondSearchForm {
 
 // Shape options - Your actual industry shapes
 import * as ShapeIcons from '@/../public/icons';
+import { SECTION_WIDTH } from '@/lib/constants'
 const SHAPES = [
   "Round",
   "Pear",
@@ -382,7 +383,7 @@ export default function DiamondsSearchPage() {
       </div>
 
       {/* Search Form */}
-      <div className="max-w-[1400px] mx-auto px-4 py-12">
+      <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 py-12`}>
         <div className="bg-white/80 dark:bg-slate-900/80 rounded-2xl shadow-sm border p-8 backdrop-blur-xl relative" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
           <div className="flex items-center mb-8">
             <Search className="w-8 h-8 mr-3" style={{ color: 'var(--primary)' }} />

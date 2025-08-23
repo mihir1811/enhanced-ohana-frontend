@@ -10,6 +10,7 @@ import Footer from '@/components/Footer'
 
 
 import { diamondService } from '@/services/diamondService'
+import { SECTION_WIDTH } from '@/lib/constants'
 
 export default function NaturalSingleDiamondsPage() {
   const searchParams = useSearchParams()
@@ -138,7 +139,7 @@ export default function NaturalSingleDiamondsPage() {
       
       {/* Breadcrumb & Back Navigation */}
       <div className="border-b" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 py-4`}>
           <div className="flex items-center justify-between">
             <button
               onClick={goBackToSearch}
@@ -160,7 +161,7 @@ export default function NaturalSingleDiamondsPage() {
       </div>
 
       {/* Results Header */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 py-6`}>
         <div className="flex items-center justify-between mb-6">
           {/* <div>
             <h1 className="text-3xl font-bold flex items-center" style={{ color: 'var(--foreground)' }}>

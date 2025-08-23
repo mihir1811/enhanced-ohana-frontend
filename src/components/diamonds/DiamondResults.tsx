@@ -2,7 +2,7 @@
 
 
 import { useState } from 'react'
-import { Eye, Heart, ShoppingCart, Download, Grid, List, ArrowUpDown, ChevronDown } from 'lucide-react'
+import { Eye, Heart, ShoppingCart, Download, Grid, List, ArrowUpDown, ChevronDown, CopyPlus } from 'lucide-react'
 import Pagination from '../ui/Pagination';
 import * as ShapeIcons from '@/../public/icons';
 
@@ -211,7 +211,7 @@ export default function DiamondResults({
     }
   }
 
-  // Grid view: tile card (image on top, details below, floating favorite button)
+  // Grid view: tile card (image on top, details below, floating favorite button, compare & quick view)
   const DiamondGridCard = ({ diamond }: { diamond: Diamond }) => {
     // Support both diamond.images and legacy image1-image6
     const allImages = [
@@ -239,6 +239,25 @@ export default function DiamondResults({
         {/* Image Carousel & Favorite */}
         <div className="relative w-full aspect-square flex items-center justify-center bg-gray-50"
           style={{ background: 'var(--muted)' }}>
+          {/* Compare & Quick View Icons */}
+          <div className="absolute top-2 left-2 flex flex-col gap-2 z-20">
+            <button
+              className="p-2 rounded-full shadow border bg-white/80 hover:bg-white transition-colors"
+              style={{ borderColor: 'var(--border)' }}
+              title="Compare"
+              onClick={e => { e.stopPropagation(); /* TODO: handle compare */ }}
+            >
+              <CopyPlus className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+            </button>
+            <button
+              className="p-2 rounded-full shadow border bg-white/80 hover:bg-white transition-colors"
+              style={{ borderColor: 'var(--border)' }}
+              title="Quick View"
+              onClick={e => { e.stopPropagation(); /* TODO: handle quick view */ }}
+            >
+              <Eye className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+            </button>
+          </div>
           {hasImages ? (
             <>
               <img
@@ -338,13 +357,32 @@ export default function DiamondResults({
     );
   };
 
-  // List view: horizontal card (as before)
+  // List view: horizontal card (with compare & quick view)
   const DiamondListCard = ({ diamond }: { diamond: Diamond }) => (
     <div
       className="relative border rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer group flex flex-row overflow-hidden"
       style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
       onClick={() => onDiamondSelect(diamond)}
     >
+      {/* Compare & Quick View Icons */}
+      <div className="absolute top-2 left-2 flex flex-col gap-2 z-20">
+        <button
+          className="p-2 rounded-full shadow border bg-white/80 hover:bg-white transition-colors"
+          style={{ borderColor: 'var(--border)' }}
+          title="Compare"
+          onClick={e => { e.stopPropagation(); /* TODO: handle compare */ }}
+        >
+          <CopyPlus className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+        </button>
+        <button
+          className="p-2 rounded-full shadow border bg-white/80 hover:bg-white transition-colors"
+          style={{ borderColor: 'var(--border)' }}
+          title="Quick View"
+          onClick={e => { e.stopPropagation(); /* TODO: handle quick view */ }}
+        >
+          <Eye className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+        </button>
+      </div>
       {/* Left: Image & Favorite */}
       <div className="relative w-36 min-w-36 h-36 flex items-center justify-center"
         style={{ background: 'var(--muted)' }}>

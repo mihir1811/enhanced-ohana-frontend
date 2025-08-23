@@ -6,6 +6,7 @@ import { Search, Gem, Leaf, Sparkles, Filter } from 'lucide-react'
 import NavigationUser from '@/components/Navigation/NavigationUser'
 import Footer from '@/components/Footer'
 import { ProductConfig, FilterConfig } from '@/types/products'
+import { SECTION_WIDTH } from '@/lib/constants'
 
 interface ProductSearchPageProps {
   productType: string
@@ -258,7 +259,7 @@ export default function ProductSearchPage({
       </div>
 
       {/* Search Form */}
-      <div className="max-w-[1400px] mx-auto px-4 py-12">
+      <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 py-12`}>
         <div className="bg-white rounded-2xl shadow-2xl border p-8" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
           <div className="flex items-center mb-8">
             <Search className="w-8 h-8 mr-3" style={{ color: 'var(--primary)' }} />

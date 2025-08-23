@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation'
 import NavigationUser from '@/components/Navigation/NavigationUser'
 import Footer from '@/components/Footer'
 import { PRODUCT_CONFIGS, ProductType } from '@/config/products'
+import { SECTION_WIDTH } from '@/lib/constants'
 
 interface ProductResultsPageProps {
   params: {
@@ -23,7 +24,7 @@ export default function ProductResultsPage({ params }: ProductResultsPageProps) 
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       <NavigationUser />
       
-      <div className="max-w-[1400px] mx-auto px-4 py-8">
+      <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 py-8`}>
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>
             {config.name} - {params.category}
