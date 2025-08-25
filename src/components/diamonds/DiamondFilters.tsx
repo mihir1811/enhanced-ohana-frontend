@@ -7,17 +7,17 @@ import { Search, Filter, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react'
 function Expand({ label, children, defaultOpen = true }: { label: string; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border rounded-lg mb-2 bg-white" style={{ borderColor: 'var(--border)' }}>
+    <div className="border-b border-gray-200 last:border-b-0">
       <button
         type="button"
-        className="w-full flex items-center justify-between px-4 py-3 text-left font-medium text-base focus:outline-none"
-        style={{ color: 'var(--foreground)' }}
+        className="w-full flex items-center justify-between py-2 text-left font-medium text-sm focus:outline-none bg-transparent"
+        style={{ color: 'var(--foreground)', paddingLeft: 0, paddingRight: 0 }}
         onClick={() => setOpen(o => !o)}
       >
         <span>{label}</span>
         {open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
       </button>
-      {open && <div className="px-4 pb-4">{children}</div>}
+      {open && <div className="py-2">{children}</div>}
     </div>
   );
 }
@@ -484,73 +484,55 @@ export default function DiamondFilters({
     unit?: string
     showSlider?: boolean
   }) => (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {/* Current Range Display */}
-      <div className="flex items-center justify-between p-3 rounded-lg" 
-        style={{ backgroundColor: 'var(--muted)/20', borderColor: 'var(--border)' }}
-      >
-        <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+      <div className="flex items-center justify-between px-1 py-1">
+        <span className="text-xs font-medium" style={{ color: 'var(--foreground)' }}>
           Current Range:
         </span>
-        <span className="text-sm font-bold" style={{ color: 'var(--primary)' }}>
+        <span className="text-xs font-bold" style={{ color: 'var(--primary)' }}>
           {value.min.toLocaleString()}{unit} - {value.max.toLocaleString()}{unit}
         </span>
       </div>
-      
       {/* Input Fields */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--muted-foreground)' }}>
+          <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--muted-foreground)' }}>
             Minimum {unit}
           </label>
-          <div className="relative">
-            <input
-              type="number"
-              value={value.min}
-              onChange={(e) => onChange({ ...value, min: parseFloat(e.target.value) || min })}
-              min={min}
-              max={max}
-              step={step}
-              className="w-full px-4 py-3 text-sm border-2 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-0 focus:border-transparent"
-              style={{ 
-                backgroundColor: 'var(--input)', 
-                borderColor: 'var(--border)',
-                color: 'var(--foreground)',
-                '--tw-ring-color': 'var(--primary)'
-              } as React.CSSProperties}
-              placeholder={`Min ${unit}`}
-            />
-          </div>
+          <input
+            type="number"
+            value={value.min}
+            onChange={(e) => onChange({ ...value, min: parseFloat(e.target.value) || min })}
+            min={min}
+            max={max}
+            step={step}
+            className="w-full px-2 py-2 text-xs border rounded-md focus:ring-1 focus:ring-blue-400 focus:border-blue-400 bg-white transition-all"
+            style={{ color: 'var(--foreground)' }}
+            placeholder={`Min ${unit}`}
+          />
         </div>
         <div>
-          <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--muted-foreground)' }}>
+          <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--muted-foreground)' }}>
             Maximum {unit}
           </label>
-          <div className="relative">
-            <input
-              type="number"
-              value={value.max}
-              onChange={(e) => onChange({ ...value, max: parseFloat(e.target.value) || max })}
-              min={min}
-              max={max}
-              step={step}
-              className="w-full px-4 py-3 text-sm border-2 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-0 focus:border-transparent"
-              style={{ 
-                backgroundColor: 'var(--input)', 
-                borderColor: 'var(--border)',
-                color: 'var(--foreground)',
-                '--tw-ring-color': 'var(--primary)'
-              } as React.CSSProperties}
-              placeholder={`Max ${unit}`}
-            />
-          </div>
+          <input
+            type="number"
+            value={value.max}
+            onChange={(e) => onChange({ ...value, max: parseFloat(e.target.value) || max })}
+            min={min}
+            max={max}
+            step={step}
+            className="w-full px-2 py-2 text-xs border rounded-md focus:ring-1 focus:ring-blue-400 focus:border-blue-400 bg-white transition-all"
+            style={{ color: 'var(--foreground)' }}
+            placeholder={`Max ${unit}`}
+          />
         </div>
       </div>
-      
       {/* Quick Presets */}
       {unit === 'USD' && (
-        <div className="flex flex-wrap gap-2">
-          <span className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>
+        <div className="flex flex-wrap gap-1 items-center mt-1">
+          <span className="text-xs font-medium mr-1" style={{ color: 'var(--muted-foreground)' }}>
             Quick Select:
           </span>
           {[
@@ -562,22 +544,17 @@ export default function DiamondFilters({
             <button
               key={preset.label}
               onClick={() => onChange({ min: preset.min, max: preset.max })}
-              className="px-3 py-1 text-xs rounded-full border transition-all hover:shadow-sm"
-              style={{
-                backgroundColor: 'var(--card)',
-                borderColor: 'var(--border)',
-                color: 'var(--muted-foreground)'
-              }}
+              className="px-2 py-0.5 text-xs rounded-full border border-gray-300 bg-white hover:bg-blue-50 transition-all"
+              style={{ color: 'var(--muted-foreground)' }}
             >
               {preset.label}
             </button>
           ))}
         </div>
       )}
-      
       {unit === 'ct' && (
-        <div className="flex flex-wrap gap-2">
-          <span className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>
+        <div className="flex flex-wrap gap-1 items-center mt-1">
+          <span className="text-xs font-medium mr-1" style={{ color: 'var(--muted-foreground)' }}>
             Popular Sizes:
           </span>
           {[
@@ -589,12 +566,8 @@ export default function DiamondFilters({
             <button
               key={preset.label}
               onClick={() => onChange({ min: preset.min, max: preset.max })}
-              className="px-3 py-1 text-xs rounded-full border transition-all hover:shadow-sm"
-              style={{
-                backgroundColor: 'var(--card)',
-                borderColor: 'var(--border)',
-                color: 'var(--muted-foreground)'
-              }}
+              className="px-2 py-0.5 text-xs rounded-full border border-gray-300 bg-white hover:bg-blue-50 transition-all"
+              style={{ color: 'var(--muted-foreground)' }}
             >
               {preset.label}
             </button>
@@ -607,25 +580,19 @@ export default function DiamondFilters({
   const caratRange = getCaratRange()
 
   return (
-    <div className={`bg-white border-2 rounded-xl shadow-lg p-6 space-y-6 ${className}`}
-      style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+    <div className={`space-y-0 ${className || ''}`}
+      style={{ background: 'none', border: 'none', boxShadow: 'none', padding: 0 }}
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--primary)/10' }}>
-            <Filter className="w-6 h-6" style={{ color: 'var(--primary)' }} />
-          </div>
-          <h2 className="font-bold text-xl" style={{ color: 'var(--foreground)' }}>
-            Diamond Filters
-          </h2>
-        </div>
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="font-semibold text-base" style={{ color: 'var(--foreground)' }}>
+          Filters
+        </h2>
         <button
           onClick={resetFilters}
-          className="flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all duration-200 hover:shadow-md"
-          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+          className="text-xs text-blue-600 hover:underline px-1 py-0.5 rounded"
+          style={{ background: 'none', border: 'none' }}
         >
-          <RotateCcw className="w-4 h-4" />
-          <span>Reset All</span>
+          Reset All
         </button>
       </div>
 
