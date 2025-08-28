@@ -50,7 +50,6 @@ export default function LoginPage() {
         // Save to Redux store
         dispatch(setCredentials({ user, token: accessToken }))
 
-
         // If seller, fetch and store seller profile in sellerSlice
         if (user.role === 'seller') {
           appDispatch(fetchSellerInfo(result?.data?.sellerId))

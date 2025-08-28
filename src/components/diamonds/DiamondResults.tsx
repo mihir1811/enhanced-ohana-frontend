@@ -1,8 +1,7 @@
 'use client'
 
-
 import { useState } from 'react'
-import { Eye, Heart, ShoppingCart, Download, Grid, List, ArrowUpDown, ChevronDown, CopyPlus } from 'lucide-react'
+import { Eye, Heart, ShoppingCart, Download, Grid, List, ArrowUpDown, ChevronDown, CopyPlus, Filter as FilterIcon } from 'lucide-react'
 import Pagination from '../ui/Pagination';
 import * as ShapeIcons from '@/../public/icons';
 
@@ -231,11 +230,11 @@ export default function DiamondResults({
     };
 
     return (
-      <div
-        className="relative border rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer group flex flex-col overflow-hidden"
-        style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
-        onClick={() => onDiamondSelect(diamond)}
-      >
+        <div
+          className="relative border rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer group flex flex-col overflow-hidden min-w-[260px] max-w-[320px]"
+          style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
+          onClick={() => onDiamondSelect(diamond)}
+        >
         {/* Image Carousel & Favorite */}
         <div className="relative w-full aspect-square flex items-center justify-center bg-gray-50"
           style={{ background: 'var(--muted)' }}>
@@ -568,8 +567,8 @@ export default function DiamondResults({
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Results Header */}
-      <div className="flex items-center justify-between p-4 border rounded-lg" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+      {/* Results Header - Desktop/Tablet */}
+      <div className="hidden sm:flex items-center justify-between p-4 border rounded-lg" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
         <div>
           <h2 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>
             {totalCount.toLocaleString()} Diamonds Found
@@ -578,7 +577,6 @@ export default function DiamondResults({
             Showing {((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, totalCount)} of {totalCount.toLocaleString()}
           </p>
         </div>
-
         <div className="flex items-center space-x-4">
           {/* Sort Dropdown */}
           <div className="relative">
@@ -593,7 +591,6 @@ export default function DiamondResults({
               </span>
               <ChevronDown className="w-4 h-4" />
             </button>
-            
             {showSortDropdown && (
               <div className="absolute right-0 top-full mt-1 w-48 border rounded-lg shadow-lg z-10" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                 {sortOptions.map((option) => (
@@ -612,7 +609,6 @@ export default function DiamondResults({
               </div>
             )}
           </div>
-
           {/* View Mode Toggle */}
           <div className="flex items-center border rounded-lg" style={{ borderColor: 'var(--border)' }}>
             <button
@@ -630,12 +626,46 @@ export default function DiamondResults({
               <List className="w-4 h-4" />
             </button>
           </div>
+        </div>
+      </div>
 
-          {/* Export Button */}
-          {/* <button className="flex items-center space-x-2 px-3 py-2 border rounded-lg transition-colors hover:bg-opacity-80" style={{ backgroundColor: 'var(--muted)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
-            <Download className="w-4 h-4" />
-            <span className="text-sm">Export</span>
-          </button> */}
+      {/* Results Header - Mobile */}
+      {/* Results Header - Mobile (Modern, Minimal, Floating) */}
+      <div className="sm:hidden flex items-center justify-between w-full pt-2">
+        <div className="flex gap-2">
+            <button
+              className="w-8 h-8 flex items-center justify-center rounded-lg bg-white shadow border border-gray-200 hover:bg-gray-50 active:scale-95 transition"
+              onClick={() => setShowSortDropdown(!showSortDropdown)}
+              aria-label="Sort"
+            >
+              <ArrowUpDown className="w-4 h-4 text-gray-700" />
+            </button>
+            <button
+              className="w-8 h-8 flex items-center justify-center rounded-lg bg-white shadow border border-gray-200 hover:bg-gray-50 active:scale-95 transition"
+              onClick={() => {
+                const evt = new CustomEvent('openDiamondFilters');
+                window.dispatchEvent(evt);
+              }}
+              aria-label="Open filters"
+            >
+              <FilterIcon className="w-4 h-4 text-gray-700" />
+            </button>
+        </div>
+        <div className="flex items-center bg-white shadow border border-gray-200 rounded-lg p-1 gap-1">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${viewMode === 'grid' ? 'bg-gray-900 text-white' : 'text-gray-700'}`}
+              aria-label="Grid view"
+            >
+              <Grid className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${viewMode === 'list' ? 'bg-gray-900 text-white' : 'text-gray-700'}`}
+              aria-label="List view"
+            >
+              <List className="w-4 h-4" />
+            </button>
         </div>
       </div>
 
@@ -647,7 +677,7 @@ export default function DiamondResults({
             <button
               key={opt.value}
               onClick={() => {
-                if (opt.value === 'All') {
+                if (opt.value === 'All') {  
                   setSelectedShapes(['All']);
                 } else {
                   setSelectedShapes(prev => {

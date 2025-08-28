@@ -312,6 +312,7 @@ function AddDiamondForm() {
       if (form.certification) {
         formData.append('certification', form.certification);
       }
+      formData.append('stoneType', 'naturalDiamond');
       // Get Bearer token from cookie
       const token = getCookie('token');
       if (!token) throw new Error('User not authenticated');
