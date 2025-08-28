@@ -577,54 +577,42 @@ export default function DiamondResults({
             Showing {((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, totalCount)} of {totalCount.toLocaleString()}
           </p>
         </div>
-        <div className="flex items-center space-x-4">
-          {/* Sort Dropdown */}
-          <div className="relative">
+        <div className="flex items-center gap-4">
+          {/* Sort, Filter, and View Toggle - Desktop (Mobile Style) */}
+          <div className="flex items-center gap-2">
             <button
+              className="w-8 h-8 flex items-center justify-center rounded-lg bg-white shadow border border-gray-200 hover:bg-gray-50 active:scale-95 transition"
               onClick={() => setShowSortDropdown(!showSortDropdown)}
-              className="flex items-center space-x-2 px-3 py-2 border rounded-lg transition-colors"
-              style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+              aria-label="Sort"
             >
-              <ArrowUpDown className="w-4 h-4" />
-              <span className="text-sm">
-                {sortOptions.find(opt => opt.value === sortBy)?.label}
-              </span>
-              <ChevronDown className="w-4 h-4" />
-            </button>
-            {showSortDropdown && (
-              <div className="absolute right-0 top-full mt-1 w-48 border rounded-lg shadow-lg z-10" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-                {sortOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => {
-                      setSortBy(option.value as SortOption)
-                      setShowSortDropdown(false)
-                    }}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-opacity-80 transition-colors first:rounded-t-lg last:rounded-b-lg"
-                    style={{ backgroundColor: sortBy === option.value ? 'var(--accent)' : 'transparent', color: 'var(--foreground)' }}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          {/* View Mode Toggle */}
-          <div className="flex items-center border rounded-lg" style={{ borderColor: 'var(--border)' }}>
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 transition-colors ${viewMode === 'grid' ? 'bg-opacity-100' : 'bg-opacity-0'}`}
-              style={{ backgroundColor: viewMode === 'grid' ? 'var(--primary)' : 'transparent', color: viewMode === 'grid' ? 'var(--primary-foreground)' : 'var(--foreground)' }}
-            >
-              <Grid className="w-4 h-4" />
+              <ArrowUpDown className="w-4 h-4 text-gray-700" />
             </button>
             <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 transition-colors ${viewMode === 'list' ? 'bg-opacity-100' : 'bg-opacity-0'}`}
-              style={{ backgroundColor: viewMode === 'list' ? 'var(--primary)' : 'transparent', color: viewMode === 'list' ? 'var(--primary-foreground)' : 'var(--foreground)' }}
+              className="w-8 h-8 flex items-center justify-center rounded-lg bg-white shadow border border-gray-200 hover:bg-gray-50 active:scale-95 transition"
+              onClick={() => {
+                const evt = new CustomEvent('openDiamondFilters');
+                window.dispatchEvent(evt);
+              }}
+              aria-label="Open filters"
             >
-              <List className="w-4 h-4" />
+              <FilterIcon className="w-4 h-4 text-gray-700" />
             </button>
+            <div className="flex items-center bg-white shadow border border-gray-200 rounded-lg">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${viewMode === 'grid' ? 'bg-gray-900 text-white' : 'text-gray-700'}`}
+                aria-label="Grid view"
+              >
+                <Grid className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${viewMode === 'list' ? 'bg-gray-900 text-white' : 'text-gray-700'}`}
+                aria-label="List view"
+              >
+                <List className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -651,7 +639,7 @@ export default function DiamondResults({
               <FilterIcon className="w-4 h-4 text-gray-700" />
             </button>
         </div>
-        <div className="flex items-center bg-white shadow border border-gray-200 rounded-lg p-1 gap-1">
+        <div className="flex items-center bg-white shadow border border-gray-200 rounded-lg gap-1">
             <button
               onClick={() => setViewMode('grid')}
               className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${viewMode === 'grid' ? 'bg-gray-900 text-white' : 'text-gray-700'}`}
