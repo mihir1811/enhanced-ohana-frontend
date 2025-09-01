@@ -686,7 +686,7 @@ export default function DiamondResults({
 
     return (
       <div
-        className="relative border rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer group flex flex-col overflow-hidden min-w-[260px] max-w-[320px]"
+        className="relative border rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer group flex flex-col overflow-hidden w-full"
         style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
         onClick={() => onDiamondSelect(diamond)}
       >
