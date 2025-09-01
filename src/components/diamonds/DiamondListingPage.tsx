@@ -79,7 +79,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
   }, []);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 md:px-6">
+    <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 md:px-6 py-5">
       <div className="flex flex-col md:flex-row gap-4 md:gap-6 relative">
         {/* Remove floating filter button on mobile; filter button is now in results header */}
 
@@ -129,13 +129,38 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
 
         {/* Sidebar: hidden on mobile, visible on md+ */}
         <aside
-          className="hidden md:block md:w-72 md:max-w-none md:p-0 md:rounded-none md:shadow-none"
+          className="hidden md:flex md:flex-col md:w-72 md:max-w-none bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-gray-200 p-4 h-fit sticky top-6 self-start max-h-[80vh]"
+          style={{ minWidth: '18rem' }}
         >
-          <DiamondFilters
-            filters={filters}
-            onFiltersChange={handleFiltersChange}
-            diamondType={diamondType}
-          />
+          <div className="flex items-center justify-between mb-4 sticky top-0 z-10 bg-white dark:bg-slate-900 pt-1 pb-2" style={{ borderBottom: '1px solid #f3f4f6' }}>
+            <h2 className="text-lg font-semibold">Filters</h2>
+            <button
+              className="text-xs font-medium text-amber-600 hover:underline"
+              onClick={() => {
+                // Reset filters to default
+                setFilters(getDefaultDiamondFilters(diamondType));
+                setCurrentPage(1);
+              }}
+              aria-label="Reset filters"
+            >
+              Reset
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto pr-1">
+            <DiamondFilters
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              diamondType={diamondType}
+            />
+          </div>
+          <button
+            className="mt-4 w-full py-2 rounded-lg bg-amber-500 text-white font-semibold shadow hover:bg-amber-600 transition"
+            onClick={() => {}}
+            aria-label="Apply filters (desktop)"
+            type="button"
+          >
+            Apply Filters
+          </button>
         </aside>
 
         {/* Main content */}

@@ -420,38 +420,42 @@ export default function DiamondFilters({
       )}
       
       {/* Options */}
-      <div className={`${layout === 'grid' ? 'grid grid-cols-2 gap-2' : 'flex flex-wrap gap-2'} max-h-48 overflow-y-auto`}>
+  <div className={`${layout === 'grid' ? 'grid grid-cols-2 gap-2' : 'flex flex-wrap gap-2'} max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-full scrollbar-thumb-amber-200`}>
         {options.map((option) => (
-          <label 
-            key={option} 
-            className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-sm ${
-              selected.includes(option) ? 'ring-2 ring-offset-1' : 'hover:ring-1'
-            }`}
-            style={{ 
-              backgroundColor: selected.includes(option) ? 'var(--primary)/10' : 'var(--muted)/30',
-              borderColor: selected.includes(option) ? 'var(--primary)' : 'var(--border)',
-              '--tw-ring-color': selected.includes(option) ? 'var(--primary)' : 'var(--muted-foreground)'
-            } as React.CSSProperties}
+          <label
+            key={option}
+            className={`flex items-center gap-2 p-2 rounded-md cursor-pointer border transition-all duration-75 group focus-within:ring-0 ${selected.includes(option) ? 'border-amber-500 bg-amber-50' : 'border-gray-200 bg-gray-50 hover:border-amber-300'}
+            `}
+            tabIndex={0}
           >
-            <input
-              type="checkbox"
-              checked={selected.includes(option)}
-              onChange={(e) => {
-                if (e.target.checked) {
-                  onChange([...selected, option])
-                } else {
-                  onChange(selected.filter(v => v !== option))
-                }
-              }}
-              className="w-4 h-4 rounded border-2 focus:ring-2 focus:ring-offset-0"
-              style={{ 
-                accentColor: 'var(--primary)',
-                borderColor: 'var(--border)'
-              }}
-            />
-            <span className={`text-sm font-medium ${selected.includes(option) ? 'font-semibold' : ''}`} 
-              style={{ color: selected.includes(option) ? 'var(--primary)' : 'var(--foreground)' }}
-            >
+            <span className="relative flex items-center justify-center">
+              <input
+                type="checkbox"
+                checked={selected.includes(option)}
+                onChange={e => {
+                  if (e.target.checked) {
+                    onChange([...selected, option])
+                  } else {
+                    onChange(selected.filter(v => v !== option))
+                  }
+                }}
+                className="peer appearance-none w-4 h-4 border-2 border-gray-300 rounded focus:outline-none checked:bg-amber-500 checked:border-amber-500 focus:ring-2 focus:ring-amber-300 transition-all duration-75"
+                style={{ minWidth: 16, minHeight: 16 }}
+                tabIndex={-1}
+              />
+              <svg
+                className="pointer-events-none absolute left-0 top-0 w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-75"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="5 11 9 15 15 7" />
+              </svg>
+            </span>
+            <span className={`text-sm font-medium transition-colors duration-150 ${selected.includes(option) ? 'text-amber-700 font-semibold' : 'text-gray-700 group-hover:text-amber-700'}`}>
               {option}
             </span>
           </label>
@@ -583,7 +587,7 @@ export default function DiamondFilters({
     <div className={`space-y-0 ${className || ''}`}
       style={{ background: 'none', border: 'none', boxShadow: 'none', padding: 0 }}
     >
-      <div className="flex items-center justify-between mb-2">
+      {/* <div className="flex items-center justify-between mb-2">
         <h2 className="font-semibold text-base" style={{ color: 'var(--foreground)' }}>
           Filters
         </h2>
@@ -594,7 +598,7 @@ export default function DiamondFilters({
         >
           Reset All
         </button>
-      </div>
+      </div> */}
 
       <Expand label="Shape">
         <CategorizedShapeFilter

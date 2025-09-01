@@ -9,6 +9,7 @@ interface DialogProps {
   children: React.ReactNode;
   className?: string;
   showClose?: boolean;
+  maxWidth?: string;
 }
 
 const Dialog: React.FC<DialogProps> = ({
@@ -19,6 +20,7 @@ const Dialog: React.FC<DialogProps> = ({
   children,
   className = "",
   showClose = true,
+  maxWidth = "100%",
 }) => {
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
@@ -29,8 +31,8 @@ const Dialog: React.FC<DialogProps> = ({
         {/* Dialog content */}
         <DialogPrimitive.Content
           className={`fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
-                      bg-white rounded-3xl shadow-2xl max-w-xl w-full sm:w-[90vw] 
-                      p-0 flex flex-col border border-gray-200 ${className} animate-scaleIn`}
+                      bg-white rounded-3xl shadow-2xl w-full ${className} ${maxWidth ? `max-w-[${maxWidth}]` : "max-w-full"} 
+                      p-0 flex flex-col border border-gray-200  animate-scaleIn`}
         >
           {/* Header */}
           <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white/90 backdrop-blur-sm rounded-t-3xl">
