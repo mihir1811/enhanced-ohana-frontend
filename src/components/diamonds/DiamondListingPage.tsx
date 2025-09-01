@@ -173,7 +173,11 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
             currentPage={currentPage}
             pageSize={pageSize}
             onPageChange={setCurrentPage}
-            onDiamondSelect={() => { }}
+            onDiamondSelect={(diamond) => {
+              if (diamond?.id) {
+                window.location.href = `/diamonds/${diamond.id}`;
+              }
+            }}
             onAddToWishlist={() => { }}
             onAddToCart={() => { }}
             diamondType={diamondType}

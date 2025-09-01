@@ -798,7 +798,7 @@ export default function DiamondResults({
     <div
       className="relative border rounded-lg bg-white dark:bg-zinc-900 hover:shadow-md transition cursor-pointer flex flex-col sm:flex-row overflow-hidden min-h-[8rem]"
       style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
-      onClick={() => onDiamondSelect(diamond)}
+      onClick={() => onDiamondSelect && onDiamondSelect(diamond)}
     >
       {/* Left: Image & Favorite */}
       <div className="relative w-full sm:w-40 min-w-0 sm:min-w-40 h-40 sm:h-40 bg-gray-50 dark:bg-zinc-800 overflow-hidden flex items-stretch">
