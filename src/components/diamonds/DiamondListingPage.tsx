@@ -79,7 +79,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
   }, []);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 md:px-6 py-5">
+    <div className="w-full py-5">
       <div className="flex flex-col md:flex-row gap-4 md:gap-6 relative">
         {/* Remove floating filter button on mobile; filter button is now in results header */}
 

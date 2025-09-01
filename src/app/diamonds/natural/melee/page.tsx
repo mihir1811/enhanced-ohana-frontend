@@ -1,20 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Gem, Package, Users, Filter as FilterIcon } from 'lucide-react'
-import DiamondFilters, { DiamondFilterValues } from '@/components/diamonds/DiamondFilters'
-
 import DiamondListingPage from '@/components/diamonds/DiamondListingPage'
 import { diamondService } from '@/services/diamondService'
-
 import NavigationUser from '@/components/Navigation/NavigationUser'
 import Footer from '@/components/Footer'
+import { SECTION_WIDTH } from '@/lib/constants'
 
 export default function NaturalMeleeDiamondsPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       <NavigationUser />
-      <div className="max-w-7xl mx-auto px-4">
+      <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 sm:px-6 lg:px-8`}>
         <DiamondListingPage
           diamondType="natural-melee"
           fetchDiamonds={diamondService.getDiamonds}
