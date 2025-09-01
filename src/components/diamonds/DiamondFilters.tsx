@@ -1,7 +1,28 @@
-'use client'
 
+'use client'
 import { useState } from 'react'
 import { Search, Filter, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react'
+
+// Simple Expand/Collapse component
+function Expand({ label, children, defaultOpen = true }: { label: string; children: React.ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="border-b border-gray-200 last:border-b-0">
+      <button
+        type="button"
+        className="w-full flex items-center justify-between py-2 text-left font-medium text-sm focus:outline-none bg-transparent"
+        style={{ color: 'var(--foreground)', paddingLeft: 0, paddingRight: 0 }}
+        onClick={() => setOpen(o => !o)}
+      >
+        <span>{label}</span>
+        {open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+      </button>
+      {open && <div className="py-2">{children}</div>}
+    </div>
+  );
+}
+
+
 
 export interface DiamondFilterValues {
   // Basic filters
@@ -11,50 +32,33 @@ export interface DiamondFilterValues {
   clarity: string[]
   cut: string[]
   priceRange: { min: number; max: number }
-  
+
   // Advanced filters
   certification: string[]
   fluorescence: string[]
   polish: string[]
   symmetry: string[]
   location: string[]
-  
+
   // Measurements
   measurements: {
     length: { min: number; max: number }
     width: { min: number; max: number }
     depth: { min: number; max: number }
   }
-  
+
   // Percentages
   tablePercent: { min: number; max: number }
   depthPercent: { min: number; max: number }
-  
+
   // Additional Professional Filters
   girdle: string[]
   culet: string[]
   origin: string[]
   treatment: string[]
-  milkyness: string[]
-  matching: boolean | null
-  
+
   // Price & Market
   pricePerCarat: { min: number; max: number }
-  availability: string[]
-  delivery: string[]
-  
-  // Optical Properties
-  brilliance: string[]
-  fire: string[]
-  scintillation: string[]
-  
-  // Lab-grown specific
-  grownMethod: string[]
-  
-  // Search
-  searchTerm: string
-  reportNumber: string
-  stoneId: string
 }
 
 interface DiamondFiltersProps {
@@ -63,6 +67,8 @@ interface DiamondFiltersProps {
   diamondType: 'natural-single' | 'natural-melee' | 'lab-grown-single' | 'lab-grown-melee'
   className?: string
 }
+
+import * as ShapeIcons from '@/../public/icons';
 
 const DIAMOND_SHAPES = [
   "Round",
@@ -98,6 +104,44 @@ const DIAMOND_SHAPES = [
   "Octagonal cut",
   "Portugeese cut"
 ]
+
+// Map shape names to icon components (default fallback if not found)
+const shapeIconMap: Record<string, React.ComponentType<any>> = {
+  'Round': ShapeIcons.RoundIcon,
+  'Pear': ShapeIcons.PearIcon,
+  'Emerald': ShapeIcons.EmeraldIcon,
+  'Oval': ShapeIcons.OvalIcon,
+  'Heart': ShapeIcons.HeartIcon,
+  'Marquise': ShapeIcons.MarquiseIcon,
+  'Asscher': ShapeIcons.AsscherIcon,
+  'Cushion': ShapeIcons.CushionIcon,
+  'Cushion modified': ShapeIcons.CushionModifiedIcon,
+  'Cushion brilliant': ShapeIcons.CushionBrilliantIcon,
+  'Radiant': ShapeIcons.RadiantIcon,
+  'Princess': ShapeIcons.PrincessIcon,
+  'French': ShapeIcons.FrenchIcon,
+  'Trilliant': ShapeIcons.TrilliantIcon,
+  'Euro cut': ShapeIcons.EurocutIcon,
+  'Old Miner': ShapeIcons.OldMinerIcon,
+  'Briollette': ShapeIcons.BriolletteIcon,
+  'Rose cut': ShapeIcons.RosecutIcon,
+  'Lozenge': ShapeIcons.LozengeIcon,
+  'Baguette': ShapeIcons.BaguetteIcon,
+  'Tapered baguette': ShapeIcons.TaperedBaguetteIcon,
+  'Half-moon': ShapeIcons.HalfmoonIcon,
+  'Flanders': ShapeIcons.FlandersIcon,
+  'Trapezoid': ShapeIcons.TrapezoidIcon,
+  'Bullet': ShapeIcons.BulletIcon,
+  'Kite': ShapeIcons.KiteIcon,
+  'Shield': ShapeIcons.ShieldIcon,
+  'Star cut': ShapeIcons.StarcutIcon,
+  'Pentagonal cut': ShapeIcons.PentagonalIcon,
+  'Hexagonal cut': ShapeIcons.HexagonalIcon,
+  'Octagonal cut': ShapeIcons.OctagonalIcon,
+  'Portugeese cut': ShapeIcons.PortugeeseIcon,
+  // fallback
+  'Default': ShapeIcons.DefaultIcon
+};
 
 // Industry-standard shape categories based on your inventory
 const SHAPE_CATEGORIES = {
@@ -196,23 +240,11 @@ export default function DiamondFilters({
       },
       tablePercent: { min: 50, max: 70 },
       depthPercent: { min: 55, max: 75 },
-      // New filter defaults
       girdle: [],
       culet: [],
       origin: [],
       treatment: [],
-      milkyness: [],
-      matching: null,
-      pricePerCarat: { min: 0, max: 10000 },
-      availability: [],
-      delivery: [],
-      brilliance: [],
-      fire: [],
-      scintillation: [],
-      grownMethod: [],
-      searchTerm: '',
-      reportNumber: '',
-      stoneId: ''
+      pricePerCarat: { min: 0, max: 10000 }
     }
     onFiltersChange(defaultFilters)
   }
@@ -312,28 +344,33 @@ export default function DiamondFilters({
               {category}
             </div>
             <div className="grid grid-cols-2 gap-1">
-              {SHAPE_CATEGORIES[category as keyof typeof SHAPE_CATEGORIES].map(shape => (
-                <button
-                  key={shape}
-                  onClick={() => toggleShape(shape)}
-                  className={`text-xs p-2 rounded border transition-all text-left ${
-                    selected.includes(shape)
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                  style={{
-                    backgroundColor: selected.includes(shape) ? 'var(--primary)/10' : 'var(--card)',
-                    borderColor: selected.includes(shape) ? 'var(--primary)' : 'var(--border)',
-                    color: selected.includes(shape) ? 'var(--primary)' : 'var(--foreground)'
-                  }}
-                >
-                  {shape}
-                </button>
-              ))}
+              {SHAPE_CATEGORIES[category as keyof typeof SHAPE_CATEGORIES].map(shape => {
+                const Icon = shapeIconMap[shape] || shapeIconMap['Default'];
+                return (
+                  <button
+                    key={shape}
+                    onClick={() => toggleShape(shape)}
+                    className={`flex items-center gap-2 text-xs p-2 rounded border transition-all text-left ${
+                      selected.includes(shape)
+                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    style={{
+                      backgroundColor: selected.includes(shape) ? 'var(--primary)/10' : 'var(--card)',
+                      borderColor: selected.includes(shape) ? 'var(--primary)' : 'var(--border)',
+                      color: selected.includes(shape) ? 'var(--primary)' : 'var(--foreground)'
+                    }}
+                  >
+                    <span className="w-5 h-5 flex items-center justify-center">
+                      <Icon width={18} height={18} />
+                    </span>
+                    {shape}
+                  </button>
+                );
+              })}
             </div>
           </div>
         ))}
-        
         <button
           onClick={() => setShowAllCategories(!showAllCategories)}
           className="text-xs hover:underline w-full text-left"
@@ -341,7 +378,6 @@ export default function DiamondFilters({
         >
           {showAllCategories ? 'Show Less Shapes' : `Show All Shapes (${DIAMOND_SHAPES.length} total)`}
         </button>
-        
         {selected.length > 0 && (
           <div className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
             {selected.length} shape{selected.length > 1 ? 's' : ''} selected
@@ -384,38 +420,42 @@ export default function DiamondFilters({
       )}
       
       {/* Options */}
-      <div className={`${layout === 'grid' ? 'grid grid-cols-2 gap-2' : 'flex flex-wrap gap-2'} max-h-48 overflow-y-auto`}>
+  <div className={`${layout === 'grid' ? 'grid grid-cols-2 gap-2' : 'flex flex-wrap gap-2'} max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-full scrollbar-thumb-amber-200`}>
         {options.map((option) => (
-          <label 
-            key={option} 
-            className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-sm ${
-              selected.includes(option) ? 'ring-2 ring-offset-1' : 'hover:ring-1'
-            }`}
-            style={{ 
-              backgroundColor: selected.includes(option) ? 'var(--primary)/10' : 'var(--muted)/30',
-              borderColor: selected.includes(option) ? 'var(--primary)' : 'var(--border)',
-              '--tw-ring-color': selected.includes(option) ? 'var(--primary)' : 'var(--muted-foreground)'
-            } as React.CSSProperties}
+          <label
+            key={option}
+            className={`flex items-center gap-2 p-2 rounded-md cursor-pointer border transition-all duration-75 group focus-within:ring-0 ${selected.includes(option) ? 'border-amber-500 bg-amber-50' : 'border-gray-200 bg-gray-50 hover:border-amber-300'}
+            `}
+            tabIndex={0}
           >
-            <input
-              type="checkbox"
-              checked={selected.includes(option)}
-              onChange={(e) => {
-                if (e.target.checked) {
-                  onChange([...selected, option])
-                } else {
-                  onChange(selected.filter(v => v !== option))
-                }
-              }}
-              className="w-4 h-4 rounded border-2 focus:ring-2 focus:ring-offset-0"
-              style={{ 
-                accentColor: 'var(--primary)',
-                borderColor: 'var(--border)'
-              }}
-            />
-            <span className={`text-sm font-medium ${selected.includes(option) ? 'font-semibold' : ''}`} 
-              style={{ color: selected.includes(option) ? 'var(--primary)' : 'var(--foreground)' }}
-            >
+            <span className="relative flex items-center justify-center">
+              <input
+                type="checkbox"
+                checked={selected.includes(option)}
+                onChange={e => {
+                  if (e.target.checked) {
+                    onChange([...selected, option])
+                  } else {
+                    onChange(selected.filter(v => v !== option))
+                  }
+                }}
+                className="peer appearance-none w-4 h-4 border-2 border-gray-300 rounded focus:outline-none checked:bg-amber-500 checked:border-amber-500 focus:ring-2 focus:ring-amber-300 transition-all duration-75"
+                style={{ minWidth: 16, minHeight: 16 }}
+                tabIndex={-1}
+              />
+              <svg
+                className="pointer-events-none absolute left-0 top-0 w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-75"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="5 11 9 15 15 7" />
+              </svg>
+            </span>
+            <span className={`text-sm font-medium transition-colors duration-150 ${selected.includes(option) ? 'text-amber-700 font-semibold' : 'text-gray-700 group-hover:text-amber-700'}`}>
               {option}
             </span>
           </label>
@@ -448,73 +488,55 @@ export default function DiamondFilters({
     unit?: string
     showSlider?: boolean
   }) => (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {/* Current Range Display */}
-      <div className="flex items-center justify-between p-3 rounded-lg" 
-        style={{ backgroundColor: 'var(--muted)/20', borderColor: 'var(--border)' }}
-      >
-        <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+      <div className="flex items-center justify-between px-1 py-1">
+        <span className="text-xs font-medium" style={{ color: 'var(--foreground)' }}>
           Current Range:
         </span>
-        <span className="text-sm font-bold" style={{ color: 'var(--primary)' }}>
+        <span className="text-xs font-bold" style={{ color: 'var(--primary)' }}>
           {value.min.toLocaleString()}{unit} - {value.max.toLocaleString()}{unit}
         </span>
       </div>
-      
       {/* Input Fields */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--muted-foreground)' }}>
+          <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--muted-foreground)' }}>
             Minimum {unit}
           </label>
-          <div className="relative">
-            <input
-              type="number"
-              value={value.min}
-              onChange={(e) => onChange({ ...value, min: parseFloat(e.target.value) || min })}
-              min={min}
-              max={max}
-              step={step}
-              className="w-full px-4 py-3 text-sm border-2 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-0 focus:border-transparent"
-              style={{ 
-                backgroundColor: 'var(--input)', 
-                borderColor: 'var(--border)',
-                color: 'var(--foreground)',
-                '--tw-ring-color': 'var(--primary)'
-              } as React.CSSProperties}
-              placeholder={`Min ${unit}`}
-            />
-          </div>
+          <input
+            type="number"
+            value={value.min}
+            onChange={(e) => onChange({ ...value, min: parseFloat(e.target.value) || min })}
+            min={min}
+            max={max}
+            step={step}
+            className="w-full px-2 py-2 text-xs border rounded-md focus:ring-1 focus:ring-blue-400 focus:border-blue-400 bg-white transition-all"
+            style={{ color: 'var(--foreground)' }}
+            placeholder={`Min ${unit}`}
+          />
         </div>
         <div>
-          <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--muted-foreground)' }}>
+          <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--muted-foreground)' }}>
             Maximum {unit}
           </label>
-          <div className="relative">
-            <input
-              type="number"
-              value={value.max}
-              onChange={(e) => onChange({ ...value, max: parseFloat(e.target.value) || max })}
-              min={min}
-              max={max}
-              step={step}
-              className="w-full px-4 py-3 text-sm border-2 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-offset-0 focus:border-transparent"
-              style={{ 
-                backgroundColor: 'var(--input)', 
-                borderColor: 'var(--border)',
-                color: 'var(--foreground)',
-                '--tw-ring-color': 'var(--primary)'
-              } as React.CSSProperties}
-              placeholder={`Max ${unit}`}
-            />
-          </div>
+          <input
+            type="number"
+            value={value.max}
+            onChange={(e) => onChange({ ...value, max: parseFloat(e.target.value) || max })}
+            min={min}
+            max={max}
+            step={step}
+            className="w-full px-2 py-2 text-xs border rounded-md focus:ring-1 focus:ring-blue-400 focus:border-blue-400 bg-white transition-all"
+            style={{ color: 'var(--foreground)' }}
+            placeholder={`Max ${unit}`}
+          />
         </div>
       </div>
-      
       {/* Quick Presets */}
       {unit === 'USD' && (
-        <div className="flex flex-wrap gap-2">
-          <span className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>
+        <div className="flex flex-wrap gap-1 items-center mt-1">
+          <span className="text-xs font-medium mr-1" style={{ color: 'var(--muted-foreground)' }}>
             Quick Select:
           </span>
           {[
@@ -526,22 +548,17 @@ export default function DiamondFilters({
             <button
               key={preset.label}
               onClick={() => onChange({ min: preset.min, max: preset.max })}
-              className="px-3 py-1 text-xs rounded-full border transition-all hover:shadow-sm"
-              style={{
-                backgroundColor: 'var(--card)',
-                borderColor: 'var(--border)',
-                color: 'var(--muted-foreground)'
-              }}
+              className="px-2 py-0.5 text-xs rounded-full border border-gray-300 bg-white hover:bg-blue-50 transition-all"
+              style={{ color: 'var(--muted-foreground)' }}
             >
               {preset.label}
             </button>
           ))}
         </div>
       )}
-      
       {unit === 'ct' && (
-        <div className="flex flex-wrap gap-2">
-          <span className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>
+        <div className="flex flex-wrap gap-1 items-center mt-1">
+          <span className="text-xs font-medium mr-1" style={{ color: 'var(--muted-foreground)' }}>
             Popular Sizes:
           </span>
           {[
@@ -553,12 +570,8 @@ export default function DiamondFilters({
             <button
               key={preset.label}
               onClick={() => onChange({ min: preset.min, max: preset.max })}
-              className="px-3 py-1 text-xs rounded-full border transition-all hover:shadow-sm"
-              style={{
-                backgroundColor: 'var(--card)',
-                borderColor: 'var(--border)',
-                color: 'var(--muted-foreground)'
-              }}
+              className="px-2 py-0.5 text-xs rounded-full border border-gray-300 bg-white hover:bg-blue-50 transition-all"
+              style={{ color: 'var(--muted-foreground)' }}
             >
               {preset.label}
             </button>
@@ -571,193 +584,68 @@ export default function DiamondFilters({
   const caratRange = getCaratRange()
 
   return (
-    <div className={`bg-white border-2 rounded-xl shadow-lg ${className}`} 
-      style={{ 
-        backgroundColor: 'var(--card)', 
-        borderColor: 'var(--border)',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-      }}
+    <div className={`space-y-0 ${className || ''}`}
+      style={{ background: 'none', border: 'none', boxShadow: 'none', padding: 0 }}
     >
-      {/* Header */}
-      <div className="p-6 border-b-2 bg-gradient-to-r from-slate-50 to-slate-100 rounded-t-xl" 
-        style={{ 
-          borderColor: 'var(--border)',
-          background: 'linear-gradient(135deg, var(--muted)/20, var(--muted)/40)'
-        }}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--primary)/10' }}>
-              <Filter className="w-6 h-6" style={{ color: 'var(--primary)' }} />
-            </div>
-            <div>
-              <h2 className="font-bold text-xl" style={{ color: 'var(--foreground)' }}>
-                Diamond Filters
-              </h2>
-              <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-                Refine your diamond search with professional-grade filters
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={resetFilters}
-            className="flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all duration-200 hover:shadow-md"
-            style={{ 
-              backgroundColor: 'var(--card)', 
-              borderColor: 'var(--border)',
-              color: 'var(--muted-foreground)'
-            }}
-          >
-            <RotateCcw className="w-4 h-4" />
-            <span>Reset All</span>
-          </button>
-        </div>
-      </div>
+      {/* <div className="flex items-center justify-between mb-2">
+        <h2 className="font-semibold text-base" style={{ color: 'var(--foreground)' }}>
+          Filters
+        </h2>
+        <button
+          onClick={resetFilters}
+          className="text-xs text-blue-600 hover:underline px-1 py-0.5 rounded"
+          style={{ background: 'none', border: 'none' }}
+        >
+          Reset All
+        </button>
+      </div> */}
 
-      {/* Search */}
-      <FilterSection 
-        title="Search & Identification" 
-        sectionKey="search"
-        badge="Essential"
-        description="Find specific diamonds"
-      >
-        <div className="space-y-4">
-          <div className="relative">
-            <Search className="absolute left-4 top-3.5 w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
-            <input
-              type="text"
-              placeholder="Search diamonds by any keyword..."
-              value={filters.searchTerm}
-              onChange={(e) => updateFilter('searchTerm', e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border-2 rounded-lg text-sm transition-all duration-200 focus:ring-2 focus:ring-offset-0 focus:border-transparent"
-              style={{ 
-                backgroundColor: 'var(--input)', 
-                borderColor: 'var(--border)', 
-                color: 'var(--foreground)',
-                '--tw-ring-color': 'var(--primary)'
-              } as React.CSSProperties}
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              type="text"
-              placeholder="Report Number (e.g., GIA-1234567890)"
-              value={filters.reportNumber}
-              onChange={(e) => updateFilter('reportNumber', e.target.value)}
-              className="w-full px-4 py-3 border-2 rounded-lg text-sm transition-all duration-200 focus:ring-2 focus:ring-offset-0 focus:border-transparent"
-              style={{ 
-                backgroundColor: 'var(--input)', 
-                borderColor: 'var(--border)', 
-                color: 'var(--foreground)',
-                '--tw-ring-color': 'var(--primary)'
-              } as React.CSSProperties}
-            />
-            <input
-              type="text"
-              placeholder="Stone ID / SKU"
-              value={filters.stoneId}
-              onChange={(e) => updateFilter('stoneId', e.target.value)}
-              className="w-full px-4 py-3 border-2 rounded-lg text-sm transition-all duration-200 focus:ring-2 focus:ring-offset-0 focus:border-transparent"
-              style={{ 
-                backgroundColor: 'var(--input)', 
-                borderColor: 'var(--border)', 
-                color: 'var(--foreground)',
-                '--tw-ring-color': 'var(--primary)'
-              } as React.CSSProperties}
-            />
-          </div>
-        </div>
-      </FilterSection>
+      <Expand label="Shape">
+        <CategorizedShapeFilter
+          selected={filters.shape}
+          onChange={(values) => updateFilter('shape', values)}
+        />
+      </Expand>
 
-      {/* Basic Filters */}
-      <FilterSection 
-        title="Basic Properties" 
-        sectionKey="basic"
-        badge="Popular"
-        description="Essential diamond characteristics"
-      >
-        <div className="space-y-6">
-          {/* Shape */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Shape
-            </label>
-            <CategorizedShapeFilter
-              selected={filters.shape}
-              onChange={(values) => updateFilter('shape', values)}
-            />
-            <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
-              <p className="text-blue-800 font-medium mb-1">� Industry Standard Shapes:</p>
-              <p className="text-blue-700">
-                <strong>Round</strong> dominates 60%+ of the market. <strong>Princess, Cushion, Emerald, Oval</strong> are the next most popular. 
-                <strong>Modified cuts</strong> offer enhanced brilliance over traditional shapes.
-              </p>
-            </div>
-          </div>
+      <Expand label="Carat Weight">
+        <RangeFilter
+          min={caratRange.min}
+          max={caratRange.max}
+          value={filters.caratWeight}
+          onChange={(range) => updateFilter('caratWeight', range)}
+          step={caratRange.step}
+          unit="ct"
+        />
+      </Expand>
 
-          {/* Carat Weight */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Carat Weight
-            </label>
-            <RangeFilter
-              min={caratRange.min}
-              max={caratRange.max}
-              value={filters.caratWeight}
-              onChange={(range) => updateFilter('caratWeight', range)}
-              step={caratRange.step}
-              unit="ct"
-            />
-          </div>
+      <Expand label="Color">
+        <MultiSelectFilter
+          options={DIAMOND_COLORS}
+          selected={filters.color}
+          onChange={(values) => updateFilter('color', values)}
+          placeholder="Select colors"
+        />
+      </Expand>
 
-          {/* Color */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Color
-            </label>
-            <MultiSelectFilter
-              options={DIAMOND_COLORS}
-              selected={filters.color}
-              onChange={(values) => updateFilter('color', values)}
-              placeholder="Select colors"
-            />
-          </div>
+      <Expand label="Clarity">
+        <MultiSelectFilter
+          options={DIAMOND_CLARITY}
+          selected={filters.clarity}
+          onChange={(values) => updateFilter('clarity', values)}
+          placeholder="Select clarity"
+        />
+      </Expand>
 
-          {/* Clarity */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Clarity
-            </label>
-            <MultiSelectFilter
-              options={DIAMOND_CLARITY}
-              selected={filters.clarity}
-              onChange={(values) => updateFilter('clarity', values)}
-              placeholder="Select clarity"
-            />
-          </div>
+      <Expand label="Cut">
+        <MultiSelectFilter
+          options={CUT_GRADES}
+          selected={filters.cut}
+          onChange={(values) => updateFilter('cut', values)}
+          placeholder="Select cut grades"
+        />
+      </Expand>
 
-          {/* Cut */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Cut
-            </label>
-            <MultiSelectFilter
-              options={CUT_GRADES}
-              selected={filters.cut}
-              onChange={(values) => updateFilter('cut', values)}
-              placeholder="Select cut grades"
-            />
-          </div>
-        </div>
-      </FilterSection>
-
-      {/* Price Range */}
-      <FilterSection 
-        title="Pricing" 
-        sectionKey="price"
-        badge="Market"
-        description="Set your budget range"
-      >
+      <Expand label="Price Range">
         <RangeFilter
           min={0}
           max={1000000}
@@ -766,387 +654,141 @@ export default function DiamondFilters({
           step={100}
           unit="USD"
         />
-      </FilterSection>
+      </Expand>
 
-      {/* Advanced Filters */}
-      <FilterSection 
-        title="Professional Filters" 
-        sectionKey="advanced"
-        badge="Expert"
-        description="Industry-grade specifications"
-      >
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Certification */}
-            <div>
-              <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
-                Certification
-              </label>
-              <MultiSelectFilter
-                options={CERTIFICATIONS}
-                selected={filters.certification}
-                onChange={(values) => updateFilter('certification', values)}
-                placeholder="Select certifications"
-              />
-            </div>
+      <Expand label="Certification">
+        <MultiSelectFilter
+          options={CERTIFICATIONS}
+          selected={filters.certification}
+          onChange={(values) => updateFilter('certification', values)}
+          placeholder="Select certifications"
+        />
+      </Expand>
 
-            {/* Fluorescence */}
-            <div>
-              <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
-                Fluorescence
-              </label>
-              <MultiSelectFilter
-                options={FLUORESCENCE_LEVELS}
-                selected={filters.fluorescence}
-                onChange={(values) => updateFilter('fluorescence', values)}
-                placeholder="Select fluorescence"
-              />
-            </div>
-          </div>
+      <Expand label="Fluorescence">
+        <MultiSelectFilter
+          options={FLUORESCENCE_LEVELS}
+          selected={filters.fluorescence}
+          onChange={(values) => updateFilter('fluorescence', values)}
+          placeholder="Select fluorescence"
+        />
+      </Expand>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Polish */}
-            <div>
-              <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
-                Polish
-              </label>
-              <MultiSelectFilter
-                options={CUT_GRADES}
-                selected={filters.polish}
-                onChange={(values) => updateFilter('polish', values)}
-                placeholder="Select polish grades"
-              />
-            </div>
+      <Expand label="Polish">
+        <MultiSelectFilter
+          options={CUT_GRADES}
+          selected={filters.polish}
+          onChange={(values) => updateFilter('polish', values)}
+          placeholder="Select polish grades"
+        />
+      </Expand>
 
-            {/* Symmetry */}
-            <div>
-              <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
-                Symmetry
-              </label>
-              <MultiSelectFilter
-                options={CUT_GRADES}
-                selected={filters.symmetry}
-                onChange={(values) => updateFilter('symmetry', values)}
-                placeholder="Select symmetry grades"
-              />
-            </div>
-          </div>
+      <Expand label="Symmetry">
+        <MultiSelectFilter
+          options={CUT_GRADES}
+          selected={filters.symmetry}
+          onChange={(values) => updateFilter('symmetry', values)}
+          placeholder="Select symmetry grades"
+        />
+      </Expand>
 
-          <div>
-            <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
-              Location
-            </label>
-            <MultiSelectFilter
-              options={LOCATION_OPTIONS}
-              selected={filters.location}
-              onChange={(values) => updateFilter('location', values)}
-              placeholder="Select locations"
-            />
-          </div>
-        </div>
-      </FilterSection>
+      <Expand label="Location">
+        <MultiSelectFilter
+          options={LOCATION_OPTIONS}
+          selected={filters.location}
+          onChange={(values) => updateFilter('location', values)}
+          placeholder="Select locations"
+        />
+      </Expand>
 
-      {/* Professional Filters */}
-      <FilterSection title="Professional Filters" sectionKey="professional">
-        <div className="space-y-4">
-          {/* Girdle */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Girdle
-            </label>
-            <MultiSelectFilter
-              options={GIRDLE_OPTIONS}
-              selected={filters.girdle}
-              onChange={(values) => updateFilter('girdle', values)}
-              placeholder="Select girdle types"
-            />
-          </div>
+      <Expand label="Girdle">
+        <MultiSelectFilter
+          options={GIRDLE_OPTIONS}
+          selected={filters.girdle}
+          onChange={(values) => updateFilter('girdle', values)}
+          placeholder="Select girdle types"
+        />
+      </Expand>
 
-          {/* Culet */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Culet
-            </label>
-            <MultiSelectFilter
-              options={CULET_OPTIONS}
-              selected={filters.culet}
-              onChange={(values) => updateFilter('culet', values)}
-              placeholder="Select culet sizes"
-            />
-          </div>
+      <Expand label="Culet">
+        <MultiSelectFilter
+          options={CULET_OPTIONS}
+          selected={filters.culet}
+          onChange={(values) => updateFilter('culet', values)}
+          placeholder="Select culet sizes"
+        />
+      </Expand>
 
-          {/* Treatment */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Treatment
-            </label>
-            <MultiSelectFilter
-              options={TREATMENT_OPTIONS}
-              selected={filters.treatment}
-              onChange={(values) => updateFilter('treatment', values)}
-              placeholder="Select treatments"
-            />
-          </div>
+      <Expand label="Treatment">
+        <MultiSelectFilter
+          options={TREATMENT_OPTIONS}
+          selected={filters.treatment}
+          onChange={(values) => updateFilter('treatment', values)}
+          placeholder="Select treatments"
+        />
+      </Expand>
 
-          {/* Milkyness */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Milkyness
-            </label>
-            <MultiSelectFilter
-              options={MILKYNESS_OPTIONS}
-              selected={filters.milkyness}
-              onChange={(values) => updateFilter('milkyness', values)}
-              placeholder="Select milkyness levels"
-            />
-          </div>
+      <Expand label="Price per Carat">
+        <RangeFilter
+          min={0}
+          max={50000}
+          value={filters.pricePerCarat}
+          onChange={(range) => updateFilter('pricePerCarat', range)}
+          step={100}
+          unit="$/ct"
+        />
+      </Expand>
 
-          {/* Matching Pairs */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Matching Pairs Available
-            </label>
-            <div className="space-y-2">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="matching"
-                  checked={filters.matching === true}
-                  onChange={() => updateFilter('matching', true)}
-                  className="rounded border-gray-300"
-                />
-                <span className="text-sm" style={{ color: 'var(--foreground)' }}>Yes</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="matching"
-                  checked={filters.matching === false}
-                  onChange={() => updateFilter('matching', false)}
-                  className="rounded border-gray-300"
-                />
-                <span className="text-sm" style={{ color: 'var(--foreground)' }}>No</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="matching"
-                  checked={filters.matching === null}
-                  onChange={() => updateFilter('matching', null)}
-                  className="rounded border-gray-300"
-                />
-                <span className="text-sm" style={{ color: 'var(--foreground)' }}>Any</span>
-              </label>
-            </div>
-          </div>
-        </div>
-      </FilterSection>
-
-      {/* Price & Market */}
-      <FilterSection title="Price & Market" sectionKey="market">
-        <div className="space-y-4">
-          {/* Price per Carat */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Price per Carat
-            </label>
-            <RangeFilter
-              min={0}
-              max={50000}
-              value={filters.pricePerCarat}
-              onChange={(range) => updateFilter('pricePerCarat', range)}
-              step={100}
-              unit="$/ct"
-            />
-          </div>
-
-          {/* Availability */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Availability
-            </label>
-            <MultiSelectFilter
-              options={AVAILABILITY_OPTIONS}
-              selected={filters.availability}
-              onChange={(values) => updateFilter('availability', values)}
-              placeholder="Select availability"
-            />
-          </div>
-
-          {/* Delivery */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Delivery Time
-            </label>
-            <MultiSelectFilter
-              options={DELIVERY_OPTIONS}
-              selected={filters.delivery}
-              onChange={(values) => updateFilter('delivery', values)}
-              placeholder="Select delivery times"
-            />
-          </div>
-        </div>
-      </FilterSection>
-
-      {/* Optical Properties */}
-      <FilterSection title="Optical Properties" sectionKey="optical">
-        <div className="space-y-4">
-          {/* Brilliance */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Brilliance
-            </label>
-            <MultiSelectFilter
-              options={OPTICAL_PROPERTIES}
-              selected={filters.brilliance}
-              onChange={(values) => updateFilter('brilliance', values)}
-              placeholder="Select brilliance grades"
-            />
-          </div>
-
-          {/* Fire */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Fire
-            </label>
-            <MultiSelectFilter
-              options={OPTICAL_PROPERTIES}
-              selected={filters.fire}
-              onChange={(values) => updateFilter('fire', values)}
-              placeholder="Select fire grades"
-            />
-          </div>
-
-          {/* Scintillation */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Scintillation
-            </label>
-            <MultiSelectFilter
-              options={OPTICAL_PROPERTIES}
-              selected={filters.scintillation}
-              onChange={(values) => updateFilter('scintillation', values)}
-              placeholder="Select scintillation grades"
-            />
-          </div>
-        </div>
-      </FilterSection>
-
-      
-
-      {/* Lab-Grown Specific */}
-      {(diamondType === 'lab-grown-single' || diamondType === 'lab-grown-melee') && (
-        <FilterSection 
-          title="Lab-Grown Properties" 
-          sectionKey="labgrown"
-          badge="Lab-Grown"
-          description="Synthetic diamond growth methods"
-        >
-          <div className="space-y-6">
-            {/* Growth Method */}
-            <div>
-              <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
-                Growth Method (CVD / HPHT)
-              </label>
-              <MultiSelectFilter
-                options={GROWN_METHODS}
-                selected={filters.grownMethod}
-                onChange={(values) => updateFilter('grownMethod', values)}
-                placeholder="Select growth methods (CVD or HPHT)"
-              />
-              <div className="mt-3 p-3 rounded-lg border" style={{ 
-                backgroundColor: 'var(--muted)/30', 
-                borderColor: 'var(--border)'
-              }}>
-                <p className="text-xs font-medium mb-2" style={{ color: 'var(--primary)' }}>
-                  🌱 Growth Methods Available:
-                </p>
-                <div className="space-y-1 text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                  <p><strong>CVD (Chemical Vapor Deposition)</strong>: Layer-by-layer growth method, often more affordable and produces high-quality diamonds.</p>
-                  <p><strong>HPHT (High Pressure, High Temperature)</strong>: Mimics natural formation conditions, creates more cubic crystals with excellent clarity.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </FilterSection>
-      )}
-
-      {/* Measurements */}
-      <FilterSection title="Measurements" sectionKey="measurements">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Length (mm)
-            </label>
-            <RangeFilter
-              min={0}
-              max={20}
-              value={filters.measurements.length}
-              onChange={(range) => updateFilter('measurements', { ...filters.measurements, length: range })}
-              step={0.1}
-              unit="mm"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Width (mm)
-            </label>
-            <RangeFilter
-              min={0}
-              max={20}
-              value={filters.measurements.width}
-              onChange={(range) => updateFilter('measurements', { ...filters.measurements, width: range })}
-              step={0.1}
-              unit="mm"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Depth (mm)
-            </label>
-            <RangeFilter
-              min={0}
-              max={15}
-              value={filters.measurements.depth}
-              onChange={(range) => updateFilter('measurements', { ...filters.measurements, depth: range })}
-              step={0.1}
-              unit="mm"
-            />
-          </div>
-        </div>
-      </FilterSection>
-
-      {/* Percentages */}
-      <FilterSection title="Percentages" sectionKey="percentages">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Table %
-            </label>
-            <RangeFilter
-              min={40}
-              max={80}
-              value={filters.tablePercent}
-              onChange={(range) => updateFilter('tablePercent', range)}
-              step={0.1}
-              unit="%"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
-              Depth %
-            </label>
-            <RangeFilter
-              min={50}
-              max={80}
-              value={filters.depthPercent}
-              onChange={(range) => updateFilter('depthPercent', range)}
-              step={0.1}
-              unit="%"
-            />
-          </div>
-        </div>
-      </FilterSection>
+      <Expand label="Length (mm)">
+        <RangeFilter
+          min={0}
+          max={20}
+          value={filters.measurements.length}
+          onChange={(range) => updateFilter('measurements', { ...filters.measurements, length: range })}
+          step={0.1}
+          unit="mm"
+        />
+      </Expand>
+      <Expand label="Width (mm)">
+        <RangeFilter
+          min={0}
+          max={20}
+          value={filters.measurements.width}
+          onChange={(range) => updateFilter('measurements', { ...filters.measurements, width: range })}
+          step={0.1}
+          unit="mm"
+        />
+      </Expand>
+      <Expand label="Depth (mm)">
+        <RangeFilter
+          min={0}
+          max={15}
+          value={filters.measurements.depth}
+          onChange={(range) => updateFilter('measurements', { ...filters.measurements, depth: range })}
+          step={0.1}
+          unit="mm"
+        />
+      </Expand>
+      <Expand label="Table %">
+        <RangeFilter
+          min={40}
+          max={80}
+          value={filters.tablePercent}
+          onChange={(range) => updateFilter('tablePercent', range)}
+          step={0.1}
+          unit="%"
+        />
+      </Expand>
+      <Expand label="Depth %">
+        <RangeFilter
+          min={50}
+          max={80}
+          value={filters.depthPercent}
+          onChange={(range) => updateFilter('depthPercent', range)}
+          step={0.1}
+          unit="%"
+        />
+      </Expand>
     </div>
   )
 }

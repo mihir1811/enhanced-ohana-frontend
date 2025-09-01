@@ -37,6 +37,8 @@ interface DiamondSearchForm {
 }
 
 // Shape options - Your actual industry shapes
+import * as ShapeIcons from '@/../public/icons';
+import { SECTION_WIDTH } from '@/lib/constants'
 const SHAPES = [
   "Round",
   "Pear",
@@ -70,7 +72,43 @@ const SHAPES = [
   "Hexagonal cut",
   "Octagonal cut",
   "Portugeese cut"
-]
+];
+
+const shapeIconMap: Record<string, React.ComponentType<any>> = {
+  'Round': ShapeIcons.RoundIcon,
+  'Pear': ShapeIcons.PearIcon,
+  'Emerald': ShapeIcons.EmeraldIcon,
+  'Oval': ShapeIcons.OvalIcon,
+  'Heart': ShapeIcons.HeartIcon,
+  'Marquise': ShapeIcons.MarquiseIcon,
+  'Asscher': ShapeIcons.AsscherIcon,
+  'Cushion': ShapeIcons.CushionIcon,
+  'Cushion modified': ShapeIcons.CushionModifiedIcon,
+  'Cushion brilliant': ShapeIcons.CushionBrilliantIcon,
+  'Radiant': ShapeIcons.RadiantIcon,
+  'Princess': ShapeIcons.PrincessIcon,
+  'French': ShapeIcons.FrenchIcon,
+  'Trilliant': ShapeIcons.TrilliantIcon,
+  'Euro cut': ShapeIcons.EurocutIcon,
+  'Old Miner': ShapeIcons.OldMinerIcon,
+  'Briollette': ShapeIcons.BriolletteIcon,
+  'Rose cut': ShapeIcons.RosecutIcon,
+  'Lozenge': ShapeIcons.LozengeIcon,
+  'Baguette': ShapeIcons.BaguetteIcon,
+  'Tapered baguette': ShapeIcons.TaperedBaguetteIcon,
+  'Half-moon': ShapeIcons.HalfmoonIcon,
+  'Flanders': ShapeIcons.FlandersIcon,
+  'Trapezoid': ShapeIcons.TrapezoidIcon,
+  'Bullet': ShapeIcons.BulletIcon,
+  'Kite': ShapeIcons.KiteIcon,
+  'Shield': ShapeIcons.ShieldIcon,
+  'Star cut': ShapeIcons.StarcutIcon,
+  'Pentagonal cut': ShapeIcons.PentagonalIcon,
+  'Hexagonal cut': ShapeIcons.HexagonalIcon,
+  'Octagonal cut': ShapeIcons.OctagonalIcon,
+  'Portugeese cut': ShapeIcons.PortugeeseIcon,
+  'Default': ShapeIcons.DefaultIcon
+};
 
 // Color options
 const COLORS = ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M']
@@ -345,7 +383,7 @@ export default function DiamondsSearchPage() {
       </div>
 
       {/* Search Form */}
-      <div className="max-w-[1400px] mx-auto px-4 py-12">
+      <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 py-12`}>
         <div className="bg-white/80 dark:bg-slate-900/80 rounded-2xl shadow-sm border p-8 backdrop-blur-xl relative" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
           <div className="flex items-center mb-8">
             <Search className="w-8 h-8 mr-3" style={{ color: 'var(--primary)' }} />
@@ -474,25 +512,61 @@ export default function DiamondsSearchPage() {
               <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
                 Shape
               </label>
-              <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-                {SHAPES.map(shape => (
-                  <button
-                    key={shape}
-                    onClick={() => handleMultiSelect('shape', shape)}
-                    className={`p-3 rounded-lg border text-sm transition-all ${searchForm.shape.includes(shape)
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    style={{
-                      backgroundColor: searchForm.shape.includes(shape) ? 'var(--primary)/10' : 'var(--card)',
-                      borderColor: searchForm.shape.includes(shape) ? 'var(--primary)' : 'var(--border)',
-                      color: searchForm.shape.includes(shape) ? 'var(--primary)' : 'var(--foreground)'
-                    }}
-                  >
-                    {shape}
-                  </button>
-                ))}
-              </div>
+              {(() => {
+                const [showAllShapes, setShowAllShapes] = React.useState(false);
+                const visibleShapes = showAllShapes ? SHAPES : SHAPES.slice(0, 9);
+                return (
+                  <>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                      {visibleShapes.map(shape => {
+                        const Icon = shapeIconMap[shape] || shapeIconMap['Default'];
+                        const selected = searchForm.shape.includes(shape);
+                        return (
+                          <button
+                            key={shape}
+                            onClick={() => handleMultiSelect('shape', shape)}
+                            className={`flex flex-col items-center justify-center p-3 duration-75 rounded-xl border transition-all group relative focus:outline-none focus:ring-2 focus:ring-blue-400 ${selected ? 'border-blue-500 bg-blue-50 shadow-lg' : 'border-gray-200 hover:border-gray-300 hover:shadow-md'}`}
+                            style={{
+                              backgroundColor: selected ? 'var(--primary)/10' : 'var(--card)',
+                              borderColor: selected ? 'var(--primary)' : 'var(--border)',
+                              color: selected ? 'var(--primary)' : 'var(--foreground)',
+                              transition: 'box-shadow 0.2s, transform 0.2s'
+                            }}
+                            title={shape}
+                          >
+                            <span className={`w-12 h-12 flex items-center justify-center mb-1 rounded-full transition-all bg-transparent`}
+                            >
+                              <Icon width={40} height={40} />
+                            </span>
+                            <span className="text-xs font-medium text-center truncate w-full">{shape}</span>
+                            {/* Tooltip for better UX on hover */}
+                            <span className="absolute z-10 left-1/2 -translate-x-1/2 bottom-[-2.2rem] px-2 py-1 rounded bg-black text-white text-xs opacity-0 group-hover:opacity-100 pointer-events-none transition-all whitespace-nowrap shadow-lg" style={{ minWidth: 60 }}>
+                              {shape}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {SHAPES.length > 9 && (
+                      <div className="flex justify-center mt-3">
+                        <button
+                          type="button"
+                          className="px-4 py-1 rounded-full border text-xs font-medium transition-colors"
+                          style={{
+                            backgroundColor: 'var(--card)',
+                            borderColor: 'var(--border)',
+                            color: 'var(--primary)',
+                            minWidth: 100
+                          }}
+                          onClick={() => setShowAllShapes(v => !v)}
+                        >
+                          {showAllShapes ? 'Show Less' : 'Show More'}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
 
             {/* Carat Weight */}

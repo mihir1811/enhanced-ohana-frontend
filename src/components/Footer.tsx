@@ -172,7 +172,7 @@ export default function Footer() {
 
       {/* Bottom Footer */}
       <div className="border-t" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--muted)' }}>
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 sm:px-6 lg:px-8 py-6`}>
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6">
               <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
