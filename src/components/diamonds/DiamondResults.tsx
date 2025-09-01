@@ -427,6 +427,13 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
   );
 }
 
+export interface SellerInfo {
+  id?: string;
+  sellerType?: string;
+  companyName?: string;
+  companyLogo?: string;
+}
+
 export interface Diamond {
   id: string;
   sellerId?: string;
@@ -468,6 +475,13 @@ export interface Diamond {
   certification?: string;
   certificateNumber?: string | number;
   images: string[];
+  image1?: string;
+  image2?: string;
+  image3?: string;
+  image4?: string;
+  image5?: string;
+  image6?: string;
+  seller?: SellerInfo;
   videoURL?: string;
   stoneType?: string;
   process?: string;
