@@ -8,6 +8,7 @@ import loadingReducer from './loading'
 import cartReducer from '../features/cart/cartSlice'
 import orderReducer from '../features/orders/orderSlice'
 import productReducer from '../features/products/productSlice'
+import compareReducer from '../features/compare/compareSlice'
 
 // Persist configuration for auth slice
 const authPersistConfig = {
@@ -44,11 +45,18 @@ const sellerPersistConfig = {
   whitelist: ['profile', 'error'], // Only persist profile and error, not isLoading
 }
 
+// Persist configuration for compare slice
+const comparePersistConfig = {
+  key: 'compare',
+  storage,
+  whitelist: ['products'], // Persist compare products
+}
+
 // Root persist configuration
 const rootPersistConfig = {
   key: 'root',
   storage,
-  whitelist: ['auth', 'cart', 'orders', 'seller'], // Persist auth, cart, orders, seller
+  whitelist: ['auth', 'cart', 'orders', 'seller', 'compare'], // Persist auth, cart, orders, seller, compare
   blacklist: ['loading', 'products'], // Don't persist loading or products
 }
 
@@ -60,6 +68,7 @@ const rootReducer = combineReducers({
   products: productReducer, // No persistence for products
   loading: loadingReducer,
   seller: persistReducer(sellerPersistConfig, sellerReducer), // Persisted seller slice
+  compare: persistReducer(comparePersistConfig, compareReducer), // Persisted compare slice
 })
 
 // Create persisted reducer

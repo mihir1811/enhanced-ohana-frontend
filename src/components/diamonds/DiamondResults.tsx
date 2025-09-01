@@ -5,6 +5,8 @@ import Pagination from '../ui/Pagination';
 import * as ShapeIcons from '@/../public/icons';
 import Dialog from '../ui/Dialog';
 import { X, ChevronLeft, ChevronRight, Heart, ShoppingCart, Share2, Download, Star, Award, Shield, Eye ,Grid, List, ArrowUpDown, ChevronDown, CopyPlus, Filter as FilterIcon} from 'lucide-react'
+import { useCompare } from '@/hooks/useCompare'
+import CompareButton from '@/components/compare/CompareButton'
 
 // Modern carousel and details for Quick View modal
 interface QuickViewDiamondModalContentProps {
@@ -695,14 +697,11 @@ export default function DiamondResults({
           style={{ background: 'var(--muted)' }}>
           {/* Compare & Quick View Icons */}
           <div className="absolute top-2 left-2 flex flex-col gap-2 z-20">
-            <button
-              className="p-2 rounded-full shadow border bg-white/80 hover:bg-white transition-colors"
-              style={{ borderColor: 'var(--border)' }}
-              title="Compare"
-              onClick={e => { e.stopPropagation(); /* TODO: handle compare */ }}
-            >
-              <CopyPlus className="w-5 h-5" style={{ color: 'var(--primary)' }} />
-            </button>
+            <CompareButton
+              product={diamond}
+              productType="diamond"
+              size="md"
+            />
             <button
               className="p-2 rounded-full shadow border bg-white/80 hover:bg-white transition-colors"
               style={{ borderColor: 'var(--border)' }}
@@ -876,13 +875,11 @@ export default function DiamondResults({
               View Details
             </button>
             {/* Compare & Quick View (now inline, minimalist) */}
-            <button
-              className="p-2 rounded-full bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
-              title="Compare"
-              onClick={e => { e.stopPropagation(); /* TODO: handle compare */ }}
-            >
-              <CopyPlus className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-            </button>
+            <CompareButton
+              product={diamond}
+              productType="diamond"
+              size="sm"
+            />
             <button
               className="p-2 rounded-full bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
               title="Quick View"

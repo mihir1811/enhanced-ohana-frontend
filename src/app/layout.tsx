@@ -5,6 +5,7 @@ import { AppProviders } from "../provider";
 import ConditionalNavigation from "../components";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { Toaster } from "react-hot-toast";
+import FloatingCompareBar from "@/components/compare/FloatingCompareBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,6 +31,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AppProviders>
             <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
+            <FloatingCompareBar />
             {children}
           </AppProviders>
         </ThemeProvider>
