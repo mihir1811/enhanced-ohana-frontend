@@ -1,4 +1,4 @@
-import { BaseUser, SellerData, User } from '../features/auth/authSlice'
+import {BaseUser, SellerData, User } from '../features/auth/authSlice'
 import { ApiResponse } from './api'
 
 export interface UserProfileUpdateData {
