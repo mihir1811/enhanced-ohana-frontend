@@ -728,7 +728,18 @@ export default function NavigationUser() {
                               </svg>
                               <span className="font-medium">My Profile</span>
                             </Link>
-
+                            <Link
+                              href="/become-seller"
+                              className="flex items-center space-x-3 px-3 py-3 text-slate-700 dark:text-slate-200 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 group"
+                              style={{ color: 'var(--popover-foreground)', borderRadius: 'var(--radius-lg)' }}
+                              role="menuitem"
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              <svg className="w-5 h-5 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                              </svg>
+                              <span className="font-medium">Become Seller</span>
+                            </Link>
                             <Link
                               href="/user/orders"
                               className="flex items-center space-x-3 px-3 py-3 text-slate-700 dark:text-slate-200 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 group"
