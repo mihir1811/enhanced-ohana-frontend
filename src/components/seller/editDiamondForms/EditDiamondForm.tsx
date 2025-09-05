@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import SearchableDropdown from '@/components/shared/SearchableDropdown';
 import type { Option } from '@/components/shared/SearchableDropdown';
 import {
-  diamondColors, fancyColors, fancyIntensities, fancyOvertones, cutGrades, clarities, shades, shapes, fluorescences, processes, treatments, certificateCompanies
+  diamondColors, fancyColors, fancyIntensities, fancyOvertones, cutGrades, clarities, shades, shapes, fluorescences, processes, treatments
 } from '@/constants/diamondDropdowns';
+import { useCertificateCompanies } from '@/hooks/data/useCertificateCompanies';
 
 
 type EditDiamondFormProps = {
@@ -25,6 +26,9 @@ const normalizeImages = (data: any) => {
 };
 
 const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
+  // Use dynamic certificate companies
+  const { options: certificateCompanies, loading: companiesLoading, getCompanyNameById } = useCertificateCompanies();
+
   // Helper to map API string to dropdown value (case-insensitive, handle camelCase, spaces, etc)
   function normalizeApiValue(val: string | undefined) {
     if (!val) return '';
@@ -79,7 +83,9 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
         fluorescence: getDropdownValue(fluorescences, rest.fluorescence),
         treatment: getDropdownValue(treatments, rest.treatment),
         process: getDropdownValue(processes, rest.process, 'process'),
-        images: []
+        certificateCompanyId: rest.certificateCompanyId ? String(rest.certificateCompanyId) : '',
+        images: [],
+        certification: null
       };
     }
     return initialState;
@@ -102,6 +108,7 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
         fluorescence: getDropdownValue(fluorescences, rest.fluorescence),
         treatment: getDropdownValue(treatments, rest.treatment),
         process: getDropdownValue(processes, rest.process, 'process'),
+        certificateCompanyId: rest.certificateCompanyId ? String(rest.certificateCompanyId) : '',
         images: []
       });
       setExistingImages(normalizeImages(initialData));
@@ -121,17 +128,25 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { files } = e.target;
+    const { files, name } = e.target;
     if (!files) return;
-    let fileArr = Array.from(files);
-    if (form.images.length + fileArr.length > 6) {
-      fileArr = fileArr.slice(0, 6 - form.images.length);
-      setError('You can upload a maximum of 6 images.');
-    } else {
-      setError('');
+    
+    if (name === 'images') {
+      let fileArr = Array.from(files);
+      if (form.images.length + fileArr.length > 6) {
+        fileArr = fileArr.slice(0, 6 - form.images.length);
+        setError('You can upload a maximum of 6 images.');
+      } else {
+        setError('');
+      }
+      setForm((prev: typeof form) => ({ ...prev, images: [...prev.images, ...fileArr].slice(0, 6) }));
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    } else if (name === 'certification') {
+      const file = files[0];
+      if (file) {
+        setForm((prev: typeof form) => ({ ...prev, certification: file }));
+      }
     }
-    setForm((prev: typeof form) => ({ ...prev, images: [...prev.images, ...fileArr].slice(0, 6) }));
-    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleRemoveImage = (idx: number) => {
@@ -146,33 +161,45 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
     setLoading(true);
     setError('');
     try {
-      const formData = new FormData();
-      const fields = [
-        'stockNumber', 'name', 'description', 'origin', 'rap', 'price', 'discount', 'caratWeight', 'cut', 'color', 'shade', 'fancyColor', 'fancyIntencity', 'fancyOvertone', 'shape', 'symmetry', 'diameter', 'clarity', 'fluorescence', 'measurement', 'ratio', 'table', 'depth', 'gridleMin', 'gridleMax', 'gridlePercentage', 'crownHeight', 'crownAngle', 'pavilionAngle', 'pavilionDepth', 'culetSize', 'polish', 'treatment', 'inscription', 'certificateNumber', 'stoneType', 'process', 'certificateCompanyId', 'videoURL', 'sellerSKU', 'isOnAuction', 'isSold'
+      // Prepare FormData for multipart/form-data
+      const formDataToSend = new FormData();
+      
+      // Only append specific fields as per the curl request
+      const fieldsToInclude = [
+        'stoneType', 'stockNumber', 'sellerSKU', 'name', 'description', 'origin',
+        'rap', 'price', 'discount', 'caratWeight', 'cut', 'color', 'shade',
+        'fancyColor', 'fancyIntencity', 'fancyOvertone', 'shape', 'symmetry',
+        'diameter', 'clarity', 'fluorescence', 'measurement', 'ratio', 'table',
+        'depth', 'gridleMin', 'gridleMax', 'gridlePercentage', 'crownHeight',
+        'crownAngle', 'pavilionAngle', 'pavilionDepth', 'culetSize', 'polish',
+        'treatment', 'inscription', 'certificateNumber', 'process',
+        'certificateCompanyId', 'videoURL'
       ];
-      fields.forEach((key) => {
-        const value = (form as any)[key];
-        if (typeof value !== 'undefined' && value !== null && value !== '') {
-          formData.append(key, String(value));
+
+      fieldsToInclude.forEach(key => {
+        const value = form[key as keyof typeof form];
+        if (value !== null && value !== undefined && value !== '') {
+          formDataToSend.append(key, value.toString());
         }
       });
-      // Append new images
+
+      // Handle images (image1 to image6)
       if (form.images && form.images.length > 0) {
-        form.images.forEach((file: File, idx: number) => {
-          formData.append(`image${idx + 1}`, file);
+        form.images.forEach((image, index) => {
+          if (image) {
+            formDataToSend.append(`image${index + 1}`, image);
+          }
         });
       }
-      // Append certification file
+
+      // Handle certification file
       if (form.certification) {
-        formData.append('certification', form.certification);
+        formDataToSend.append('certification', form.certification);
       }
-      // Existing images (if API supports keeping them)
-      existingImages.forEach((url, idx) => {
-        formData.append(`existingImage${idx + 1}`, url);
-      });
+
       const token = getCookie('token');
       if (!token) throw new Error('User not authenticated');
-      const response = await import('@/services/diamondService').then(m => m.diamondService.updateDiamond(initialData.id, formData, token));
+      const response = await import('@/services/diamondService').then(m => m.diamondService.updateDiamond(initialData.id, formDataToSend, token));
       if (!response || !response.success) {
         throw new Error(response?.message || 'Failed to update diamond');
       }
@@ -186,7 +213,7 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
 
   // UI
   return (
-    <form className="w-full mx-auto bg-card flex flex-col gap-8" onSubmit={handleSubmit}>
+    <form className="w-full mx-auto bg-card flex flex-col gap-8" onSubmit={handleSubmit} noValidate>
       <div className="space-y-3">
         <h2 className="text-3xl font-semibold tracking-tight bg-gradient-to-r from-primary/90 to-primary bg-clip-text ">Edit Diamond</h2>
         <p className="text-muted-foreground text-sm">Edit the details below to update this diamond in your inventory.</p>
@@ -384,6 +411,29 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
             placeholder="e.g. https://youtu.be/abcd1234"
             className="w-full transition-all duration-200 hover:border-primary/50"
           />
+        </div>
+        
+        {/* Certification File Upload */}
+        <div className='w-1/2 mt-4 space-y-2'>
+          <Label htmlFor="certification" className="font-medium">
+            Certification File
+          </Label>
+          <div className="space-y-2">
+            <Input
+              id="certification"
+              name="certification"
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png"
+              onChange={handleFileChange}
+              className="w-full transition-all duration-200 hover:border-primary/50"
+              required={false}
+            />
+            {form.certification && (
+              <p className="text-sm text-muted-foreground">
+                Selected: {form.certification.name}
+              </p>
+            )}
+          </div>
         </div>
       </section>
 

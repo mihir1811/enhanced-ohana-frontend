@@ -18,11 +18,28 @@ class DiamondService {
   }
   // Delete diamond by ID
   async deleteDiamond(id: string | number, token?: string): Promise<any> {
-    return apiService.delete(`/diamond/${id}`, token);
+    const diamondId = typeof id === 'string' ? parseInt(id, 10) : id;
+    if (isNaN(diamondId)) {
+      throw new Error('Invalid diamond ID provided');
+    }
+    return apiService.delete(`/diamond/${diamondId}`, token);
   }
   // Update diamond by ID (with file upload)
-  async updateDiamond(id: string, formData: FormData, token?: string): Promise<any> {
-    return apiService.uploadPatch(`/diamond/${id}`, formData, token);
+  async updateDiamond(id: string | number, formData: FormData, token?: string): Promise<any> {
+    // Ensure ID is properly formatted for the API endpoint
+    const diamondId = typeof id === 'string' ? parseInt(id, 10) : id;
+    if (isNaN(diamondId)) {
+      throw new Error('Invalid diamond ID provided');
+    }
+    return apiService.uploadPatch(`/diamond/${diamondId}`, formData, token);
+  }
+  // Update diamond by ID (JSON data only)
+  async updateDiamondData(id: string | number, data: any, token?: string): Promise<any> {
+    const diamondId = typeof id === 'string' ? parseInt(id, 10) : id;
+    if (isNaN(diamondId)) {
+      throw new Error('Invalid diamond ID provided');
+    }
+    return apiService.patch(`/diamond/${diamondId}`, data, token);
   }
   // Add new diamond (with file upload)
   async addDiamond(formData: FormData, token?: string): Promise<any> {
@@ -34,8 +51,12 @@ class DiamondService {
   }
 
   // Get single diamond by ID
-  async getDiamondById(id: string): Promise<any> {
-    return apiService.get(`/diamond/${id}`);
+  async getDiamondById(id: string | number): Promise<any> {
+    const diamondId = typeof id === 'string' ? parseInt(id, 10) : id;
+    if (isNaN(diamondId)) {
+      throw new Error('Invalid diamond ID provided');
+    }
+    return apiService.get(`/diamond/${diamondId}`);
   }
 
   // Search diamonds

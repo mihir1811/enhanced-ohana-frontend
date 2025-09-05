@@ -160,8 +160,8 @@ import {
   fluorescences,
   processes,
   treatments,
-  certificateCompanies,
 } from '@/config/sellerConfigData';
+import { useCertificateCompanies } from '@/hooks/data/useCertificateCompanies';
 
 
 type DiamondFormState = {
@@ -256,6 +256,9 @@ const initialState: DiamondFormState = {
 };
 
 function AddDiamondForm() {
+  // Use dynamic certificate companies
+  const { options: certificateCompanies, loading: companiesLoading, getCompanyNameById } = useCertificateCompanies();
+  
   const [form, setForm] = useState<DiamondFormState>(initialState);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -306,6 +309,14 @@ function AddDiamondForm() {
           formData.append(key, String(value));
         }
       });
+      
+      // Handle certificateCompany separately - send company name based on certificateCompanyId
+      if (form.certificateCompanyId && form.certificateCompanyId !== '') {
+        const companyName = getCompanyNameById(form.certificateCompanyId);
+        if (companyName) {
+          formData.append('certificateCompany', companyName);
+        }
+      }
       // Append images as image1, image2, ...
       if (form.images && form.images.length > 0) {
         form.images.forEach((file, idx) => {
