@@ -8,13 +8,18 @@ import AddJewelryForm from '@/components/seller/addProductForms/AddJewelryForm';
 
 // Helper function to get correct form
 function renderAddProductForm(sellerType?: string) {
+  const handleCancel = () => {
+    // Handle cancel action - could navigate back or reset form
+    console.log('Form cancelled');
+  };
+
   switch (sellerType) {
     case 'naturalDiamond':
       return <AddDiamondForm />;
     case 'labGrownDiamond':
       return <AddDiamondForm />;
     case 'gemstone':
-      return <AddGemstoneForm />;
+      return <AddGemstoneForm onCancel={handleCancel} />;
     case 'jewellery':
       return <AddJewelryForm />;
     default:

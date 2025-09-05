@@ -3,7 +3,7 @@ import { PURGE } from 'redux-persist'
 import { userService, UpdateUserRequest } from '@/services/userService'
 
 // Base User interface - every user has these properties
-interface BaseUser {
+export interface BaseUser {
   id: string
   name: string
   email: string

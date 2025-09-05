@@ -46,7 +46,7 @@ export function transformApiDiamond(apiDiamond: any): Diamond {
     cut: apiDiamond.cut,
     price: Number(apiDiamond.price),
     certification: apiDiamond.certification,
-    reportNumber: apiDiamond.certificateNumber,
+    // reportNumber: apiDiamond.certificateNumber,
     fluorescence: apiDiamond.fluorescence,
     polish: apiDiamond.polish,
     symmetry: apiDiamond.symmetry,
@@ -73,5 +73,17 @@ export function transformApiDiamond(apiDiamond: any): Diamond {
     availability: apiDiamond.isSold ? 'sold' : 'available',
     createdAt: apiDiamond.createdAt,
     updatedAt: apiDiamond.updatedAt,
+    // Add all seller fields for UI
+    seller: apiDiamond.seller
+      ? {
+          id: apiDiamond.seller.id,
+          sellerType: apiDiamond.seller.sellerType,
+          companyName: apiDiamond.seller.companyName,
+          companyLogo: apiDiamond.seller.companyLogo,
+        }
+      : undefined,
+    sellerId: apiDiamond.sellerId,
+    sellerSKU: apiDiamond.sellerSKU,
+    stockNumber: apiDiamond.stockNumber,
   };
 }

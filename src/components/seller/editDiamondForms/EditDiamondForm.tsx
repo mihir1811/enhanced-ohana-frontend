@@ -1,15 +1,27 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { getCookie } from '@/lib/cookie-utils';
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import SearchableDropdown from '@/components/shared/SearchableDropdown';
+import type { Option } from '@/components/shared/SearchableDropdown';
 import {
-  diamondColors, fancyColors, fancyIntensities, fancyOvertones, cutGrades, clarities, shades, shapes, fluorescences, processes, treatments, certificateCompanies
+  diamondColors, fancyColors, fancyIntensities, fancyOvertones, cutGrades, clarities, shades, shapes, fluorescences, processes, treatments
 } from '@/constants/diamondDropdowns';
+import { useCertificateCompanies } from '@/hooks/data/useCertificateCompanies';
+import { auctionProductTypes } from '@/config/sellerConfigData';
+import toast from 'react-hot-toast';
+
+
 
 type EditDiamondFormProps = {
   initialData?: any;
 };
 
 const initialState = {
-  name: '', stoneType: '', description: '', images: [] as File[], videoURL: '', stockNumber: '', sellerSKU: '', origin: '', rap: '', price: '', discount: '', color: '', fancyColor: '', fancyIntencity: '', fancyOvertone: '', caratWeight: '', cut: '', clarity: '', shade: '', shape: '', polish: '', symmetry: '', fluorescence: '', treatment: '', process: '', measurement: '', diameter: '', ratio: '', table: '', depth: '', gridleMin: '', gridleMax: '', gridlePercentage: '', crownHeight: '', crownAngle: '', pavilionAngle: '', pavilionDepth: '', culetSize: '', certificateCompanyId: '', certificateNumber: '', inscription: '', certification: null as File | null
+  name: '', stoneType: '', description: '', images: [] as File[], videoURL: '', stockNumber: '', sellerSKU: '', origin: '', rap: '', price: '', discount: '', color: '', fancyColor: '', fancyIntencity: '', fancyOvertone: '', caratWeight: '', cut: '', clarity: '', shade: '', shape: '', polish: '', symmetry: '', fluorescence: '', treatment: '', process: '', measurement: '', diameter: '', ratio: '', table: '', depth: '', gridleMin: '', gridleMax: '', gridlePercentage: '', crownHeight: '', crownAngle: '', pavilionAngle: '', pavilionDepth: '', culetSize: '', certificateCompanyId: '', certificateNumber: '', inscription: '', certification: null as File | null,
+  // Auction fields
+  productType: '', startTime: '', endTime: '', enableAuction: false
 };
 
 
@@ -19,6 +31,9 @@ const normalizeImages = (data: any) => {
 };
 
 const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
+  // Use dynamic certificate companies
+  const { options: certificateCompanies, loading: companiesLoading, getCompanyNameById } = useCertificateCompanies();
+
   // Helper to map API string to dropdown value (case-insensitive, handle camelCase, spaces, etc)
   function normalizeApiValue(val: string | undefined) {
     if (!val) return '';
@@ -60,7 +75,7 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
     return apiValue;
   }
 
-  const [form, setForm] = useState(() => {
+  const [form, setForm] = useState<typeof initialState>(() => {
     if (initialData) {
       const { images, ...rest } = initialData;
       return {
@@ -73,7 +88,9 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
         fluorescence: getDropdownValue(fluorescences, rest.fluorescence),
         treatment: getDropdownValue(treatments, rest.treatment),
         process: getDropdownValue(processes, rest.process, 'process'),
-        images: []
+        certificateCompanyId: rest.certificateCompanyId ? String(rest.certificateCompanyId) : '',
+        images: [],
+        certification: null
       };
     }
     return initialState;
@@ -96,6 +113,7 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
         fluorescence: getDropdownValue(fluorescences, rest.fluorescence),
         treatment: getDropdownValue(treatments, rest.treatment),
         process: getDropdownValue(processes, rest.process, 'process'),
+        certificateCompanyId: rest.certificateCompanyId ? String(rest.certificateCompanyId) : '',
         images: []
       });
       setExistingImages(normalizeImages(initialData));
@@ -115,17 +133,25 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { files } = e.target;
+    const { files, name } = e.target;
     if (!files) return;
-    let fileArr = Array.from(files);
-    if (form.images.length + fileArr.length > 6) {
-      fileArr = fileArr.slice(0, 6 - form.images.length);
-      setError('You can upload a maximum of 6 images.');
-    } else {
-      setError('');
+
+    if (name === 'images') {
+      let fileArr = Array.from(files);
+      if (form.images.length + fileArr.length > 6) {
+        fileArr = fileArr.slice(0, 6 - form.images.length);
+        setError('You can upload a maximum of 6 images.');
+      } else {
+        setError('');
+      }
+      setForm((prev: typeof form) => ({ ...prev, images: [...prev.images, ...fileArr].slice(0, 6) }));
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    } else if (name === 'certification') {
+      const file = files[0];
+      if (file) {
+        setForm((prev: typeof form) => ({ ...prev, certification: file }));
+      }
     }
-    setForm((prev: typeof form) => ({ ...prev, images: [...prev.images, ...fileArr].slice(0, 6) }));
-    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleRemoveImage = (idx: number) => {
@@ -140,37 +166,76 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
     setLoading(true);
     setError('');
     try {
-      const formData = new FormData();
-      const fields = [
-        'stockNumber','name','description','origin','rap','price','discount','caratWeight','cut','color','shade','fancyColor','fancyIntencity','fancyOvertone','shape','symmetry','diameter','clarity','fluorescence','measurement','ratio','table','depth','gridleMin','gridleMax','gridlePercentage','crownHeight','crownAngle','pavilionAngle','pavilionDepth','culetSize','polish','treatment','inscription','certificateNumber','stoneType','process','certificateCompanyId','videoURL','sellerSKU','isOnAuction','isSold'
+      // Prepare FormData for multipart/form-data
+      const formDataToSend = new FormData();
+
+      // Only append specific fields as per the curl request
+      const fieldsToInclude = [
+        'stoneType', 'stockNumber', 'sellerSKU', 'name', 'description', 'origin',
+        'rap', 'price', 'discount', 'caratWeight', 'cut', 'color', 'shade',
+        'fancyColor', 'fancyIntencity', 'fancyOvertone', 'shape', 'symmetry',
+        'diameter', 'clarity', 'fluorescence', 'measurement', 'ratio', 'table',
+        'depth', 'gridleMin', 'gridleMax', 'gridlePercentage', 'crownHeight',
+        'crownAngle', 'pavilionAngle', 'pavilionDepth', 'culetSize', 'polish',
+        'treatment', 'inscription', 'certificateNumber', 'process',
+        'certificateCompanyId', 'videoURL'
       ];
-      fields.forEach((key) => {
-        const value = (form as any)[key];
-        if (typeof value !== 'undefined' && value !== null && value !== '') {
-          formData.append(key, String(value));
+
+      fieldsToInclude.forEach(key => {
+        const value = form[key as keyof typeof form];
+        if (value !== null && value !== undefined && value !== '') {
+          formDataToSend.append(key, value.toString());
         }
       });
-      // Append new images
+
+      // Handle images (image1 to image6)
       if (form.images && form.images.length > 0) {
-        form.images.forEach((file: File, idx: number) => {
-          formData.append(`image${idx + 1}`, file);
+        form.images.forEach((image, index) => {
+          if (image) {
+            formDataToSend.append(`image${index + 1}`, image);
+          }
         });
       }
-      // Append certification file
+
+      // Handle certification file
       if (form.certification) {
-        formData.append('certification', form.certification);
+        formDataToSend.append('certification', form.certification);
       }
-      // Existing images (if API supports keeping them)
-      existingImages.forEach((url, idx) => {
-        formData.append(`existingImage${idx + 1}`, url);
-      });
+
       const token = getCookie('token');
       if (!token) throw new Error('User not authenticated');
-      const response = await import('@/services/diamondService').then(m => m.diamondService.updateDiamond(initialData.id, formData, token));
+      const response = await import('@/services/diamondService').then(m => m.diamondService.updateDiamond(initialData.id, formDataToSend, token));
       if (!response || !response.success) {
         throw new Error(response?.message || 'Failed to update diamond');
       }
-      alert('Diamond updated successfully!');
+
+      // If auction is enabled, create auction
+      if (form.enableAuction && form.productType && form.startTime && form.endTime) {
+        const auctionData = {
+          productId: initialData.id,
+          productType: form.productType,
+          startTime: new Date(form.startTime).toISOString(),
+          endTime: new Date(form.endTime).toISOString()
+        };
+
+        const auctionResponse = await fetch('http://localhost:3000/api/v1/auction/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(auctionData)
+        });
+
+        if (!auctionResponse.ok) {
+          const errorData = await auctionResponse.json();
+          throw new Error(errorData?.message || 'Failed to create auction');
+        }
+      }
+      toast.success('Diamond updated successfully!' + (form.enableAuction ? ' Auction created!' : ''));
+
+      // alert('Diamond updated successfully!' + (form.enableAuction ? ' Auction created!' : ''));
     } catch (err: any) {
       setError(err.message || 'Failed to submit');
     } finally {
@@ -180,344 +245,973 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
 
   // UI
   return (
-    <form className="w-full mx-auto p-6 bg-white rounded-2xl shadow flex flex-col gap-8" onSubmit={handleSubmit}>
-      <h2 className="text-2xl font-bold mb-2">Edit Diamond</h2>
+    <form className="w-full mx-auto bg-card flex flex-col gap-8" onSubmit={handleSubmit} noValidate>
+      <div className="space-y-3">
+        <h2 className="text-3xl font-semibold tracking-tight bg-gradient-to-r from-primary/90 to-primary bg-clip-text ">Edit Diamond</h2>
+        <p className="text-muted-foreground text-sm">Edit the details below to update this diamond in your inventory.</p>
+      </div>
 
       {/* Basic Information */}
-      <section>
-        <h3 className="text-lg font-semibold mb-2">Basic Information</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block font-medium mb-1">Name *</label>
-            <input name="name" value={form.name} onChange={handleChange} required className="input" placeholder="e.g. Round Brilliant Diamond" />
+      <section className="space-y-6">
+        <div className="flex items-center gap-3">
+          <h3 className="text-xl font-semibold text-foreground/90">Basic Information</h3>
+          <div className="flex-1 border-b border-border/40"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-sm font-medium flex items-center gap-1 text-foreground/90">
+              Name
+              <span className="text-destructive text-xs">*</span>
+            </Label>
+            <Input
+              id="name"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              required
+              placeholder="e.g. Round Brilliant Diamond"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div className="md:col-span-2">
-            <label className="block font-medium mb-1">Description *</label>
-            <textarea name="description" value={form.description} onChange={handleChange} required rows={3} className="input" />
+          <div className="md:col-span-2 space-y-2">
+            <Label htmlFor="description" className="font-medium">
+              Description
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <textarea
+              id="description"
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              required
+              rows={3}
+              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            />
           </div>
         </div>
       </section>
 
       {/* Media */}
+      {/* Media */}
       <section>
         <h3 className="text-lg font-semibold mb-2">Media</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block font-medium mb-1">Product Images *</label>
-            <input
-              name="images"
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleFileChange}
-              className="input"
-              max={6}
-              ref={fileInputRef}
-              disabled={form.images.length + existingImages.length >= 6}
-            />
-            {/* Image preview grid */}
-            {(existingImages.length > 0 || form.images.length > 0) && (
-              <div className="flex flex-wrap gap-3 mt-3">
-                {existingImages.map((img, idx) => (
-                  <div key={img} className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center relative group">
-                    <img src={img} alt={`Preview ${idx + 1}`} className="object-cover w-full h-full" />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveExistingImage(idx)}
-                      className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 shadow text-gray-700 hover:bg-red-500 hover:text-white transition"
-                      title="Remove image"
-                    >
-                      &times;
-                    </button>
-                  </div>
-                ))}
-                {form.images.map((img: File, idx: number) => {
-                  const url = URL.createObjectURL(img);
-                  return (
-                    <div key={url} className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center relative group">
-                      <img
-                        src={url}
-                        alt={`Preview ${idx + 1}`}
-                        className="object-cover w-full h-full"
-                        onLoad={() => URL.revokeObjectURL(url)}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(idx)}
-                        className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 shadow text-gray-700 hover:bg-red-500 hover:text-white transition"
-                        title="Remove image"
+          <div className="space-y-2">
+            <Label htmlFor="images" className="font-medium">
+              Product Images
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <div className="mt-2">
+              <div className="flex items-center justify-center w-full">
+                <label
+                  htmlFor="images"
+                  className={`relative flex flex-col items-center justify-center w-full 
+              border border-dashed rounded-md cursor-pointer 
+              bg-background/50 hover:bg-background/80 
+              border-border hover:border-primary/50
+              transition-all duration-200
+              ${existingImages.length === 0 && form.images.length === 0 ? 'p-6' : 'p-4'}`}
+                >
+                  {existingImages.length === 0 && form.images.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center gap-4">
+                      {/* Cloud Upload Icon */}
+                      <svg
+                        className="w-16 h-16 text-muted-foreground/60"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
                       >
-                        &times;
-                      </button>
+                        <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
+                      </svg>
+
+                      <div className="text-center space-y-2">
+                        <p className="text-lg font-medium text-foreground/90">
+                          Drop Your Files Here
+                        </p>
+                        <p className="text-sm text-muted-foreground">Or</p>
+                        <button
+                          type="button"
+                          className="px-6 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 transition-colors"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            document.getElementById('images')?.click();
+                          }}
+                        >
+                          Browse
+                        </button>
+                      </div>
                     </div>
-                  );
-                })}
+                  ) : (
+                    <div className="w-full">
+                      <div className="grid grid-cols-3 gap-4">
+                        {/* Add Product Box */}
+                        {(existingImages.length + form.images.length) < 6 && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              document.getElementById('images')?.click();
+                            }}
+                            className="aspect-square rounded-md border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-2 transition-colors bg-background/50 hover:bg-background/80 cursor-pointer"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-muted-foreground">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                            <span className="text-sm text-muted-foreground font-medium">Add Product</span>
+                          </button>
+                        )}
+                        {existingImages.map((img, idx) => (
+                          <div key={idx} className="relative group aspect-square">
+                            <img
+                              src={img}
+                              alt={`Product image ${idx + 1}`}
+                              className="w-full h-full object-cover rounded-md"
+                            />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-md">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handleRemoveExistingImage(idx);
+                                }}
+                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white p-2 rounded-full hover:bg-white/20 transition-colors"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                        {form.images.map((img: File, idx: number) => {
+                          const url = URL.createObjectURL(img);
+                          return (
+                            <div key={idx} className="relative group aspect-square">
+                              <img
+                                src={url}
+                                alt={`Product image ${idx + 1}`}
+                                className="w-full h-full object-cover rounded-md"
+                                onLoad={() => URL.revokeObjectURL(url)}
+                              />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-md">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    handleRemoveImage(idx);
+                                  }}
+                                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white p-2 rounded-full hover:bg-white/20 transition-colors"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  <input
+                    id="images"
+                    name="images"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFileChange}
+                    className="hidden"
+                    max={6}
+                    ref={fileInputRef}
+                    disabled={form.images.length + existingImages.length >= 6}
+                  />
+                </label>
               </div>
-            )}
+            </div>
           </div>
-          <div>
-            <label className="block font-medium mb-1">Video URL *</label>
-            <input name="videoURL" value={form.videoURL} onChange={handleChange} required className="input" placeholder="e.g. https://youtu.be/abcd1234" />
+        </div>
+        <div className='w-1/2 mt-4 space-y-2'>
+          <Label htmlFor="videoURL" className="font-medium">
+            Video URL
+            <span className="text-destructive ml-1">*</span>
+          </Label>
+          <Input
+            id="videoURL"
+            name="videoURL"
+            value={form.videoURL}
+            onChange={handleChange}
+            required
+            placeholder="e.g. https://youtu.be/abcd1234"
+            className="w-full transition-all duration-200 hover:border-primary/50"
+          />
+        </div>
+
+        {/* Certification File Upload */}
+        <div className='w-1/2 mt-4 space-y-2'>
+          <Label htmlFor="certification" className="font-medium">
+            Certification File
+          </Label>
+          <div className="space-y-2">
+            <Input
+              id="certification"
+              name="certification"
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png"
+              onChange={handleFileChange}
+              className="w-full transition-all duration-200 hover:border-primary/50"
+              required={false}
+            />
+            {form.certification && (
+              <p className="text-sm text-muted-foreground">
+                Selected: {form.certification.name}
+              </p>
+            )}
           </div>
         </div>
       </section>
 
       {/* Product Details */}
-      <section>
-        <h3 className="text-lg font-semibold mb-2">Product Details</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block font-medium mb-1">Stock Number *</label>
-            <input name="stockNumber" type="number" value={form.stockNumber} onChange={handleChange} required className="input" placeholder="e.g. 1001" />
+      <section className="space-y-6">
+        <div className="flex items-center gap-3">
+          <h3 className="text-xl font-semibold text-foreground/90">Product Details</h3>
+          <div className="flex-1 border-b border-border/40"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className='space-y-2'>
+            <Label htmlFor="stockNumber" className="font-medium">
+              Stock Number
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="stockNumber"
+              name="stockNumber"
+              type="number"
+              value={form.stockNumber}
+              onChange={handleChange}
+              required
+              placeholder="e.g. 1001"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Seller SKU</label>
-            <input name="sellerSKU" value={form.sellerSKU} onChange={handleChange} className="input" placeholder="e.g. SKU-001" />
+          <div className="space-y-2">
+            <Label htmlFor="sellerSKU" className="font-medium">
+              Seller SKU
+            </Label>
+            <Input
+              id="sellerSKU"
+              name="sellerSKU"
+              value={form.sellerSKU}
+              onChange={handleChange}
+              placeholder="e.g. SKU-001"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Origin *</label>
-            <input name="origin" value={form.origin} onChange={handleChange} required className="input" placeholder="e.g. South Africa" />
+          <div className="space-y-2">
+            <Label htmlFor="origin" className="font-medium">
+              Origin
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="origin"
+              name="origin"
+              value={form.origin}
+              onChange={handleChange}
+              required
+              placeholder="e.g. South Africa"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">RAP Price *</label>
-            <input name="rap" type="number" value={form.rap} onChange={handleChange} required className="input" placeholder="e.g. 5000" />
+          <div className='space-y-2'>
+            <Label htmlFor="rap" className="font-medium">
+              RAP Price
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="rap"
+              name="rap"
+              type="number"
+              value={form.rap}
+              onChange={handleChange}
+              required
+              placeholder="e.g. 5000"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Price *</label>
-            <input name="price" type="number" value={form.price} onChange={handleChange} required className="input" placeholder="e.g. 4500" />
+          <div className="space-y-2">
+            <Label htmlFor="price" className="font-medium">
+              Price
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="price"
+              name="price"
+              type="number"
+              value={form.price}
+              onChange={handleChange}
+              required
+              placeholder="e.g. 4500"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Discount (%) *</label>
-            <input name="discount" type="number" value={form.discount} onChange={handleChange} min={0} max={100} required className="input" placeholder="e.g. 10" />
+          <div className="space-y-2">
+            <Label htmlFor="discount" className="font-medium">
+              Discount (%)
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="discount"
+              name="discount"
+              type="number"
+              value={form.discount}
+              onChange={handleChange}
+              min={0}
+              max={100}
+              required
+              placeholder="e.g. 10"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
         </div>
       </section>
 
       {/* Diamond Specifications */}
-      <section>
-        <h3 className="text-lg font-semibold mb-2">Diamond Specifications</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block font-medium mb-1">Color *</label>
-            <select name="color" value={form.color} onChange={handleChange} required className="input">
-              <option value="">Select Color</option>
-              {diamondColors.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+      <section className="space-y-6">
+        <div className="flex items-center gap-3">
+          <h3 className="text-xl font-semibold text-foreground/90">Diamond Specifications</h3>
+          <div className="flex-1 border-b border-border/40"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="space-y-2">
+            <Label htmlFor="color" className="font-medium">
+              Color
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <SearchableDropdown
+              name="color"
+              options={diamondColors}
+              value={form.color}
+              onChange={(value) => setForm(prev => ({ ...prev, color: value }))}
+              placeholder="Select Color"
+              required
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Fancy Color *</label>
-            <select name="fancyColor" value={form.fancyColor} onChange={handleChange} required className="input">
-              <option value="">Select Fancy Color</option>
-              {fancyColors.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+          <div className="space-y-2">
+            <Label htmlFor="fancyColor" className="font-medium">
+              Fancy Color
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <SearchableDropdown
+              name="fancyColor"
+              options={fancyColors}
+              value={form.fancyColor}
+              onChange={(value) => setForm(prev => ({ ...prev, fancyColor: value }))}
+              placeholder="Select Fancy Color"
+              required
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Fancy Intensity *</label>
-            <select name="fancyIntencity" value={form.fancyIntencity} onChange={handleChange} required className="input">
-              <option value="">Select Fancy Intensity</option>
-              {fancyIntensities.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+          <div className="space-y-2">
+            <Label htmlFor="fancyIntencity" className="font-medium">
+              Fancy Intensity
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <SearchableDropdown
+              name="fancyIntencity"
+              options={fancyIntensities}
+              value={form.fancyIntencity}
+              onChange={(value) => setForm(prev => ({ ...prev, fancyIntencity: value }))}
+              placeholder="Select Fancy Intensity"
+              required
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Fancy Overtone *</label>
-            <select name="fancyOvertone" value={form.fancyOvertone} onChange={handleChange} required className="input">
-              <option value="">Select Fancy Overtone</option>
-              {fancyOvertones.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+          <div className="space-y-2">
+            <Label htmlFor="fancyOvertone" className="font-medium">
+              Fancy Overtone
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <SearchableDropdown
+              name="fancyOvertone"
+              options={fancyOvertones}
+              value={form.fancyOvertone}
+              onChange={(value) => setForm(prev => ({ ...prev, fancyOvertone: value }))}
+              placeholder="Select Fancy Overtone"
+              required
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Carat Weight *</label>
-            <input name="caratWeight" type="number" value={form.caratWeight} onChange={handleChange} required className="input" placeholder="e.g. 1.25" />
+          <div className="space-y-2">
+            <Label htmlFor="caratWeight" className="font-medium">
+              Carat Weight
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="caratWeight"
+              name="caratWeight"
+              type="number"
+              value={form.caratWeight}
+              onChange={handleChange}
+              required
+              placeholder="e.g. 1.25"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Cut *</label>
-            <select name="cut" value={form.cut} onChange={handleChange} required className="input">
-              <option value="">Select Cut</option>
-              {cutGrades.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+          <div className="space-y-2">
+            <Label htmlFor="cut" className="font-medium">
+              Cut
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <SearchableDropdown
+              name="cut"
+              options={cutGrades}
+              value={form.cut}
+              onChange={(value) => setForm(prev => ({ ...prev, cut: value }))}
+              placeholder="Select Cut"
+              required
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Clarity *</label>
-            <select name="clarity" value={form.clarity} onChange={handleChange} required className="input">
-              <option value="">Select Clarity</option>
-              {clarities.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+          <div className="space-y-2">
+            <Label htmlFor="clarity" className="font-medium">
+              Clarity
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <SearchableDropdown
+              name="clarity"
+              options={clarities}
+              value={form.clarity}
+              onChange={(value) => setForm(prev => ({ ...prev, clarity: value }))}
+              placeholder="Select Clarity"
+              required
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Shade *</label>
-            <select name="shade" value={form.shade} onChange={handleChange} required className="input">
-              <option value="">Select Shade</option>
-              {shades.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+          <div className="space-y-2">
+            <Label htmlFor="shade" className="font-medium">
+              Shade
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <SearchableDropdown
+              name="shade"
+              options={shades}
+              value={form.shade}
+              onChange={(value) => setForm(prev => ({ ...prev, shade: value }))}
+              placeholder="Select Shade"
+              required
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Shape *</label>
-            <select name="shape" value={form.shape} onChange={handleChange} required className="input">
-              <option value="">Select Shape</option>
-              {shapes.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+          <div className="space-y-2">
+            <Label htmlFor="shape" className="font-medium">
+              Shape
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <SearchableDropdown
+              name="shape"
+              options={shapes}
+              value={form.shape}
+              onChange={(value) => setForm(prev => ({ ...prev, shape: value }))}
+              placeholder="Select Shape"
+              required
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Polish *</label>
-            <select name="polish" value={form.polish} onChange={handleChange} required className="input">
-              <option value="">Select Polish</option>
-              {cutGrades.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+          <div className="space-y-2">
+            <Label htmlFor="polish" className="font-medium">
+              Polish
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <SearchableDropdown
+              name="polish"
+              options={cutGrades}
+              value={form.polish}
+              onChange={(value) => setForm(prev => ({ ...prev, polish: value }))}
+              placeholder="Select Polish"
+              required
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Symmetry *</label>
-            <select name="symmetry" value={form.symmetry} onChange={handleChange} required className="input">
-              <option value="">Select Symmetry</option>
-              {cutGrades.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+          <div className="space-y-2">
+            <Label htmlFor="symmetry" className="font-medium">
+              Symmetry
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <SearchableDropdown
+              name="symmetry"
+              options={cutGrades}
+              value={form.symmetry}
+              onChange={(value) => setForm(prev => ({ ...prev, symmetry: value }))}
+              placeholder="Select Symmetry"
+              required
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Fluorescence *</label>
-            <select name="fluorescence" value={form.fluorescence} onChange={handleChange} required className="input">
-              <option value="">Select Fluorescence</option>
-              {fluorescences.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+          <div className="space-y-2">
+            <Label htmlFor="fluorescence" className="font-medium">
+              Fluorescence
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <SearchableDropdown
+              name="fluorescence"
+              options={fluorescences}
+              value={form.fluorescence}
+              onChange={(value) => setForm(prev => ({ ...prev, fluorescence: value }))}
+              placeholder="Select Fluorescence"
+              required
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Treatment *</label>
-            <select name="treatment" value={form.treatment} onChange={handleChange} required className="input">
-              <option value="">Select Treatment</option>
-              {treatments.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+          <div className="space-y-2">
+            <Label htmlFor="treatment" className="font-medium">
+              Treatment
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <SearchableDropdown
+              name="treatment"
+              options={treatments}
+              value={form.treatment}
+              onChange={(value) => setForm(prev => ({ ...prev, treatment: value }))}
+              placeholder="Select Treatment"
+              required
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Process *</label>
-            <select name="process" value={form.process} onChange={handleChange} required className="input">
-              <option value="">Select Process</option>
-              {processes.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+          <div className="space-y-2">
+            <Label htmlFor="process" className="font-medium">
+              Process
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <SearchableDropdown
+              name="process"
+              options={processes}
+              value={form.process}
+              onChange={(value) => setForm(prev => ({ ...prev, process: value }))}
+              placeholder="Select Process"
+              required
+            />
           </div>
         </div>
       </section>
 
       {/* Measurements */}
-      <section>
-        <h3 className="text-lg font-semibold mb-2">Measurements</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block font-medium mb-1">Measurement *</label>
-            <input name="measurement" value={form.measurement} onChange={handleChange} required className="input" placeholder="e.g. 5.00 x 5.00 x 3.00 mm" />
+      <section className="space-y-6">
+        <div className="flex items-center gap-3">
+          <h3 className="text-xl font-semibold text-foreground/90">Measurements</h3>
+          <div className="flex-1 border-b border-border/40"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="space-y-2">
+            <Label htmlFor="measurement" className="font-medium">
+              Measurement
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="measurement"
+              name="measurement"
+              value={form.measurement}
+              onChange={handleChange}
+              required
+              placeholder="e.g. 5.00 x 5.00 x 3.00 mm"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Diameter (mm) *</label>
-            <input name="diameter" type="number" value={form.diameter} onChange={handleChange} required className="input" placeholder="e.g. 6.50" />
+          <div className="space-y-2">
+            <Label htmlFor="diameter" className="font-medium">
+              Diameter (mm)
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="diameter"
+              name="diameter"
+              type="number"
+              value={form.diameter}
+              onChange={handleChange}
+              required
+              placeholder="e.g. 6.50"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Ratio *</label>
-            <input name="ratio" value={form.ratio} onChange={handleChange} required className="input" placeholder="e.g. 1.00" />
+          <div className="space-y-2">
+            <Label htmlFor="ratio" className="font-medium">
+              Ratio
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="ratio"
+              name="ratio"
+              value={form.ratio}
+              onChange={handleChange}
+              required
+              placeholder="e.g. 1.00"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Table *</label>
-            <input name="table" value={form.table} onChange={handleChange} required className="input" placeholder="e.g. 57" />
+          <div className="space-y-2">
+            <Label htmlFor="table" className="font-medium">
+              Table
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="table"
+              name="table"
+              value={form.table}
+              onChange={handleChange}
+              required
+              placeholder="e.g. 57"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Depth *</label>
-            <input name="depth" value={form.depth} onChange={handleChange} required className="input" placeholder="e.g. 62.3" />
+          <div className="space-y-2">
+            <Label htmlFor="depth" className="font-medium">
+              Depth
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="depth"
+              name="depth"
+              value={form.depth}
+              onChange={handleChange}
+              required
+              placeholder="e.g. 62.3"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Gridle Min *</label>
-            <input name="gridleMin" type="number" value={form.gridleMin} onChange={handleChange} required className="input" placeholder="e.g. 1.0" />
+          <div className="space-y-2">
+            <Label htmlFor="gridleMin" className="font-medium">
+              Gridle Min
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="gridleMin"
+              name="gridleMin"
+              type="number"
+              value={form.gridleMin}
+              onChange={handleChange}
+              required
+              placeholder="e.g. 1.0"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Gridle Max *</label>
-            <input name="gridleMax" type="number" value={form.gridleMax} onChange={handleChange} required className="input" placeholder="e.g. 2.0" />
+          <div className="space-y-2">
+            <Label htmlFor="gridleMax" className="font-medium">
+              Gridle Max
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="gridleMax"
+              name="gridleMax"
+              type="number"
+              value={form.gridleMax}
+              onChange={handleChange}
+              required
+              placeholder="e.g. 2.0"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Gridle Percentage *</label>
-            <input name="gridlePercentage" type="number" value={form.gridlePercentage} onChange={handleChange} required className="input" placeholder="e.g. 1.5" />
+          <div className="space-y-2">
+            <Label htmlFor="gridlePercentage" className="font-medium">
+              Gridle Percentage
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="gridlePercentage"
+              name="gridlePercentage"
+              type="number"
+              value={form.gridlePercentage}
+              onChange={handleChange}
+              required
+              placeholder="e.g. 1.5"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Crown Height *</label>
-            <input name="crownHeight" type="number" value={form.crownHeight} onChange={handleChange} required className="input" placeholder="e.g. 15.0" />
+          <div className="space-y-2">
+            <Label htmlFor="crownHeight" className="font-medium">
+              Crown Height
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="crownHeight"
+              name="crownHeight"
+              type="number"
+              value={form.crownHeight}
+              onChange={handleChange}
+              required
+              placeholder="e.g. 15.0"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Crown Angle *</label>
-            <input name="crownAngle" type="number" value={form.crownAngle} onChange={handleChange} required className="input" placeholder="e.g. 34.5" />
+          <div className="space-y-2">
+            <Label htmlFor="crownAngle" className="font-medium">
+              Crown Angle
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="crownAngle"
+              name="crownAngle"
+              type="number"
+              value={form.crownAngle}
+              onChange={handleChange}
+              required
+              placeholder="e.g. 34.5"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Pavilion Angle *</label>
-            <input name="pavilionAngle" type="number" value={form.pavilionAngle} onChange={handleChange} required className="input" placeholder="e.g. 40.8" />
+          <div className="space-y-2">
+            <Label htmlFor="pavilionAngle" className="font-medium">
+              Pavilion Angle
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="pavilionAngle"
+              name="pavilionAngle"
+              type="number"
+              value={form.pavilionAngle}
+              onChange={handleChange}
+              required
+              placeholder="e.g. 40.8"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Pavilion Depth *</label>
-            <input name="pavilionDepth" type="number" value={form.pavilionDepth} onChange={handleChange} required className="input" placeholder="e.g. 43.0" />
+          <div className="space-y-2">
+            <Label htmlFor="pavilionDepth" className="font-medium">
+              Pavilion Depth
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="pavilionDepth"
+              name="pavilionDepth"
+              type="number"
+              value={form.pavilionDepth}
+              onChange={handleChange}
+              required
+              placeholder="e.g. 43.0"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Culet Size *</label>
-            <input name="culetSize" type="number" value={form.culetSize} onChange={handleChange} required className="input" placeholder="e.g. 0.5" />
+          <div className="space-y-2">
+            <Label htmlFor="culetSize" className="font-medium">
+              Culet Size
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="culetSize"
+              name="culetSize"
+              type="number"
+              value={form.culetSize}
+              onChange={handleChange}
+              required
+              placeholder="e.g. 0.5"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
         </div>
       </section>
 
       {/* Certification */}
-      <section>
-        <h3 className="text-lg font-semibold mb-2">Certification</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block font-medium mb-1">Certificate Company *</label>
-            <select
+      <section className="space-y-6">
+        <div className="flex items-center gap-3">
+          <h3 className="text-xl font-semibold text-foreground/90">Certification</h3>
+          <div className="flex-1 border-b border-border/40"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="space-y-2">
+            <Label htmlFor="certificateCompanyId" className="font-medium">
+              Certificate Company
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <SearchableDropdown
               name="certificateCompanyId"
+              options={certificateCompanies}
               value={form.certificateCompanyId}
+              onChange={(value) => setForm(prev => ({ ...prev, certificateCompanyId: value }))}
+              placeholder="Select Certificate Company"
+              required
+            />
+          </div>
+          <div className='space-y-2'>
+            <Label htmlFor="certificateNumber" className="font-medium">
+              Certificate Number
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="certificateNumber"
+              name="certificateNumber"
+              value={form.certificateNumber}
               onChange={handleChange}
               required
-              className="input"
-            >
-              <option value="">Select certificate company</option>
-              {certificateCompanies.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+              placeholder="e.g. 123456789"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Certificate Number *</label>
-            <input name="certificateNumber" value={form.certificateNumber} onChange={handleChange} required className="input" placeholder="e.g. 123456789" />
+          <div className="space-y-2">
+            <Label htmlFor="inscription" className="font-medium">
+              Inscription
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="inscription"
+              name="inscription"
+              value={form.inscription}
+              onChange={handleChange}
+              required
+              placeholder="e.g. GIA123456"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Inscription *</label>
-            <input name="inscription" value={form.inscription} onChange={handleChange} required className="input" placeholder="e.g. GIA123456" />
+          <div className="md:col-span-3 space-y-2">
+            <Label htmlFor="certification" className="font-medium">
+              Certification Document
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <div className="mt-2">
+              <div className="flex items-center justify-center w-full">
+                <label
+                  htmlFor="certification"
+                  className={`relative flex flex-col items-center justify-center w-full 
+                    border border-dashed rounded-md cursor-pointer 
+                    bg-background/50 hover:bg-background/80 
+                    border-border hover:border-primary/50
+                    transition-all duration-200
+                    ${!form.certification ? 'p-6' : 'p-4'}`}
+                >
+                  {!form.certification ? (
+                    <div className="flex flex-col items-center justify-center gap-4">
+                      {/* Cloud Upload Icon */}
+                      <svg
+                        className="w-16 h-16 text-muted-foreground/60"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
+                      </svg>
+
+                      <div className="text-center space-y-2">
+                        <p className="text-lg font-medium text-foreground/90">
+                          Drop Your File Here
+                        </p>
+                        <p className="text-sm text-muted-foreground">Or</p>
+                        <button
+                          type="button"
+                          className="px-6 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 transition-colors"
+                          onClick={() => document.getElementById('certification')?.click()}
+                        >
+                          Browse
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-foreground/90">{form.certification.name}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Click to change file
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <Input
+                    id="certification"
+                    name="certification"
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    required
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+              <div className="mt-2 text-center text-sm text-muted-foreground">
+                Maximum File Size 4 MB
+              </div>
+            </div>
           </div>
-          <div className="md:col-span-3">
-            <label className="block font-medium mb-1">Certification Document *</label>
-            <input name="certification" type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} className="input" placeholder="e.g. Upload certificate file" />
+        </div>
+      </section>
+
+      {/* Auction Form Section */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-3">
+          <h3 className="text-xl font-semibold text-foreground/90">Auction Settings</h3>
+          <div className="flex-1 border-b border-border/40"></div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="enableAuction"
+              name="enableAuction"
+              checked={form.enableAuction}
+              onChange={(e) => setForm(prev => ({ ...prev, enableAuction: e.target.checked }))}
+              className="rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <Label htmlFor="enableAuction" className="text-sm font-medium">
+              Enable Auction for this Diamond
+            </Label>
           </div>
+
+          {form.enableAuction && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 bg-card/50 border border-border/40 rounded-lg">
+              <div className="space-y-2">
+                <Label htmlFor="productType" className="text-sm font-medium flex items-center gap-1 text-foreground/90">
+                  Product Type
+                  <span className="text-destructive text-xs">*</span>
+                </Label>
+                <select
+                  id="productType"
+                  name="productType"
+                  value={form.productType}
+                  onChange={handleChange}
+                  required
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="">Select Product Type</option>
+                  {auctionProductTypes.map((type) => (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="startTime" className="text-sm font-medium flex items-center gap-1 text-foreground/90">
+                  Auction Start Time
+                  <span className="text-destructive text-xs">*</span>
+                </Label>
+                <Input
+                  id="startTime"
+                  name="startTime"
+                  type="datetime-local"
+                  value={form.startTime}
+                  onChange={handleChange}
+                  required
+                  className="w-full transition-all duration-200 hover:border-primary/50"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="endTime" className="text-sm font-medium flex items-center gap-1 text-foreground/90">
+                  Auction End Time
+                  <span className="text-destructive text-xs">*</span>
+                </Label>
+                <Input
+                  id="endTime"
+                  name="endTime"
+                  type="datetime-local"
+                  value={form.endTime}
+                  onChange={handleChange}
+                  required
+                  className="w-full transition-all duration-200 hover:border-primary/50"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
       {/* Auction Data Section */}
       {initialData?.auction && (
-        <section className="bg-blue-50 border border-blue-200 rounded p-4 mb-4">
-          <h3 className="font-semibold text-blue-700 mb-2">Auction Details</h3>
+        <section className="bg-card/50 border border-border/40 rounded-lg p-6 mb-4">
+          <div className="flex items-center gap-3 mb-4">
+            <h3 className="text-xl font-semibold text-foreground/90">Auction Details</h3>
+            <div className="flex-1 border-b border-border/40"></div>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <div><span className="font-medium">Auction ID:</span> {initialData.auction.id}</div>
             <div><span className="font-medium">Product Type:</span> {initialData.auction.productType}</div>
@@ -530,50 +1224,39 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
         </section>
       )}
 
-      {error && <div className="text-red-600 font-medium">{error}</div>}
-      <div className="flex justify-end gap-4 mt-4">
-        <button type="reset" className="btn-secondary" disabled={loading}>Cancel</button>
-        <button type="submit" className="btn-primary" disabled={loading}>{loading ? 'Saving...' : 'Save Changes'}</button>
+      {error && (
+        <div className="bg-destructive/15 text-destructive px-4 py-3 rounded-lg text-sm">
+          {error}
+        </div>
+      )}
+      <div className="flex justify-end gap-4 mt-8">
+        <Button
+          type="reset"
+          variant="outline"
+          onClick={() => setForm(initialState)}
+          disabled={loading}
+          className="min-w-[100px]"
+        >
+          Cancel
+        </Button>
+        <Button
+          type="submit"
+          disabled={loading}
+          className="min-w-[100px]"
+        >
+          {loading ? (
+            <>
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Saving...
+            </>
+          ) : (
+            'Save Changes'
+          )}
+        </Button>
       </div>
-      {/* Tailwind input/button styles */}
-      <style jsx>{`
-        .input {
-          width: 100%;
-          padding: 0.5rem 0.75rem;
-          border-radius: 0.5rem;
-          border: 1px solid #e5e7eb;
-          background: #f9fafb;
-          font-size: 1rem;
-          margin-bottom: 0.5rem;
-        }
-        .input:focus {
-          outline: 2px solid #2563eb;
-          border-color: #2563eb;
-        }
-        .btn-primary {
-          background: #2563eb;
-          color: #fff;
-          padding: 0.5rem 1.5rem;
-          border-radius: 0.5rem;
-          font-weight: 600;
-          transition: background 0.2s;
-        }
-        .btn-primary:hover {
-          background: #1d4ed8;
-        }
-        .btn-secondary {
-          background: #f3f4f6;
-          color: #374151;
-          padding: 0.5rem 1.5rem;
-          border-radius: 0.5rem;
-          font-weight: 600;
-          border: 1px solid #e5e7eb;
-          transition: background 0.2s;
-        }
-        .btn-secondary:hover {
-          background: #e5e7eb;
-        }
-      `}</style>
     </form>
   );
 };

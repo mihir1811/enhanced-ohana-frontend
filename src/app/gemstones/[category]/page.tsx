@@ -1,11 +1,13 @@
 import ProductResultsPage from '@/components/products/ProductResultsPage'
 
-export default function GemstoneResults({ params }: { params: { category: string } }) {
+export default async function GemstoneResults({ params }: { params: Promise<{ category: string }> }) {
+  const resolvedParams = await params
+  
   return (
     <ProductResultsPage 
       params={{ 
         product: 'gemstones', 
-        category: params.category 
+        category: resolvedParams.category 
       }} 
     />
   )
