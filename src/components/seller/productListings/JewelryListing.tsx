@@ -61,6 +61,7 @@ const JewelryListing = () => {
           stones: j.stones,
           auctionStartTime: j.auctionStartTime,
           auctionEndTime: j.auctionEndTime,
+          auctionId: j.auctionId,
         }));
         setJewelry(items);
         setTotal(res?.data?.meta?.total || items.length);
@@ -182,6 +183,11 @@ const JewelryListing = () => {
                   onDelete={() => {
                     setJewelry((prev) => prev.filter((j) => j.id !== item.id));
                     setTotal((prev) => Math.max(0, prev - 1));
+                  }}
+                  onUpdateProduct={(updatedProduct) => {
+                    setJewelry((prev) => prev.map((j) => 
+                      j.id === updatedProduct.id ? updatedProduct : j
+                    ));
                   }}
                 />
               ))}

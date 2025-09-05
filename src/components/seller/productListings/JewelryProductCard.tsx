@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { jewelryService } from '@/services/jewelryService';
+import { auctionService } from '@/services/auctionService';
 import { toast } from 'react-hot-toast';
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { MoreVertical, Eye, Pencil, Trash2, Images, ChevronLeft, ChevronRight } from "lucide-react";
+import { MoreVertical, Eye, Pencil, Trash2, Images, ChevronLeft, ChevronRight, Clock, Gavel } from "lucide-react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { getCookie } from '@/lib/cookie-utils';
 
 export interface JewelryProduct {
   id: string;
@@ -46,6 +48,7 @@ export interface JewelryProduct {
   stones?: any[];
   auctionStartTime?: string;
   auctionEndTime?: string;
+  auctionId?: string;
   stockNumber?: number;
 }
 
@@ -53,6 +56,7 @@ interface Props {
   product: JewelryProduct;
   onQuickView?: (product: JewelryProduct) => void;
   onDelete?: (product: JewelryProduct) => void;
+  onUpdateProduct?: (product: JewelryProduct) => void;
 }
 
 const getStatusTag = (isDeleted?: boolean, stockNumber?: number) => {
@@ -81,8 +85,78 @@ const getStatusTag = (isDeleted?: boolean, stockNumber?: number) => {
   );
 };
 
-const JewelryProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }) => {
+const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
+  const [timeLeft, setTimeLeft] = useState<{
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const difference = +new Date(endTime) - +new Date();
+      
+      if (difference > 0) {
+        return {
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60)
+        };
+      }
+      return null;
+    };
+
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+
+    setTimeLeft(calculateTimeLeft());
+
+    return () => clearInterval(timer);
+  }, [endTime]);
+
+  if (!timeLeft) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-2">
+        <div className="flex items-center gap-2 text-red-600">
+          <Clock className="w-4 h-4" />
+          <span className="text-sm font-medium">Auction Ended</span>
+        </div>
+      </div>
+    );
+  }
+
+  const isUrgent = timeLeft.days === 0 && timeLeft.hours < 2;
+  
+  return (
+    <div className={`${isUrgent ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'} border rounded-lg px-3 py-2 mt-2`}>
+      <div className={`flex items-center justify-between ${isUrgent ? 'text-red-600' : 'text-amber-600'}`}>
+        <div className="flex items-center gap-2">
+          <Clock className="w-4 h-4" />
+          <span className="text-sm font-medium">
+            {isUrgent ? "Ending Soon!" : "Auction Ends"}
+          </span>
+        </div>
+        <div className="flex items-center gap-1 text-sm font-bold">
+          {timeLeft.days > 0 && (
+            <span>{timeLeft.days}d</span>
+          )}
+          <span>{timeLeft.hours.toString().padStart(2, '0')}:</span>
+          <span>{timeLeft.minutes.toString().padStart(2, '0')}:</span>
+          <span className={isUrgent ? 'animate-pulse' : ''}>
+            {timeLeft.seconds.toString().padStart(2, '0')}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default function JewelryProductCard({ product, onQuickView, onDelete, onUpdateProduct }: Props) {
   const [showDelete, setShowDelete] = useState(false);
+  const [showEndAuction, setShowEndAuction] = useState(false);
   const [showQuickView, setShowQuickView] = useState(false);
   const [imgIdx, setImgIdx] = useState(0);
   const [animating, setAnimating] = useState(false);
@@ -151,6 +225,15 @@ const JewelryProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
                 <Pencil className="w-4 h-4" />
                 Edit Product
               </DropdownMenu.Item>
+              {product.isOnAuction && (
+                <DropdownMenu.Item
+                  className="flex items-center gap-2 px-3 py-2 hover:bg-orange-50 cursor-pointer text-orange-600"
+                  onSelect={() => setShowEndAuction(true)}
+                >
+                  <Gavel className="w-4 h-4" />
+                  End Auction
+                </DropdownMenu.Item>
+              )}
               <DropdownMenu.Separator className="h-px bg-gray-100 my-1" />
               <DropdownMenu.Item
                 className="flex items-center gap-2 px-3 py-2 hover:bg-red-50 cursor-pointer text-red-600"
@@ -239,6 +322,11 @@ const JewelryProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
           <span className="bg-blue-50 text-blue-700 rounded-full px-2 py-1 font-semibold">
             {product.category}
           </span>
+          {/* {product.isOnAuction && (
+            <span className="bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 border border-amber-200 rounded-full px-2 py-1 font-semibold animate-pulse">
+              🔥 Auction
+            </span>
+          )} */}
           {product.attributes?.style && (
             <span className="bg-green-50 text-green-700 rounded-full px-2 py-1 font-semibold">
               {product.attributes.style}
@@ -268,6 +356,10 @@ const JewelryProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
             <span className="font-bold text-gray-700">{product.metalPurity}</span>
           </div>
         </div>
+        {/* Auction Timer */}
+        {product.isOnAuction && product.auctionEndTime && (
+          <CountdownTimer endTime={product.auctionEndTime} />
+        )}
         <div className="flex items-center justify-between text-xs text-gray-500 mt-auto">
           <div className="flex items-center gap-1">
             <span className="font-semibold">Updated:</span>
@@ -300,6 +392,11 @@ const JewelryProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
               <span className="bg-blue-50 text-blue-700 rounded-full px-2 py-1 text-xs font-semibold tracking-wide uppercase">
                 {product.category}
               </span>
+              {product.isOnAuction && (
+                <span className="bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 border border-amber-200 rounded-full px-2 py-1 text-xs font-semibold animate-pulse">
+                  🔥 Auction
+                </span>
+              )}
               {product.attributes?.style && (
                 <span className="bg-green-50 text-green-700 rounded-full px-2 py-1 font-semibold">
                   {product.attributes.style}
@@ -320,8 +417,14 @@ const JewelryProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
               <div><span className="text-gray-400 font-semibold">Metal:</span> <span className="font-bold text-gray-700">{product.metalType}</span></div>
               <div><span className="text-gray-400 font-semibold">Purity:</span> <span className="font-bold text-gray-700">{product.metalPurity}</span></div>
               <div><span className="text-gray-400 font-semibold">Updated:</span> <span className="font-bold text-gray-700">{product.updatedAt ? new Date(product.updatedAt).toLocaleDateString() : '-'}</span></div>
-              <div><span className="text-gray-400 font-semibold">Sold:</span> <span className="font-bold text-gray-700">{product.isSold ? 'Yes' : 'No'}</span></div>
+              <div><span className="text-gray-400 font-semibold">Auction:</span> <span className="font-bold text-gray-700">{product.isOnAuction ? 'Yes' : 'No'}</span></div>
             </div>
+            {/* Auction Timer */}
+            {product.isOnAuction && product.auctionEndTime && (
+              <div className="mb-4">
+                <CountdownTimer endTime={product.auctionEndTime} />
+              </div>
+            )}
             <div className="flex justify-end">
               <button
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -333,8 +436,41 @@ const JewelryProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
           </div>
         </div>
       )}
+      
+      {/* End Auction Confirm Modal */}
+      <ConfirmModal 
+        open={showEndAuction}
+        onOpenChange={setShowEndAuction}
+        title="End Auction Early?"
+        description="Are you sure you want to end this auction early? This action cannot be undone."
+        onYes={async () => {
+          setShowEndAuction(false);
+          try {
+            // Get Bearer token
+            let token =  getCookie('token') || '';
+            if (!token) throw new Error('User not authenticated');
+            
+            // Call end auction API using auction service
+            const auctionIdToUse = product.auctionId || product.id;
+            const response = await auctionService.endAuction(auctionIdToUse, token);
+            
+            if (!response || response.success === false) {
+              throw new Error(response?.message || 'Failed to end auction');
+            }
+            
+            toast.success('Auction ended successfully!');
+            // Update local state to reflect ended auction
+            onUpdateProduct?.({ ...product, isOnAuction: false });
+          } catch (error: any) {
+            console.error('End auction error:', error);
+            toast.error(error.message || 'Failed to end auction');
+          }
+        }}
+        onNo={() => setShowEndAuction(false)}
+      />
+      
       {/* Delete Confirm Modal */}
-      <ConfirmModal
+      <ConfirmModal 
         open={showDelete}
         onOpenChange={setShowDelete}
         title="Are you sure you want to delete this product?"
@@ -368,5 +504,3 @@ const JewelryProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
     </div>
   );
 };
-
-export default JewelryProductCard;

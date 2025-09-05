@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { gemstoneService } from '@/services/gemstoneService';
+import { auctionService } from '@/services/auctionService';
 import { getCookie } from '@/lib/cookie-utils';
 import { auctionProductTypes } from '@/config/sellerConfigData';
 
@@ -250,24 +251,15 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
       if (form.enableAuction && form.productType && form.startTime && form.endTime) {
         const auctionData = {
           productId: form.id,
-          productType: form.productType,
+          productType: form.productType as 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond',
           startTime: new Date(form.startTime).toISOString(),
           endTime: new Date(form.endTime).toISOString()
         };
 
-        const auctionResponse = await fetch('http://localhost:3000/api/v1/auction/create', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(auctionData)
-        });
+        const auctionResponse = await auctionService.createAuction(auctionData, token);
 
-        if (!auctionResponse.ok) {
-          const errorData = await auctionResponse.json();
-          throw new Error(errorData?.message || 'Failed to create auction');
+        if (!auctionResponse || auctionResponse.success === false) {
+          throw new Error(auctionResponse?.message || 'Failed to create auction');
         }
       }
 

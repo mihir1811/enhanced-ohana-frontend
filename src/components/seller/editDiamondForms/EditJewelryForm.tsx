@@ -2,6 +2,79 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { jewelryService } from '@/services/jewelryService';
+import { auctionService } from '@/services/auctionService';
+import { getCookie } from '@/lib/cookie-utils';
+import { auctionProductTypes } from '@/config/sellerConfigData';
+
+// CountdownTimer Component
+const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
+  const [timeLeft, setTimeLeft] = useState<{
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const difference = +new Date(endTime) - +new Date();
+
+      if (difference > 0) {
+        return {
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60)
+        };
+      }
+      return null;
+    };
+
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+
+    setTimeLeft(calculateTimeLeft());
+
+    return () => clearInterval(timer);
+  }, [endTime]);
+
+  if (!timeLeft) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+        <div className="flex items-center gap-2">
+          <span className="text-red-600 font-semibold">🔥 Auction Ended</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-blue-600 font-semibold">🔥 Live Auction</span>
+      </div>
+      <div className="grid grid-cols-4 gap-2 text-center">
+        <div className="bg-white rounded p-2">
+          <div className="text-lg font-bold text-blue-600">{timeLeft.days}</div>
+          <div className="text-xs text-gray-500">Days</div>
+        </div>
+        <div className="bg-white rounded p-2">
+          <div className="text-lg font-bold text-blue-600">{timeLeft.hours}</div>
+          <div className="text-xs text-gray-500">Hours</div>
+        </div>
+        <div className="bg-white rounded p-2">
+          <div className="text-lg font-bold text-blue-600">{timeLeft.minutes}</div>
+          <div className="text-xs text-gray-500">Minutes</div>
+        </div>
+        <div className="bg-white rounded p-2">
+          <div className="text-lg font-bold text-blue-600">{timeLeft.seconds}</div>
+          <div className="text-xs text-gray-500">Seconds</div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // --- Dropdown options (label-value format, same as AddJewelryForm) ---
 const DROPDOWN_OPTIONS = {
@@ -305,6 +378,11 @@ type JewelryFormState = {
   stones: Stone[];
   attributes: Attribute;
   images: File[];
+  // Auction fields
+  enableAuction: boolean;
+  productType: string;
+  startTime: string;
+  endTime: string;
 };
 
 type EditJewelryFormProps = {
@@ -347,6 +425,11 @@ function normalizeInitialData(data: any): JewelryFormState {
       is_adjustable: !!data.attributes.is_adjustable,
     } : { style: '', chain_type: '', clasp_type: '', length_cm: '', is_adjustable: false },
     images: [], // File[] for new uploads only
+    // Auction fields
+    enableAuction: false,
+    productType: 'jewelry',
+    startTime: '',
+    endTime: ''
   };
 }
 
@@ -358,7 +441,12 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
     description: '', videoURL: '',
     stones: [{ type: '', shape: '', carat: '', color: '', clarity: '', cut: '', certification: '' }],
     attributes: { style: '', chain_type: '', clasp_type: '', length_cm: '', is_adjustable: false },
-    images: []
+    images: [],
+    // Auction fields
+    enableAuction: false,
+    productType: 'jewelry',
+    startTime: '',
+    endTime: ''
   });
   const [errors, setErrors] = useState<any>({});
   const [submitting, setSubmitting] = useState(false);
@@ -420,7 +508,7 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
     if (!form.metalPurity) errs.metalPurity = 'Metal purity is required';
     if (!form.basePrice) errs.basePrice = 'Base price is required';
     if (!form.totalPrice) errs.totalPrice = 'Total price is required';
-  // removed stockNumber validation
+    // removed stockNumber validation
     if (!form.description) errs.description = 'Description is required';
     return errs;
   };
@@ -432,7 +520,7 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
     setSubmitting(true);
-    
+
     try {
       // Prepare FormData for PATCH (like EditGemstoneForm)
       const formData = new FormData();
@@ -446,68 +534,80 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
       }
       // Always append 'name' field explicitly
       formData.append('name', form.name ?? '');
-      // Attach all other fields (except name, images, id, image1-6)
+      // Attach all other fields (except name, images, id, image1-6, and auction fields)
       Object.entries(form).forEach(([key, value]) => {
         if (
           key !== 'images' &&
           key !== 'id' &&
           key !== 'name' &&
           !/^image[1-6]$/.test(key) &&
+          // Exclude auction fields - they are handled separately
+          key !== 'enableAuction' &&
+          key !== 'productType' &&
+          key !== 'startTime' &&
+          key !== 'endTime' &&
           value !== undefined && value !== null && value !== ''
         ) {
           if (typeof value === 'boolean') {
             formData.append(key, value ? 'true' : 'false');
           } else if (Array.isArray(value)) {
-            // For stones array, append as separate fields
+            // For stones array, serialize as JSON to preserve data types
             if (key === 'stones') {
-              value.forEach((stone, idx) => {
-                Object.entries(stone).forEach(([sKey, sVal]) => {
-                  if (sVal !== undefined && sVal !== null && sVal !== '') {
-                    if (sKey === 'carat') {
-                      const floatVal = parseFloat(sVal as string);
-                      if (!isNaN(floatVal)) {
-                        // Append as stringified float (DTO expects number, FormData sends string)
-                        formData.append(`stones[${idx}][${sKey}]`, floatVal.toString());
-                      }
-                    } else {
-                      formData.append(`stones[${idx}][${sKey}]`, String(sVal));
-                    }
-                  }
-                });
-              });
+              const processedStones = value
+                .filter((stone: any) => stone && typeof stone === 'object' && !stone.lastModified) // Filter out File objects
+                .map((stone: any) => ({
+                  ...stone,
+                  carat: stone.carat ? parseFloat(stone.carat) : null
+                }))
+                .filter((stone: any) => stone.type || stone.shape || stone.carat || stone.color || stone.clarity || stone.cut || stone.certification);
+              
+              if (processedStones.length > 0) {
+                formData.append('stones', JSON.stringify(processedStones));
+              }
             }
           } else if (typeof value === 'object') {
-            // For attributes object, append as separate fields
+            // For attributes object, serialize as JSON to preserve data types
             if (key === 'attributes') {
-              Object.entries(value).forEach(([aKey, aVal]) => {
-                if (aVal !== undefined && aVal !== null && aVal !== '') {
-                  formData.append(`attributes[${aKey}]`, String(aVal));
-                }
-              });
+              const processedAttributes: any = { ...value };
+              // Convert length_cm to number if it exists
+              if (processedAttributes.length_cm) {
+                processedAttributes.length_cm = parseFloat(processedAttributes.length_cm);
+              }
+              formData.append('attributes', JSON.stringify(processedAttributes));
             }
           } else {
             formData.append(key, String(value));
           }
         }
       });
+
       // Get Bearer token
-      let token = '';
-      if (typeof window !== 'undefined') {
-        token = localStorage.getItem('token') || '';
-        if (!token && document.cookie) {
-          const match = document.cookie.match(/token=([^;]+)/);
-          if (match) token = match[1];
-        }
-      }
+      let token = getCookie('token');
       if (!token) throw new Error('User not authenticated');
 
-      
+
       // API call (PATCH, FormData)
       const response = await jewelryService.updateJewelry(initialData.id, formData, token);
       if (!response || response.success === false) {
         throw new Error(response?.message || 'Failed to update jewelry');
       }
-      toast.success('Jewelry product updated successfully!');
+
+      // If auction is enabled, create auction
+      if (form.enableAuction && form.productType && form.startTime && form.endTime) {
+        const auctionData = {
+          productId: initialData.id,
+          productType: form.productType as 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond',
+          startTime: new Date(form.startTime).toISOString(),
+          endTime: new Date(form.endTime).toISOString()
+        };
+
+        const auctionResponse = await auctionService.createAuction(auctionData, token);
+
+        if (!auctionResponse || auctionResponse.success === false) {
+          throw new Error(auctionResponse?.message || 'Failed to create auction');
+        }
+      }
+      toast.success('Jewelry product updated successfully!' + (form.enableAuction ? ' Auction created!' : ''));
     } catch (err: any) {
       toast.error(err.message || 'Failed to update jewelry');
     } finally {
@@ -679,7 +779,7 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
               <option value="" disabled hidden>Select Shape</option>
               {DROPDOWN_OPTIONS.gemstoneShape.map((opt: any) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
-            <input type="number" min="0" value={stone.carat} onChange={e => handleStoneChange(idx, 'carat', e.target.value)} className="input" placeholder="Carat" />
+            <input type="number" min="0" step="0.01" value={stone.carat} onChange={e => handleStoneChange(idx, 'carat', e.target.value)} className="input" placeholder="Carat" />
             <select value={stone.color} onChange={e => handleStoneChange(idx, 'color', e.target.value)} className="input">
               <option value="" disabled hidden>Select Color</option>
               {DROPDOWN_OPTIONS.gemstoneColor.map((opt: any) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
@@ -723,6 +823,97 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
           </div>
         </div>
       </section>
+
+      {/* Auction Section */}
+      <section className="bg-gray-50 p-4 rounded border">
+        <h4 className="font-medium text-gray-800 mb-2">Auction Configuration</h4>
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="enableAuction"
+              checked={form.enableAuction}
+              onChange={(e) => setForm(prev => ({ ...prev, enableAuction: e.target.checked }))}
+              className="rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <label htmlFor="enableAuction" className="text-sm font-medium">
+              Enable Auction for this Jewelry
+            </label>
+          </div>
+
+          {form.enableAuction && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 bg-card/50 border border-border/40 rounded-lg">
+              <div className="space-y-2">
+                <label htmlFor="productType" className="text-sm font-medium flex items-center gap-1 text-foreground/90">
+                  Product Type
+                  <span className="text-red-500 text-xs">*</span>
+                </label>
+                <select
+                  id="productType"
+                  value={form.productType}
+                  onChange={(e) => setForm(prev => ({ ...prev, productType: e.target.value }))}
+                  required
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="">Select Product Type</option>
+                  {auctionProductTypes.map((type) => (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="startTime" className="text-sm font-medium flex items-center gap-1 text-foreground/90">
+                  Auction Start Time
+                  <span className="text-red-500 text-xs">*</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  id="startTime"
+                  value={form.startTime}
+                  onChange={(e) => setForm(prev => ({ ...prev, startTime: e.target.value }))}
+                  required
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 hover:border-primary/50"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="endTime" className="text-sm font-medium flex items-center gap-1 text-foreground/90">
+                  Auction End Time
+                  <span className="text-red-500 text-xs">*</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  id="endTime"
+                  value={form.endTime}
+                  onChange={(e) => setForm(prev => ({ ...prev, endTime: e.target.value }))}
+                  required
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 hover:border-primary/50"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Auction Data Section */}
+      {initialData?.auction && (
+        <section className="bg-card/50 border border-border/40 rounded-lg p-6 mb-4">
+          <div className="flex items-center gap-3 mb-4">
+            <h3 className="text-xl font-semibold text-foreground/90">Auction Details</h3>
+            <div className="flex-1 border-b border-border/40"></div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div><span className="font-medium">Auction ID:</span> {initialData.auction.id}</div>
+            <div><span className="font-medium">Product Type:</span> {initialData.auction.productType}</div>
+            <div><span className="font-medium">Start Time:</span> {new Date(initialData.auction.startTime).toLocaleString()}</div>
+            <div><span className="font-medium">End Time:</span> {new Date(initialData.auction.endTime).toLocaleString()}</div>
+            <div><span className="font-medium">Is Active:</span> {initialData.auction.isActive ? 'Yes' : 'No'}</div>
+          </div>
+        </section>
+      )}
       {/* Submit Button */}
       <div className="flex justify-end gap-4 mt-4">
         <button type="reset" className="btn-secondary" onClick={() => setForm(initialData ? normalizeInitialData(initialData) : {
@@ -731,7 +922,12 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
           description: '', videoURL: '',
           stones: [{ type: '', shape: '', carat: '', color: '', clarity: '', cut: '', certification: '' }],
           attributes: { style: '', chain_type: '', clasp_type: '', length_cm: '', is_adjustable: false },
-          images: []
+          images: [],
+          // Auction fields
+          enableAuction: false,
+          productType: 'jewelry',
+          startTime: '',
+          endTime: ''
         })} disabled={submitting}>Cancel</button>
         <button type="submit" className="btn-primary" disabled={submitting}>{submitting ? 'Saving...' : 'Save Changes'}</button>
       </div>

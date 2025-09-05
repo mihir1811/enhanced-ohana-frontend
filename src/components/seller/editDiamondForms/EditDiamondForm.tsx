@@ -10,6 +10,7 @@ import {
 } from '@/constants/diamondDropdowns';
 import { useCertificateCompanies } from '@/hooks/data/useCertificateCompanies';
 import { auctionProductTypes } from '@/config/sellerConfigData';
+import { auctionService } from '@/services/auctionService';
 import toast from 'react-hot-toast';
 
 
@@ -213,24 +214,15 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
       if (form.enableAuction && form.productType && form.startTime && form.endTime) {
         const auctionData = {
           productId: initialData.id,
-          productType: form.productType,
+          productType: form.productType as 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond',
           startTime: new Date(form.startTime).toISOString(),
           endTime: new Date(form.endTime).toISOString()
         };
 
-        const auctionResponse = await fetch('http://localhost:3000/api/v1/auction/create', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(auctionData)
-        });
+        const auctionResponse = await auctionService.createAuction(auctionData, token);
 
-        if (!auctionResponse.ok) {
-          const errorData = await auctionResponse.json();
-          throw new Error(errorData?.message || 'Failed to create auction');
+        if (!auctionResponse || auctionResponse.success === false) {
+          throw new Error(auctionResponse?.message || 'Failed to create auction');
         }
       }
       toast.success('Diamond updated successfully!' + (form.enableAuction ? ' Auction created!' : ''));

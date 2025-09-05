@@ -6,6 +6,7 @@ export { authService, userService, sellerService } from './auth'
 export { userService as userProfileService } from './user.service'
 export { default as cartService } from './cart'
 export { default as paymentService, usePayment, PaymentUtils } from './payment'
+export { auctionService } from './auctionService'
 
 // Types
 export type { ApiResponse } from './api'
@@ -16,3 +17,4 @@ export type { User as AuthUser, BaseUser, SellerData } from '../features/auth/au
 export type { UserProfileUpdateData, SellerRegistrationData } from './user.service'
 export type { CartResponse, AddToCartData, PromoCode } from './cart'
 export type { PaymentMethod, PaymentIntent, PaymentResult } from './payment'
+export type { AuctionData, BidData, AuctionFilter } from './auctionService'
