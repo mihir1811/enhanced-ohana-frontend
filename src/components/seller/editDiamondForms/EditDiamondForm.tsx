@@ -9,6 +9,8 @@ import {
   diamondColors, fancyColors, fancyIntensities, fancyOvertones, cutGrades, clarities, shades, shapes, fluorescences, processes, treatments
 } from '@/constants/diamondDropdowns';
 import { useCertificateCompanies } from '@/hooks/data/useCertificateCompanies';
+import { auctionProductTypes } from '@/config/sellerConfigData';
+
 
 
 type EditDiamondFormProps = {
@@ -16,7 +18,9 @@ type EditDiamondFormProps = {
 };
 
 const initialState = {
-  name: '', stoneType: '', description: '', images: [] as File[], videoURL: '', stockNumber: '', sellerSKU: '', origin: '', rap: '', price: '', discount: '', color: '', fancyColor: '', fancyIntencity: '', fancyOvertone: '', caratWeight: '', cut: '', clarity: '', shade: '', shape: '', polish: '', symmetry: '', fluorescence: '', treatment: '', process: '', measurement: '', diameter: '', ratio: '', table: '', depth: '', gridleMin: '', gridleMax: '', gridlePercentage: '', crownHeight: '', crownAngle: '', pavilionAngle: '', pavilionDepth: '', culetSize: '', certificateCompanyId: '', certificateNumber: '', inscription: '', certification: null as File | null
+  name: '', stoneType: '', description: '', images: [] as File[], videoURL: '', stockNumber: '', sellerSKU: '', origin: '', rap: '', price: '', discount: '', color: '', fancyColor: '', fancyIntencity: '', fancyOvertone: '', caratWeight: '', cut: '', clarity: '', shade: '', shape: '', polish: '', symmetry: '', fluorescence: '', treatment: '', process: '', measurement: '', diameter: '', ratio: '', table: '', depth: '', gridleMin: '', gridleMax: '', gridlePercentage: '', crownHeight: '', crownAngle: '', pavilionAngle: '', pavilionDepth: '', culetSize: '', certificateCompanyId: '', certificateNumber: '', inscription: '', certification: null as File | null,
+  // Auction fields
+  productType: '', startTime: '', endTime: '', enableAuction: false
 };
 
 
@@ -203,7 +207,33 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
       if (!response || !response.success) {
         throw new Error(response?.message || 'Failed to update diamond');
       }
-      alert('Diamond updated successfully!');
+
+      // If auction is enabled, create auction
+      if (form.enableAuction && form.productType && form.startTime && form.endTime) {
+        const auctionData = {
+          productId: initialData.id,
+          productType: form.productType,
+          startTime: new Date(form.startTime).toISOString(),
+          endTime: new Date(form.endTime).toISOString()
+        };
+
+        const auctionResponse = await fetch('http://localhost:3000/api/v1/auction/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(auctionData)
+        });
+
+        if (!auctionResponse.ok) {
+          const errorData = await auctionResponse.json();
+          throw new Error(errorData?.message || 'Failed to create auction');
+        }
+      }
+
+      alert('Diamond updated successfully!' + (form.enableAuction ? ' Auction created!' : ''));
     } catch (err: any) {
       setError(err.message || 'Failed to submit');
     } finally {
@@ -1088,6 +1118,88 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Auction Form Section */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-3">
+          <h3 className="text-xl font-semibold text-foreground/90">Auction Settings</h3>
+          <div className="flex-1 border-b border-border/40"></div>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="enableAuction"
+              name="enableAuction"
+              checked={form.enableAuction}
+              onChange={(e) => setForm(prev => ({ ...prev, enableAuction: e.target.checked }))}
+              className="rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <Label htmlFor="enableAuction" className="text-sm font-medium">
+              Enable Auction for this Diamond
+            </Label>
+          </div>
+
+          {form.enableAuction && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 bg-card/50 border border-border/40 rounded-lg">
+              <div className="space-y-2">
+                <Label htmlFor="productType" className="text-sm font-medium flex items-center gap-1 text-foreground/90">
+                  Product Type
+                  <span className="text-destructive text-xs">*</span>
+                </Label>
+                <select
+                  id="productType"
+                  name="productType"
+                  value={form.productType}
+                onChange={handleChange}
+                  required
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="">Select Product Type</option>
+                  {auctionProductTypes.map((type) => (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="startTime" className="text-sm font-medium flex items-center gap-1 text-foreground/90">
+                  Auction Start Time
+                  <span className="text-destructive text-xs">*</span>
+                </Label>
+                <Input
+                  id="startTime"
+                  name="startTime"
+                  type="datetime-local"
+                  value={form.startTime}
+                  onChange={handleChange}
+                  required
+                  className="w-full transition-all duration-200 hover:border-primary/50"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="endTime" className="text-sm font-medium flex items-center gap-1 text-foreground/90">
+                  Auction End Time
+                  <span className="text-destructive text-xs">*</span>
+                </Label>
+                <Input
+                  id="endTime"
+                  name="endTime"
+                  type="datetime-local"
+                  value={form.endTime}
+                  onChange={handleChange}
+                  required
+                  className="w-full transition-all duration-200 hover:border-primary/50"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

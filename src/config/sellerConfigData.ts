@@ -180,3 +180,11 @@ export const certificateCompanies: Option[] = [
   { value: '4', label: 'HRD' },
   { value: '5', label: 'Other' },
 ];
+
+// Auction Product Types
+export const auctionProductTypes: Option[] = [
+  { value: 'diamond', label: 'Diamond' },
+  { value: 'gemstone', label: 'Gemstone' },
+  { value: 'meleeDiamond', label: 'Melee Diamond' },
+  { value: 'jewellery', label: 'Jewellery' },
+];

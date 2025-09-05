@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { MoreVertical, Eye, Pencil, Trash2, Images, ChevronLeft, ChevronRight } from "lucide-react";
+import { MoreVertical, Eye, Pencil, Trash2, Images, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 export interface DiamondProduct {
@@ -24,6 +24,7 @@ export interface DiamondProduct {
   sellerSKU: string;
   isOnAuction?: boolean;
   isSold?: boolean;
+  auctionEndTime?: string;
 }
 
 interface Props {
@@ -55,6 +56,115 @@ const getStatusTag = (isDeleted: boolean, stockNumber: number) => {
     <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
       In Stock
     </span>
+  );
+};
+
+const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
+  const [timeLeft, setTimeLeft] = useState<{
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const difference = +new Date(endTime) - +new Date();
+      
+      if (difference > 0) {
+        return {
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60)
+        };
+      }
+      return null;
+    };
+
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+
+    setTimeLeft(calculateTimeLeft());
+
+    return () => clearInterval(timer);
+  }, [endTime]);
+
+  if (!timeLeft) {
+    return (
+      <div className="bg-gradient-to-r from-red-50 to-red-100 border-2 border-red-300 rounded-xl p-3 mt-3 shadow-sm">
+        <div className="flex items-center justify-center gap-2 text-red-700">
+          <div className="w-8 h-8 bg-red-200 rounded-full flex items-center justify-center">
+            <Clock className="w-4 h-4 text-red-600" />
+          </div>
+          <div className="text-center">
+            <div className="text-sm font-bold">Auction Ended</div>
+            <div className="text-xs opacity-75">This auction has concluded</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const isUrgent = timeLeft.days === 0 && timeLeft.hours < 2;
+  const bgGradient = isUrgent 
+    ? "bg-gradient-to-br from-orange-50 via-red-50 to-pink-50" 
+    : "bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50";
+  const borderColor = isUrgent ? "border-red-300" : "border-amber-300";
+  const textColor = isUrgent ? "text-red-700" : "text-amber-700";
+  const iconBg = isUrgent ? "bg-red-100" : "bg-amber-100";
+  const iconColor = isUrgent ? "text-red-600" : "text-amber-600";
+
+  return (
+    <div className={`${bgGradient} border-2 ${borderColor} rounded-xl p-3 mt-3 shadow-lg transition-all duration-300 hover:shadow-xl`}>
+      <div className={`flex items-center gap-2 ${textColor} mb-3`}>
+        <div className={`w-8 h-8 ${iconBg} rounded-full flex items-center justify-center animate-pulse`}>
+          <Clock className={`w-4 h-4 ${iconColor}`} />
+        </div>
+        <div>
+          <div className="text-sm font-bold">
+            {isUrgent ? "🔥 Ending Soon!" : "⏰ Auction Ends In:"}
+          </div>
+          <div className="text-xs opacity-75">Live countdown</div>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-4 gap-2">
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg px-2 py-2 text-center shadow-sm border border-white/50 hover:bg-white/90 transition-colors">
+          <div className={`text-lg font-bold ${isUrgent ? 'text-red-600' : 'text-amber-600'} leading-none`}>
+            {timeLeft.days.toString().padStart(2, '0')}
+          </div>
+          <div className="text-[10px] font-medium text-gray-600 mt-0.5">DAYS</div>
+        </div>
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg px-2 py-2 text-center shadow-sm border border-white/50 hover:bg-white/90 transition-colors">
+          <div className={`text-lg font-bold ${isUrgent ? 'text-red-600' : 'text-amber-600'} leading-none`}>
+            {timeLeft.hours.toString().padStart(2, '0')}
+          </div>
+          <div className="text-[10px] font-medium text-gray-600 mt-0.5">HRS</div>
+        </div>
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg px-2 py-2 text-center shadow-sm border border-white/50 hover:bg-white/90 transition-colors">
+          <div className={`text-lg font-bold ${isUrgent ? 'text-red-600' : 'text-amber-600'} leading-none`}>
+            {timeLeft.minutes.toString().padStart(2, '0')}
+          </div>
+          <div className="text-[10px] font-medium text-gray-600 mt-0.5">MIN</div>
+        </div>
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg px-2 py-2 text-center shadow-sm border border-white/50 hover:bg-white/90 transition-colors">
+          <div className={`text-lg font-bold ${isUrgent ? 'text-red-600 animate-pulse' : 'text-amber-600'} leading-none`}>
+            {timeLeft.seconds.toString().padStart(2, '0')}
+          </div>
+          <div className="text-[10px] font-medium text-gray-600 mt-0.5">SEC</div>
+        </div>
+      </div>
+      
+      {isUrgent && (
+        <div className="mt-2 text-center">
+          <div className="inline-flex items-center gap-1 bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-medium animate-bounce">
+            ⚡ Hurry! Auction ending soon
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -249,6 +359,10 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
             <span className="font-bold text-gray-700">{product.shape}</span>
           </div>
         </div>
+        {/* Auction Timer */}
+        {product.isOnAuction && product.auctionEndTime && (
+          <CountdownTimer endTime={product.auctionEndTime} />
+        )}
         <div className="flex items-center justify-between text-xs text-gray-500 mt-auto">
           <div className="flex items-center gap-1">
             <span className="font-semibold">Updated:</span>
@@ -259,17 +373,21 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
           <div className="flex items-center gap-1">
             <span className="font-semibold">Stock:</span>
             <span className="font-bold text-gray-700">{product.stockNumber}</span>
-            {product.isOnAuction && (
-              <span className="ml-2 flex items-center justify-center w-7 h-7 rounded-full bg-yellow-50 border border-yellow-200">
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                  <g>
-                    <rect x="8.5" y="2" width="3" height="10" rx="1.5" fill="#f59e0b" />
-                    <rect x="7.5" y="10" width="5" height="2" rx="1" fill="#fde047" stroke="#f59e0b" strokeWidth="1" />
-                    <rect x="6" y="13.5" width="8" height="2" rx="1" fill="#fde047" stroke="#f59e0b" strokeWidth="1" />
-                  </g>
-                </svg>
-              </span>
-            )}
+            {/* {product.isOnAuction && (
+              <div className="ml-2 relative">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg border-2 border-white animate-pulse">
+                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className="drop-shadow-sm">
+                    <g>
+                      <rect x="8.5" y="2" width="3" height="10" rx="1.5" fill="white" />
+                      <rect x="7.5" y="10" width="5" height="2" rx="1" fill="#fef3c7" stroke="white" strokeWidth="1" />
+                      <rect x="6" y="13.5" width="8" height="2" rx="1" fill="#fef3c7" stroke="white" strokeWidth="1" />
+                    </g>
+                  </svg>
+                </div>
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white animate-ping"></div>
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white"></div>
+              </div>
+            )} */}
           </div>
         </div>
       </div>
@@ -293,11 +411,63 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
                 {product.shape}
               </span>
             </div>
-            <img
-              src={displayImages[imgIdx]}
-              alt={product.name}
-              className="w-full h-64 object-cover rounded-lg mb-4"
-            />
+            <div className="relative w-full h-64 bg-gray-100 flex items-center justify-center mb-4">
+              <img
+                src={displayImages[imgIdx]}
+                alt={product.name}
+                className={`object-cover w-full h-full rounded-lg transition-opacity duration-300 ${animating ? 'opacity-0' : 'opacity-100'}`}
+                style={{ pointerEvents: 'none' }}
+              />
+              {displayImages.length > 1 && (
+                <>
+                  {/* Prev Arrow */}
+                  <button
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow flex items-center justify-center z-10"
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleImageChange(imgIdx === 0 ? displayImages.length - 1 : imgIdx - 1);
+                    }}
+                    aria-label="Previous image"
+                    type="button"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-blue-600" />
+                  </button>
+                  {/* Next Arrow */}
+                  <button
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow flex items-center justify-center z-10"
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleImageChange(imgIdx === displayImages.length - 1 ? 0 : imgIdx + 1);
+                    }}
+                    aria-label="Next image"
+                    type="button"
+                  >
+                    <ChevronRight className="w-5 h-5 text-blue-600" />
+                  </button>
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                    {displayImages.map((_, idx) => (
+                      <button
+                        key={idx}
+                        className={`w-2 h-2 rounded-full ${
+                          imgIdx === idx ? "bg-blue-600" : "bg-gray-300"
+                        } border border-white`}
+                        onClick={e => {
+                          e.stopPropagation();
+                          handleImageChange(idx);
+                        }}
+                        aria-label={`Show image ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+                  {/* Carousel icon at bottom right */}
+                  <div className="absolute bottom-3 right-3 bg-white/80 rounded-full p-1 shadow flex items-center justify-center">
+                    <span title="Carousel available">
+                      <Images className="w-4 h-4 text-blue-600" />
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
             <div className="mb-4">
               <span className="text-2xl font-extrabold text-blue-600">${Number(product.price).toLocaleString()}</span>
             </div>
@@ -312,14 +482,18 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
               <div><span className="text-gray-400 font-semibold">Auction:</span> <span className="font-bold text-gray-700">{product.isOnAuction ? 'Yes' : 'No'}</span></div>
               <div><span className="text-gray-400 font-semibold">Sold:</span> <span className="font-bold text-gray-700">{product.isSold ? 'Yes' : 'No'}</span></div>
             </div>
-            <div className="flex justify-end">
+            {/* Auction Timer */}
+            {product.isOnAuction && product.auctionEndTime && (
+              <CountdownTimer endTime={product.auctionEndTime} />
+            )}
+            {/* <div className="flex justify-end">
               <button
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                 onClick={() => setShowQuickView(false)}
               >
                 Close
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
       )}
