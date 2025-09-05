@@ -73,12 +73,12 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
         <input
           ref={inputRef}
           type="text"
-          className={`flex h-10 w-full rounded-md border border-input bg-background px-3 pr-3 py-2 text-sm
+          className={`flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm
                      ring-offset-background file:border-0 file:bg-transparent 
                      file:text-sm file:font-medium placeholder:text-muted-foreground 
                      focus-visible:outline-none focus-visible:ring-2 
                      focus-visible:ring-ring focus-visible:ring-offset-2
-                     disabled:cursor-not-allowed disabled:opacity-50 pl-3 pr-10
+                     disabled:cursor-not-allowed disabled:opacity-50
                      transition-all duration-200 ease-in-out
                      hover:border-primary/50
                      ${isOpen ? 'ring-2 ring-ring ring-offset-2 border-primary' : ''}
@@ -335,9 +335,9 @@ function AddDiamondForm() {
   };
 
   return (
-    <form className="w-full mx-auto p-8 bg-card rounded-xl shadow-md border flex flex-col gap-8" onSubmit={handleSubmit}>
+    <form className="w-full mx-auto bg-card  flex flex-col gap-8" onSubmit={handleSubmit}>
       <div className="space-y-3">
-        <h2 className="text-3xl font-semibold tracking-tight bg-gradient-to-r from-primary/90 to-primary bg-clip-text text-transparent">Add Diamond</h2>
+        <h2 className="text-3xl font-semibold tracking-tight bg-gradient-to-r from-primary/90 to-primary bg-clip-text">Add Diamond</h2>
         <p className="text-muted-foreground text-sm">Fill in the details below to add a new diamond to your inventory.</p>
       </div>
 
@@ -523,7 +523,10 @@ function AddDiamondForm() {
           </div>
         </div>
           <div className='w-1/2'>
-            <label className="block font-medium mb-1">Video URL *</label>
+            <Label htmlFor="videoURL" className="font-medium">
+              Video URL
+              <span className="text-destructive ml-1">*</span>
+            </Label>
             <Input name="videoURL" value={form.videoURL} onChange={handleChange} required className="input" placeholder="e.g. https://youtu.be/abcd1234" />
           </div>
       </section>
@@ -926,7 +929,6 @@ function AddDiamondForm() {
               value={form.measurement}
               onChange={handleChange}
               required
-              className="h-9"
               placeholder="e.g. 5.00 x 5.00 x 3.00 mm"
             />
           </div>
@@ -1118,10 +1120,10 @@ function AddDiamondForm() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="relative group">
-            <label className="flex items-center gap-1 text-sm font-semibold text-gray-700 mb-2">
+            <Label htmlFor="certificateCompanyId" className="font-medium">
               Certificate Company
-              <span className="text-rose-500">*</span>
-            </label>
+              <span className="text-destructive ml-1">*</span>
+            </Label>
             <SearchableDropdown
               name="certificateCompanyId"
               value={form.certificateCompanyId}
