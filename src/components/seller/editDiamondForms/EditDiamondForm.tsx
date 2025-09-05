@@ -10,6 +10,7 @@ import {
 } from '@/constants/diamondDropdowns';
 import { useCertificateCompanies } from '@/hooks/data/useCertificateCompanies';
 import { auctionProductTypes } from '@/config/sellerConfigData';
+import toast from 'react-hot-toast';
 
 
 
@@ -134,7 +135,7 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { files, name } = e.target;
     if (!files) return;
-    
+
     if (name === 'images') {
       let fileArr = Array.from(files);
       if (form.images.length + fileArr.length > 6) {
@@ -167,7 +168,7 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
     try {
       // Prepare FormData for multipart/form-data
       const formDataToSend = new FormData();
-      
+
       // Only append specific fields as per the curl request
       const fieldsToInclude = [
         'stoneType', 'stockNumber', 'sellerSKU', 'name', 'description', 'origin',
@@ -232,8 +233,9 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
           throw new Error(errorData?.message || 'Failed to create auction');
         }
       }
+      toast.success('Diamond updated successfully!' + (form.enableAuction ? ' Auction created!' : ''));
 
-      alert('Diamond updated successfully!' + (form.enableAuction ? ' Auction created!' : ''));
+      // alert('Diamond updated successfully!' + (form.enableAuction ? ' Auction created!' : ''));
     } catch (err: any) {
       setError(err.message || 'Failed to submit');
     } finally {
@@ -442,7 +444,7 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
             className="w-full transition-all duration-200 hover:border-primary/50"
           />
         </div>
-        
+
         {/* Certification File Upload */}
         <div className='w-1/2 mt-4 space-y-2'>
           <Label htmlFor="certification" className="font-medium">
@@ -1127,7 +1129,7 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
           <h3 className="text-xl font-semibold text-foreground/90">Auction Settings</h3>
           <div className="flex-1 border-b border-border/40"></div>
         </div>
-        
+
         <div className="space-y-4">
           <div className="flex items-center space-x-2">
             <input
@@ -1154,7 +1156,7 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
                   id="productType"
                   name="productType"
                   value={form.productType}
-                onChange={handleChange}
+                  onChange={handleChange}
                   required
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -1166,7 +1168,7 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
                   ))}
                 </select>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="startTime" className="text-sm font-medium flex items-center gap-1 text-foreground/90">
                   Auction Start Time
@@ -1182,7 +1184,7 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
                   className="w-full transition-all duration-200 hover:border-primary/50"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="endTime" className="text-sm font-medium flex items-center gap-1 text-foreground/90">
                   Auction End Time
