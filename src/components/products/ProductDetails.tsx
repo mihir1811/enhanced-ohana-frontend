@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Clock } from 'lucide-react';
 
 // Accepts any product type (diamond, gemstone, jewelry, etc.)
 export interface ProductDetailsProps {
