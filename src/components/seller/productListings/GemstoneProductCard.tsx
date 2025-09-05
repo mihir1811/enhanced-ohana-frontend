@@ -1,10 +1,119 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { MoreVertical, Eye, Pencil, Trash2, Images, ChevronLeft, ChevronRight } from "lucide-react";
+import { MoreVertical, Eye, Pencil, Trash2, Images, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { gemstoneService } from '@/services/gemstoneService';
 import { getCookie } from '@/lib/cookie-utils';
+
+const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
+  const [timeLeft, setTimeLeft] = useState<{
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const difference = +new Date(endTime) - +new Date();
+      
+      if (difference > 0) {
+        return {
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60)
+        };
+      }
+      return null;
+    };
+
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+
+    setTimeLeft(calculateTimeLeft());
+
+    return () => clearInterval(timer);
+  }, [endTime]);
+
+  if (!timeLeft) {
+    return (
+      <div className="bg-gradient-to-r from-red-50 to-red-100 border-2 border-red-300 rounded-xl p-3 mt-3 shadow-sm">
+        <div className="flex items-center justify-center gap-2 text-red-700">
+          <div className="w-8 h-8 bg-red-200 rounded-full flex items-center justify-center">
+            <Clock className="w-4 h-4 text-red-600" />
+          </div>
+          <div className="text-center">
+            <div className="text-sm font-bold">Auction Ended</div>
+            <div className="text-xs opacity-75">This auction has concluded</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const isUrgent = timeLeft.days === 0 && timeLeft.hours < 2;
+  const bgGradient = isUrgent 
+    ? "bg-gradient-to-br from-orange-50 via-red-50 to-pink-50" 
+    : "bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50";
+  const borderColor = isUrgent ? "border-red-300" : "border-amber-300";
+  const textColor = isUrgent ? "text-red-700" : "text-amber-700";
+  const iconBg = isUrgent ? "bg-red-100" : "bg-amber-100";
+  const iconColor = isUrgent ? "text-red-600" : "text-amber-600";
+
+  return (
+    <div className={`${bgGradient} border-2 ${borderColor} rounded-xl p-3 mt-3 shadow-lg transition-all duration-300 hover:shadow-xl`}>
+      <div className={`flex items-center gap-2 ${textColor} mb-3`}>
+        <div className={`w-8 h-8 ${iconBg} rounded-full flex items-center justify-center animate-pulse`}>
+          <Clock className={`w-4 h-4 ${iconColor}`} />
+        </div>
+        <div>
+          <div className="text-sm font-bold">
+            {isUrgent ? "🔥 Ending Soon!" : "⏰ Auction Ends In:"}
+          </div>
+          <div className="text-xs opacity-75">Live countdown</div>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-4 gap-2">
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg px-2 py-2 text-center shadow-sm border border-white/50 hover:bg-white/90 transition-colors">
+          <div className={`text-lg font-bold ${isUrgent ? 'text-red-600' : 'text-amber-600'} leading-none`}>
+            {timeLeft.days.toString().padStart(2, '0')}
+          </div>
+          <div className="text-[10px] font-medium text-gray-600 mt-0.5">DAYS</div>
+        </div>
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg px-2 py-2 text-center shadow-sm border border-white/50 hover:bg-white/90 transition-colors">
+          <div className={`text-lg font-bold ${isUrgent ? 'text-red-600' : 'text-amber-600'} leading-none`}>
+            {timeLeft.hours.toString().padStart(2, '0')}
+          </div>
+          <div className="text-[10px] font-medium text-gray-600 mt-0.5">HRS</div>
+        </div>
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg px-2 py-2 text-center shadow-sm border border-white/50 hover:bg-white/90 transition-colors">
+          <div className={`text-lg font-bold ${isUrgent ? 'text-red-600' : 'text-amber-600'} leading-none`}>
+            {timeLeft.minutes.toString().padStart(2, '0')}
+          </div>
+          <div className="text-[10px] font-medium text-gray-600 mt-0.5">MIN</div>
+        </div>
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg px-2 py-2 text-center shadow-sm border border-white/50 hover:bg-white/90 transition-colors">
+          <div className={`text-lg font-bold ${isUrgent ? 'text-red-600 animate-pulse' : 'text-amber-600'} leading-none`}>
+            {timeLeft.seconds.toString().padStart(2, '0')}
+          </div>
+          <div className="text-[10px] font-medium text-gray-600 mt-0.5">SEC</div>
+        </div>
+      </div>
+      
+      {isUrgent && (
+        <div className="mt-2 text-center">
+          <div className="inline-flex items-center gap-1 bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-medium animate-bounce">
+            ⚡ Hurry! Auction ending soon
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export interface GemstoneProduct {
   id: string;
@@ -23,6 +132,8 @@ export interface GemstoneProduct {
   updatedAt?: string;
   sellerSKU?: string;
   isSold?: boolean;
+  isOnAuction?: boolean;
+  auctionEndTime?: string;
 }
 
 interface Props {
@@ -212,6 +323,11 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
           <span className="bg-gray-100 rounded-full px-2 py-1 font-semibold">
             Gemstone
           </span>
+          {product.isOnAuction && (
+            <span className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full px-2 py-1 font-semibold animate-pulse">
+              🔥 Live Auction
+            </span>
+          )}
           <span className="bg-blue-50 text-blue-700 rounded-full px-2 py-1 font-semibold">
             {product.shape}
           </span>
@@ -221,6 +337,12 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
             ${product.price?.toLocaleString() || '-'}
           </span>
         </div>
+        
+        {/* Auction Timer */}
+        {product.isOnAuction && product.auctionEndTime && (
+          <CountdownTimer endTime={product.auctionEndTime} />
+        )}
+        
         <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs mb-2">
           <div className="flex items-center gap-1">
             <span className="text-gray-400 font-semibold">SKU:</span>

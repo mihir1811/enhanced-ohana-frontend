@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { gemstoneService } from '@/services/gemstoneService';
 import { getCookie } from '@/lib/cookie-utils';
+import { auctionProductTypes } from '@/config/sellerConfigData';
 
 // --- Dropdown option arrays (copy from AddGemstoneForm) ---
 const GEM_SUBTYPES = {
@@ -128,7 +129,12 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
   const [form, setForm] = useState<any>({
     ...initialData,
     isOnAuction: Boolean(initialData?.isOnAuction),
-    images: []
+    images: [],
+    // Auction fields
+    productType: '',
+    startTime: '',
+    endTime: '',
+    enableAuction: false
   });
   const [loading, setLoading] = useState(false);
   const [selectedGemsType, setSelectedGemsType] = useState<string | undefined>(initialData?.gemsType);
@@ -145,7 +151,13 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value, type } = e.target;
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setForm({ ...form, [name]: checked });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
   const handleSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -204,7 +216,7 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
       }
       // Always append 'name' field explicitly
       formData.append('name', form.name ?? '');
-      // Attach all other fields (except name, images, id, image1-6, seller, auction, isOnAuction, isSold, isDeleted)
+      // Attach all other fields (except name, images, id, image1-6, seller, auction, isOnAuction, isSold, isDeleted, and auction-related fields)
       Object.entries(form).forEach(([key, value]) => {
         if (
           key !== 'images' &&
@@ -215,6 +227,10 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
           key !== 'isOnAuction' &&
           key !== 'isSold' &&
           key !== 'isDeleted' &&
+          key !== 'enableAuction' &&
+          key !== 'productType' &&
+          key !== 'startTime' &&
+          key !== 'endTime' &&
           !/^image[1-6]$/.test(key) &&
           value !== undefined && value !== null && value !== ''
         ) {
@@ -229,7 +245,33 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
       if (!response || response.success === false) {
         throw new Error(response?.message || 'Failed to update gemstone');
       }
-      toast.success('Gemstone updated successfully!');
+
+      // If auction is enabled, create auction
+      if (form.enableAuction && form.productType && form.startTime && form.endTime) {
+        const auctionData = {
+          productId: form.id,
+          productType: form.productType,
+          startTime: new Date(form.startTime).toISOString(),
+          endTime: new Date(form.endTime).toISOString()
+        };
+
+        const auctionResponse = await fetch('http://localhost:3000/api/v1/auction/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(auctionData)
+        });
+
+        if (!auctionResponse.ok) {
+          const errorData = await auctionResponse.json();
+          throw new Error(errorData?.message || 'Failed to create auction');
+        }
+      }
+
+      toast.success('Gemstone updated successfully!' + (form.enableAuction ? ' Auction created!' : ''));
       if (onCancel) onCancel();
     } catch (err: any) {
       toast.error(err.message || 'Failed to update gemstone');
@@ -488,72 +530,124 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
         </div>
       </section>
 
+      {/* Auction Settings */}
+      <section>
+        <h3 className="text-lg font-semibold mb-2">Auction Settings</h3>
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="enableAuction"
+              name="enableAuction"
+              checked={form.enableAuction}
+              onChange={handleInput}
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <label htmlFor="enableAuction" className="text-sm font-medium">
+              Enable Auction for this Gemstone
+            </label>
+          </div>
+
+          {form.enableAuction && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+              <div>
+                <label className="block font-medium mb-1">
+                  Product Type *
+                </label>
+                <select
+                  name="productType"
+                  value={form.productType}
+                  onChange={handleSelect}
+                  required
+                  className="input"
+                >
+                  <option value="">Select Product Type</option>
+                  {auctionProductTypes.map((type) => (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-medium mb-1">
+                  Auction Start Time *
+                </label>
+                <input
+                  type="datetime-local"
+                  name="startTime"
+                  value={form.startTime}
+                  onChange={handleInput}
+                  required
+                  className="input"
+                />
+              </div>
+
+              <div>
+                <label className="block font-medium mb-1">
+                  Auction End Time *
+                </label>
+                <input
+                  type="datetime-local"
+                  name="endTime"
+                  value={form.endTime}
+                  onChange={handleInput}
+                  required
+                  className="input"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Auction Fields */}
       {(form.isOnAuction || form.auction) && (
         <section>
-          <h3 className="text-lg font-semibold mb-2">Auction Details</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block font-medium mb-1">On Auction</label>
-              <input
-                type="checkbox"
-                name="isOnAuction"
-                checked={!!form.isOnAuction}
-                onChange={e => setForm({ ...form, isOnAuction: !!e.target.checked })}
-                className="mr-2"
-              />
+          <h3 className="text-lg font-semibold mb-2">Existing Auction Details (Legacy)</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="col-span-3 text-sm text-yellow-700 mb-2">
+              ⚠️ This section shows existing auction data. Use "Auction Settings" above to create new auctions.
             </div>
             <div>
-              <label className="block font-medium mb-1">Auction Start Time</label>
-              <input
-                type="datetime-local"
-                name="auctionStartTime"
-                value={form.auction?.startTime ? new Date(form.auction?.startTime).toISOString().slice(0,16) : ''}
-                onChange={e => setForm({
-                  ...form,
-                  auction: {
-                    ...form.auction,
-                    startTime: e.target.value ? new Date(e.target.value).toISOString() : ''
-                  }
-                })}
-                className="input"
-                disabled={!form.isOnAuction}
-              />
+              <label className="block font-medium mb-1">On Auction (Legacy)</label>
+              <span className="text-sm">{form.isOnAuction ? 'Yes' : 'No'}</span>
             </div>
-            <div>
-              <label className="block font-medium mb-1">Auction End Time</label>
-              <input
-                type="datetime-local"
-                name="auctionEndTime"
-                value={form.auction?.endTime ? new Date(form.auction.endTime).toISOString().slice(0,16) : ''}
-                onChange={e => setForm({
-                  ...form,
-                  auction: {
-                    ...form.auction,
-                    endTime: e.target.value ? new Date(e.target.value).toISOString() : ''
-                  }
-                })}
-                className="input"
-                disabled={!form.isOnAuction}
-              />
-            </div>
-            <div>
-              <label className="block font-medium mb-1">Auction Active</label>
-              <input
-                type="checkbox"
-                name="auctionIsActive"
-                checked={!!form.auction?.isActive}
-                onChange={e => setForm({
-                  ...form,
-                  auction: {
-                    ...form.auction,
-                    isActive: e.target.checked
-                  }
-                })}
-                className="mr-2"
-                disabled={!form.isOnAuction}
-              />
-            </div>
+            {form.auction && (
+              <>
+                <div>
+                  <label className="block font-medium mb-1">Legacy Start Time</label>
+                  <span className="text-sm">{form.auction?.startTime ? new Date(form.auction.startTime).toLocaleString() : 'Not set'}</span>
+                </div>
+                <div>
+                  <label className="block font-medium mb-1">Legacy End Time</label>
+                  <span className="text-sm">{form.auction?.endTime ? new Date(form.auction.endTime).toLocaleString() : 'Not set'}</span>
+                </div>
+                <div>
+                  <label className="block font-medium mb-1">Legacy Active Status</label>
+                  <span className="text-sm">{form.auction?.isActive ? 'Active' : 'Inactive'}</span>
+                </div>
+              </>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Auction Data Section */}
+      {initialData?.auction && (
+        <section className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-4">
+          <div className="flex items-center gap-3 mb-4">
+            <h3 className="text-lg font-semibold">Existing Auction Details</h3>
+            <div className="flex-1 border-b border-gray-300"></div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div><span className="font-medium">Auction ID:</span> {initialData.auction.id}</div>
+            <div><span className="font-medium">Product Type:</span> {initialData.auction.productType}</div>
+            <div><span className="font-medium">Start Time:</span> {new Date(initialData.auction.startTime).toLocaleString()}</div>
+            <div><span className="font-medium">End Time:</span> {new Date(initialData.auction.endTime).toLocaleString()}</div>
+            <div><span className="font-medium">Is Active:</span> {initialData.auction.isActive ? 'Yes' : 'No'}</div>
+            <div><span className="font-medium">Created:</span> {new Date(initialData.auction.createdAt).toLocaleString()}</div>
           </div>
         </section>
       )}
