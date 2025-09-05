@@ -32,6 +32,8 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'specifications' | 'certification' | 'seller'>('overview');
   const [isWishlisted, setIsWishlisted] = useState(false);
 
+  console.log(diamond, );
+
   if (!diamond) {
     return (
       <div className="max-w-7xl mx-auto p-6">
@@ -186,6 +188,24 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
           <div className="space-y-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
+                {/* Seller Company Name */}
+                {diamond.seller && diamond.seller.companyName && (
+                  <a
+                    href={`/product/seller-info/${diamond.seller.id || diamond.sellerId}`}
+                    className="text-blue-600 hover:underline text-lg font-semibold mb-1 block"
+                  >
+                    {diamond.seller.companyName}
+                  </a>
+                )}
+                {/* Seller fallback if no companyName */}
+                {!diamond.seller?.companyName && (
+                  <a
+                    href={`/seller/info/${diamond.sellerId}`}
+                    className="text-blue-600 hover:underline text-lg font-semibold mb-1 block"
+                  >
+                    Seller #{diamond.sellerId}
+                  </a>
+                )}
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
                   {diamond.name || `${diamond.caratWeight}ct ${diamond.shape}`}
                 </h1>
@@ -237,36 +257,28 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
 
           {/* Key Features Cards */}
           <div className="grid grid-cols-2 gap-4">
+            {/* Show all main diamond fields as cards */}
             {[
-              { 
-                label: 'Carat Weight', 
-                value: diamond.caratWeight, 
-                icon: '⚖️', 
-                color: 'from-blue-500 to-blue-600',
-                description: 'Weight measurement'
-              },
-              { 
-                label: 'Color Grade', 
-                value: diamond.color, 
-                icon: '🎨', 
-                color: 'from-purple-500 to-purple-600',
-                description: 'Color classification'
-              },
-              { 
-                label: 'Clarity', 
-                value: diamond.clarity, 
-                icon: '💎', 
-                color: 'from-emerald-500 to-emerald-600',
-                description: 'Internal characteristics'
-              },
-              { 
-                label: 'Cut Quality', 
-                value: diamond.cut, 
-                icon: '✂️', 
-                color: 'from-amber-500 to-amber-600',
-                description: 'Light performance'
-              },
-            ].map(feature => (
+              { label: 'Carat Weight', value: diamond.caratWeight, icon: '⚖️', color: 'from-blue-500 to-blue-600', description: 'Weight measurement' },
+              { label: 'Color Grade', value: diamond.color, icon: '🎨', color: 'from-purple-500 to-purple-600', description: 'Color classification' },
+              { label: 'Clarity', value: diamond.clarity, icon: '💎', color: 'from-emerald-500 to-emerald-600', description: 'Internal characteristics' },
+              { label: 'Cut Quality', value: diamond.cut, icon: '✂️', color: 'from-amber-500 to-amber-600', description: 'Light performance' },
+              { label: 'Origin', value: diamond.origin, icon: '📍', color: 'from-green-500 to-green-600', description: 'Origin of diamond' },
+              { label: 'Shade', value: diamond.shade, icon: '🌈', color: 'from-yellow-500 to-yellow-600', description: 'Diamond shade' },
+              { label: 'Fancy Color', value: diamond.fancyColor, icon: '🎨', color: 'from-pink-500 to-pink-600', description: 'Fancy color' },
+              { label: 'Fancy Intensity', value: diamond.fancyIntencity, icon: '🔥', color: 'from-red-500 to-red-600', description: 'Fancy color intensity' },
+              { label: 'Fancy Overtone', value: diamond.fancyOvertone, icon: '🌀', color: 'from-indigo-500 to-indigo-600', description: 'Fancy color overtone' },
+              { label: 'Symmetry', value: diamond.symmetry, icon: '🔀', color: 'from-gray-500 to-gray-600', description: 'Symmetry' },
+              { label: 'Polish', value: diamond.polish, icon: '✨', color: 'from-blue-400 to-blue-500', description: 'Polish' },
+              { label: 'Fluorescence', value: diamond.fluorescence, icon: '💡', color: 'from-yellow-400 to-yellow-500', description: 'Fluorescence' },
+              { label: 'Stone Type', value: diamond.stoneType, icon: '🪨', color: 'from-gray-400 to-gray-500', description: 'Stone type' },
+              { label: 'Process', value: diamond.process, icon: '⚙️', color: 'from-gray-300 to-gray-400', description: 'Process' },
+              { label: 'Treatment', value: diamond.treatment, icon: '🧪', color: 'from-green-300 to-green-400', description: 'Treatment' },
+              { label: 'Inscription', value: diamond.inscription, icon: '🔏', color: 'from-gray-300 to-gray-400', description: 'Inscription' },
+              { label: 'Certificate Number', value: diamond.certificateNumber, icon: '📄', color: 'from-blue-300 to-blue-400', description: 'Certificate number' },
+              { label: 'Seller SKU', value: diamond.sellerSKU, icon: '🏷️', color: 'from-gray-200 to-gray-300', description: 'Seller SKU' },
+              { label: 'Stock Number', value: diamond.stockNumber, icon: '🔢', color: 'from-gray-200 to-gray-300', description: 'Stock number' },
+            ].filter(f => f.value).map(feature => (
               <div key={feature.label} className="bg-white rounded-2xl border border-gray-200 p-4 hover:shadow-md transition-shadow duration-200">
                 <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${feature.color} flex items-center justify-center text-2xl mb-3`}>
                   {feature.icon}
@@ -327,7 +339,7 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
               { id: 'overview', label: 'Overview', icon: Eye },
               { id: 'specifications', label: 'Specifications', icon: Award },
               { id: 'certification', label: 'Certification', icon: Shield },
-              { id: 'seller', label: 'Seller Info', icon: Star }
+              // { id: 'seller', label: 'Seller Info', icon: Star }
             ].map(tab => (
               <button
                 key={tab.id}

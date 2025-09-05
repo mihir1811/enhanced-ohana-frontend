@@ -2,42 +2,41 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import DiamondDetailsPage from '@/components/diamonds/DiamondDetailsPage';
-import diamondService from '@/services/diamondService';
-import { transformApiDiamond } from '@/components/diamonds/diamondUtils';
+import JewelryDetailsPage from '@/components/jewelry/JewelryDetailsPage';
+import { jewelryService } from '@/services/jewelryService';
 import NavigationUser from '@/components/Navigation/NavigationUser';
 import Footer from '@/components/Footer';
 import { SECTION_WIDTH } from '@/lib/constants';
 
-export default function DiamondDetailPage() {
+export default function JewelryDetailPage() {
   const params = useParams();
-  const diamondId = params?.diamondId as string;
-  const [diamond, setDiamond] = useState<any>(null);
+  const jewelryId = params?.id as string;
+  const [jewelry, setJewelry] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!diamondId) return;
+    if (!jewelryId) return;
     setLoading(true);
-    diamondService.getDiamondById(diamondId)
+    jewelryService.getJewelryById(jewelryId)
       .then(apiRes => {
-        console.log(apiRes.data, '1111111111111');
+        console.log(apiRes.data, 'Jewelry Data');
         if (apiRes?.data) {
-        setDiamond(transformApiDiamond(apiRes.data));
+          setJewelry(apiRes.data);
         } else {
-          setDiamond(null);
+          setJewelry(null);
         }
       })
       .finally(() => setLoading(false));
-  }, [diamondId]);
+  }, [jewelryId]);
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       <NavigationUser />
       <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 sm:px-6 lg:px-8`}>
         {loading ? (
-          <div className="py-20 text-center text-gray-500 text-lg">Loading diamond details...</div>
+          <div className="py-20 text-center text-gray-500 text-lg">Loading jewelry details...</div>
         ) : (
-          <DiamondDetailsPage diamond={diamond} />
+          <JewelryDetailsPage jewelry={jewelry} />
         )}
       </div>
       <Footer />
