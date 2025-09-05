@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react';
-import { sellerService } from '../../services/seller.service';
+import { SellerType, sellerService, type CreateSellerRequest, type SellerTypeValue } from '../../services/seller.service';
 import { 
   Building, 
   MapPin, 
@@ -21,6 +21,7 @@ import {
   X
 } from 'lucide-react';
 import { SECTION_WIDTH } from '@/lib/constants';
+import { getCookie } from '@/lib/cookie-utils';
 
 interface BecomeSellerFormProps {
   onSuccess?: () => void;
@@ -28,7 +29,17 @@ interface BecomeSellerFormProps {
 
 const BecomeSellerForm: React.FC<BecomeSellerFormProps> = ({ onSuccess }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    companyName: string;
+    addressLine1: string;
+    addressLine2: string;
+    city: string;
+    state: string;
+    country: string;
+    zipCode: string;
+    sellerType: SellerTypeValue;
+    companyLogo: File | undefined;
+  }>({
     companyName: '',
     addressLine1: '',
     addressLine2: '',
@@ -36,13 +47,8 @@ const BecomeSellerForm: React.FC<BecomeSellerFormProps> = ({ onSuccess }) => {
     state: '',
     country: '',
     zipCode: '',
-    sellerType: 'naturalDiamond',
-    companyLogo: undefined as File | undefined,
-    businessEmail: '',
-    phoneNumber: '',
-    businessRegistration: '',
-    yearsInBusiness: '',
-    description: ''
+    sellerType: SellerType.naturalDiamond,
+    companyLogo: undefined,
   });
   
   const [loading, setLoading] = useState(false);
@@ -54,14 +60,14 @@ const BecomeSellerForm: React.FC<BecomeSellerFormProps> = ({ onSuccess }) => {
   const steps = [
     { id: 1, title: 'Company Information', icon: Building },
     { id: 2, title: 'Business Address', icon: MapPin },
-    { id: 3, title: 'Verification', icon: Shield }
+    { id: 3, title: 'Company Logo', icon: Camera }
   ];
 
   const sellerTypes = [
-    { value: 'naturalDiamond', label: 'Natural Diamonds', desc: 'Certified natural diamond dealer' },
-    { value: 'labGrown', label: 'Lab-Grown Diamonds', desc: 'Synthetic diamond specialist' },
-    { value: 'both', label: 'Both Natural & Lab-Grown', desc: 'Full spectrum dealer' },
-    { value: 'wholesale', label: 'Wholesale Only', desc: 'B2B diamond supplier' }
+    { value: SellerType.naturalDiamond, label: 'Natural Diamonds', desc: 'Certified natural diamond dealer' },
+    { value: SellerType.labGrownDiamond, label: 'Lab-Grown Diamonds', desc: 'Synthetic diamond specialist' },
+    { value: SellerType.jewellery, label: 'Jewelry', desc: 'Fine jewelry and accessories' },
+    { value: SellerType.gemstone, label: 'Gemstones', desc: 'Precious and semi-precious stones' }
   ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -114,11 +120,11 @@ const BecomeSellerForm: React.FC<BecomeSellerFormProps> = ({ onSuccess }) => {
   const validateStep = (step: number) => {
     switch (step) {
       case 1:
-        return form.companyName && form.businessEmail && form.sellerType;
+        return form.companyName && form.sellerType;
       case 2:
         return form.addressLine1 && form.city && form.state && form.country && form.zipCode;
       case 3:
-        return form.businessRegistration && form.yearsInBusiness;
+        return true; // No additional validation needed for step 3
       default:
         return false;
     }
@@ -140,7 +146,7 @@ const BecomeSellerForm: React.FC<BecomeSellerFormProps> = ({ onSuccess }) => {
     setError(null);
     setSuccess(false);
     try {
-      const token = localStorage.getItem('token') || undefined;
+      const token = getCookie('token') || undefined;
       await sellerService.createSeller(form, token);
       setSuccess(true);
       setTimeout(() => {
@@ -260,26 +266,6 @@ const BecomeSellerForm: React.FC<BecomeSellerFormProps> = ({ onSuccess }) => {
                     icon={Building}
                   />
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <FormField
-                      label="Business Email"
-                      name="businessEmail"
-                      type="email"
-                      value={form.businessEmail}
-                      onChange={handleChange}
-                      placeholder="business@company.com"
-                      required
-                    />
-                    <FormField
-                      label="Phone Number"
-                      name="phoneNumber"
-                      value={form.phoneNumber}
-                      onChange={handleChange}
-                      placeholder="+1 (555) 123-4567"
-                      required
-                    />
-                  </div>
-
                   <div>
                     <label className="block text-sm font-semibold text-gray-900 mb-3">Seller Type</label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -300,16 +286,6 @@ const BecomeSellerForm: React.FC<BecomeSellerFormProps> = ({ onSuccess }) => {
                       ))}
                     </div>
                   </div>
-
-                  <FormField
-                    label="Business Description"
-                    name="description"
-                    value={form.description}
-                    onChange={handleChange}
-                    placeholder="Tell us about your diamond business, experience, and specializations..."
-                    multiline
-                    rows={4}
-                  />
                 </div>
               </div>
             )}
@@ -383,35 +359,15 @@ const BecomeSellerForm: React.FC<BecomeSellerFormProps> = ({ onSuccess }) => {
               </div>
             )}
 
-            {/* Step 3: Verification */}
+            {/* Step 3: Company Logo */}
             {currentStep === 3 && (
               <div className="space-y-6">
                 <div className="text-center mb-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Business Verification</h2>
-                  <p className="text-gray-600">Help us verify your business credentials</p>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Company Logo</h2>
+                  <p className="text-gray-600">Upload your company logo (optional)</p>
                 </div>
 
                 <div className="space-y-6">
-                  <FormField
-                    label="Business Registration Number"
-                    name="businessRegistration"
-                    value={form.businessRegistration}
-                    onChange={handleChange}
-                    placeholder="Business license or registration number"
-                    required
-                    icon={FileText}
-                  />
-
-                  <FormField
-                    label="Years in Business"
-                    name="yearsInBusiness"
-                    type="number"
-                    value={form.yearsInBusiness}
-                    onChange={handleChange}
-                    placeholder="How many years have you been in business?"
-                    required
-                  />
-
                   {/* Logo Upload */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-900 mb-3">Company Logo</label>
@@ -516,7 +472,7 @@ const BecomeSellerForm: React.FC<BecomeSellerFormProps> = ({ onSuccess }) => {
               ) : (
                 <button
                   type="submit"
-                  disabled={loading || !validateStep(3)}
+                  disabled={loading}
                   className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl disabled:cursor-not-allowed"
                 >
                   {loading ? (
