@@ -1,380 +1,397 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { auctionService } from '@/services/auctionService';
-import { toast } from 'react-hot-toast';
-import { Clock, Filter, Search, RefreshCw } from 'lucide-react';
+import { Clock, Search, RefreshCw } from 'lucide-react';
 import NavigationUser from '@/components/Navigation/NavigationUser';
 import Footer from '@/components/Footer';
-import { SECTION_WIDTH } from '@/lib/constants';
 
-// Universal auction product interface
-interface AuctionProduct {
+// API Response Interfaces
+interface Seller {
   id: string;
+  companyName: string;
+  companyLogo?: string;
+  city: string;
+  state: string;
+  country: string;
+  sellerType: string;
+  isVerified: boolean;
+}
+
+interface GemsProduct {
+  id: number;
   name: string;
-  productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond';
-  price?: number;
-  basePrice?: number;
-  totalPrice?: number;
-  currentBid?: number;
+  gemsType: string;
+  subType: string;
+  composition: string;
+  qualityGrade: string;
+  quantity: number;
   image1?: string;
   image2?: string;
   image3?: string;
   image4?: string;
   image5?: string;
   image6?: string;
-  auctionId?: string;
-  auctionStartTime?: string;
-  auctionEndTime?: string;
-  isOnAuction?: boolean;
-  bidCount?: number;
-  highestBid?: number;
-  minimumBid?: number;
-  // Diamond specific
-  color?: string;
-  clarity?: string;
-  cut?: string;
-  shape?: string;
-  caratWeight?: string;
-  // Gemstone specific
-  stoneType?: string;
-  origin?: string;
-  treatment?: string;
-  // Jewelry specific
-  category?: string;
-  metalType?: string;
-  metalPurity?: string;
-  attributes?: any;
-  stones?: any[];
+  price: number;
+  carat: number;
+  shape: string;
+  color: string;
+  clarity: string;
+  origin: string;
+  cut: string;
+  dimension: string;
+  treatment: string;
 }
 
-// Enhanced CountdownTimer Component with theme colors
-const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
-  const [timeLeft, setTimeLeft] = useState<{
-    days: number;
-    hours: number;
-    minutes: number;
-    seconds: number;
-  }>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+interface JewelryProduct {
+  id: number;
+  name: string;
+  category: string;
+  subcategory: string;
+  collection: string;
+  gender: string;
+  occasion: string;
+  metalType: string;
+  metalPurity: string;
+  metalWeight: number;
+  basePrice: number;
+  makingCharge: number;
+  tax: number;
+  totalPrice: number;
+  attributes: any;
+  description: string;
+  image1?: string;
+  image2?: string;
+  image3?: string;
+  image4?: string;
+  image5?: string;
+  image6?: string;
+}
 
-  const [isExpired, setIsExpired] = useState(false);
+interface Bid {
+  id: number;
+  amount: number;
+  userId: string;
+  createdAt: string;
+}
+
+interface AuctionItem {
+  id: number;
+  productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond';
+  productId: number;
+  sellerId: string;
+  startTime: string;
+  endTime: string;
+  isActive: boolean;
+  isSold: boolean;
+  bids: Bid[];
+  seller: Seller;
+  product: GemsProduct | JewelryProduct;
+}
+
+// Minimalist countdown timer
+const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
+  const [timeLeft, setTimeLeft] = useState('');
 
   useEffect(() => {
-    const calculateTimeLeft = () => {
+    const timer = setInterval(() => {
       const now = new Date().getTime();
       const end = new Date(endTime).getTime();
-      const difference = end - now;
+      const diff = end - now;
 
-      if (difference <= 0) {
-        setIsExpired(true);
-        return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+      if (diff <= 0) {
+        setTimeLeft('Ended');
+        return;
       }
 
-      return {
-        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-        minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
-        seconds: Math.floor((difference % (1000 * 60)) / 1000)
-      };
-    };
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-    const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
+      if (days > 0) {
+        setTimeLeft(`${days}d ${hours}h`);
+      } else if (hours > 0) {
+        setTimeLeft(`${hours}h ${minutes}m`);
+      } else {
+        setTimeLeft(`${minutes}m`);
+      }
     }, 1000);
 
     return () => clearInterval(timer);
   }, [endTime]);
 
-  if (isExpired) {
-    return (
-      <div className="bg-destructive rounded-xl px-4 py-2 text-center shadow-lg backdrop-blur-sm">
-        <div className="flex items-center gap-2">
-          <span className="text-primary-foreground text-xs">⏰</span>
-          <span className="text-primary-foreground font-bold text-sm">Auction Ended</span>
-        </div>
-      </div>
-    );
-  }
-
-  const isUrgent = timeLeft.days === 0 && timeLeft.hours < 2;
-  const isCritical = timeLeft.days === 0 && timeLeft.hours < 1;
-
-  const getTimerStyle = () => {
-    if (isCritical) {
-      return 'bg-destructive animate-pulse';
-    } else if (isUrgent) {
-      return 'bg-chart-1';
-    } else {
-      return 'bg-primary';
-    }
-  };
-
-  const formatTime = () => {
-    if (timeLeft.days > 0) {
-      return `${timeLeft.days}d ${timeLeft.hours.toString().padStart(2, '0')}h`;
-    } else if (timeLeft.hours > 0) {
-      return `${timeLeft.hours.toString().padStart(2, '0')}h ${timeLeft.minutes.toString().padStart(2, '0')}m`;
-    } else {
-      return `${timeLeft.minutes.toString().padStart(2, '0')}m ${timeLeft.seconds.toString().padStart(2, '0')}s`;
-    }
-  };
-
   return (
-    <div className={`${getTimerStyle()} rounded-xl px-4 py-2 text-center shadow-lg backdrop-blur-sm border border-border`}>
-      <div className="flex items-center gap-2">
-        <span className="text-primary-foreground text-xs">{isCritical ? '🚨' : isUrgent ? '⚡' : '⏱️'}</span>
-        <div className="flex flex-col">
-          <span className="text-primary-foreground font-bold text-sm leading-tight">
-            {formatTime()}
-          </span>
-          <span className="text-primary-foreground/80 text-xs leading-tight">
-            {isCritical ? 'ENDING SOON!' : 'remaining'}
-          </span>
-        </div>
-      </div>
-    </div>
+    <span className="text-sm text-slate-600">
+      <Clock className="w-4 h-4 inline mr-1" />
+      {timeLeft}
+    </span>
   );
 };
 
-// Enhanced Auction Product Card with theme colors
-const AuctionProductCard: React.FC<{ product: AuctionProduct }> = ({ product }) => {
-  const displayImages = [
-    product.image1, product.image2, product.image3, 
-    product.image4, product.image5, product.image6
-  ].filter(Boolean);
+// Enhanced auction card with detailed information
+const AuctionCard: React.FC<{ auction: AuctionItem }> = ({ auction }) => {
+  const { product, bids, endTime, seller, productType } = auction;
   
-  const getPrice = () => {
-    return product.currentBid || product.highestBid || product.price || product.basePrice || product.totalPrice || 0;
-  };
-
-  const getProductTypeIcon = () => {
-    switch (product.productType) {
-      case 'diamond':
-      case 'meleeDiamond':
-        return '💎';
-      case 'gemstone':
-        return '💍';
-      case 'jewellery':
-        return '👑';
-      default:
-        return '💎';
+  // Get current bid (highest bid from bids array)
+  const currentBid = bids.length > 0 ? Math.max(...bids.map(bid => bid.amount)) : null;
+  
+  // Get display price based on product type
+  const getDisplayPrice = () => {
+    if (currentBid) return currentBid;
+    
+    if ('totalPrice' in product) {
+      return product.totalPrice || product.basePrice;
+    } else if ('price' in product) {
+      return product.price;
     }
+    return 0;
   };
-
-  const formatProductType = () => {
-    switch (product.productType) {
+  
+  const displayPrice = getDisplayPrice();
+  
+  const getProductTypeDisplay = () => {
+    switch (productType) {
       case 'meleeDiamond':
         return 'Melee Diamond';
       case 'jewellery':
         return 'Jewelry';
       default:
-        return product.productType.charAt(0).toUpperCase() + product.productType.slice(1);
+        return productType.charAt(0).toUpperCase() + productType.slice(1);
     }
   };
 
-  return (
-    <div className="group bg-card rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-border hover:border-chart-1 hover:-translate-y-1">
-      {/* Image Container with Overlay Elements */}
-      <div className="relative h-72 bg-gradient-to-br from-muted to-secondary overflow-hidden">
-        {/* Timer Badge - Top Left */}
-        {product.auctionEndTime && (
-          <div className="absolute top-4 left-4 z-20">
-            <CountdownTimer endTime={product.auctionEndTime} />
-          </div>
-        )}
+  // Check if product is gemstone type
+  const isGemstone = productType === 'gemstone';
+  const isJewelry = productType === 'jewellery';
 
-        {/* Product Type Badge - Top Right */}
-        <div className="absolute top-4 right-4 z-20">
-          <div className="bg-card/90 backdrop-blur-sm rounded-full px-3 py-1.5 border border-border shadow-sm">
-            <span className="text-xs font-medium text-foreground flex items-center gap-1">
-              <span className="text-sm">{getProductTypeIcon()}</span>
-              {formatProductType()}
-            </span>
-          </div>
+  return (
+    <div className="group bg-white rounded-lg border border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all duration-300">
+      {/* Image Section */}
+      <div className="relative aspect-[4/3] bg-slate-50 rounded-t-lg overflow-hidden">
+        {/* Timer Badge */}
+        <div className="absolute top-3 left-3 z-10 bg-white/90 backdrop-blur-sm rounded-md px-2 py-1 shadow-sm">
+          <CountdownTimer endTime={endTime} />
         </div>
 
-        {/* Bid Count Badge - Bottom Right */}
-        {(product.bidCount || 0) > 0 && (
-          <div className="absolute bottom-4 right-4 z-20">
-            <div className="bg-chart-1/90 backdrop-blur-sm rounded-full px-3 py-1.5 border border-chart-1 shadow-sm">
-              <span className="text-xs font-bold text-primary-foreground flex items-center gap-1">
-                🔥 {product.bidCount} bids
-              </span>
-            </div>
+        {/* Product Type Badge */}
+        <div className="absolute top-3 right-3 z-10 bg-slate-900/80 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-md">
+          {getProductTypeDisplay()}
+        </div>
+
+        {/* Bid Count Badge */}
+        {bids.length > 0 && (
+          <div className="absolute bottom-3 right-3 z-10 bg-green-500 text-white text-xs px-2 py-1 rounded-md font-medium">
+            {bids.length} bids
           </div>
         )}
 
         {/* Product Image */}
-        {displayImages.length > 0 ? (
-          <div className="relative w-full h-full group">
-            <img
-              src={displayImages[0]}
-              alt={product.name}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            />
-            {/* Gradient Overlay for Better Text Readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </div>
+        {product.image1 ? (
+          <img
+            src={product.image1}
+            alt={product.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-gradient-to-br from-muted to-secondary">
+          <div className="w-full h-full flex items-center justify-center text-slate-400">
             <div className="text-center">
-              <div className="text-6xl mb-3 opacity-50">🖼️</div>
-              <p className="text-sm font-medium">No Image Available</p>
+              <div className="text-5xl mb-2">💎</div>
+              <div className="text-sm">No Image</div>
             </div>
           </div>
         )}
+
+        {/* Gradient overlay for better text visibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       </div>
 
-      {/* Enhanced Product Info */}
-      <div className="p-6">
-        {/* Product Name */}
+      {/* Content Section */}
+      <div className="p-5">
+        {/* Header Section */}
         <div className="mb-4">
-          <h3 className="font-bold text-xl text-foreground mb-1 line-clamp-2 leading-tight group-hover:text-chart-1 transition-colors">
+          <h3 className="font-semibold text-slate-900 text-lg mb-1 line-clamp-2 group-hover:text-slate-700 transition-colors">
             {product.name}
           </h3>
           
-          {/* Product Specifications */}
-          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground mt-2">
-            {product.shape && (
-              <span className="bg-muted px-2 py-1 rounded-full">{product.shape}</span>
-            )}
-            {product.caratWeight && (
-              <span className="bg-muted px-2 py-1 rounded-full">{product.caratWeight} ct</span>
-            )}
-            {product.color && (
-              <span className="bg-muted px-2 py-1 rounded-full">Color: {product.color}</span>
-            )}
-            {product.clarity && (
-              <span className="bg-muted px-2 py-1 rounded-full">Clarity: {product.clarity}</span>
-            )}
+          {/* Product ID and Seller */}
+          <div className="text-xs text-slate-500 mb-2">
+            {/* <div>ID: {auction.id}</div> */}
+            <div>By: {seller.companyName}</div>
           </div>
         </div>
 
-        {/* Enhanced Price Information */}
-        <div className="space-y-3 mb-5">
-          {/* Current Bid - Most Prominent */}
-          {product.currentBid ? (
-            <div className="bg-gradient-to-r from-chart-1/10 to-chart-1/20 rounded-lg p-3 border border-chart-1/30">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-chart-1">Current Highest Bid</span>
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-chart-1">🔥</span>
-                  <span className="text-lg font-bold text-chart-1">
-                    ${product.currentBid.toLocaleString()}
-                  </span>
+        {/* Product Details Grid */}
+        <div className="mb-4 space-y-2">
+          {/* Gemstone Specifications */}
+          {isGemstone && 'shape' in product && (
+            <div className="bg-purple-50 rounded-lg p-3">
+              <div className="text-xs font-medium text-purple-700 mb-2">Gemstone Details</div>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span className="text-purple-600 text-xs">Type:</span>
+                  <div className="font-medium text-purple-900">{product.gemsType}</div>
                 </div>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-gradient-to-r from-chart-2/10 to-chart-2/20 rounded-lg p-3 border border-chart-2/30">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-chart-2">Starting Price</span>
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-chart-2">⭐</span>
-                  <span className="text-lg font-bold text-chart-2">
-                    ${getPrice().toLocaleString()}
-                  </span>
+                <div>
+                  <span className="text-purple-600 text-xs">Shape:</span>
+                  <div className="font-medium text-purple-900">{product.shape}</div>
+                </div>
+                <div>
+                  <span className="text-purple-600 text-xs">Carat:</span>
+                  <div className="font-medium text-purple-900">{product.carat} ct</div>
+                </div>
+                <div>
+                  <span className="text-purple-600 text-xs">Color:</span>
+                  <div className="font-medium text-purple-900">{product.color}</div>
+                </div>
+                <div>
+                  <span className="text-purple-600 text-xs">Clarity:</span>
+                  <div className="font-medium text-purple-900">{product.clarity}</div>
+                </div>
+                <div>
+                  <span className="text-purple-600 text-xs">Origin:</span>
+                  <div className="font-medium text-purple-900">{product.origin}</div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Additional Info Row */}
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-4">
-              <span className="text-muted-foreground flex items-center gap-1">
-                <span className="text-xs">💰</span>
-                Base: ${getPrice().toLocaleString()}
-              </span>
-              {product.minimumBid && (
-                <span className="text-muted-foreground flex items-center gap-1">
-                  <span className="text-xs">📊</span>
-                  Min: ${product.minimumBid.toLocaleString()}
-                </span>
-              )}
+          {/* Jewelry Specifications */}
+          {isJewelry && 'category' in product && (
+            <div className="bg-amber-50 rounded-lg p-3">
+              <div className="text-xs font-medium text-amber-700 mb-2">Jewelry Details</div>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span className="text-amber-600 text-xs">Category:</span>
+                  <div className="font-medium text-amber-900">{product.category}</div>
+                </div>
+                <div>
+                  <span className="text-amber-600 text-xs">Metal:</span>
+                  <div className="font-medium text-amber-900">{product.metalType}</div>
+                </div>
+                <div>
+                  <span className="text-amber-600 text-xs">Purity:</span>
+                  <div className="font-medium text-amber-900">{product.metalPurity}</div>
+                </div>
+                <div>
+                  <span className="text-amber-600 text-xs">Weight:</span>
+                  <div className="font-medium text-amber-900">{product.metalWeight}g</div>
+                </div>
+              </div>
             </div>
+          )}
+        </div>
+
+        {/* Pricing Section */}
+        <div className="mb-5">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
+            {currentBid ? (
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium text-blue-700">Current Bid</span>
+                  <div className="flex items-center text-green-600">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></div>
+                    <span className="text-xs">Live</span>
+                  </div>
+                </div>
+                <div className="text-2xl font-bold text-blue-900 mb-2">
+                  ${currentBid.toLocaleString()}
+                </div>
+                <div className="text-sm text-slate-600">
+                  Starting: ${('totalPrice' in product ? product.basePrice : product.price).toLocaleString()}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="text-sm font-medium text-blue-700 mb-1">Starting Price</div>
+                <div className="text-2xl font-bold text-blue-900">
+                  ${displayPrice.toLocaleString()}
+                </div>
+                {isJewelry && 'makingCharge' in product && (
+                  <div className="text-xs text-slate-600 mt-2">
+                    Base: ${product.basePrice.toLocaleString()} + Making: ${product.makingCharge.toLocaleString()}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Enhanced Action Buttons */}
-        <div className="flex flex-col gap-2">
-          <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg active:scale-95">
-            <span className="flex items-center justify-center gap-2">
-              <span>🎯</span>
-              Place Bid
-            </span>
+        {/* Auction Status */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center text-slate-600">
+              <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+              <span>{auction.isActive ? 'Active Auction' : 'Ended'}</span>
+            </div>
+            {bids.length > 0 && (
+              <span className="text-slate-600">
+                {bids.length} {bids.length === 1 ? 'bid' : 'bids'}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="space-y-2">
+          <button 
+            disabled={!auction.isActive}
+            className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 disabled:cursor-not-allowed text-white py-3 px-4 rounded-md font-semibold transition-colors duration-200 flex items-center justify-center gap-2"
+          >
+            <span>🎯</span>
+            {auction.isActive ? 'Place Bid' : 'Auction Ended'}
           </button>
-          
-          <button className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground font-semibold py-2.5 px-6 rounded-xl transition-all duration-300 border border-border hover:border-ring">
-            <span className="flex items-center justify-center gap-2">
-              <span>👁️</span>
+          <div className="flex gap-2">
+            <Link 
+              href={`/auctions/${auction.id}`}
+              className="flex-1 text-slate-600 hover:text-slate-900 hover:bg-slate-50 py-2 px-3 rounded-md text-sm transition-colors duration-200 border border-slate-200 text-center"
+            >
               View Details
-            </span>
-          </button>
+            </Link>
+            <button className="flex-1 text-slate-600 hover:text-slate-900 hover:bg-slate-50 py-2 px-3 rounded-md text-sm transition-colors duration-200 border border-slate-200">
+              Watch List
+            </button>
+          </div>
+        </div>
+
+        {/* Additional Info Footer */}
+        <div className="mt-4 pt-3 border-t border-slate-100">
+          <div className="flex items-center justify-between text-xs text-slate-500">
+            <span>Auction #{auction.id}</span>
+            <span>{seller.city}, {seller.state}</span>
+          </div>
         </div>
       </div>
-
-      {/* Premium Border Glow Effect on Hover */}
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/20 to-chart-1/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10 blur-xl"></div>
     </div>
   );
 };
 
-// Custom styles for animations with theme colors
-const customStyles = `
-  @keyframes fade-in {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .animate-fade-in {
-    animation: fade-in 0.6s ease-out forwards;
-    opacity: 0;
-  }
-  @keyframes shimmer {
-    0% { background-position: -200px 0; }
-    100% { background-position: calc(200px + 100%) 0; }
-  }
-  .shimmer {
-    background: linear-gradient(90deg, hsl(var(--muted)) 0px, hsl(var(--secondary)) 40px, hsl(var(--muted)) 80px);
-    background-size: 400px;
-    animation: shimmer 1.5s ease-in-out infinite;
-  }
-`;
-
 export default function AuctionsPage() {
-  const [auctions, setAuctions] = useState<AuctionProduct[]>([]);
+  const [auctions, setAuctions] = useState<AuctionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [activeFilter, setActiveFilter] = useState('diamond');
+  const [activeFilter, setActiveFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const limit = 12;
 
-  // Fetch auctions
-  const fetchAuctions = async (pageNum = 1, productType = '', search = '') => {
+  const fetchAuctions = async () => {
     try {
       setLoading(true);
       setError(null);
 
       const response = await auctionService.getLiveAuctions({
-        productType: productType as any,
-        page: pageNum,
-        limit,
-        sort: '-createdAt'
+        productType: activeFilter as any,
+        page: 1,
+        limit: 12
       });
+
+      console.log('API Response:', response); // Debug log
 
       if (response?.data?.data) {
         setAuctions(response.data.data);
-        
-        // Calculate total pages from response
-        const total = response.data.meta?.total || response.data.data.length;
-        setTotalPages(Math.ceil(total / limit));
       } else {
         setAuctions([]);
       }
     } catch (err: any) {
-      console.error('Error fetching auctions:', err);
       setError(err.message || 'Failed to load auctions');
       setAuctions([]);
     } finally {
@@ -382,248 +399,137 @@ export default function AuctionsPage() {
     }
   };
 
-  // Initial load
   useEffect(() => {
-    fetchAuctions(1, activeFilter, searchQuery);
-    setPage(1);
-  }, [activeFilter, searchQuery]);
+    fetchAuctions();
+  }, [activeFilter]);
 
-  // Handle page change
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-    fetchAuctions(newPage, activeFilter, searchQuery);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Handle filter changes
-  const handleFilterChange = (type: string) => {
-    setActiveFilter(type);
-  };
-
-  const handleRefresh = () => {
-    fetchAuctions(page, activeFilter, searchQuery);
-    toast.success('Auctions refreshed!');
-  };
-
-  const productTypes = [
-    { value: 'diamond', label: 'Diamonds', count: 0 },
-    { value: 'gemstone', label: 'Gemstones', count: 0 },
-    { value: 'jewellery', label: 'Jewelry', count: 0 }
+  const filters = [
+    { value: '', label: 'All' },
+    { value: 'diamond', label: 'Diamonds' },
+    { value: 'gemstone', label: 'Gemstones' },
+    { value: 'jewellery', label: 'Jewelry' }
   ];
 
   return (
     <>
       <NavigationUser />
-      <section className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 py-12`}>
-        <style jsx>{customStyles}</style>
-        
-        <div className="min-h-screen bg-background">
-          {/* Header Section */}
-          <div className="bg-card border-b border-border">
-            <div className="container mx-auto px-4 py-6">
-              <h1 className="text-3xl font-bold text-foreground mb-6">Featured Auctions</h1>
-              
-              {/* Filter Tabs */}
-              <div className="flex gap-2 mb-6">
-                {productTypes.map((type) => (
+      
+      <div className="min-h-screen bg-slate-50">
+        {/* Header */}
+        <div className="bg-white border-b border-slate-200">
+          <div className="max-w-6xl mx-auto px-4 py-8">
+            <h1 className="text-3xl font-light text-slate-900 mb-8">Live Auctions</h1>
+            
+            {/* Filters */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className="flex gap-2">
+                {filters.map((filter) => (
                   <button
-                    key={type.value}
-                    onClick={() => handleFilterChange(type.value)}
-                    className={`px-6 py-2 rounded-full font-medium transition-colors ${
-                      activeFilter === type.value
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                    key={filter.value}
+                    onClick={() => setActiveFilter(filter.value)}
+                    className={`px-4 py-2 text-sm rounded-md transition-colors ${
+                      activeFilter === filter.value
+                        ? 'bg-slate-900 text-white'
+                        : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    {type.label}
+                    {filter.label}
                   </button>
                 ))}
               </div>
+              
+              <button
+                onClick={fetchAuctions}
+                className="p-2 text-slate-600 hover:text-slate-900 transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </button>
+            </div>
 
-              {/* Search and Refresh */}
-              <div className="flex items-center gap-4 justify-between">
-                <div className="flex-1 max-w-md">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <input
-                      type="text"
-                      placeholder="Search auctions..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-ring outline-none"
-                    />
-                  </div>
-                </div>
-                
-                <button
-                  onClick={handleRefresh}
-                  className="flex items-center gap-2 px-4 py-2 bg-chart-2 text-primary-foreground rounded-lg hover:bg-chart-2/90 transition-colors"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  Refresh
-                </button>
+            {/* Search */}
+            <div className="max-w-md">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Search auctions..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-md focus:outline-none focus:border-slate-400"
+                />
               </div>
             </div>
           </div>
-
-          <div className="container mx-auto px-4 py-8">
-            {/* Enhanced Loading State with Skeleton Cards */}
-            {loading && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {Array.from({ length: 8 }).map((_, index) => (
-                  <div key={index} className="bg-card rounded-2xl shadow-lg overflow-hidden border border-border">
-                    {/* Skeleton Image */}
-                    <div className="h-72 bg-muted shimmer"></div>
-                    
-                    {/* Skeleton Content */}
-                    <div className="p-6 space-y-4">
-                      <div className="space-y-2">
-                        <div className="h-6 bg-muted rounded shimmer"></div>
-                        <div className="h-4 bg-muted rounded w-3/4 shimmer"></div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="h-12 bg-secondary rounded-lg shimmer"></div>
-                        <div className="flex gap-2">
-                          <div className="h-4 bg-muted rounded flex-1 shimmer"></div>
-                          <div className="h-4 bg-muted rounded flex-1 shimmer"></div>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="h-12 bg-muted rounded-xl shimmer"></div>
-                        <div className="h-10 bg-secondary rounded-xl shimmer"></div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Enhanced Error State */}
-            {error && !loading && (
-              <div className="text-center py-16">
-                <div className="bg-card rounded-2xl shadow-lg max-w-md mx-auto p-8 border border-destructive/20">
-                  <div className="text-6xl mb-4">😞</div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">Something went wrong</h3>
-                  <p className="text-destructive text-base mb-6 leading-relaxed">{error}</p>
-                  <button
-                    onClick={() => fetchAuctions(page, activeFilter, searchQuery)}
-                    className="px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
-                  >
-                    <span className="flex items-center gap-2">
-                      <RefreshCw className="w-4 h-4" />
-                      Try Again
-                    </span>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Enhanced Auctions Grid */}
-            {!loading && !error && auctions.length > 0 && (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 auto-rows-fr">
-                  {auctions.map((auction, index) => (
-                    <div 
-                      key={auction.id}
-                      className="animate-fade-in"
-                      style={{ animationDelay: `${index * 100}ms` }}
-                    >
-                      <AuctionProductCard product={auction} />
-                    </div>
-                  ))}
-                </div>
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="flex justify-center items-center gap-2 mt-8">
-                    <button
-                      onClick={() => handlePageChange(Math.max(1, page - 1))}
-                      disabled={page === 1}
-                      className="px-4 py-2 bg-card border border-border text-foreground rounded-lg hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Previous
-                    </button>
-                    
-                    <div className="flex gap-1">
-                      {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                        const pageNum = i + 1;
-                        return (
-                          <button
-                            key={pageNum}
-                            onClick={() => handlePageChange(pageNum)}
-                            className={`px-4 py-2 rounded-lg ${
-                              page === pageNum
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-card border border-border text-foreground hover:bg-muted'
-                            }`}
-                          >
-                            {pageNum}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <button
-                      onClick={() => handlePageChange(Math.min(totalPages, page + 1))}
-                      disabled={page === totalPages}
-                      className="px-4 py-2 bg-card border border-border text-foreground rounded-lg hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Next
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-
-            {/* Enhanced Empty State */}
-            {!loading && !error && auctions.length === 0 && (
-              <div className="text-center py-16">
-                <div className="bg-card rounded-2xl shadow-lg max-w-lg mx-auto p-12 border border-border">
-                  <div className="text-8xl mb-6">🔍</div>
-                  <h3 className="text-2xl font-bold text-foreground mb-3">No auctions found</h3>
-                  <p className="text-muted-foreground text-lg mb-2 leading-relaxed">
-                    {searchQuery 
-                      ? `No results for "${searchQuery}"`
-                      : activeFilter 
-                        ? `No ${activeFilter} auctions are currently active.`
-                        : 'Check back later for new auctions.'}
-                  </p>
-                  <p className="text-muted-foreground text-base mb-8">
-                    Be the first to know when new auctions go live!
-                  </p>
-                  
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <button
-                      onClick={() => {
-                        setSearchQuery('');
-                        setActiveFilter('diamond');
-                      }}
-                      className="px-6 py-3 bg-chart-2 hover:bg-chart-2/90 text-primary-foreground font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
-                    >
-                      <span className="flex items-center gap-2">
-                        <span>🔄</span>
-                        Clear Filters
-                      </span>
-                    </button>
-                    
-                    <button
-                      onClick={handleRefresh}
-                      className="px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
-                    >
-                      <span className="flex items-center gap-2">
-                        <RefreshCw className="w-4 h-4" />
-                        Refresh
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
-      </section>
+
+        {/* Content */}
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          {/* Loading */}
+          {loading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-lg border border-slate-200">
+                  <div className="aspect-square bg-slate-100 rounded-t-lg animate-pulse"></div>
+                  <div className="p-6 space-y-3">
+                    <div className="h-4 bg-slate-100 rounded animate-pulse"></div>
+                    <div className="h-6 bg-slate-100 rounded animate-pulse"></div>
+                    <div className="h-4 bg-slate-100 rounded animate-pulse w-2/3"></div>
+                    <div className="h-10 bg-slate-100 rounded animate-pulse"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Error */}
+          {error && !loading && (
+            <div className="text-center py-12">
+              <div className="text-slate-600 mb-4">{error}</div>
+              <button
+                onClick={fetchAuctions}
+                className="px-6 py-2 bg-slate-900 text-white rounded-md hover:bg-slate-800 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          )}
+
+          {/* Auctions Grid */}
+          {!loading && !error && auctions.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {auctions
+                .filter(auction => 
+                  !searchQuery || 
+                  auction.product.name.toLowerCase().includes(searchQuery.toLowerCase())
+                )
+                .map((auction) => (
+                  <AuctionCard key={auction.id} auction={auction} />
+                ))
+              }
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!loading && !error && auctions.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">🔍</div>
+              <h3 className="text-xl font-medium text-slate-900 mb-2">No auctions found</h3>
+              <p className="text-slate-600 mb-6">Check back later for new auctions</p>
+              <button
+                onClick={() => {
+                  setActiveFilter('');
+                  setSearchQuery('');
+                  fetchAuctions();
+                }}
+                className="px-6 py-2 bg-slate-900 text-white rounded-md hover:bg-slate-800 transition-colors"
+              >
+                Clear Filters
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
       <Footer />
     </>
   );

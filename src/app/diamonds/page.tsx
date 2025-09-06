@@ -5,8 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Search, Gem, Leaf, Sparkles, Filter } from 'lucide-react'
 import NavigationUser from '@/components/Navigation/NavigationUser'
 import Footer from '@/components/Footer'
+import { filterOptions } from '@/constants/filterOptions'
 
-// Basic search form interface
+// Comprehensive search form interface - matching DiamondFilters component
 interface DiamondSearchForm {
   diamondType: 'natural' | 'lab-grown'
   category: 'single' | 'melee'
@@ -19,60 +20,94 @@ interface DiamondSearchForm {
   certification: string[]
   fluorescence: string[]
   grownMethod: string[] // Added for lab-grown diamonds
+  
+  // Fancy color filters
+  isFancyColor: boolean
+  fancyColors: string[]
+  overtone: string[]
+  intensity: string[]
+
+  // Company and location filters
+  company: string[]
+  origin: string[]
+  location: string[]
 
   // Advanced filters (like RapNet/VDB)
   polish: string[]
   symmetry: string[]
+  finish: string[]
+  cutGrade: string[]
   tablePercent: { min: number; max: number }
   depthPercent: { min: number; max: number }
   girdle: string[]
   culet: string[]
-  location: string[]
   pricePerCarat: { min: number; max: number }
+  
+  // Measurement filters
   measurements: {
     length: { min: number; max: number }
     width: { min: number; max: number }
     depth: { min: number; max: number }
   }
+  ratio: { min: number; max: number }
+  
+  // Advanced proportion filters
+  crownAngle: { min: number; max: number }
+  crownHeight: { min: number; max: number }
+  pavilionAngle: { min: number; max: number }
+  pavilionDepth: { min: number; max: number }
+  gridleThickness: { min: string; max: string }
+  
+  // Additional filters from DiamondFilters component
+  diamondTypeAdvanced: string[] // Natural, CVD, HPHT
+  productType: string[] // Certified, Non-certified
 }
 
-// Shape options - Your actual industry shapes
+// Using comprehensive options from filterOptions
+const SHAPES = filterOptions.shapes
+const COLORS = filterOptions.whiteColors
+const CLARITIES = filterOptions.clarities
+const CUTS = filterOptions.cutGrades
+const CERTIFICATIONS = filterOptions.certifications
+const FLUORESCENCE_LEVELS = filterOptions.fluorescences
+const POLISH_SYMMETRY_OPTIONS = filterOptions.polish
+const GIRDLE_OPTIONS = filterOptions.gridleOptions.map(option => 
+  option.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+)
+const CULET_OPTIONS = filterOptions.culetSizeOptions.map(option => 
+  option.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+)
+const OVERTONE_OPTIONS = filterOptions.overTone
+const INTENSITY_OPTIONS = filterOptions.intensity
+const FINISH_OPTIONS = filterOptions.finish
+const COMPANY_OPTIONS = filterOptions.companies
+const LOCATION_OPTIONS = filterOptions.locations
+
+// Growth methods for lab-grown diamonds
+const GROWTH_METHODS = ['CVD', 'HPHT']
+
+// Advanced filter options (RapNet/VDB style)
+const GIRDLE_ORDER = [
+  "Extremely Thin",
+  "Very Thin", 
+  "Thin",
+  "Slightly Thin",
+  "Medium",
+  "Slightly Thick",
+  "Thick",
+  "Very Thick",
+  "Extremely Thick",
+]
+
+// Origin options
+const ORIGIN_OPTIONS = ['Natural', 'Lab-Grown', 'CVD', 'HPHT']
+
+// Product type options
+const PRODUCT_TYPE_OPTIONS = filterOptions.productType
+
+// Shape icons import
 import * as ShapeIcons from '@/../public/icons';
 import { SECTION_WIDTH } from '@/lib/constants'
-const SHAPES = [
-  "Round",
-  "Pear",
-  "Emerald",
-  "Oval",
-  "Heart",
-  "Marquise",
-  "Asscher",
-  "Cushion",
-  "Cushion modified",
-  "Cushion brilliant",
-  "Radiant",
-  "Princess",
-  "French",
-  "Trilliant",
-  "Euro cut",
-  "Old Miner",
-  "Briollette",
-  "Rose cut",
-  "Lozenge",
-  "Baguette",
-  "Tapered baguette",
-  "Half-moon",
-  "Flanders",
-  "Trapezoid",
-  "Bullet",
-  "Kite",
-  "Shield",
-  "Star cut",
-  "Pentagonal cut",
-  "Hexagonal cut",
-  "Octagonal cut",
-  "Portugeese cut"
-];
 
 const shapeIconMap: Record<string, React.ComponentType<any>> = {
   'Round': ShapeIcons.RoundIcon,
@@ -108,31 +143,144 @@ const shapeIconMap: Record<string, React.ComponentType<any>> = {
   'Octagonal cut': ShapeIcons.OctagonalIcon,
   'Portugeese cut': ShapeIcons.PortugeeseIcon,
   'Default': ShapeIcons.DefaultIcon
-};
+}
 
-// Color options
-const COLORS = ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M']
+// Fancy colors
+const FANCY_COLORS = [
+  { name: "Yellow", color: "#FFD700" },
+  { name: "Orange", color: "#FFA500" },
+  { name: "Blue", color: "#4169E1" },
+  { name: "Red", color: "#FF0000" },
+  { name: "Pink", color: "#FFB6C1" },
+  { name: "Green", color: "#50C878" },
+  { name: "olive", color: "#636B2F" },
+  { name: "Brown", color: "#8B4513" },
+  { name: "Purple", color: "#800080" },
+  {
+    name: "other",
+    color: "linear-gradient(#FF0000,#FFB6C1,#4169E1,#50C878,#FFD700)",
+  },
+]
 
-// Clarity options
-const CLARITIES = ['FL', 'IF', 'VVS1', 'VVS2', 'VS1', 'VS2', 'SI1', 'SI2', 'SI3', 'I1', 'I2', 'I3']
+// Range Selection Component for Color and Clarity
+interface RangeSelectFilterProps {
+  options: string[]
+  selected: string[]
+  onChange: (values: string[]) => void
+  layout?: 'grid' | 'horizontal'
+  gridCols?: string
+  label?: string
+}
 
-// Cut options
-const CUTS = ['Ideal', 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor']
+function RangeSelectFilter({ 
+  options, 
+  selected, 
+  onChange, 
+  layout = 'grid',
+  gridCols = 'grid-cols-4',
+  label = ''
+}: RangeSelectFilterProps) {
+  const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null)
 
-// Certification options
-const CERTIFICATIONS = ['GIA', 'IGI', 'GCAL', 'Gübelin', 'SSEF', 'AGS', 'EGL']
+  const handleItemClick = (option: string, index: number) => {
+    console.log('Clicked:', option, 'Index:', index, 'LastClicked:', lastClickedIndex)
+    console.log('Current selected:', selected)
+    
+    const isCurrentlySelected = selected.includes(option)
+    
+    // If clicking on a selected item, always do individual toggle (deselect it)
+    // This prevents range selection when trying to deselect individual items
+    if (isCurrentlySelected) {
+      const newSelected = selected.filter(v => v !== option)
+      console.log('Deselecting individual item:', option, 'New selected:', newSelected)
+      onChange(newSelected)
+      setLastClickedIndex(null) // Reset to prevent accidental range selection
+      return
+    }
+    
+    // Range selection logic - only when selecting (not deselecting) and have a previous click
+    if (lastClickedIndex !== null && lastClickedIndex !== index && !isCurrentlySelected) {
+      const startIndex = Math.min(lastClickedIndex, index)
+      const endIndex = Math.max(lastClickedIndex, index)
+      const rangeItems = options.slice(startIndex, endIndex + 1)
+      
+      console.log('Range selection - items:', rangeItems)
+      
+      // Always select the entire range (no deselection of ranges)
+      const newSelected = [...new Set([...selected, ...rangeItems])]
+      console.log('Selecting range, new selected:', newSelected)
+      onChange(newSelected)
+      
+      setLastClickedIndex(null) // Reset after range selection
+    } else {
+      // Single item selection (not deselection - that's handled above)
+      if (!isCurrentlySelected) {
+        const newSelected = [...selected, option]
+        console.log('Selecting single item, new selected:', newSelected)
+        onChange(newSelected)
+        setLastClickedIndex(index) // Set as potential range start
+      }
+    }
+  }
 
-// Fluorescence options
-const FLUORESCENCE_LEVELS = ['None', 'Faint', 'Medium', 'Strong', 'Very Strong']
+  return (
+    <div className="space-y-3">
+      {/* Instructions */}
+      <div className="text-xs p-3 rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
+        💡 <strong>Range Selection:</strong> Click two unselected {label.toLowerCase()} to select all items in between. Click any selected item to deselect it individually.
+      </div>
 
-// Growth methods for lab-grown diamonds
-const GROWTH_METHODS = ['CVD', 'HPHT']
-
-// Advanced filter options (RapNet/VDB style)
-const POLISH_SYMMETRY_OPTIONS = ['Excellent', 'Very Good', 'Good', 'Fair', 'Poor']
-const GIRDLE_OPTIONS = ['Thin', 'Medium', 'Thick', 'Very Thin', 'Very Thick', 'Extremely Thin', 'Extremely Thick']
-const CULET_OPTIONS = ['None', 'Very Small', 'Small', 'Medium', 'Large', 'Very Large']
-const LOCATIONS = ['New York', 'Antwerp', 'Mumbai', 'Tel Aviv', 'Hong Kong', 'Bangkok', 'Dubai', 'Surat', 'Los Angeles', 'Las Vegas']
+      {/* Selected Count & Clear */}
+      {selected.length > 0 && (
+        <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
+          <span className="text-sm font-medium text-green-800">
+            {selected.length} {label.toLowerCase()} selected: <strong>{selected.join(', ')}</strong>
+          </span>
+          <button
+            onClick={() => {
+              onChange([])
+              setLastClickedIndex(null)
+            }}
+            className="text-xs underline hover:no-underline transition-all text-green-600 font-medium"
+          >
+            Clear all
+          </button>
+        </div>
+      )}
+      
+      {/* Options */}
+      <div className={`${layout === 'grid' ? `grid ${gridCols} gap-2` : 'flex flex-wrap gap-2'}`}>
+        {options.map((option, index) => {
+          const isSelected = selected.includes(option)
+          const isLastClicked = lastClickedIndex === index
+          
+          return (
+            <button
+              key={option}
+              onClick={() => handleItemClick(option, index)}
+              className={`
+                p-3 rounded-lg border-2 text-sm font-medium transition-all duration-150
+                ${isSelected 
+                  ? 'border-blue-500 bg-blue-100 text-blue-800 shadow-md transform scale-105' 
+                  : 'border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:bg-blue-50'
+                }
+                ${isLastClicked ? 'ring-2 ring-yellow-400 ring-opacity-60' : ''}
+              `}
+              style={{
+                backgroundColor: isSelected ? '#dbeafe' : '#ffffff',
+                borderColor: isSelected ? '#3b82f6' : '#d1d5db',
+                color: isSelected ? '#1e40af' : '#374151',
+                boxShadow: isLastClicked ? '0 0 0 2px rgba(251, 191, 36, 0.6)' : isSelected ? '0 4px 12px rgba(59, 130, 246, 0.2)' : 'none'
+              }}
+            >
+              {option}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 
 export default function DiamondsSearchPage() {
   const router = useRouter()
@@ -177,20 +325,46 @@ export default function DiamondsSearchPage() {
     fluorescence: [],
     grownMethod: [],
 
+    // Fancy color filters
+    isFancyColor: false,
+    fancyColors: [],
+    overtone: [],
+    intensity: [],
+
+    // Company and location filters
+    company: [],
+    origin: [],
+    location: [],
+
     // Advanced filters
     polish: [],
     symmetry: [],
+    finish: [],
+    cutGrade: [],
     tablePercent: { min: 50, max: 70 },
     depthPercent: { min: 55, max: 75 },
     girdle: [],
     culet: [],
-    location: [],
     pricePerCarat: { min: 500, max: 50000 },
+    
+    // Measurement filters
     measurements: {
       length: { min: 0, max: 20 },
       width: { min: 0, max: 20 },
       depth: { min: 0, max: 15 }
-    }
+    },
+    ratio: { min: 0.9, max: 2.5 },
+    
+    // Advanced proportion filters
+    crownAngle: { min: 30, max: 36 },
+    crownHeight: { min: 10, max: 16 },
+    pavilionAngle: { min: 40, max: 42 },
+    pavilionDepth: { min: 42, max: 44 },
+    gridleThickness: { min: '', max: '' },
+    
+    // Additional filters from DiamondFilters component
+    diamondTypeAdvanced: [], // Natural, CVD, HPHT
+    productType: [] // Certified, Non-certified
   })
 
   // Add effect to update state when URL parameters change
@@ -234,7 +408,7 @@ export default function DiamondsSearchPage() {
     }))
   }
 
-  const handleMultiSelect = (field: keyof Pick<DiamondSearchForm, 'shape' | 'color' | 'clarity' | 'cut' | 'certification' | 'fluorescence' | 'grownMethod' | 'polish' | 'symmetry' | 'girdle' | 'culet' | 'location'>, value: string) => {
+  const handleMultiSelect = (field: keyof Pick<DiamondSearchForm, 'shape' | 'color' | 'clarity' | 'cut' | 'certification' | 'fluorescence' | 'grownMethod' | 'polish' | 'symmetry' | 'girdle' | 'culet' | 'location' | 'fancyColors' | 'overtone' | 'intensity' | 'company' | 'origin' | 'finish' | 'cutGrade' | 'diamondTypeAdvanced' | 'productType'>, value: string) => {
     setSearchForm(prev => ({
       ...prev,
       [field]: prev[field].includes(value)
@@ -243,7 +417,7 @@ export default function DiamondsSearchPage() {
     }))
   }
 
-  const handleRangeChange = (field: 'tablePercent' | 'depthPercent' | 'pricePerCarat', type: 'min' | 'max', value: number) => {
+  const handleRangeChange = (field: 'tablePercent' | 'depthPercent' | 'pricePerCarat' | 'ratio' | 'crownAngle' | 'crownHeight' | 'pavilionAngle' | 'pavilionDepth', type: 'min' | 'max', value: number) => {
     setSearchForm(prev => ({
       ...prev,
       [field]: {
@@ -266,6 +440,23 @@ export default function DiamondsSearchPage() {
     }))
   }
 
+  const handleAddCompanyOrLocation = (field: 'company' | 'origin', value: string) => {
+    if (!value.trim()) return
+    setSearchForm(prev => ({
+      ...prev,
+      [field]: prev[field].includes(value.trim()) 
+        ? prev[field] 
+        : [...prev[field], value.trim()]
+    }))
+  }
+
+  const handleRemoveCompanyOrLocation = (field: 'company' | 'origin', value: string) => {
+    setSearchForm(prev => ({
+      ...prev,
+      [field]: prev[field].filter(item => item !== value)
+    }))
+  }
+
   const handleSearch = () => {
     // Build query parameters
     const params = new URLSearchParams()
@@ -279,12 +470,30 @@ export default function DiamondsSearchPage() {
     if (searchForm.fluorescence.length > 0) params.set('fluorescence', searchForm.fluorescence.join(','))
     if (searchForm.grownMethod.length > 0) params.set('grownMethod', searchForm.grownMethod.join(','))
 
+    // Add fancy color parameters
+    if (searchForm.isFancyColor) {
+      params.set('isFancyColor', 'true')
+      if (searchForm.fancyColors.length > 0) params.set('fancyColors', searchForm.fancyColors.join(','))
+      if (searchForm.overtone.length > 0) params.set('overtone', searchForm.overtone.join(','))
+      if (searchForm.intensity.length > 0) params.set('intensity', searchForm.intensity.join(','))
+    }
+
+    // Add company and origin parameters
+    if (searchForm.company.length > 0) params.set('company', searchForm.company.join(','))
+    if (searchForm.origin.length > 0) params.set('origin', searchForm.origin.join(','))
+    if (searchForm.location.length > 0) params.set('location', searchForm.location.join(','))
+
     // Add advanced filter parameters
     if (searchForm.polish.length > 0) params.set('polish', searchForm.polish.join(','))
     if (searchForm.symmetry.length > 0) params.set('symmetry', searchForm.symmetry.join(','))
+    if (searchForm.finish.length > 0) params.set('finish', searchForm.finish.join(','))
+    if (searchForm.cutGrade.length > 0) params.set('cutGrade', searchForm.cutGrade.join(','))
     if (searchForm.girdle.length > 0) params.set('girdle', searchForm.girdle.join(','))
     if (searchForm.culet.length > 0) params.set('culet', searchForm.culet.join(','))
-    if (searchForm.location.length > 0) params.set('location', searchForm.location.join(','))
+    
+    // Add new comprehensive filter parameters
+    if (searchForm.diamondTypeAdvanced.length > 0) params.set('diamondTypeAdvanced', searchForm.diamondTypeAdvanced.join(','))
+    if (searchForm.productType.length > 0) params.set('productType', searchForm.productType.join(','))
 
     // Add range parameters
     params.set('caratMin', searchForm.caratWeight.min.toString())
@@ -305,6 +514,24 @@ export default function DiamondsSearchPage() {
     params.set('widthMax', searchForm.measurements.width.max.toString())
     params.set('depthSizeMin', searchForm.measurements.depth.min.toString())
     params.set('depthSizeMax', searchForm.measurements.depth.max.toString())
+    
+    // Add ratio parameters
+    params.set('ratioMin', searchForm.ratio.min.toString())
+    params.set('ratioMax', searchForm.ratio.max.toString())
+
+    // Add advanced proportion parameters
+    params.set('crownAngleMin', searchForm.crownAngle.min.toString())
+    params.set('crownAngleMax', searchForm.crownAngle.max.toString())
+    params.set('crownHeightMin', searchForm.crownHeight.min.toString())
+    params.set('crownHeightMax', searchForm.crownHeight.max.toString())
+    params.set('pavilionAngleMin', searchForm.pavilionAngle.min.toString())
+    params.set('pavilionAngleMax', searchForm.pavilionAngle.max.toString())
+    params.set('pavilionDepthMin', searchForm.pavilionDepth.min.toString())
+    params.set('pavilionDepthMax', searchForm.pavilionDepth.max.toString())
+
+    // Add girdle thickness parameters
+    if (searchForm.gridleThickness.min) params.set('gridleThicknessMin', searchForm.gridleThickness.min)
+    if (searchForm.gridleThickness.max) params.set('gridleThicknessMax', searchForm.gridleThickness.max)
 
     // Navigate to results page
     const resultsUrl = `/diamonds/${searchForm.diamondType}/${searchForm.category}?${params.toString()}`
@@ -324,21 +551,51 @@ export default function DiamondsSearchPage() {
       certification: [],
       fluorescence: [],
       grownMethod: [],
+      
+      // Fancy color filters
+      isFancyColor: false,
+      fancyColors: [],
+      overtone: [],
+      intensity: [],
+
+      // Company and location filters
+      company: [],
+      origin: [],
+      location: [],
+
+      // Advanced filters
       polish: [],
       symmetry: [],
+      finish: [],
+      cutGrade: [],
       girdle: [],
       culet: [],
-      location: [],
+      
+      // New comprehensive filters
+      diamondTypeAdvanced: [],
+      productType: [],
+      
+      // Reset ranges
       caratWeight: newCaratRange,
       priceRange: newPriceRange,
       tablePercent: { min: 50, max: 70 },
       depthPercent: { min: 55, max: 75 },
       pricePerCarat: { min: 500, max: 50000 },
+      
+      // Measurement filters
       measurements: {
         length: { min: 0, max: 20 },
         width: { min: 0, max: 20 },
         depth: { min: 0, max: 15 }
-      }
+      },
+      ratio: { min: 0.9, max: 2.5 },
+      
+      // Advanced proportion filters
+      crownAngle: { min: 30, max: 36 },
+      crownHeight: { min: 10, max: 16 },
+      pavilionAngle: { min: 40, max: 42 },
+      pavilionDepth: { min: 42, max: 44 },
+      gridleThickness: { min: '', max: '' }
     })
   }
 
@@ -606,30 +863,154 @@ export default function DiamondsSearchPage() {
               </div>
             </div>
 
-            {/* Color */}
+            {/* Color - Enhanced with Fancy Color Toggle */}
             <div>
               <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
                 Color
               </label>
-              <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
-                {COLORS.map(color => (
+              
+              {/* Color Type Toggle */}
+              <div className="mb-4">
+                <div className="inline-flex rounded-lg bg-gray-100 dark:bg-slate-800 p-0.5">
                   <button
-                    key={color}
-                    onClick={() => handleMultiSelect('color', color)}
-                    className={`p-3 rounded-lg border text-sm font-medium transition-all ${searchForm.color.includes(color)
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 hover:border-gray-300'
+                    onClick={() => setSearchForm(prev => ({
+                      ...prev,
+                      isFancyColor: false,
+                      color: [],
+                      fancyColors: [],
+                      overtone: [],
+                      intensity: []
+                    }))}
+                    className={`px-4 py-1.5 text-sm rounded-md transition-all cursor-pointer
+                      ${!searchForm.isFancyColor
+                        ? "bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm font-medium"
+                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                       }`}
                     style={{
-                      backgroundColor: searchForm.color.includes(color) ? 'var(--primary)/10' : 'var(--card)',
-                      borderColor: searchForm.color.includes(color) ? 'var(--primary)' : 'var(--border)',
-                      color: searchForm.color.includes(color) ? 'var(--primary)' : 'var(--foreground)'
+                      backgroundColor: !searchForm.isFancyColor ? 'var(--card)' : 'transparent',
+                      color: !searchForm.isFancyColor ? 'var(--foreground)' : 'var(--muted-foreground)'
                     }}
                   >
-                    {color}
+                    Standard
                   </button>
-                ))}
+                  <button
+                    onClick={() => setSearchForm(prev => ({
+                      ...prev,
+                      isFancyColor: true,
+                      color: [],
+                      fancyColors: [],
+                      overtone: [],
+                      intensity: []
+                    }))}
+                    className={`px-4 py-1.5 text-sm rounded-md transition-all cursor-pointer
+                      ${searchForm.isFancyColor
+                        ? "bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm font-medium"
+                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                      }`}
+                    style={{
+                      backgroundColor: searchForm.isFancyColor ? 'var(--card)' : 'transparent',
+                      color: searchForm.isFancyColor ? 'var(--foreground)' : 'var(--muted-foreground)'
+                    }}
+                  >
+                    Fancy
+                  </button>
+                </div>
               </div>
+
+              {searchForm.isFancyColor ? (
+                <div className="space-y-4">
+                  {/* Fancy Colors */}
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                    {FANCY_COLORS.map((fancyColor) => (
+                      <button
+                        key={fancyColor.name}
+                        onClick={() => handleMultiSelect("fancyColors", fancyColor.name)}
+                        className={`relative py-3 px-4 rounded-xl transition-all duration-200 border
+                          ${searchForm.fancyColors?.includes(fancyColor.name)
+                            ? "border-amber-500 shadow-lg transform scale-105"
+                            : "border-gray-200 hover:border-amber-300"
+                          }`}
+                        style={{
+                          backgroundColor: searchForm.fancyColors?.includes(fancyColor.name) ? 'var(--primary)/10' : 'var(--card)',
+                          borderColor: searchForm.fancyColors?.includes(fancyColor.name) ? 'var(--primary)' : 'var(--border)'
+                        }}
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          <div
+                            className="w-4 h-4 rounded-full border"
+                            style={{ backgroundColor: fancyColor.color }}
+                          />
+                          <span className={`text-sm ${searchForm.fancyColors?.includes(fancyColor.name) ? "font-semibold" : ""}`}
+                            style={{ color: 'var(--foreground)' }}>
+                            {fancyColor.name}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Overtone */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
+                      Overtone
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {OVERTONE_OPTIONS.map(overtone => (
+                        <button
+                          key={overtone}
+                          onClick={() => handleMultiSelect('overtone', overtone)}
+                          className={`p-2 rounded-lg border text-xs font-medium transition-all ${searchForm.overtone.includes(overtone)
+                              ? 'border-orange-500 bg-orange-50 text-orange-700'
+                              : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                          style={{
+                            backgroundColor: searchForm.overtone.includes(overtone) ? 'var(--chart-4)/10' : 'var(--card)',
+                            borderColor: searchForm.overtone.includes(overtone) ? 'var(--chart-4)' : 'var(--border)',
+                            color: searchForm.overtone.includes(overtone) ? 'var(--chart-4)' : 'var(--foreground)'
+                          }}
+                        >
+                          {overtone}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Intensity */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>
+                      Intensity
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {INTENSITY_OPTIONS.map(intensity => (
+                        <button
+                          key={intensity}
+                          onClick={() => handleMultiSelect('intensity', intensity)}
+                          className={`p-2 rounded-lg border text-xs font-medium transition-all ${searchForm.intensity.includes(intensity)
+                              ? 'border-red-500 bg-red-50 text-red-700'
+                              : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                          style={{
+                            backgroundColor: searchForm.intensity.includes(intensity) ? 'var(--chart-5)/10' : 'var(--card)',
+                            borderColor: searchForm.intensity.includes(intensity) ? 'var(--chart-5)' : 'var(--border)',
+                            color: searchForm.intensity.includes(intensity) ? 'var(--chart-5)' : 'var(--foreground)'
+                          }}
+                        >
+                          {intensity}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <RangeSelectFilter
+                  options={COLORS}
+                  selected={searchForm.color}
+                  onChange={(values) => setSearchForm(prev => ({ ...prev, color: values }))}
+                  layout="grid"
+                  gridCols="grid-cols-5 md:grid-cols-10"
+                  label="Colors"
+                />
+              )}
             </div>
 
             {/* Clarity */}
@@ -637,28 +1018,100 @@ export default function DiamondsSearchPage() {
               <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
                 Clarity
               </label>
-              <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
-                {CLARITIES.map(clarity => (
+              <RangeSelectFilter
+                options={CLARITIES}
+                selected={searchForm.clarity}
+                onChange={(values) => setSearchForm(prev => ({ ...prev, clarity: values }))}
+                layout="grid"
+                gridCols="grid-cols-4 md:grid-cols-8"
+                label="Clarity"
+              />
+            </div>
+
+            {/* Cut Grade */}
+            <div>
+              <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
+                Cut Grade
+              </label>
+              <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
+                {CUTS.map(cut => (
                   <button
-                    key={clarity}
-                    onClick={() => handleMultiSelect('clarity', clarity)}
-                    className={`p-3 rounded-lg border text-sm font-medium transition-all ${searchForm.clarity.includes(clarity)
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    key={cut}
+                    onClick={() => handleMultiSelect('cutGrade', cut)}
+                    className={`p-3 rounded-lg border text-sm font-medium transition-all ${searchForm.cutGrade.includes(cut)
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
                         : 'border-gray-200 hover:border-gray-300'
                       }`}
                     style={{
-                      backgroundColor: searchForm.clarity.includes(clarity) ? 'var(--primary)/10' : 'var(--card)',
-                      borderColor: searchForm.clarity.includes(clarity) ? 'var(--primary)' : 'var(--border)',
-                      color: searchForm.clarity.includes(clarity) ? 'var(--primary)' : 'var(--foreground)'
+                      backgroundColor: searchForm.cutGrade.includes(cut) ? 'var(--chart-2)/10' : 'var(--card)',
+                      borderColor: searchForm.cutGrade.includes(cut) ? 'var(--chart-2)' : 'var(--border)',
+                      color: searchForm.cutGrade.includes(cut) ? 'var(--chart-2)' : 'var(--foreground)'
                     }}
                   >
-                    {clarity}
+                    {cut}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Fluorescence */}
+            {/* Finish */}
+            <div>
+              <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
+                Finish (Quick Select)
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {FINISH_OPTIONS.map(finish => (
+                  <button
+                    key={finish}
+                    onClick={() => handleMultiSelect('finish', finish)}
+                    className={`p-4 rounded-lg border-2 text-sm font-medium transition-all duration-200 hover:shadow-md ${searchForm.finish.includes(finish)
+                        ? 'border-indigo-500 bg-indigo-50 transform scale-105'
+                        : 'border-gray-200 hover:border-indigo-300'
+                      }`}
+                    style={{
+                      backgroundColor: searchForm.finish.includes(finish) ? 'var(--chart-1)/10' : 'var(--card)',
+                      borderColor: searchForm.finish.includes(finish) ? 'var(--chart-1)' : 'var(--border)',
+                      color: searchForm.finish.includes(finish) ? 'var(--chart-1)' : 'var(--foreground)',
+                      boxShadow: searchForm.finish.includes(finish) ? '0 4px 12px var(--chart-1)/20' : 'none'
+                    }}
+                  >
+                    <div className="font-bold text-lg">{finish}</div>
+                    <div className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
+                      {finish === '3X' ? 'Triple Excellent' : 
+                       finish === 'EX-' ? 'Excellent to Very Good' :
+                       finish === 'VG+' ? 'Very Good+' : 'Very Good to Good'}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Certification */}
+            <div>
+              <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
+                Certification
+              </label>
+              <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+                {CERTIFICATIONS.map(cert => (
+                  <button
+                    key={cert}
+                    onClick={() => handleMultiSelect('certification', cert)}
+                    className={`p-3 rounded-lg border text-sm font-medium transition-all ${searchForm.certification.includes(cert)
+                        ? 'border-yellow-500 bg-yellow-50 text-yellow-700'
+                        : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    style={{
+                      backgroundColor: searchForm.certification.includes(cert) ? 'var(--primary)/10' : 'var(--card)',
+                      borderColor: searchForm.certification.includes(cert) ? 'var(--primary)' : 'var(--border)',
+                      color: searchForm.certification.includes(cert) ? 'var(--primary)' : 'var(--foreground)'
+                    }}
+                  >
+                    {cert}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
             <div>
               <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
                 Fluorescence
@@ -823,6 +1276,73 @@ export default function DiamondsSearchPage() {
                             }}
                           >
                             {symmetry}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Diamond Type and Product Type Section */}
+                <div className="space-y-6">
+                  <div className="flex items-center space-x-3 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
+                    <h4 className="font-semibold text-lg" style={{ color: 'var(--foreground)' }}>Diamond Classification</h4>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <label className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Diamond Type</label>
+                        <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: 'var(--chart-1)/10', color: 'var(--chart-1)' }}>
+                          Origin & Process
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        {filterOptions.diamondType.map(type => (
+                          <button
+                            key={type}
+                            onClick={() => handleMultiSelect('diamondTypeAdvanced', type)}
+                            className={`p-3 rounded-lg border-2 text-sm font-medium transition-all duration-200 hover:shadow-md ${searchForm.diamondTypeAdvanced.includes(type)
+                                ? 'transform scale-105'
+                                : 'hover:scale-102'
+                              }`}
+                            style={{
+                              backgroundColor: searchForm.diamondTypeAdvanced.includes(type) ? 'var(--chart-1)/10' : 'var(--card)',
+                              borderColor: searchForm.diamondTypeAdvanced.includes(type) ? 'var(--chart-1)' : 'var(--border)',
+                              color: searchForm.diamondTypeAdvanced.includes(type) ? 'var(--chart-1)' : 'var(--foreground)',
+                              boxShadow: searchForm.diamondTypeAdvanced.includes(type) ? '0 4px 12px var(--chart-1)/20' : 'none'
+                            }}
+                          >
+                            {type}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <label className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Product Type</label>
+                        <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: 'var(--chart-2)/10', color: 'var(--chart-2)' }}>
+                          Certification Status
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        {filterOptions.productType.map(prodType => (
+                          <button
+                            key={prodType}
+                            onClick={() => handleMultiSelect('productType', prodType)}
+                            className={`p-3 rounded-lg border-2 text-sm font-medium transition-all duration-200 hover:shadow-md ${searchForm.productType.includes(prodType)
+                                ? 'transform scale-105'
+                                : 'hover:scale-102'
+                              }`}
+                            style={{
+                              backgroundColor: searchForm.productType.includes(prodType) ? 'var(--chart-2)/10' : 'var(--card)',
+                              borderColor: searchForm.productType.includes(prodType) ? 'var(--chart-2)' : 'var(--border)',
+                              color: searchForm.productType.includes(prodType) ? 'var(--chart-2)' : 'var(--foreground)',
+                              boxShadow: searchForm.productType.includes(prodType) ? '0 4px 12px var(--chart-2)/20' : 'none'
+                            }}
+                          >
+                            {prodType}
                           </button>
                         ))}
                       </div>
@@ -1006,6 +1526,93 @@ export default function DiamondsSearchPage() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Girdle Thickness Range Selector */}
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-lg border" style={{ backgroundColor: 'var(--muted)/20', borderColor: 'var(--border)' }}>
+                      <div className="flex items-center justify-between mb-3">
+                        <label className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Girdle Thickness Range</label>
+                        {searchForm.gridleThickness.min && searchForm.gridleThickness.max && (
+                          <span className="text-sm font-bold px-3 py-1 rounded-full" style={{
+                            backgroundColor: 'var(--primary)/10',
+                            color: 'var(--primary)'
+                          }}>
+                            {searchForm.gridleThickness.min} to {searchForm.gridleThickness.max}
+                          </span>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs mb-1 font-medium" style={{ color: 'var(--muted-foreground)' }}>Minimum</label>
+                          <select
+                            value={searchForm.gridleThickness.min}
+                            onChange={(e) => {
+                              const minValue = e.target.value
+                              let maxValue = searchForm.gridleThickness.max || GIRDLE_ORDER[GIRDLE_ORDER.length - 1]
+                              
+                              const minIndex = GIRDLE_ORDER.indexOf(minValue)
+                              const maxIndex = GIRDLE_ORDER.indexOf(maxValue)
+                              
+                              if (minIndex > maxIndex) {
+                                maxValue = minValue
+                              }
+                              
+                              setSearchForm(prev => ({
+                                ...prev,
+                                gridleThickness: {
+                                  min: minValue,
+                                  max: maxValue
+                                }
+                              }))
+                            }}
+                            className="w-full p-2 border rounded-lg text-sm"
+                            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                          >
+                            <option value="">Select minimum</option>
+                            {GIRDLE_ORDER.map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs mb-1 font-medium" style={{ color: 'var(--muted-foreground)' }}>Maximum</label>
+                          <select
+                            value={searchForm.gridleThickness.max}
+                            onChange={(e) => {
+                              setSearchForm(prev => ({
+                                ...prev,
+                                gridleThickness: {
+                                  ...prev.gridleThickness,
+                                  max: e.target.value
+                                }
+                              }))
+                            }}
+                            className="w-full p-2 border rounded-lg text-sm"
+                            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                          >
+                            <option value="">Select maximum</option>
+                            {GIRDLE_ORDER.map((option) => {
+                              const minIndex = searchForm.gridleThickness.min
+                                ? GIRDLE_ORDER.indexOf(searchForm.gridleThickness.min)
+                                : 0
+                              const optionIndex = GIRDLE_ORDER.indexOf(option)
+                              
+                              if (optionIndex >= minIndex) {
+                                return (
+                                  <option key={option} value={option}>
+                                    {option}
+                                  </option>
+                                )
+                              }
+                              return null
+                            })}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Market Information Section */}
@@ -1024,7 +1631,7 @@ export default function DiamondsSearchPage() {
                       </span>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {LOCATIONS.map(location => (
+                      {LOCATION_OPTIONS.map(location => (
                         <button
                           key={location}
                           onClick={() => handleMultiSelect('location', location)}
@@ -1153,6 +1760,469 @@ export default function DiamondsSearchPage() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                </div>
+
+                {/* Company and Origin Information Section */}
+                <div className="space-y-6">
+                  <div className="flex items-center space-x-3 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
+                    <h4 className="font-semibold text-lg" style={{ color: 'var(--foreground)' }}>Company & Origin Information</h4>
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-6">
+                    {/* Company Name with Search */}
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <label className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Company Name</label>
+                        <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: 'var(--chart-2)/10', color: 'var(--chart-2)' }}>
+                          Supplier
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          placeholder="Enter company name and press Enter"
+                          className="w-full p-3 border rounded-lg font-medium"
+                          style={{
+                            backgroundColor: 'var(--card)',
+                            borderColor: 'var(--border)',
+                            color: 'var(--foreground)'
+                          }}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              const value = (e.target as HTMLInputElement).value.trim()
+                              if (value && !searchForm.company.includes(value)) {
+                                handleAddCompanyOrLocation('company', value)
+                                ;(e.target as HTMLInputElement).value = ''
+                              }
+                            }
+                          }}
+                        />
+                        <div className="flex flex-wrap gap-2">
+                          {searchForm.company.map((company, index) => (
+                            <span
+                              key={index}
+                              className="inline-flex items-center px-3 py-1 rounded-full text-sm"
+                              style={{
+                                backgroundColor: 'var(--chart-2)/10',
+                                color: 'var(--chart-2)',
+                                border: '1px solid var(--chart-2)'
+                              }}
+                            >
+                              {company}
+                              <button
+                                type="button"
+                                className="ml-2 text-xs hover:text-red-500"
+                                onClick={() => handleRemoveCompanyOrLocation('company', company)}
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Vendor's Location with Search */}
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <label className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Vendor's Location</label>
+                        <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: 'var(--chart-3)/10', color: 'var(--chart-3)' }}>
+                          Trading Center
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          placeholder="Enter location and press Enter"
+                          className="w-full p-3 border rounded-lg font-medium"
+                          style={{
+                            backgroundColor: 'var(--card)',
+                            borderColor: 'var(--border)',
+                            color: 'var(--foreground)'
+                          }}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              const value = (e.target as HTMLInputElement).value.trim()
+                              if (value && !searchForm.location.includes(value)) {
+                                setSearchForm(prev => ({
+                                  ...prev,
+                                  location: [...prev.location, value]
+                                }))
+                                ;(e.target as HTMLInputElement).value = ''
+                              }
+                            }
+                          }}
+                        />
+                        <div className="flex flex-wrap gap-2">
+                          {searchForm.location.map((location, index) => (
+                            <span
+                              key={index}
+                              className="inline-flex items-center px-3 py-1 rounded-full text-sm"
+                              style={{
+                                backgroundColor: 'var(--chart-3)/10',
+                                color: 'var(--chart-3)',
+                                border: '1px solid var(--chart-3)'
+                              }}
+                            >
+                              {location}
+                              <button
+                                type="button"
+                                className="ml-2 text-xs hover:text-red-500"
+                                onClick={() => setSearchForm(prev => ({
+                                  ...prev,
+                                  location: prev.location.filter(l => l !== location)
+                                }))}
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Origin with Search */}
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <label className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Origin</label>
+                        <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: 'var(--chart-4)/10', color: 'var(--chart-4)' }}>
+                          Source
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          placeholder="Enter origin and press Enter"
+                          className="w-full p-3 border rounded-lg font-medium"
+                          style={{
+                            backgroundColor: 'var(--card)',
+                            borderColor: 'var(--border)',
+                            color: 'var(--foreground)'
+                          }}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              const value = (e.target as HTMLInputElement).value.trim()
+                              if (value && !searchForm.origin.includes(value)) {
+                                handleAddCompanyOrLocation('origin', value)
+                                ;(e.target as HTMLInputElement).value = ''
+                              }
+                            }
+                          }}
+                        />
+                        <div className="flex flex-wrap gap-2">
+                          {searchForm.origin.map((origin, index) => (
+                            <span
+                              key={index}
+                              className="inline-flex items-center px-3 py-1 rounded-full text-sm"
+                              style={{
+                                backgroundColor: 'var(--chart-4)/10',
+                                color: 'var(--chart-4)',
+                                border: '1px solid var(--chart-4)'
+                              }}
+                            >
+                              {origin}
+                              <button
+                                type="button"
+                                className="ml-2 text-xs hover:text-red-500"
+                                onClick={() => handleRemoveCompanyOrLocation('origin', origin)}
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Measurement Ratios and Proportions */}
+                <div className="space-y-6">
+                  <div className="flex items-center space-x-3 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
+                    <h4 className="font-semibold text-lg" style={{ color: 'var(--foreground)' }}>Advanced Proportions</h4>
+                  </div>
+
+                  {/* Length to Width Ratio */}
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-lg border" style={{ backgroundColor: 'var(--muted)/20', borderColor: 'var(--border)' }}>
+                      <div className="flex items-center justify-between mb-3">
+                        <label className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Length to Width Ratio</label>
+                        <span className="text-sm font-bold px-3 py-1 rounded-full" style={{
+                          backgroundColor: 'var(--chart-1)/10',
+                          color: 'var(--chart-1)'
+                        }}>
+                          {searchForm.ratio.min.toFixed(2)} : 1 - {searchForm.ratio.max.toFixed(2)} : 1
+                        </span>
+                      </div>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs mb-2 font-medium" style={{ color: 'var(--muted-foreground)' }}>Minimum Ratio</label>
+                          <input
+                            type="number"
+                            min="0.5"
+                            max="3.0"
+                            step="0.01"
+                            value={searchForm.ratio.min}
+                            onChange={(e) => handleRangeChange('ratio', 'min', parseFloat(e.target.value) || 0.9)}
+                            className="w-full p-3 border-2 rounded-lg font-medium transition-all focus:ring-2 focus:ring-offset-0"
+                            style={{
+                              backgroundColor: 'var(--card)',
+                              borderColor: 'var(--border)',
+                              color: 'var(--foreground)',
+                              '--tw-ring-color': 'var(--chart-1)'
+                            } as React.CSSProperties}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs mb-2 font-medium" style={{ color: 'var(--muted-foreground)' }}>Maximum Ratio</label>
+                          <input
+                            type="number"
+                            min="0.5"
+                            max="3.0"
+                            step="0.01"
+                            value={searchForm.ratio.max}
+                            onChange={(e) => handleRangeChange('ratio', 'max', parseFloat(e.target.value) || 2.5)}
+                            className="w-full p-3 border-2 rounded-lg font-medium transition-all focus:ring-2 focus:ring-offset-0"
+                            style={{
+                              backgroundColor: 'var(--card)',
+                              borderColor: 'var(--border)',
+                              color: 'var(--foreground)',
+                              '--tw-ring-color': 'var(--chart-1)'
+                            } as React.CSSProperties}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Crown Angle and Height */}
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="p-4 rounded-lg border" style={{ backgroundColor: 'var(--muted)/20', borderColor: 'var(--border)' }}>
+                      <div className="flex items-center justify-between mb-3">
+                        <label className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Crown Angle</label>
+                        <span className="text-sm font-bold px-3 py-1 rounded-full" style={{
+                          backgroundColor: 'var(--chart-4)/10',
+                          color: 'var(--chart-4)'
+                        }}>
+                          {searchForm.crownAngle.min}° - {searchForm.crownAngle.max}°
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <input
+                          type="number"
+                          min="25"
+                          max="40"
+                          step="0.1"
+                          value={searchForm.crownAngle.min}
+                          onChange={(e) => handleRangeChange('crownAngle', 'min', parseFloat(e.target.value) || 30)}
+                          placeholder="Min"
+                          className="w-full p-2 border rounded-lg text-sm"
+                          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                        />
+                        <input
+                          type="number"
+                          min="25"
+                          max="40"
+                          step="0.1"
+                          value={searchForm.crownAngle.max}
+                          onChange={(e) => handleRangeChange('crownAngle', 'max', parseFloat(e.target.value) || 36)}
+                          placeholder="Max"
+                          className="w-full p-2 border rounded-lg text-sm"
+                          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg border" style={{ backgroundColor: 'var(--muted)/20', borderColor: 'var(--border)' }}>
+                      <div className="flex items-center justify-between mb-3">
+                        <label className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Crown Height %</label>
+                        <span className="text-sm font-bold px-3 py-1 rounded-full" style={{
+                          backgroundColor: 'var(--chart-5)/10',
+                          color: 'var(--chart-5)'
+                        }}>
+                          {searchForm.crownHeight.min}% - {searchForm.crownHeight.max}%
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <input
+                          type="number"
+                          min="8"
+                          max="20"
+                          step="0.1"
+                          value={searchForm.crownHeight.min}
+                          onChange={(e) => handleRangeChange('crownHeight', 'min', parseFloat(e.target.value) || 10)}
+                          placeholder="Min"
+                          className="w-full p-2 border rounded-lg text-sm"
+                          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                        />
+                        <input
+                          type="number"
+                          min="8"
+                          max="20"
+                          step="0.1"
+                          value={searchForm.crownHeight.max}
+                          onChange={(e) => handleRangeChange('crownHeight', 'max', parseFloat(e.target.value) || 16)}
+                          placeholder="Max"
+                          className="w-full p-2 border rounded-lg text-sm"
+                          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Pavilion Angle and Depth */}
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="p-4 rounded-lg border" style={{ backgroundColor: 'var(--muted)/20', borderColor: 'var(--border)' }}>
+                      <div className="flex items-center justify-between mb-3">
+                        <label className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Pavilion Angle</label>
+                        <span className="text-sm font-bold px-3 py-1 rounded-full" style={{
+                          backgroundColor: 'var(--chart-2)/10',
+                          color: 'var(--chart-2)'
+                        }}>
+                          {searchForm.pavilionAngle.min}° - {searchForm.pavilionAngle.max}°
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <input
+                          type="number"
+                          min="38"
+                          max="45"
+                          step="0.1"
+                          value={searchForm.pavilionAngle.min}
+                          onChange={(e) => handleRangeChange('pavilionAngle', 'min', parseFloat(e.target.value) || 40)}
+                          placeholder="Min"
+                          className="w-full p-2 border rounded-lg text-sm"
+                          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                        />
+                        <input
+                          type="number"
+                          min="38"
+                          max="45"
+                          step="0.1"
+                          value={searchForm.pavilionAngle.max}
+                          onChange={(e) => handleRangeChange('pavilionAngle', 'max', parseFloat(e.target.value) || 42)}
+                          placeholder="Max"
+                          className="w-full p-2 border rounded-lg text-sm"
+                          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg border" style={{ backgroundColor: 'var(--muted)/20', borderColor: 'var(--border)' }}>
+                      <div className="flex items-center justify-between mb-3">
+                        <label className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Pavilion Depth %</label>
+                        <span className="text-sm font-bold px-3 py-1 rounded-full" style={{
+                          backgroundColor: 'var(--chart-3)/10',
+                          color: 'var(--chart-3)'
+                        }}>
+                          {searchForm.pavilionDepth.min}% - {searchForm.pavilionDepth.max}%
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <input
+                          type="number"
+                          min="40"
+                          max="47"
+                          step="0.1"
+                          value={searchForm.pavilionDepth.min}
+                          onChange={(e) => handleRangeChange('pavilionDepth', 'min', parseFloat(e.target.value) || 42)}
+                          placeholder="Min"
+                          className="w-full p-2 border rounded-lg text-sm"
+                          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                        />
+                        <input
+                          type="number"
+                          min="40"
+                          max="47"
+                          step="0.1"
+                          value={searchForm.pavilionDepth.max}
+                          onChange={(e) => handleRangeChange('pavilionDepth', 'max', parseFloat(e.target.value) || 44)}
+                          placeholder="Max"
+                          className="w-full p-2 border rounded-lg text-sm"
+                          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Girdle Thickness */}
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-lg border" style={{ backgroundColor: 'var(--muted)/20', borderColor: 'var(--border)' }}>
+                      <div className="flex items-center justify-between mb-3">
+                        <label className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Girdle Thickness Range</label>
+                        {searchForm.gridleThickness.min && searchForm.gridleThickness.max && (
+                          <span className="text-sm font-bold px-3 py-1 rounded-full" style={{
+                            backgroundColor: 'var(--primary)/10',
+                            color: 'var(--primary)'
+                          }}>
+                            {searchForm.gridleThickness.min} to {searchForm.gridleThickness.max}
+                          </span>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs mb-1 font-medium" style={{ color: 'var(--muted-foreground)' }}>Minimum</label>
+                          <select
+                            value={searchForm.gridleThickness.min}
+                            onChange={(e) => {
+                              const minValue = e.target.value
+                              setSearchForm(prev => ({
+                                ...prev,
+                                gridleThickness: {
+                                  ...prev.gridleThickness,
+                                  min: minValue,
+                                  max: prev.gridleThickness.max || GIRDLE_ORDER[GIRDLE_ORDER.length - 1]
+                                }
+                              }))
+                            }}
+                            className="w-full p-2 border rounded-lg text-sm"
+                            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                          >
+                            <option value="">Select minimum</option>
+                            {GIRDLE_ORDER.map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs mb-1 font-medium" style={{ color: 'var(--muted-foreground)' }}>Maximum</label>
+                          <select
+                            value={searchForm.gridleThickness.max}
+                            onChange={(e) => {
+                              setSearchForm(prev => ({
+                                ...prev,
+                                gridleThickness: {
+                                  ...prev.gridleThickness,
+                                  max: e.target.value
+                                }
+                              }))
+                            }}
+                            className="w-full p-2 border rounded-lg text-sm"
+                            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                          >
+                            <option value="">Select maximum</option>
+                            {GIRDLE_ORDER.map((option) => {
+                              const minIndex = searchForm.gridleThickness.min
+                                ? GIRDLE_ORDER.indexOf(searchForm.gridleThickness.min)
+                                : 0
+                              const optionIndex = GIRDLE_ORDER.indexOf(option)
+                              
+                              if (optionIndex >= minIndex) {
+                                return (
+                                  <option key={option} value={option}>
+                                    {option}
+                                  </option>
+                                )
+                              }
+                              return null
+                            })}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
