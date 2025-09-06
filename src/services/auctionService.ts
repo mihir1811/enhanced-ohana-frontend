@@ -136,6 +136,34 @@ export const auctionService = {
     return api.get<T>(`/auction?${params.toString()}`);
   },
 
+  // Get live auctions
+  getLiveAuctions: async <T = any>({ 
+    productType, 
+    page = 1, 
+    limit = 10, 
+    sort = '-createdAt' 
+  }: {
+    productType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond';
+    page?: number;
+    limit?: number;
+    sort?: string;
+  } = {}) => {
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+    });
+    
+    if (productType) {
+      params.append('productType', productType);
+    }
+    
+    if (sort) {
+      params.append('sort', sort);
+    }
+    
+    return api.get<T>(`/auction/live?${params.toString()}`);
+  },
+
   // Get ending soon auctions
   getEndingSoonAuctions: async <T = any>(hours = 24, page = 1, limit = 10) => {
     const params = new URLSearchParams({
