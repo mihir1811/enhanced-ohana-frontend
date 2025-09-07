@@ -1,14 +1,14 @@
 'use client'
 
 import React, { useState } from 'react';
-import {
-  Heart,
-  ShoppingCart,
-  Share2,
-  Eye,
-  Shield,
-  Star,
-  ChevronLeft,
+import { 
+  Heart, 
+  ShoppingCart, 
+  Share2, 
+  Eye, 
+  Shield, 
+  Star, 
+  ChevronLeft, 
   ChevronRight,
   ChevronDown,
   ChevronUp,
@@ -192,25 +192,25 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
     <div className="min-h-screen bg-white">
       {/* Minimal Navigation */}
       <nav className="border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center text-sm text-gray-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center text-xs sm:text-sm text-gray-500">
             <button onClick={() => router.back()} className="hover:text-gray-900 transition-colors">
               Home
             </button>
-            <span className="mx-3">/</span>
+            <span className="mx-2 sm:mx-3">/</span>
             <button onClick={() => router.back()} className="hover:text-gray-900 transition-colors">
               {jewelry.category || 'Jewelry'}
             </button>
-            <span className="mx-3">/</span>
-            <span className="text-gray-900">{jewelry.name}</span>
+            <span className="mx-2 sm:mx-3">/</span>
+            <span className="text-gray-900 truncate">{jewelry.name}</span>
           </div>
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
           {/* Image Gallery - Left Side */}
-          <div className="sticky top-8">
+          <div className="lg:sticky lg:top-8">
             <ImageGallery
               images={[jewelry.image1, jewelry.image2, jewelry.image3, jewelry.image4, jewelry.image5, jewelry.image6]}
               alt={jewelry.name || 'Jewelry'}
@@ -218,29 +218,18 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
           </div>
 
           {/* Product Information - Right Side */}
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             {/* Product Header */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {/* Seller Name */}
               <div>
                 {jewelry.seller && (
                   <div className="text-sm text-gray-600">
-                    <span className=" text-gray-900 font-semibold underline cursor-pointer">{jewelry.seller.companyName}</span>
+                    <span className="text-gray-900 font-semibold underline cursor-pointer">{jewelry.seller.companyName}</span>
                   </div>
                 )}
-                {/* <div className="flex items-center gap-2 text-sm">
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-gray-900 text-gray-900" />
-                    ))}
-                  </div>
-                  <span className="text-gray-500">(4.9)</span>
-                  <span className="text-gray-300">·</span>
-                  <span className="text-gray-500">1,247 reviews</span>
-                </div> */}
-
               </div>
-              <h1 className="text-4xl font-light text-gray-900 leading-tight">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-light text-gray-900 leading-tight">
                 {jewelry.name || 'Elegant Jewelry Piece'}
               </h1>
 
@@ -251,7 +240,7 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
 
             {/* Price */}
             <div className="space-y-2">
-              <div className="text-3xl font-light text-gray-900">
+              <div className="text-2xl sm:text-3xl font-light text-gray-900">
                 {jewelry.totalPrice ? formatPrice(jewelry.totalPrice) : 'Price on request'}
               </div>
               <div className="text-sm text-gray-500">
@@ -261,7 +250,7 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
 
             {/* Key Features - Minimal List */}
             {(jewelry.metalType || jewelry.metalPurity || jewelry.metalWeight || jewelry.collection) && (
-              <div className="space-y-3 pb-8 border-b border-gray-100">
+              <div className="space-y-3 pb-6 sm:pb-8 border-b border-gray-100">
                 <h3 className="text-sm font-medium text-gray-900">Details</h3>
                 <div className="space-y-2 text-sm">
                   {jewelry.metalType && (
@@ -316,7 +305,7 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
 
             {/* Action Buttons - Minimal */}
             <div className="space-y-4">
-              <button className="w-full bg-gray-900 text-white py-4 rounded-full font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2">
+              <button className="w-full bg-gray-900 text-white py-4 rounded-full font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 touch-target">
                 <ShoppingCart className="w-4 h-4" />
                 Add to Cart
               </button>
@@ -324,7 +313,7 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
               <div className="flex gap-3">
                 <button
                   onClick={() => setIsWishlisted(!isWishlisted)}
-                  className={`flex-1 border border-gray-200 rounded-full py-3 font-medium transition-colors flex items-center justify-center gap-2 ${isWishlisted
+                  className={`flex-1 border border-gray-200 rounded-full py-3 font-medium transition-colors flex items-center justify-center gap-2 touch-target ${isWishlisted
                       ? 'bg-gray-900 text-white border-gray-900'
                       : 'hover:bg-gray-50'
                     }`}
@@ -332,7 +321,7 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                   <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
                   Save
                 </button>
-                <button className="flex-1 border border-gray-200 rounded-full py-3 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+                <button className="flex-1 border border-gray-200 rounded-full py-3 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 touch-target">
                   <Share2 className="w-4 h-4" />
                   Share
                 </button>
@@ -340,7 +329,7 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
             </div>
 
             {/* Trust Indicators - Minimal */}
-            <div className="grid grid-cols-3 gap-6 pt-8 border-t border-gray-100">
+            <div className="grid grid-cols-3 gap-4 sm:gap-6 pt-6 sm:pt-8 border-t border-gray-100">
               <div className="text-center space-y-2">
                 <Truck className="w-5 h-5 text-gray-600 mx-auto" />
                 <div className="text-xs text-gray-500">Free shipping</div>
@@ -358,8 +347,8 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
         </div>
 
         {/* Minimal Information Tabs */}
-        <div className="mt-24 border-t border-gray-100">
-          <div className="flex border-b border-gray-100">
+        <div className="mt-16 sm:mt-24 border-t border-gray-100">
+          <div className="flex border-b border-gray-100 overflow-x-auto">
             {[
               { id: 'details', label: 'Details' },
               { id: 'specifications', label: 'Specifications' },
@@ -368,7 +357,7 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
               <button
                 key={tab.id}
                 onClick={() => setSelectedTab(tab.id)}
-                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${selectedTab === tab.id
+                className={`px-4 sm:px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap min-w-0 flex-shrink-0 ${selectedTab === tab.id
                     ? 'border-gray-900 text-gray-900'
                     : 'border-transparent text-gray-500 hover:text-gray-900'
                   }`}
@@ -379,7 +368,7 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
           </div>
 
           {/* Tab Content - Minimal Design */}
-          <div className="py-6">
+          <div className="py-4 sm:py-6">
             {selectedTab === 'details' && (
               <div className="max-w-2xl space-y-6">
                 {jewelry.description && (
@@ -412,13 +401,13 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
             )}
 
             {selectedTab === 'specifications' && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12">
                 {/* Left Column - Product Summary */}
-                <div className="space-y-8">
+                <div className="space-y-6 sm:space-y-8">
                   {/* Product Summary Card */}
-                  <div className="bg-gray-50 rounded-2xl p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-6">Product Summary</h3>
-                    <div className="space-y-4">
+                  <div className="bg-gray-50 rounded-2xl p-4 sm:p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 sm:mb-6">Product Summary</h3>
+                    <div className="space-y-3 sm:space-y-4">
                       {[
                         { label: 'Style No.', value: jewelry.skuCode },
                         { label: 'Ring Size', value: jewelry.size || '12 (16.5 mm)' },
@@ -442,13 +431,13 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                   </div>
 
                   {/* Help Section */}
-                  <div className="bg-white border border-gray-200 rounded-2xl p-6 text-center">
+                  <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 text-center">
                     <h4 className="text-base font-semibold text-gray-900 mb-3">
                       Need help to find the best jewellery for you?
                     </h4>
-                    <p className="text-sm text-gray-500 mb-6">We are available for your assistance</p>
+                    <p className="text-sm text-gray-500 mb-4 sm:mb-6">We are available for your assistance</p>
 
-                    <div className="flex justify-center gap-8">
+                    <div className="flex justify-center gap-6 sm:gap-8">
                       <div className="text-center">
                         <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-2 mx-auto">
                           <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -470,14 +459,14 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                 </div>
 
                 {/* Right Column - Price Breakdown & Details */}
-                <div className="space-y-8">
+                <div className="space-y-6 sm:space-y-8">
                   {/* Price Breakdown Card */}
                   <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
                     <button
                       onClick={() => toggleSection('priceBreakdown')}
-                      className="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors"
+                      className="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-gray-50 transition-colors touch-target"
                     >
-                      <h3 className="text-lg font-semibold text-gray-900">PRICE BREAKUP</h3>
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900">PRICE BREAKUP</h3>
                       {collapsedSections.priceBreakdown ? (
                         <ChevronDown className="w-5 h-5 text-gray-500" />
                       ) : (
@@ -486,8 +475,8 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                     </button>
 
                     {!collapsedSections.priceBreakdown && (
-                      <div className="px-6 pb-6 border-t border-gray-100">
-                        <div className="space-y-4 mt-4">
+                      <div className="px-4 sm:px-6 pb-4 sm:pb-6 border-t border-gray-100">
+                        <div className="space-y-3 sm:space-y-4 mt-4">
                           {jewelry.basePrice && (
                             <div className="flex justify-between items-center py-3">
                               <span className="text-gray-600 font-medium">Metal</span>
@@ -528,11 +517,11 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                           )}
                         </div>
 
-                        <div className="border-t border-gray-200 mt-6 pt-4">
+                        <div className="border-t border-gray-200 mt-4 sm:mt-6 pt-4">
                           <div className="flex justify-between items-center">
-                            <span className="text-gray-900 font-bold text-lg">Grand Total</span>
+                            <span className="text-gray-900 font-bold text-base sm:text-lg">Grand Total</span>
                             <div className="text-right">
-                              <div className="text-2xl font-bold text-gray-900">
+                              <div className="text-xl sm:text-2xl font-bold text-gray-900">
                                 {jewelry.totalPrice ? formatPrice(jewelry.totalPrice) : '₹1,04,816'}
                               </div>
                               <div className="text-sm text-gray-500">(MRP Incl. of all taxes)</div>
@@ -547,9 +536,9 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                   <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
                     <button
                       onClick={() => toggleSection('metalDetails')}
-                      className="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors"
+                      className="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-gray-50 transition-colors touch-target"
                     >
-                      <h3 className="text-lg font-semibold text-gray-900">METAL DETAILS</h3>
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900">METAL DETAILS</h3>
                       {collapsedSections.metalDetails ? (
                         <ChevronDown className="w-5 h-5 text-gray-500" />
                       ) : (
@@ -558,7 +547,7 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                     </button>
 
                     {!collapsedSections.metalDetails && (
-                      <div className="px-6 pb-6 border-t border-gray-100">
+                      <div className="px-4 sm:px-6 pb-4 sm:pb-6 border-t border-gray-100">
                         <div className="space-y-3 mt-4">
                           {[
                             { label: 'Metal Type', value: jewelry.metalType },
@@ -580,9 +569,9 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                     <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
                       <button
                         onClick={() => toggleSection('stoneDetails')}
-                        className="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors"
+                        className="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-gray-50 transition-colors touch-target"
                       >
-                        <h3 className="text-lg font-semibold text-gray-900">DIAMOND DETAILS</h3>
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900">DIAMOND DETAILS</h3>
                         {collapsedSections.stoneDetails ? (
                           <ChevronDown className="w-5 h-5 text-gray-500" />
                         ) : (
@@ -591,12 +580,12 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                       </button>
 
                       {!collapsedSections.stoneDetails && (
-                        <div className="px-6 pb-6 border-t border-gray-100">
-                          <div className="space-y-4 mt-4">
+                        <div className="px-4 sm:px-6 pb-4 sm:pb-6 border-t border-gray-100">
+                          <div className="space-y-3 sm:space-y-4 mt-4">
                             {jewelry.stones.map((stone: any, index: number) => (
                               <div key={index} className="space-y-3">
                                 <h4 className="font-semibold text-gray-900">Stone {index + 1}</h4>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                   {[
                                     { label: 'Type', value: stone.type },
                                     { label: 'Shape', value: stone.shape },
@@ -632,10 +621,10 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
             )}
 
             {selectedTab === 'care' && (
-              <div className="max-w-2xl space-y-6">
+              <div className="max-w-2xl space-y-4 sm:space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Care Instructions</h3>
-                  <div className="space-y-4 text-sm text-gray-600">
+                  <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-4">Care Instructions</h3>
+                  <div className="space-y-3 sm:space-y-4 text-sm text-gray-600">
                     <div className="flex items-start gap-3">
                       <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
                       <span>Store in a soft cloth pouch or jewelry box to prevent scratches</span>
@@ -655,7 +644,7 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-2xl p-6">
+                <div className="bg-gray-50 rounded-2xl p-4 sm:p-6">
                   <h4 className="text-sm font-medium text-gray-900 mb-2">Professional Service</h4>
                   <p className="text-sm text-gray-600">
                     For deep cleaning and maintenance, visit our store or contact customer service
