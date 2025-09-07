@@ -139,19 +139,23 @@ export const GEMSTONE_CONFIG: ProductConfig = {
 export const JEWELRY_CONFIG: ProductConfig = {
   name: 'Jewelry',
   icon: '💍',
-  categories: ['engagement', 'wedding', 'fashion', 'luxury'],
+  categories: ['rings', 'necklaces', 'earrings', 'bracelets', 'watches', 'chains', 'sets', 'accessories'],
   priceRanges: {
-    'engagement': { min: 500, max: 50000 },
-    'wedding': { min: 200, max: 20000 },
-    'fashion': { min: 50, max: 5000 },
-    'luxury': { min: 1000, max: 100000 }
+    'rings': { min: 200, max: 50000 },
+    'necklaces': { min: 150, max: 25000 },
+    'earrings': { min: 100, max: 15000 },
+    'bracelets': { min: 150, max: 20000 },
+    'watches': { min: 500, max: 100000 },
+    'chains': { min: 100, max: 10000 },
+    'sets': { min: 300, max: 75000 },
+    'accessories': { min: 50, max: 5000 }
   },
   filters: [
     {
       key: 'jewelryType',
       label: 'Jewelry Type',
       type: 'multiselect',
-      options: ['Rings', 'Necklaces', 'Earrings', 'Bracelets', 'Pendants', 'Bangles', 'Anklets']
+      options: ['Rings', 'Necklaces', 'Earrings', 'Bracelets', 'Watches', 'Chains', 'Sets', 'Accessories', 'Pendants', 'Bangles', 'Anklets']
     },
     {
       key: 'metal',

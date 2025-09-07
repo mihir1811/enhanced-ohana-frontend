@@ -13,7 +13,7 @@ interface ProductResultsPageProps {
   }
 }
 
-export default function ProductResultsPage({ params }: ProductResultsPageProps) {
+export default function   ProductResultsPage({ params }: ProductResultsPageProps) {
   const searchParams = useSearchParams()
   const config = PRODUCT_CONFIGS[params.product]
 

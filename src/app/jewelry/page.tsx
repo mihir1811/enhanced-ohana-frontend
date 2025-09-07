@@ -29,7 +29,7 @@ export default function JewelryHomePage() {
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <Link 
-                href="/jewelry/collection" 
+                href="/jewelry/rings" 
                 className="group inline-flex items-center bg-slate-900 text-white px-8 py-4 text-lg font-medium hover:bg-slate-800 transition-all duration-300"
               >
                 Explore Collection
@@ -37,7 +37,7 @@ export default function JewelryHomePage() {
               </Link>
               
               <Link 
-                href="/jewelry/about" 
+                href="/about-us" 
                 className="group inline-flex items-center border-2 border-slate-900 text-slate-900 px-8 py-4 text-lg font-medium hover:bg-slate-900 hover:text-white transition-all duration-300"
               >
                 <Play className="mr-2 w-5 h-5" />
@@ -48,58 +48,110 @@ export default function JewelryHomePage() {
         </div>
       </section>
 
-      {/* Categories - Clean Grid */}
+      {/* Jewelry Categories - Grid Layout */}
       <section className="py-24 bg-white">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-light text-slate-900 mb-6">
-              Collections
+              Jewelry Categories
             </h2>
             <div className="w-24 h-0.5 bg-slate-900 mx-auto" />
           </div>
 
-          <div className="grid md:grid-cols-3 gap-0">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
-                title: 'Engagement',
-                subtitle: 'Forever Begins',
-                image: 'bg-gradient-to-br from-pink-100 to-rose-50',
-                href: '/jewelry/engagement'
+                title: 'Rings',
+                subtitle: 'Eternal Symbols',
+                emoji: '💍',
+                description: 'Engagement, wedding, and fashion rings',
+                href: '/jewelry/rings',
+                color: 'from-pink-100 to-rose-50'
               },
               {
-                title: 'Wedding',
-                subtitle: 'Eternal Bonds',
-                image: 'bg-gradient-to-br from-amber-50 to-yellow-50',
-                href: '/jewelry/wedding'
+                title: 'Necklaces',
+                subtitle: 'Graceful Adornment',
+                emoji: '📿',
+                description: 'Chains, pendants, and statement pieces',
+                href: '/jewelry/necklaces',
+                color: 'from-purple-100 to-violet-50'
               },
               {
-                title: 'Fine Jewelry',
-                subtitle: 'Everyday Luxury',
-                image: 'bg-gradient-to-br from-slate-50 to-gray-100',
-                href: '/jewelry/fine'
+                title: 'Earrings',
+                subtitle: 'Elegant Details',
+                emoji: '👂',
+                description: 'Studs, hoops, and drop earrings',
+                href: '/jewelry/earrings',
+                color: 'from-blue-100 to-sky-50'
+              },
+              {
+                title: 'Bracelets',
+                subtitle: 'Wrist Beauty',
+                emoji: '🔗',
+                description: 'Tennis, chain, and charm bracelets',
+                href: '/jewelry/bracelets',
+                color: 'from-emerald-100 to-green-50'
+              },
+              {
+                title: 'Watches',
+                subtitle: 'Timeless Luxury',
+                emoji: '⌚',
+                description: 'Luxury timepieces and smart watches',
+                href: '/jewelry/watches',
+                color: 'from-amber-100 to-yellow-50'
+              },
+              {
+                title: 'Chains',
+                subtitle: 'Classic Links',
+                emoji: '⛓️',
+                description: 'Gold, silver, and platinum chains',
+                href: '/jewelry/chains',
+                color: 'from-gray-100 to-slate-50'
+              },
+              {
+                title: 'Sets',
+                subtitle: 'Perfect Harmony',
+                emoji: '💎',
+                description: 'Matching jewelry collections',
+                href: '/jewelry/sets',
+                color: 'from-indigo-100 to-blue-50'
+              },
+              {
+                title: 'Accessories',
+                subtitle: 'Finishing Touches',
+                emoji: '✨',
+                description: 'Cufflinks, pins, and unique pieces',
+                href: '/jewelry/accessories',
+                color: 'from-rose-100 to-pink-50'
               }
             ].map((category, index) => (
               <Link
                 key={index}
                 href={category.href}
-                className="group relative aspect-[4/5] overflow-hidden"
+                className="group relative bg-white rounded-2xl border border-slate-200 p-8 hover:shadow-xl hover:border-slate-300 transition-all duration-300 transform hover:-translate-y-1"
               >
-                <div className={`absolute inset-0 ${category.image}`} />
+                <div className={`absolute inset-0 bg-gradient-to-br ${category.color} rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
                 
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-700" />
-                
-                <div className="absolute bottom-0 left-0 right-0 p-8">
-                  <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                    <p className="text-sm uppercase tracking-wider text-slate-600 mb-2">
-                      {category.subtitle}
-                    </p>
-                    <h3 className="text-2xl font-light text-slate-900 mb-4">
-                      {category.title}
-                    </h3>
-                    <div className="flex items-center text-slate-900 group-hover:text-slate-700">
-                      <span className="text-sm font-medium">Explore</span>
-                      <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </div>
+                <div className="relative z-10">
+                  <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                    {category.emoji}
+                  </div>
+                  
+                  <p className="text-sm uppercase tracking-wider text-slate-600 mb-2 group-hover:text-slate-700">
+                    {category.subtitle}
+                  </p>
+                  
+                  <h3 className="text-2xl font-light text-slate-900 mb-3 group-hover:text-slate-800">
+                    {category.title}
+                  </h3>
+                  
+                  <p className="text-slate-600 mb-6 group-hover:text-slate-700 text-sm leading-relaxed">
+                    {category.description}
+                  </p>
+                  
+                  <div className="flex items-center text-slate-900 group-hover:text-slate-800">
+                    <span className="text-sm font-medium">Explore {category.title}</span>
+                    <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
               </Link>
@@ -140,7 +192,7 @@ export default function JewelryHomePage() {
               </div>
               
               <Link 
-                href="/jewelry/craftsmanship" 
+                href="/about-us" 
                 className="inline-flex items-center mt-8 text-slate-900 font-medium hover:text-slate-700 transition-colors"
               >
                 Learn About Our Process
