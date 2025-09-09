@@ -223,10 +223,13 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
             <div className="space-y-3 sm:space-y-4">
               {/* Seller Name */}
               <div>
-                {jewelry.seller && (
-                  <div className="text-sm text-gray-600">
-                    <span className="text-gray-900 font-semibold underline cursor-pointer">{jewelry.seller.companyName}</span>
-                  </div>
+               {jewelry.seller && jewelry.seller.companyName && (
+                  <a
+                    href={`/product/seller-info/${jewelry.seller.id || jewelry.sellerId}`}
+                    className="text-blue-600 hover:underline text-lg font-semibold mb-1 block"
+                  >
+                    {jewelry.seller.companyName}
+                  </a>
                 )}
               </div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-light text-gray-900 leading-tight">
