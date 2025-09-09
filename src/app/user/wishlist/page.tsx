@@ -1,81 +1,131 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Heart, ShoppingCart, Share2, Eye, Filter, Grid, List } from 'lucide-react'
+import React, { useEffect, useState } from 'react';
+import { Heart, ShoppingCart, Trash2, Grid, List, Eye, Share2 } from 'lucide-react';
+import { useWishlistActions, useWishlistStats } from '@/hooks/useWishlist';
+import { WishlistIcon } from '@/components/shared/WishlistButton';
+import { toast } from 'react-hot-toast';
+
+type ViewMode = 'grid' | 'list';
+type FilterType = 'all' | 'diamond' | 'gemstone' | 'jewellery';
 
 export default function UserWishlistPage() {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [wishlistItems, setWishlistItems] = useState([
-    {
-      id: 1,
-      name: '3.2ct Oval Diamond Ring',
-      price: 12500,
-      originalPrice: 14200,
-      image: '💎',
-      seller: 'DiamondCraft Jewelry',
-      certification: 'GIA Certified',
-      inStock: true,
-      onSale: true,
-      saleEnds: '2025-01-20',
-      rating: 4.9,
-      reviews: 127
-    },
-    {
-      id: 2,
-      name: 'Ruby Tennis Necklace',
-      price: 5800,
-      originalPrice: 5800,
-      image: '❤️',
-      seller: 'Luxury Gems Co.',
-      certification: 'AGS Certified',
-      inStock: true,
-      onSale: false,
-      saleEnds: null,
-      rating: 4.8,
-      reviews: 89
-    },
-    {
-      id: 3,
-      name: 'Emerald Halo Earrings',
-      price: 4200,
-      originalPrice: 4750,
-      image: '💚',
-      seller: 'Premium Stones',
-      certification: 'GIA Certified',
-      inStock: false,
-      onSale: true,
-      saleEnds: '2025-01-18',
-      rating: 4.7,
-      reviews: 156
-    },
-    {
-      id: 4,
-      name: 'Sapphire Eternity Band',
-      price: 3450,
-      originalPrice: 3450,
-      image: '💙',
-      seller: 'Classic Jewelry',
-      certification: 'GIA Certified',
-      inStock: true,
-      onSale: false,
-      saleEnds: null,
-      rating: 4.9,
-      reviews: 203
+  const { 
+    items, 
+    loading, 
+    error, 
+    removeFromWishlist, 
+    clearWishlist, 
+    refreshWishlist 
+  } = useWishlistActions();
+  
+  const { stats } = useWishlistStats();
+  
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [filter, setFilter] = useState<FilterType>('all');
+  const [isClearing, setIsClearing] = useState(false);
+
+  useEffect(() => {
+    refreshWishlist();
+  }, [refreshWishlist]);
+
+  // Helper function to determine product type from product data
+  const getItemProductType = (item: any): string => {
+    if (!item.product) return 'jewellery';
+    
+    // Since the API response shows jewelry products, we'll categorize based on product category
+    if (item.product.category) {
+      // You can customize this logic based on your categorization needs
+      const category = item.product.category.toLowerCase();
+      if (category.includes('diamond')) return 'diamond';
+      if (category.includes('gem')) return 'gemstone';
+      return 'jewellery';
     }
-  ])
+    
+    return 'jewellery'; // Default to jewellery
+  };
 
-  const removeFromWishlist = (id: number) => {
-    setWishlistItems(items => items.filter(item => item.id !== id))
-  }
+  const getProductIcon = (productType: string) => {
+    switch (productType) {
+      case 'diamond': return '💎';
+      case 'gemstone': return '💍';
+      case 'jewellery': return '✨';
+      default: return '✨';
+    }
+  };
 
-  const addToCart = (id: number) => {
-    // Handle add to cart logic
-    console.log('Added to cart:', id)
-  }
+  const getProductTypeColor = (productType: string) => {
+    switch (productType) {
+      case 'diamond': return 'bg-blue-100 text-blue-800';
+      case 'gemstone': return 'bg-green-100 text-green-800';
+      case 'jewellery': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
 
-  const shareItem = (id: number) => {
-    // Handle share logic
-    console.log('Share item:', id)
+  const filteredItems = filter === 'all' 
+    ? items 
+    : items.filter(item => {
+        const productType = getItemProductType(item);
+        return productType === filter;
+      });
+
+  const handleRemoveItem = async (itemId: number) => {
+    try {
+      const success = await removeFromWishlist(itemId);
+      if (success) {
+        toast.success('Item removed from wishlist');
+      }
+    } catch (error) {
+      toast.error('Failed to remove item');
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (window.confirm('Are you sure you want to clear your entire wishlist?')) {
+      try {
+        setIsClearing(true);
+        const success = await clearWishlist();
+        if (success) {
+          toast.success('Wishlist cleared successfully');
+        }
+      } catch (error) {
+        toast.error('Failed to clear wishlist');
+      } finally {
+        setIsClearing(false);
+      }
+    }
+  };
+
+  const addToCart = (itemId: string) => {
+    // TODO: Implement add to cart functionality
+    console.log('Add to cart:', itemId);
+    toast.success('Added to cart!');
+  };
+
+  const shareItem = (itemId: string) => {
+    // TODO: Implement share functionality
+    console.log('Share item:', itemId);
+    toast.success('Link copied to clipboard!');
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+    }).format(price);
+  };
+
+  if (loading && items.length === 0) {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -95,7 +145,7 @@ export default function UserWishlistPage() {
                 className="mt-2 text-lg"
                 style={{ color: 'var(--muted-foreground)' }}
               >
-                {wishlistItems.length} {wishlistItems.length === 1 ? 'item' : 'items'} saved for later
+                {stats.total} {stats.total === 1 ? 'item' : 'items'} saved for later
               </p>
             </div>
             <div className="flex items-center space-x-4">
@@ -122,21 +172,56 @@ export default function UserWishlistPage() {
                   <List className="w-4 h-4" />
                 </button>
               </div>
-              <button 
+              
+              {/* Filter */}
+              <select
+                value={filter}
+                onChange={(e) => setFilter(e.target.value as FilterType)}
                 className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors border"
                 style={{ 
                   borderColor: 'var(--border)',
                   color: 'var(--foreground)',
-                  backgroundColor: 'transparent'
+                  backgroundColor: 'var(--card)'
                 }}
               >
-                <Filter className="w-4 h-4" />
-                <span>Filter</span>
-              </button>
+                <option value="all">All Items</option>
+                <option value="diamond">Diamonds</option>
+                <option value="gemstone">Gemstones</option>
+                <option value="jewellery">Jewelry</option>
+              </select>
+
+              {/* Clear All Button */}
+              {items.length > 0 && (
+                <button 
+                  onClick={handleClearAll}
+                  disabled={isClearing}
+                  className="px-4 py-2 rounded-lg font-medium transition-colors border text-red-600 border-red-200 hover:bg-red-50"
+                >
+                  {isClearing ? 'Clearing...' : 'Clear All'}
+                </button>
+              )}
             </div>
           </div>
 
-          {wishlistItems.length === 0 ? (
+          {/* Stats */}
+          {items.length > 0 && (
+            <div className="flex gap-6 text-sm" style={{ color: 'var(--muted-foreground)' }}>
+              <span className="font-medium">
+                Total: <span style={{ color: 'var(--foreground)' }}>{stats.total}</span>
+              </span>
+              <span>
+                Diamonds: <span style={{ color: 'var(--chart-1)' }}>{stats.diamonds}</span>
+              </span>
+              <span>
+                Gemstones: <span style={{ color: 'var(--chart-2)' }}>{stats.gemstones}</span>
+              </span>
+              <span>
+                Jewelry: <span style={{ color: 'var(--chart-3)' }}>{stats.jewellery}</span>
+              </span>
+            </div>
+          )}
+
+          {filteredItems.length === 0 ? (
             /* Empty Wishlist */
             <div 
               className="text-center py-16 rounded-xl border"
@@ -147,12 +232,13 @@ export default function UserWishlistPage() {
             >
               <Heart className="w-16 h-16 mx-auto mb-4" style={{ color: 'var(--muted-foreground)' }} />
               <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--card-foreground)' }}>
-                Your wishlist is empty
+                {filter === 'all' ? 'Your wishlist is empty' : `No ${filter} items in your wishlist`}
               </h3>
               <p className="mb-8" style={{ color: 'var(--muted-foreground)' }}>
                 Save items you love for later by clicking the heart icon
               </p>
               <button 
+                onClick={() => window.history.back()}
                 className="px-6 py-3 rounded-lg font-medium transition-colors"
                 style={{ 
                   backgroundColor: 'var(--primary)',
@@ -165,7 +251,9 @@ export default function UserWishlistPage() {
           ) : (
             /* Wishlist Items */
             <div className={viewMode === 'grid' ? 'grid gap-6 md:grid-cols-2 lg:grid-cols-3' : 'space-y-6'}>
-              {wishlistItems.map((item) => (
+              {filteredItems.map((item) => {
+                const productType = getItemProductType(item);
+                return (
                 <div
                   key={item.id}
                   className={`rounded-xl border transition-all duration-200 hover:shadow-lg ${
@@ -173,8 +261,7 @@ export default function UserWishlistPage() {
                   }`}
                   style={{ 
                     backgroundColor: 'var(--card)',
-                    borderColor: 'var(--border)',
-                    opacity: item.inStock ? 1 : 0.7
+                    borderColor: 'var(--border)'
                   }}
                 >
                   {/* Product Image */}
@@ -182,9 +269,17 @@ export default function UserWishlistPage() {
                     className={`${viewMode === 'list' ? 'w-24 h-24' : 'w-full h-48'} rounded-lg flex items-center justify-center flex-shrink-0 mb-4`}
                     style={{ backgroundColor: 'var(--muted)' }}
                   >
-                    <span className={viewMode === 'list' ? 'text-4xl' : 'text-6xl'}>
-                      {item.image}
-                    </span>
+                    {item.product?.image1 ? (
+                      <img
+                        src={item.product.image1}
+                        alt={item.product.name || 'Product'}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    ) : (
+                      <span className={viewMode === 'list' ? 'text-4xl' : 'text-6xl'}>
+                        {getProductIcon(productType)}
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex-1">
@@ -192,93 +287,85 @@ export default function UserWishlistPage() {
                     <div className="mb-4">
                       <div className="flex items-start justify-between mb-2">
                         <h3 className={`font-semibold ${viewMode === 'list' ? 'text-lg' : 'text-xl'}`} style={{ color: 'var(--card-foreground)' }}>
-                          {item.name}
+                          {item.product?.name || `Product #${item.productId}`}
                         </h3>
-                        <button
-                          onClick={() => removeFromWishlist(item.id)}
-                          className="p-1 text-red-500 hover:text-red-600 transition-colors"
-                        >
-                          <Heart className="w-5 h-5 fill-current" />
-                        </button>
+                        <WishlistIcon
+                          productId={item.productId}
+                          productType={productType as 'diamond' | 'gemstone' | 'jewellery'}
+                        />
                       </div>
-                      <p className="text-sm mb-2" style={{ color: 'var(--muted-foreground)' }}>
-                        by {item.seller}
-                      </p>
-                      <p className="text-sm" style={{ color: 'var(--chart-1)' }}>
-                        {item.certification}
-                      </p>
-                    </div>
-
-                    {/* Rating */}
-                    <div className="flex items-center space-x-2 mb-4">
-                      <div className="flex items-center">
-                        {[...Array(5)].map((_, i) => (
-                          <svg
-                            key={i}
-                            className={`w-4 h-4 ${i < Math.floor(item.rating) ? 'text-yellow-400' : 'text-gray-300'}`}
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                        ))}
-                      </div>
-                      <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-                        {item.rating} ({item.reviews})
+                      
+                      {/* Product Type Badge */}
+                      <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full mb-2 ${getProductTypeColor(productType)}`}>
+                        {productType.charAt(0).toUpperCase() + productType.slice(1)}
                       </span>
-                    </div>
 
-                    {/* Price and Sale Info */}
-                    <div className="mb-4">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <span className="text-xl font-bold" style={{ color: 'var(--card-foreground)' }}>
-                          ${item.price.toLocaleString()}
-                        </span>
-                        {item.onSale && (
-                          <span className="text-sm line-through" style={{ color: 'var(--muted-foreground)' }}>
-                            ${item.originalPrice.toLocaleString()}
-                          </span>
-                        )}
-                      </div>
-                      {item.onSale && (
-                        <div className="flex items-center space-x-2">
-                          <span 
-                            className="px-2 py-1 text-xs rounded-full"
-                            style={{ 
-                              backgroundColor: 'var(--chart-2)',
-                              color: 'var(--primary-foreground)'
-                            }}
-                          >
-                            Sale
-                          </span>
-                          <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                            Ends {new Date(item.saleEnds!).toLocaleDateString()}
-                          </span>
-                        </div>
+                      {item.product?.sellerId && (
+                        <p className="text-sm mb-2" style={{ color: 'var(--muted-foreground)' }}>
+                          Seller ID: {item.product.sellerId}
+                        </p>
                       )}
-                      {!item.inStock && (
-                        <p className="text-sm font-medium mt-2" style={{ color: 'var(--destructive)' }}>
-                          Out of Stock
+                      
+                      {item.product?.category && (
+                        <p className="text-sm" style={{ color: 'var(--chart-1)' }}>
+                          {item.product.category} - {item.product.subcategory}
                         </p>
                       )}
                     </div>
 
+                    {/* Price */}
+                    {item.product?.totalPrice && (
+                      <div className="mb-4">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className="text-xl font-bold" style={{ color: 'var(--card-foreground)' }}>
+                            {formatPrice(item.product.totalPrice)}
+                          </span>
+                          {item.product.basePrice && item.product.basePrice < item.product.totalPrice && (
+                            <span className="text-sm line-through" style={{ color: 'var(--muted-foreground)' }}>
+                              {formatPrice(item.product.basePrice)}
+                            </span>
+                          )}
+                        </div>
+                        
+                        {item.product.isOnAuction && (
+                          <div className="flex items-center space-x-2">
+                            <span 
+                              className="px-2 py-1 text-xs rounded-full"
+                              style={{ 
+                                backgroundColor: 'var(--chart-2)',
+                                color: 'var(--primary-foreground)'
+                              }}
+                            >
+                              On Auction
+                            </span>
+                          </div>
+                        )}
+                        
+                        {item.product.isSold && (
+                          <p className="text-sm font-medium mt-2" style={{ color: 'var(--destructive)' }}>
+                            Sold Out
+                          </p>
+                        )}
+                      </div>
+                    )}
+
                     {/* Actions */}
                     <div className={`flex items-center space-x-3 ${viewMode === 'list' ? '' : 'flex-col space-y-3 space-x-0'}`}>
                       <button
-                        onClick={() => addToCart(item.id)}
-                        disabled={!item.inStock}
+                        onClick={() => addToCart(String(item.id))}
+                        disabled={item.product?.isSold === true}
                         className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 ${
                           viewMode === 'list' ? 'flex-1' : 'w-full'
                         }`}
                         style={{ 
-                          backgroundColor: item.inStock ? 'var(--primary)' : 'var(--muted)',
-                          color: item.inStock ? 'var(--primary-foreground)' : 'var(--muted-foreground)'
+                          backgroundColor: item.product?.isSold !== true ? 'var(--primary)' : 'var(--muted)',
+                          color: item.product?.isSold !== true ? 'var(--primary-foreground)' : 'var(--muted-foreground)'
                         }}
                       >
                         <ShoppingCart className="w-4 h-4" />
-                        <span>{item.inStock ? 'Add to Cart' : 'Notify When Available'}</span>
+                        <span>{item.product?.isSold !== true ? 'Add to Cart' : 'Sold Out'}</span>
                       </button>
+                      
                       <div className="flex items-center space-x-2">
                         <button 
                           className="p-2 rounded-lg transition-colors border"
@@ -290,7 +377,7 @@ export default function UserWishlistPage() {
                           <Eye className="w-4 h-4" />
                         </button>
                         <button 
-                          onClick={() => shareItem(item.id)}
+                          onClick={() => shareItem(String(item.id))}
                           className="p-2 rounded-lg transition-colors border"
                           style={{ 
                             borderColor: 'var(--border)',
@@ -299,15 +386,34 @@ export default function UserWishlistPage() {
                         >
                           <Share2 className="w-4 h-4" />
                         </button>
+                        <button
+                          onClick={() => handleRemoveItem(item.id)}
+                          className="p-2 rounded-lg transition-colors border text-red-600 border-red-200 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
+            </div>
+          )}
+
+          {error && (
+            <div 
+              className="rounded-lg p-4 border"
+              style={{ 
+                backgroundColor: 'var(--destructive)/10',
+                borderColor: 'var(--destructive)/20',
+                color: 'var(--destructive)'
+              }}
+            >
+              <p>{error}</p>
             </div>
           )}
         </div>
       </div>
     </div>
-  )
+  );
 }

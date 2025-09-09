@@ -112,6 +112,13 @@ class ApiService {
     }, token)
   }
 
+  async deleteWithBody<T>(endpoint: string, data: any, token?: string): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, {
+      method: 'DELETE',
+      body: JSON.stringify(data),
+    }, token)
+  }
+
   // File upload
   async upload<T>(endpoint: string, formData: FormData, token?: string): Promise<ApiResponse<T>> {
     const config: RequestInit = {

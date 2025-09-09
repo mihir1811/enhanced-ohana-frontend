@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { 
-  Heart, 
   ShoppingCart, 
   Share2, 
   Download, 
@@ -22,6 +21,7 @@ import {
   Play
 } from 'lucide-react';
 import { Diamond } from './DiamondResults';
+import { WishlistButton } from '@/components/shared/WishlistButton';
 
 interface DiamondDetailsPageProps {
   diamond: Diamond | null;
@@ -30,7 +30,6 @@ interface DiamondDetailsPageProps {
 const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
   const [imgIdx, setImgIdx] = useState(0);
   const [activeTab, setActiveTab] = useState<'overview' | 'specifications' | 'certification' | 'seller'>('overview');
-  const [isWishlisted, setIsWishlisted] = useState(false);
 
   console.log(diamond, );
 
@@ -136,12 +135,11 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
 
             {/* Quick Actions */}
             <div className="absolute top-4 left-4 flex gap-2">
-              <button 
-                onClick={() => setIsWishlisted(!isWishlisted)}
+              <WishlistButton
+                productId={typeof diamond?.id === 'string' ? parseInt(diamond.id) : (diamond?.id || 0)}
+                productType="diamond"
                 className="p-3 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg transition-all duration-200"
-              >
-                <Heart className={`w-5 h-5 ${isWishlisted ? 'text-gray-800' : 'text-gray-700'}`} />
-              </button>
+              />
               <button className="p-3 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg transition-all duration-200">
                 <Share2 className="w-5 h-5 text-gray-700" />
               </button>
@@ -297,16 +295,11 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
                 <ShoppingCart className="w-5 h-5" />
                 Add to Cart
               </button>
-              <button 
-                onClick={() => setIsWishlisted(!isWishlisted)}
-                className={`px-6 py-4 border-2 font-semibold rounded-2xl transition-all duration-200 ${
-                  isWishlisted 
-                    ? 'border-red-300 bg-red-50 text-red-700 hover:bg-red-100' 
-                    : 'border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900'
-                }`}
-              >
-                <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} />
-              </button>
+              <WishlistButton
+                productId={typeof diamond?.id === 'string' ? parseInt(diamond.id) : (diamond?.id || 0)}
+                productType="diamond"
+                className="px-6 py-4 border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-semibold rounded-2xl transition-all duration-200"
+              />
               <button className="px-6 py-4 border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-semibold rounded-2xl transition-all duration-200">
                 <Share2 className="w-5 h-5" />
               </button>

@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { Heart, ShoppingCart, Eye, Grid, List, ArrowUpDown, Filter as FilterIcon } from 'lucide-react'
 import CompareButton from '@/components/compare/CompareButton'
 import Pagination from '@/components/ui/Pagination'
+import WishlistButton from '@/components/shared/WishlistButton'
 
 export interface GenericProduct {
   id: string
@@ -24,7 +25,6 @@ interface GenericProductResultsProps {
   pageSize: number
   onPageChange: (page: number) => void
   onProductSelect: (product: GenericProduct) => void
-  onAddToWishlist: (productId: string) => void
   onAddToCart: (productId: string) => void
   productType: 'diamond' | 'gemstone' | 'jewelry'
   className?: string
@@ -41,7 +41,6 @@ export default function GenericProductResults({
   pageSize,
   onPageChange,
   onProductSelect,
-  onAddToWishlist,
   onAddToCart,
   productType,
   className = '',
@@ -101,13 +100,12 @@ export default function GenericProductResults({
         />
 
         {/* Favorite Button */}
-        <button
-          onClick={e => { e.stopPropagation(); onAddToWishlist(product.id); }}
-          className="absolute top-2 right-2 p-2 rounded-full shadow hover:bg-pink-100 transition-colors z-10 border bg-white/90"
-          title="Add to Favourites"
-        >
-          <Heart className="w-5 h-5 text-primary" />
-        </button>
+        <WishlistButton
+          productId={Number(product.id)}
+          productType={productType === 'jewelry' ? 'jewellery' : productType as 'diamond' | 'gemstone'}
+          className="absolute top-2 right-2 z-10"
+          size="md"
+        />
 
         {/* Status Badge */}
         <span className="absolute bottom-2 left-2 px-2 py-1 text-xs font-semibold rounded-full shadow bg-white/90 text-primary">
@@ -172,13 +170,12 @@ export default function GenericProductResults({
         />
         
         {/* Favorite Button */}
-        <button
-          onClick={e => { e.stopPropagation(); onAddToWishlist(product.id); }}
-          className="absolute top-2 right-2 p-2 rounded-full bg-white/90 border hover:bg-pink-100 transition-colors z-10"
-          title="Add to Favourites"
-        >
-          <Heart className="w-5 h-5 text-primary" />
-        </button>
+        <WishlistButton
+          productId={Number(product.id)}
+          productType={productType === 'jewelry' ? 'jewellery' : productType as 'diamond' | 'gemstone'}
+          className="absolute top-2 right-2 z-10"
+          size="md"
+        />
       </div>
 
       {/* Right: Details */}

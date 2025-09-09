@@ -82,7 +82,6 @@ const GemstoneResultsExample = () => {
           pageSize={pageSize}
           onPageChange={setCurrentPage}
           onProductSelect={handleProductSelect}
-          onAddToWishlist={handleAddToWishlist}
           onAddToCart={handleAddToCart}
           productType="gemstone"
           placeholderImage="https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg"

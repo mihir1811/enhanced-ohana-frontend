@@ -82,7 +82,6 @@ const JewelryResultsExample = () => {
           pageSize={pageSize}
           onPageChange={setCurrentPage}
           onProductSelect={handleProductSelect}
-          onAddToWishlist={handleAddToWishlist}
           onAddToCart={handleAddToCart}
           productType="jewelry"
           placeholderImage="https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg"

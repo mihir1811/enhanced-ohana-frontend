@@ -7,6 +7,7 @@ import Dialog from '../ui/Dialog';
 import { X, ChevronLeft, ChevronRight, Heart, ShoppingCart, Share2, Download, Star, Award, Shield, Eye ,Grid, List, ArrowUpDown, ChevronDown, CopyPlus, Filter as FilterIcon} from 'lucide-react'
 import { useCompare } from '@/hooks/useCompare'
 import CompareButton from '@/components/compare/CompareButton'
+import WishlistButton from '@/components/shared/WishlistButton'
 
 // Modern carousel and details for Quick View modal
 interface QuickViewDiamondModalContentProps {
@@ -162,9 +163,13 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
 
               {/* Action Buttons Overlay */}
               <div className="absolute top-4 left-4 flex gap-2">
-                <button className="p-2.5 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg transition-all duration-200 group">
-                  <Heart className="w-5 h-5 text-pink-500 group-hover:scale-110 transition-transform" />
-                </button>
+                <WishlistButton
+                  productId={Number(diamond.id)}
+                  productType="diamond"
+                  size="md"
+                  variant="default"
+                  className="shadow-lg"
+                />
                 <button className="p-2.5 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg transition-all duration-200 group">
                   <Share2 className="w-5 h-5 text-gray-700 group-hover:scale-110 transition-transform" />
                 </button>
@@ -407,10 +412,13 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
                 <ShoppingCart className="w-5 h-5" />
                 Add to Cart
               </button>
-              <button className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 border border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-semibold rounded-xl transition-all duration-200 text-sm sm:text-base">
-                <Heart className="w-5 h-5" />
-                Save
-              </button>
+              <WishlistButton
+                productId={Number(diamond.id)}
+                productType="diamond"
+                size="lg"
+                showText={true}
+                className="border border-gray-300 hover:border-gray-400 font-semibold rounded-xl text-sm sm:text-base px-4 sm:px-6 py-2.5 sm:py-3"
+              />
               <button className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 border border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-semibold rounded-xl transition-all duration-200 text-sm sm:text-base">
                 <Share2 className="w-5 h-5" />
                 Share
@@ -505,7 +513,6 @@ interface DiamondResultsProps {
   pageSize: number
   onPageChange: (page: number) => void
   onDiamondSelect: (diamond: Diamond) => void
-  onAddToWishlist: (diamondId: string) => void
   onAddToCart: (diamondId: string) => void
   diamondType: 'natural-single' | 'natural-melee' | 'lab-grown-single' | 'lab-grown-melee'
   className?: string
@@ -522,7 +529,6 @@ export default function DiamondResults({
   pageSize,
   onPageChange,
   onDiamondSelect,
-  onAddToWishlist,
   onAddToCart,
   diamondType,
   className = ''
@@ -751,14 +757,12 @@ export default function DiamondResults({
             <span className="text-5xl" style={{ color: 'var(--muted-foreground)' }}>💎</span>
           )}
           {/* Favorite Button (always visible, top right) */}
-          <button
-            onClick={e => { e.stopPropagation(); onAddToWishlist(diamond.id); }}
-            className="absolute top-2 right-2 p-2 rounded-full shadow hover:bg-pink-100 transition-colors z-10 border"
-            style={{ background: 'var(--card)', borderColor: 'var(--border)' }}
-            title="Add to Favourites"
-          >
-            <Heart className="w-5 h-5" style={{ color: 'var(--primary)' }} />
-          </button>
+          <WishlistButton
+            productId={Number(diamond.id)}
+            productType="diamond"
+            className="absolute top-2 right-2 z-10"
+            size="md"
+          />
           {/* Availability Badge */}
           <span className={`absolute bottom-2 left-2 px-2 py-1 text-xs font-semibold rounded-full shadow`} style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--primary)' }}>
             {diamond.isSold ? 'Sold' : 'Available'}
@@ -827,13 +831,12 @@ export default function DiamondResults({
           <span className="text-4xl flex items-center justify-center w-full h-full" style={{ color: 'var(--muted-foreground)' }}>💎</span>
         )}
         {/* Favorite Button */}
-        <button
-          onClick={e => { e.stopPropagation(); onAddToWishlist(diamond.id); }}
-          className="absolute top-2 right-2 p-2 rounded-full bg-white/90 dark:bg-zinc-900/80 border border-gray-200 dark:border-zinc-700 hover:bg-pink-100 dark:hover:bg-pink-900 transition-colors z-10"
-          title="Add to Favourites"
-        >
-          <Heart className="w-5 h-5" style={{ color: 'var(--primary)' }} />
-        </button>
+        <WishlistButton
+          productId={Number(diamond.id)}
+          productType="diamond"
+          className="absolute top-2 right-2 z-10"
+          size="md"
+        />
         {/* Availability Badge */}
         <span className="absolute bottom-2 left-2 px-2 py-0.5 text-xs font-semibold rounded bg-white/90 dark:bg-zinc-900/80 border border-gray-200 dark:border-zinc-700" style={{ color: 'var(--primary)' }}>
           {diamond.isSold ? 'Sold' : 'Available'}

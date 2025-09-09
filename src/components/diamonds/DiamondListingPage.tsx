@@ -178,7 +178,6 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                 window.location.href = `/diamonds/${diamond.id}`;
               }
             }}
-            onAddToWishlist={() => { }}
             onAddToCart={() => { }}
             diamondType={diamondType}
           />

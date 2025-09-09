@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { 
-  Heart, 
   ShoppingCart, 
   Share2, 
   Eye, 
@@ -22,6 +21,7 @@ import {
   Check
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { WishlistButton } from '@/components/shared/WishlistButton';
 
 // Minimalistic Image Gallery Component
 interface ImageGalleryProps {
@@ -132,7 +132,6 @@ interface JewelryDetailsPageProps {
 }
 
 const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [selectedTab, setSelectedTab] = useState('details');
   const [quantity, setQuantity] = useState(1);
   const [collapsedSections, setCollapsedSections] = useState({
@@ -314,16 +313,12 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
               </button>
 
               <div className="flex gap-3">
-                <button
-                  onClick={() => setIsWishlisted(!isWishlisted)}
-                  className={`flex-1 border border-gray-200 rounded-full py-3 font-medium transition-colors flex items-center justify-center gap-2 touch-target ${isWishlisted
-                      ? 'bg-gray-900 text-white border-gray-900'
-                      : 'hover:bg-gray-50'
-                    }`}
-                >
-                  <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
-                  Save
-                </button>
+                <WishlistButton
+                  productId={typeof jewelry?.id === 'string' ? parseInt(jewelry.id) : (jewelry?.id || 0)}
+                  productType="jewellery"
+                  showText
+                  className="flex-1 border border-gray-200 rounded-full py-3 font-medium transition-colors flex items-center justify-center gap-2 touch-target hover:bg-gray-50"
+                />
                 <button className="flex-1 border border-gray-200 rounded-full py-3 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 touch-target">
                   <Share2 className="w-4 h-4" />
                   Share

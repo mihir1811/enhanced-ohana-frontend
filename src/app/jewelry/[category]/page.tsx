@@ -14,6 +14,7 @@ import Image from 'next/image';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import debounce from 'lodash.debounce';
+import WishlistButton from '@/components/shared/WishlistButton';
 
 // Watch brand logos mapping
 const WATCH_BRAND_LOGOS = {
@@ -2068,7 +2069,6 @@ interface JewelryCardProps {
 }
 
 function JewelryCard({ item, viewMode }: JewelryCardProps) {
-  const [isWishlisted, setIsWishlisted] = useState(false)
   const router = useRouter()
 
   const handleCardClick = () => {
@@ -2093,15 +2093,14 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
           <div className="flex-1">
             <div className="flex items-start justify-between mb-2">
               <h3 className="text-lg font-medium text-slate-900">{item.name}</h3>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setIsWishlisted(!isWishlisted)
-                }}
-                className="text-slate-400 hover:text-red-500"
-              >
-                <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
-              </button>
+              <div onClick={(e) => e.stopPropagation()}>
+                <WishlistButton
+                  productId={Number(item.id)}
+                  productType="jewellery"
+                  size="md"
+                  variant="minimal"
+                />
+              </div>
             </div>
 
             <p className="text-slate-600 text-sm mb-2">{item.skuCode}</p>
@@ -2158,15 +2157,14 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
           className="w-full h-full"
         />
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            setIsWishlisted(!isWishlisted)
-          }}
-          className="absolute top-3 right-3 p-2 bg-white/90 rounded-full hover:bg-white shadow-sm"
-        >
-          <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-slate-600'}`} />
-        </button>
+        <div onClick={(e) => e.stopPropagation()}>
+          <WishlistButton
+            productId={Number(item.id)}
+            productType="jewellery"
+            size="md"
+            className="absolute top-3 right-3"
+          />
+        </div>
 
         {item.isOnAuction && (
           <div className="absolute top-3 left-3 px-2 py-1 bg-red-500 text-white text-xs rounded">
