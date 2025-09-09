@@ -136,11 +136,11 @@ const WishlistProductCard: React.FC<WishlistProductCardProps> = ({
           </span>
 
           {/* Seller ID */}
-          {product.sellerId && (
+          {/* {product.sellerId && (
             <p className="text-sm mb-2" style={{ color: 'var(--muted-foreground)' }}>
               Seller: {product.sellerId}
             </p>
-          )}
+          )} */}
           
           {/* Product Specifications */}
           <div className="grid grid-cols-2 gap-2 text-sm">
