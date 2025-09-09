@@ -90,8 +90,27 @@ export function useWishlistStats() {
   const getProductType = (item: any): string => {
     if (!item.product) return 'jewellery';
     
-    if (item.product.category) {
-      const category = item.product.category.toLowerCase();
+    const product = item.product;
+    
+    // More sophisticated type detection based on product structure
+    // Check for diamond-specific fields
+    if (product.caratWeight && product.cut && product.clarity && !product.gemType && !product.metalType) {
+      return 'diamond';
+    }
+    
+    // Check for gemstone-specific fields
+    if (product.gemType || (product.caratWeight && product.origin && !product.cut && !product.metalType)) {
+      return 'gemstone';
+    }
+    
+    // Check for jewelry-specific fields
+    if (product.metalType || product.category || product.subcategory) {
+      return 'jewellery';
+    }
+    
+    // Fallback to category-based detection
+    if (product.category) {
+      const category = product.category.toLowerCase();
       if (category.includes('diamond')) return 'diamond';
       if (category.includes('gem')) return 'gemstone';
       return 'jewellery';
@@ -101,7 +120,7 @@ export function useWishlistStats() {
   };
 
   const stats = {
-    total: count,
+    total: itemsArray.length, // Use actual array length instead of count
     diamonds: itemsArray.filter(item => getProductType(item) === 'diamond').length,
     gemstones: itemsArray.filter(item => getProductType(item) === 'gemstone').length,
     jewellery: itemsArray.filter(item => getProductType(item) === 'jewellery').length,
