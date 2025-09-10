@@ -1,31 +1,57 @@
-import { useState } from 'react';
+'use client'
+import { useState } from 'react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
+
+// Simple Expand/Collapse component - exactly matching DiamondFilters
+function Expand({ label, children, defaultOpen = true }: { label: string; children: React.ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="border-b border-gray-200 last:border-b-0">
+      <button
+        type="button"
+        className="w-full flex items-center justify-between py-2 text-left font-medium text-sm focus:outline-none bg-transparent"
+        style={{ color: 'var(--foreground)', paddingLeft: 0, paddingRight: 0 }}
+        onClick={() => setOpen(o => !o)}
+      >
+        <span>{label}</span>
+        {open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+      </button>
+      {open && <div className="py-2">{children}</div>}
+    </div>
+  );
+}
 
 export interface GemstoneFilterValues {
-  type: string[];
-  variety: string[];
-  color: string[];
-  shape: string[];
-  caratWeight: { min: number; max: number };
-  priceRange: { min: number; max: number };
-  origin: string[];
-  treatment: string[];
-  clarity: string[];
-  cut: string[];
-  certification: string[];
-  reportNumber: string;
-  searchTerm: string;
-  enhancement: string[];
-  transparency: string[];
-  luster: string[];
-  phenomena: string[];
-  companyName: string;
-  vendorLocation: string;
+  // Basic filters
+  gemstoneType: string[]
+  caratWeight: { min: number; max: number }
+  color: string[]
+  clarity: string[]
+  cut: string[]
+  priceRange: { min: number; max: number }
+
+  // Advanced filters
+  certification: string[]
+  origin: string[]
+  treatment: string[]
+  enhancement: string[]
+  transparency: string[]
+  luster: string[]
+  phenomena: string[]
+  
+  // Location & Seller
+  location: string[]
+  companyName: string
+  vendorLocation: string
+  reportNumber: string
+  searchTerm: string
 }
 
 interface GemstoneFiltersProps {
-  filters: GemstoneFilterValues;
-  onFiltersChange: (filters: GemstoneFilterValues) => void;
-  className?: string;
+  filters: GemstoneFilterValues
+  onFiltersChange: (filters: GemstoneFilterValues) => void
+  gemstoneType: 'single' | 'melee'
+  className?: string
 }
 
 const GEMSTONE_TYPES = [
@@ -76,263 +102,328 @@ const GEMSTONE_ORIGINS = [
   'Burma', 'Sri Lanka', 'Madagascar', 'Mozambique', 'Colombia', 'Brazil', 'Thailand', 'Tanzania', 'Afghanistan', 'Pakistan', 'Zambia', 'Other'
 ];
 
-export default function GemstoneFilters({ filters, onFiltersChange, className = '' }: GemstoneFiltersProps) {
-  // For brevity, only a simple UI skeleton is provided. You can expand with grouped, collapsible cards as in DiamondFilters.
+export default function GemstoneFilters({ filters, onFiltersChange, gemstoneType, className = '' }: GemstoneFiltersProps) {
+  
+  // Helper function to update filters
+  const updateFilter = (key: keyof GemstoneFilterValues, value: any) => {
+    onFiltersChange({
+      ...filters,
+      [key]: value
+    })
+  }
+
+  // Helper function to handle array updates
+  const handleArrayFilter = (key: keyof GemstoneFilterValues, value: string) => {
+    const currentArray = (filters[key] as string[]) || [];
+    const newArray = currentArray.includes(value)
+      ? currentArray.filter(item => item !== value)
+      : [...currentArray, value];
+    updateFilter(key, newArray);
+  };
+
+  // Helper function to handle range updates
+  const handleRangeFilter = (key: keyof GemstoneFilterValues, field: 'min' | 'max', value: number) => {
+    const currentRange = filters[key] as { min: number; max: number };
+    updateFilter(key, { ...currentRange, [field]: value });
+  };
+
+  // Multi-select filter component matching DiamondFilters exactly
+  const MultiSelectFilter = ({ 
+    options, 
+    selected, 
+    onChange, 
+    placeholder,
+    layout = 'grid'
+  }: { 
+    options: string[]
+    selected: string[]
+    onChange: (values: string[]) => void
+    placeholder: string
+    layout?: 'grid' | 'horizontal'
+  }) => (
+    <div className="space-y-3">
+      {/* Selected Count & Clear */}
+      {selected.length > 0 && (
+        <div className="flex items-center justify-between p-3 rounded-lg" 
+          style={{ backgroundColor: 'var(--primary)/5', borderColor: 'var(--primary)/20' }}
+        >
+          <span className="text-sm font-medium" style={{ color: 'var(--primary)' }}>
+            {selected.length} selected
+          </span>
+          <button
+            onClick={() => onChange([])}
+            className="text-xs underline hover:no-underline transition-all"
+            style={{ color: 'var(--primary)' }}
+          >
+            Clear all
+          </button>
+        </div>
+      )}
+      
+      {/* Options */}
+      <div className={`${layout === 'grid' ? 'grid grid-cols-2 gap-2' : 'flex flex-wrap gap-2'} max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-full scrollbar-thumb-amber-200`}>
+        {options.map((option) => (
+          <label
+            key={option}
+            className={`flex items-center gap-2 p-2 rounded-md cursor-pointer border transition-all duration-75 group focus-within:ring-0 ${selected.includes(option) ? 'border-amber-500 bg-amber-50' : 'border-gray-200 bg-gray-50 hover:border-amber-300'}
+            `}
+            tabIndex={0}
+          >
+            <span className="relative flex items-center justify-center">
+              <input
+                type="checkbox"
+                checked={selected.includes(option)}
+                onChange={e => {
+                  if (e.target.checked) {
+                    onChange([...selected, option])
+                  } else {
+                    onChange(selected.filter(v => v !== option))
+                  }
+                }}
+                className="peer appearance-none w-4 h-4 border-2 border-gray-300 rounded focus:outline-none checked:bg-amber-500 checked:border-amber-500 focus:ring-2 focus:ring-amber-300 transition-all duration-75"
+                style={{ minWidth: 16, minHeight: 16 }}
+                tabIndex={-1}
+              />
+              <svg
+                className="pointer-events-none absolute left-0 top-0 w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-75"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="5 11 9 15 15 7" />
+              </svg>
+            </span>
+            <span className={`text-sm font-medium transition-colors duration-150 ${selected.includes(option) ? 'text-amber-700 font-semibold' : 'text-gray-700 group-hover:text-amber-700'}`}>
+              {option}
+            </span>
+          </label>
+        ))}
+      </div>
+      
+      {/* Empty State */}
+      {options.length === 0 && (
+        <div className="text-center py-8" style={{ color: 'var(--muted-foreground)' }}>
+          <p className="text-sm">No options available</p>
+        </div>
+      )}
+    </div>
+  )
+
+  // Range filter component matching DiamondFilters exactly
+  const RangeFilter = ({ 
+    min, 
+    max, 
+    value, 
+    onChange, 
+    step = 1, 
+    unit = '',
+    showSlider = false
+  }: { 
+    min: number
+    max: number
+    value: { min: number; max: number }
+    onChange: (range: { min: number; max: number }) => void
+    step?: number
+    unit?: string
+    showSlider?: boolean
+  }) => (
+    <div className="space-y-2">
+      {/* Current Range Display */}
+      <div className="flex items-center justify-between px-1 py-1">
+        <span className="text-xs font-medium" style={{ color: 'var(--foreground)' }}>
+          Current Range:
+        </span>
+        <span className="text-xs font-bold" style={{ color: 'var(--primary)' }}>
+          {unit === 'USD' ? `$${value.min.toLocaleString()} - $${value.max.toLocaleString()}` : 
+           `${value.min.toLocaleString()}${unit} - ${value.max.toLocaleString()}${unit}`}
+        </span>
+      </div>
+      
+      {/* Input Fields */}
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--muted-foreground)' }}>
+            Minimum {unit === 'USD' ? '' : unit}
+          </label>
+          <input
+            type="number"
+            value={value.min}
+            onChange={(e) => onChange({ ...value, min: parseFloat(e.target.value) || min })}
+            min={min}
+            max={max}
+            step={step}
+            className="w-full px-2 py-2 text-xs border rounded-md focus:ring-1 focus:ring-blue-400 focus:border-blue-400 bg-white transition-all"
+            style={{ color: 'var(--foreground)' }}
+            placeholder={unit === 'USD' ? 'Min $' : `Min ${unit}`}
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--muted-foreground)' }}>
+            Maximum {unit === 'USD' ? '' : unit}
+          </label>
+          <input
+            type="number"
+            value={value.max}
+            onChange={(e) => onChange({ ...value, max: parseFloat(e.target.value) || max })}
+            min={min}
+            max={max}
+            step={step}
+            className="w-full px-2 py-2 text-xs border rounded-md focus:ring-1 focus:ring-blue-400 focus:border-blue-400 bg-white transition-all"
+            style={{ color: 'var(--foreground)' }}
+            placeholder={unit === 'USD' ? 'Max $' : `Max ${unit}`}
+          />
+        </div>
+      </div>
+      
+      {/* Quick Presets for Price */}
+      {unit === 'USD' && (
+        <div className="flex flex-wrap gap-1 items-center mt-1">
+          <span className="text-xs font-medium mr-1" style={{ color: 'var(--muted-foreground)' }}>
+            Quick Select:
+          </span>
+          {[
+            { label: 'Under $5K', min: 0, max: 5000 },
+            { label: '$5K-$10K', min: 5000, max: 10000 },
+            { label: '$10K-$25K', min: 10000, max: 25000 },
+            { label: '$25K+', min: 25000, max: 100000 }
+          ].map((preset) => (
+            <button
+              key={preset.label}
+              onClick={() => onChange({ min: preset.min, max: preset.max })}
+              className="px-2 py-0.5 text-xs rounded-full border border-gray-300 bg-white hover:bg-amber-50 transition-all"
+              style={{ color: 'var(--muted-foreground)' }}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+      )}
+      
+      {/* Quick Presets for Carat */}
+      {unit === 'ct' && (
+        <div className="flex flex-wrap gap-1 items-center mt-1">
+          <span className="text-xs font-medium mr-1" style={{ color: 'var(--muted-foreground)' }}>
+            Popular Sizes:
+          </span>
+          {(gemstoneType === 'melee' ? [
+            { label: '0.01-0.1ct', min: 0.01, max: 0.1 },
+            { label: '0.1-0.5ct', min: 0.1, max: 0.5 },
+            { label: '0.5-1ct', min: 0.5, max: 1.0 },
+            { label: '1ct+', min: 1.0, max: 5.0 }
+          ] : [
+            { label: '0.5-1ct', min: 0.5, max: 1.0 },
+            { label: '1-2ct', min: 1.0, max: 2.0 },
+            { label: '2-5ct', min: 2.0, max: 5.0 },
+            { label: '5ct+', min: 5.0, max: 20.0 }
+          ]).map((preset) => (
+            <button
+              key={preset.label}
+              onClick={() => onChange({ min: preset.min, max: preset.max })}
+              className="px-2 py-0.5 text-xs rounded-full border border-gray-300 bg-white hover:bg-amber-50 transition-all"
+              style={{ color: 'var(--muted-foreground)' }}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+
   return (
-    <div className={`bg-white border-2 rounded-xl shadow-lg p-6 ${className}`}>
-      <h2 className="font-bold text-xl mb-4">Gemstone Filters</h2>
-      {/* Type */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Type</label>
-        <select
-          multiple
-          value={filters.type}
-          onChange={e => onFiltersChange({ ...filters, type: Array.from(e.target.selectedOptions, o => o.value) })}
-          className="w-full px-4 py-2 border-2 rounded-lg text-sm"
-        >
-          {GEMSTONE_TYPES.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-      </div>
-      {/* Color */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Color</label>
-        <select
-          multiple
-          value={filters.color}
-          onChange={e => onFiltersChange({ ...filters, color: Array.from(e.target.selectedOptions, o => o.value) })}
-          className="w-full px-4 py-2 border-2 rounded-lg text-sm"
-        >
-          {GEMSTONE_COLORS.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-      </div>
-      {/* Shape */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Shape</label>
-        <select
-          multiple
-          value={filters.shape}
-          onChange={e => onFiltersChange({ ...filters, shape: Array.from(e.target.selectedOptions, o => o.value) })}
-          className="w-full px-4 py-2 border-2 rounded-lg text-sm"
-        >
-          {GEMSTONE_SHAPES.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-      </div>
-      {/* Carat Weight */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Carat Weight</label>
-        <div className="flex gap-2">
-          <input
-            type="number"
-            value={filters.caratWeight.min}
-            onChange={e => onFiltersChange({ ...filters, caratWeight: { ...filters.caratWeight, min: parseFloat(e.target.value) || 0 } })}
-            className="w-1/2 px-4 py-2 border-2 rounded-lg text-sm"
-            placeholder="Min"
-          />
-          <input
-            type="number"
-            value={filters.caratWeight.max}
-            onChange={e => onFiltersChange({ ...filters, caratWeight: { ...filters.caratWeight, max: parseFloat(e.target.value) || 0 } })}
-            className="w-1/2 px-4 py-2 border-2 rounded-lg text-sm"
-            placeholder="Max"
-          />
-        </div>
-      </div>
+    <div className={`space-y-0 ${className}`}>
       {/* Price Range */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Price Range (USD)</label>
-        <div className="flex gap-2">
-          <input
-            type="number"
-            value={filters.priceRange.min}
-            onChange={e => onFiltersChange({ ...filters, priceRange: { ...filters.priceRange, min: parseFloat(e.target.value) || 0 } })}
-            className="w-1/2 px-4 py-2 border-2 rounded-lg text-sm"
-            placeholder="Min"
-          />
-          <input
-            type="number"
-            value={filters.priceRange.max}
-            onChange={e => onFiltersChange({ ...filters, priceRange: { ...filters.priceRange, max: parseFloat(e.target.value) || 0 } })}
-            className="w-1/2 px-4 py-2 border-2 rounded-lg text-sm"
-            placeholder="Max"
-          />
-        </div>
-      </div>
-      {/* Origin */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Origin</label>
-        <select
-          multiple
-          value={filters.origin}
-          onChange={e => onFiltersChange({ ...filters, origin: Array.from(e.target.selectedOptions, o => o.value) })}
-          className="w-full px-4 py-2 border-2 rounded-lg text-sm"
-        >
-          {GEMSTONE_ORIGINS.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-      </div>
-      {/* Treatment */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Treatment</label>
-        <select
-          multiple
-          value={filters.treatment}
-          onChange={e => onFiltersChange({ ...filters, treatment: Array.from(e.target.selectedOptions, o => o.value) })}
-          className="w-full px-4 py-2 border-2 rounded-lg text-sm"
-        >
-          {GEMSTONE_TREATMENTS.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-      </div>
-      {/* Clarity */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Clarity</label>
-        <select
-          multiple
-          value={filters.clarity}
-          onChange={e => onFiltersChange({ ...filters, clarity: Array.from(e.target.selectedOptions, o => o.value) })}
-          className="w-full px-4 py-2 border-2 rounded-lg text-sm"
-        >
-          {GEMSTONE_CLARITY.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-      </div>
+      <Expand label="Price Range">
+        <RangeFilter
+          min={0}
+          max={100000}
+          value={filters.priceRange}
+          onChange={(range) => updateFilter('priceRange', range)}
+          step={100}
+          unit="USD"
+        />
+      </Expand>
+
+      {/* Gemstone Type */}
+      <Expand label="Gemstone Type">
+        <MultiSelectFilter
+          options={GEMSTONE_TYPES}
+          selected={filters.gemstoneType}
+          onChange={(values) => updateFilter('gemstoneType', values)}
+          placeholder="Select gemstone types"
+          layout="grid"
+        />
+      </Expand>
+
+      {/* Carat Weight */}
+      <Expand label="Carat Weight">
+        <RangeFilter
+          min={gemstoneType === 'melee' ? 0.01 : 0.1}
+          max={gemstoneType === 'melee' ? 5 : 20}
+          value={filters.caratWeight}
+          onChange={(range) => updateFilter('caratWeight', range)}
+          step={gemstoneType === 'melee' ? 0.01 : 0.1}
+          unit="ct"
+        />
+      </Expand>
+
       {/* Cut */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Cut</label>
-        <select
-          multiple
-          value={filters.cut}
-          onChange={e => onFiltersChange({ ...filters, cut: Array.from(e.target.selectedOptions, o => o.value) })}
-          className="w-full px-4 py-2 border-2 rounded-lg text-sm"
-        >
-          {GEMSTONE_CUTS.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-      </div>
-      {/* Certification */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Certification</label>
-        <select
-          multiple
-          value={filters.certification}
-          onChange={e => onFiltersChange({ ...filters, certification: Array.from(e.target.selectedOptions, o => o.value) })}
-          className="w-full px-4 py-2 border-2 rounded-lg text-sm"
-        >
-          {GEMSTONE_CERTIFICATIONS.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-      </div>
-      {/* Enhancement */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Enhancement</label>
-        <select
-          multiple
-          value={filters.enhancement}
-          onChange={e => onFiltersChange({ ...filters, enhancement: Array.from(e.target.selectedOptions, o => o.value) })}
-          className="w-full px-4 py-2 border-2 rounded-lg text-sm"
-        >
-          {GEMSTONE_ENHANCEMENTS.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-      </div>
-      {/* Transparency */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Transparency</label>
-        <select
-          multiple
-          value={filters.transparency}
-          onChange={e => onFiltersChange({ ...filters, transparency: Array.from(e.target.selectedOptions, o => o.value) })}
-          className="w-full px-4 py-2 border-2 rounded-lg text-sm"
-        >
-          {GEMSTONE_TRANSPARENCY.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-      </div>
-      {/* Luster */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Luster</label>
-        <select
-          multiple
-          value={filters.luster}
-          onChange={e => onFiltersChange({ ...filters, luster: Array.from(e.target.selectedOptions, o => o.value) })}
-          className="w-full px-4 py-2 border-2 rounded-lg text-sm"
-        >
-          {GEMSTONE_LUSTER.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-      </div>
-      {/* Phenomena */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Phenomena</label>
-        <select
-          multiple
-          value={filters.phenomena}
-          onChange={e => onFiltersChange({ ...filters, phenomena: Array.from(e.target.selectedOptions, o => o.value) })}
-          className="w-full px-4 py-2 border-2 rounded-lg text-sm"
-        >
-          {GEMSTONE_PHENOMENA.map(opt => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-      </div>
-      {/* Company Name */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Company Name</label>
-        <input
-          type="text"
-          value={filters.companyName}
-          onChange={e => onFiltersChange({ ...filters, companyName: e.target.value })}
-          className="w-full px-4 py-2 border-2 rounded-lg text-sm"
-          placeholder="Enter company name"
+      <Expand label="Cut">
+        <MultiSelectFilter
+          options={GEMSTONE_CUTS}
+          selected={filters.cut}
+          onChange={(values) => updateFilter('cut', values)}
+          placeholder="Select cut grades"
+          layout="grid"
         />
-      </div>
-      {/* Vendor Location */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Vendor Location</label>
-        <input
-          type="text"
-          value={filters.vendorLocation}
-          onChange={e => onFiltersChange({ ...filters, vendorLocation: e.target.value })}
-          className="w-full px-4 py-2 border-2 rounded-lg text-sm"
-          placeholder="Enter vendor location"
+      </Expand>
+
+      {/* Clarity */}
+      <Expand label="Clarity">
+        <MultiSelectFilter
+          options={GEMSTONE_CLARITY}
+          selected={filters.clarity}
+          onChange={(values) => updateFilter('clarity', values)}
+          placeholder="Select clarity"
+          layout="grid"
         />
-      </div>
-      {/* Report Number */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Report Number</label>
-        <input
-          type="text"
-          value={filters.reportNumber}
-          onChange={e => onFiltersChange({ ...filters, reportNumber: e.target.value })}
-          className="w-full px-4 py-2 border-2 rounded-lg text-sm"
-          placeholder="Enter report number"
+      </Expand>
+
+      {/* Origin */}
+      <Expand label="Origin">
+        <MultiSelectFilter
+          options={GEMSTONE_ORIGINS}
+          selected={filters.origin}
+          onChange={(values) => updateFilter('origin', values)}
+          placeholder="Select origins"
+          layout="grid"
         />
-      </div>
-      {/* Search Term */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Search</label>
-        <input
-          type="text"
-          value={filters.searchTerm}
-          onChange={e => onFiltersChange({ ...filters, searchTerm: e.target.value })}
-          className="w-full px-4 py-2 border-2 rounded-lg text-sm"
-          placeholder="Search gemstones..."
+      </Expand>
+
+      {/* Treatment */}
+      <Expand label="Treatment">
+        <MultiSelectFilter
+          options={GEMSTONE_TREATMENTS}
+          selected={filters.treatment}
+          onChange={(values) => updateFilter('treatment', values)}
+          placeholder="Select treatments"
+          layout="grid"
         />
-      </div>
+      </Expand>
+
+      {/* Certificate */}
+      <Expand label="Certificate">
+        <MultiSelectFilter
+          options={GEMSTONE_CERTIFICATIONS}
+          selected={filters.certification}
+          onChange={(values) => updateFilter('certification', values)}
+          placeholder="Select certifications"
+          layout="grid"
+        />
+      </Expand>
     </div>
   );
 }
