@@ -20,7 +20,7 @@ export const getDefaultGemstoneFilters = (gemstoneType: 'single' | 'melee'): Gem
     luster: [],
     phenomena: [],
     companyName: '',
-    vendorLocation: ''
+    // vendorLocation: ''
   };
 
   // Adjust filters based on gemstone type
