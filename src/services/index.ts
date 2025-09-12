@@ -7,6 +7,7 @@ export { userService as userProfileService } from './user.service'
 export { default as cartService } from './cart'
 export { default as paymentService, usePayment, PaymentUtils } from './payment'
 export { auctionService } from './auctionService'
+export { default as bullionService } from './bullionService'
 
 // Types
 export type { ApiResponse } from './api'
@@ -18,3 +19,4 @@ export type { UserProfileUpdateData, SellerRegistrationData } from './user.servi
 export type { CartResponse, AddToCartData, PromoCode } from './cart'
 export type { PaymentMethod, PaymentIntent, PaymentResult } from './payment'
 export type { AuctionData, BidData, AuctionFilter } from './auctionService'
+export type { BullionItem, BullionFilters, DetailedBullion, CreateBullionData } from './bullionService'

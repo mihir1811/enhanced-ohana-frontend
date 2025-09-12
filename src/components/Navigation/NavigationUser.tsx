@@ -248,6 +248,7 @@ export default function NavigationUser() {
     },
     { href: '/jewelry', label: 'Jewelry' },
     { href: '/auctions', label: 'Auctions' },
+    { href: '/bullions', label: 'Bullions' },
     { href: '/diamond-education', label: 'Diamond Education' }
   ], [])
 
