@@ -7,6 +7,7 @@ import { useAppDispatch } from '@/store/hooks'
 import { fetchSellerInfo } from '@/features/seller/sellerSlice'
 import Link from 'next/link'
 import { setCredentials } from '../../features/auth/authSlice'
+import { API_CONFIG, buildApiUrl } from '@/lib/constants'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -33,7 +34,7 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const response = await fetch('http://localhost:3000/api/v1/auth/login', {
+      const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.LOGIN), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

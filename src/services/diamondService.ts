@@ -1,5 +1,6 @@
 
 import { apiService } from './api';
+import { API_CONFIG, buildApiUrl } from '../lib/constants';
 
 export interface ApiResponse<T> {
   data: T;
@@ -18,7 +19,8 @@ export interface DiamondFilters {
 class DiamondService {
   // Get seller info by sellerId
   async getSellerInfo(sellerId: string): Promise<ApiResponse<any>> {
-    const response = await fetch(`http://localhost:3000/api/v1/seller/get-seller-info?seller_id=${sellerId}`, {
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.SELLER.INFO, { seller_id: sellerId });
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',

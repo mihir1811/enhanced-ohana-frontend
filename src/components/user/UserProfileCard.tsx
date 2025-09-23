@@ -89,11 +89,11 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ className = '' }) => 
           {/* Verification Badge for Sellers */}
           {isSeller && user.sellerData && (
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              user.sellerData.isVerifiedSeller 
-                ? 'bg-green-100 text-green-800' 
+              user.sellerData.isVerified
+                ? 'bg-green-100 text-green-800'
                 : 'bg-yellow-100 text-yellow-800'
             }`}>
-              {user.sellerData.isVerifiedSeller ? 'Verified Seller' : 'Pending Verification'}
+              {user.sellerData.isVerified ? 'Verified Seller' : 'Pending Verification'}
             </span>
           )}
         </div>
@@ -137,47 +137,17 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ className = '' }) => 
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Business Name
               </label>
-              <p className="text-gray-900">{user.sellerData.businessName}</p>
+              <p className="text-gray-900">{user.sellerData.companyName}</p>
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Seller Rating
+                Seller Type
               </label>
-              <p className="text-gray-900">
-                {user.sellerData.sellerRating.toFixed(1)}/5.0 
-                <span className="text-gray-500 ml-2">
-                  ({user.sellerData.totalSales} sales)
-                </span>
-              </p>
+              <p className="text-gray-900">{user.sellerData.sellerType}</p>
             </div>
             
-            {user.sellerData.specializations.length > 0 && (
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Specializations
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {user.sellerData.specializations.map((spec, index) => (
-                    <span 
-                      key={index}
-                      className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-sm"
-                    >
-                      {spec}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {user.sellerData.businessDescription && (
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Business Description
-                </label>
-                <p className="text-gray-900">{user.sellerData.businessDescription}</p>
-              </div>
-            )}
+
           </div>
         </div>
       )}

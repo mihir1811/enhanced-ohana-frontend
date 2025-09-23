@@ -1,4 +1,5 @@
 import { ApiResponse } from './api';
+import { API_CONFIG, buildApiUrl } from '../lib/constants';
 
 export interface UpdateSellerInfoPayload {
   companyName: string;
@@ -30,7 +31,7 @@ class SellerService {
     if (data.panCard) formData.append('panCard', data.panCard);
     if (data.gstNumber) formData.append('gstNumber', data.gstNumber);
 
-    const response = await fetch('http://localhost:3000/api/v1/seller/update', {
+    const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.SELLER.UPDATE), {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -47,7 +48,8 @@ class SellerService {
   }
 
   async getSellerInfo(sellerId: string): Promise<ApiResponse<any>> {
-    const response = await fetch(`http://localhost:3000/api/v1/seller/get-seller-info?seller_id=${sellerId}`, {
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.SELLER.INFO, { seller_id: sellerId });
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',

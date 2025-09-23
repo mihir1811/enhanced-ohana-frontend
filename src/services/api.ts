@@ -1,7 +1,8 @@
-  // File upload with PUT
+// File upload with PUT
 // Central API service configuration
+import { API_CONFIG } from '../lib/constants'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1'
+const API_BASE_URL = API_CONFIG.BASE_URL
 
 export interface ApiResponse<T = any> {
   success: boolean

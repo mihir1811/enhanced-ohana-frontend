@@ -1,5 +1,6 @@
 // Seller registration and profile API service
 import { ApiResponse } from './api';
+import { API_CONFIG, buildApiUrl } from '../lib/constants';
 
 export const SellerType = {
   naturalDiamond: 'naturalDiamond',
@@ -44,7 +45,7 @@ class SellerService {
       formData.append('companyLogo', data.companyLogo);
     }
 
-    const response = await fetch('http://localhost:3000/api/v1/seller/create', {
+    const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.SELLER.CREATE), {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -75,7 +76,7 @@ class SellerService {
     if (data.panCard) formData.append('panCard', data.panCard);
     if (data.gstNumber) formData.append('gstNumber', data.gstNumber);
 
-    const response = await fetch('http://localhost:3000/api/v1/seller/update', {
+    const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.SELLER.UPDATE), {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -92,7 +93,7 @@ class SellerService {
   }
 
   async getSellerInfo(sellerId: string): Promise<any> {
-    const response = await fetch(`http://localhost:3000/api/v1/seller/${sellerId}`, {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/seller/${sellerId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

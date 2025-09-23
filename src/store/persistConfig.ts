@@ -5,8 +5,7 @@ import { combineReducers } from '@reduxjs/toolkit'
 import authReducer from '../features/auth/authSlice'
 import sellerReducer from '../features/seller/sellerSlice'
 import loadingReducer from './loading'
-import cartReducer from '../features/cart/cartSlice'
-import orderReducer from '../features/orders/orderSlice'
+
 import productReducer from '../features/products/productSlice'
 import compareReducer from '../features/compare/compareSlice'
 
@@ -17,19 +16,7 @@ const authPersistConfig = {
   whitelist: ['user', 'role', 'token','seller'], // Only persist these fields
 }
 
-// Persist configuration for cart slice
-const cartPersistConfig = {
-  key: 'cart',
-  storage,
-  whitelist: ['items', 'totals'], // Persist cart items and totals
-}
 
-// Persist configuration for orders slice
-const orderPersistConfig = {
-  key: 'orders',
-  storage,
-  whitelist: ['userOrders'], // Only persist user orders
-}
 
 // Persist configuration for products slice
 const productPersistConfig = {
@@ -56,15 +43,13 @@ const comparePersistConfig = {
 const rootPersistConfig = {
   key: 'root',
   storage,
-  whitelist: ['auth', 'cart', 'orders', 'seller', 'compare'], // Persist auth, cart, orders, seller, compare
+  whitelist: ['auth', 'seller', 'compare'], // Persist auth, seller, compare
   blacklist: ['loading', 'products'], // Don't persist loading or products
 }
 
 // Combine all reducers
 const rootReducer = combineReducers({
   auth: persistReducer(authPersistConfig, authReducer),
-  cart: persistReducer(cartPersistConfig, cartReducer),
-  orders: persistReducer(orderPersistConfig, orderReducer),
   products: productReducer, // No persistence for products
   loading: loadingReducer,
   seller: persistReducer(sellerPersistConfig, sellerReducer), // Persisted seller slice

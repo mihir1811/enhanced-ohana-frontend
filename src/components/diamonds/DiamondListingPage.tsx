@@ -177,10 +177,10 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
               if (diamond?.id) {
                 window.location.href = `/diamonds/${diamond.id}`;
               }
-            }}
-            onAddToCart={() => { }}
-            diamondType={diamondType}
-          />
+            } }
+            diamondType={diamondType} onAddToCart={function (diamondId: string): void {
+              throw new Error('Function not implemented.');
+            } }          />
         </main>
       </div>
     </div>
