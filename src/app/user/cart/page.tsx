@@ -1,72 +1,126 @@
 'use client'
 
-import { useState } from 'react'
-import { Minus, Plus, Trash2, Heart, ShoppingBag, ArrowRight, Shield, Truck } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useSelector } from 'react-redux'
+import { Minus, Plus, Trash2, Heart, ShoppingBag, ArrowRight, Shield, Truck, Loader2 } from 'lucide-react'
+import { cartService, Cart, CartItem } from '@/services'
+import { RootState } from '@/store'
 
 export default function UserCartPage() {
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: '2.1ct Round Diamond Solitaire Ring',
-      price: 7850,
-      originalPrice: 8200,
-      image: '💎',
-      seller: 'DiamondCraft Jewelry',
-      certification: 'GIA Certified',
-      quantity: 1,
-      inStock: true,
-      savings: 350
-    },
-    {
-      id: 2,
-      name: 'Sapphire Tennis Bracelet',
-      price: 3450,
-      originalPrice: 3450,
-      image: '💙',
-      seller: 'Luxury Gems Co.',
-      certification: 'AGS Certified',
-      quantity: 1,
-      inStock: true,
-      savings: 0
-    },
-    {
-      id: 3,
-      name: 'Emerald Drop Earrings',
-      price: 2200,
-      originalPrice: 2500,
-      image: '💚',
-      seller: 'Premium Stones',
-      certification: 'GIA Certified',
-      quantity: 1,
-      inStock: false,
-      savings: 300
+  const [cart, setCart] = useState<Cart | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
+  
+  // Get authentication token from Redux store
+  const { token } = useSelector((state: RootState) => state.auth)
+
+  // Load cart data on component mount
+  useEffect(() => {
+    loadCart()
+  }, [token])
+
+  const loadCart = async () => {
+    if (!token) {
+      setError('Please log in to view your cart')
+      setLoading(false)
+      return
     }
-  ])
 
-  const updateQuantity = (id: number, change: number) => {
-    setCartItems(items =>
-      items.map(item =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity + change) }
-          : item
+    try {
+      setLoading(true)
+      setError(null)
+      const response = await cartService.getCart(token)
+      
+      if (response.success) {
+        setCart(response.data)
+      } else {
+        setError(response.message || 'Failed to load cart')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load cart')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const updateQuantity = async (itemId: string, change: number) => {
+    if (!token || !cart) return
+
+    const item = cart.items.find(item => item.id === itemId)
+    if (!item) return
+
+    const newQuantity = Math.max(1, item.quantity + change)
+    if (newQuantity === item.quantity) return
+
+    try {
+      setActionLoading(itemId)
+      const response = await cartService.updateCartItem(
+        itemId, 
+        { quantity: newQuantity }, 
+        token
       )
-    )
+      
+      if (response.success) {
+        // Reload cart to get updated data
+        await loadCart()
+      } else {
+        setError(response.message || 'Failed to update quantity')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update quantity')
+    } finally {
+      setActionLoading(null)
+    }
   }
 
-  const removeItem = (id: number) => {
-    setCartItems(items => items.filter(item => item.id !== id))
+  const removeItem = async (itemId: string) => {
+    if (!token) return
+
+    try {
+      setActionLoading(itemId)
+      const response = await cartService.removeFromCart(itemId, token)
+      
+      if (response.success) {
+        // Reload cart to get updated data
+        await loadCart()
+      } else {
+        setError(response.message || 'Failed to remove item')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to remove item')
+    } finally {
+      setActionLoading(null)
+    }
   }
 
-  const moveToWishlist = (id: number) => {
-    // Handle move to wishlist
-    removeItem(id)
+  const moveToWishlist = async (itemId: string) => {
+    if (!token) return
+
+    try {
+      setActionLoading(itemId)
+      const response = await cartService.moveToWishlist(itemId, token)
+      
+      if (response.success) {
+        // Reload cart to get updated data
+        await loadCart()
+      } else {
+        setError(response.message || 'Failed to move to wishlist')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to move to wishlist')
+    } finally {
+      setActionLoading(null)
+    }
   }
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-  const totalSavings = cartItems.reduce((sum, item) => sum + (item.savings * item.quantity), 0)
-  const shipping = 0 // Free shipping
-  const tax = subtotal * 0.08 // 8% tax
-  const total = subtotal + shipping + tax
+  // Use cart data for calculations, fallback to 0 if cart is null
+  const cartItems = cart?.items || []
+  const subtotal = cart?.subtotal || 0
+  const totalSavings = cart?.totalSavings || 0
+  const shipping = cart?.shipping || 0
+  const tax = cart?.tax || 0
+  const total = cart?.total || 0
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
@@ -88,7 +142,54 @@ export default function UserCartPage() {
             </p>
           </div>
 
-          {cartItems.length === 0 ? (
+          {/* Loading State */}
+          {loading ? (
+            <div 
+              className="text-center py-16 rounded-xl border"
+              style={{ 
+                backgroundColor: 'var(--card)',
+                borderColor: 'var(--border)'
+              }}
+            >
+              <Loader2 className="w-16 h-16 mx-auto mb-4 animate-spin" style={{ color: 'var(--primary)' }} />
+              <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--card-foreground)' }}>
+                Loading your cart...
+              </h3>
+              <p style={{ color: 'var(--muted-foreground)' }}>
+                Please wait while we fetch your items
+              </p>
+            </div>
+          ) : error ? (
+            /* Error State */
+            <div 
+              className="text-center py-16 rounded-xl border"
+              style={{ 
+                backgroundColor: 'var(--card)',
+                borderColor: 'var(--border)'
+              }}
+            >
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" 
+                   style={{ backgroundColor: 'var(--destructive)', color: 'var(--destructive-foreground)' }}>
+                <span className="text-2xl">⚠️</span>
+              </div>
+              <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--card-foreground)' }}>
+                Error loading cart
+              </h3>
+              <p className="mb-4" style={{ color: 'var(--muted-foreground)' }}>
+                {error}
+              </p>
+              <button 
+                onClick={loadCart}
+                className="px-6 py-3 rounded-lg font-medium transition-colors"
+                style={{ 
+                  backgroundColor: 'var(--primary)',
+                  color: 'var(--primary-foreground)'
+                }}
+              >
+                Try Again
+              </button>
+            </div>
+          ) : cartItems.length === 0 ? (
             /* Empty Cart */
             <div 
               className="text-center py-16 rounded-xl border"
@@ -135,7 +236,18 @@ export default function UserCartPage() {
                         className="w-20 h-20 rounded-lg flex items-center justify-center text-3xl flex-shrink-0"
                         style={{ backgroundColor: 'var(--muted)' }}
                       >
-                        {item.image}
+                        {item.image ? (
+                          <img 
+                            src={item.image} 
+                            alt={item.name}
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        ) : (
+                          <span>
+                            {item.productType === 'diamond' ? '💎' : 
+                             item.productType === 'gemstone' ? '💙' : '💍'}
+                          </span>
+                        )}
                       </div>
 
                       {/* Product Details */}
@@ -148,12 +260,14 @@ export default function UserCartPage() {
                             <p className="text-sm mb-2" style={{ color: 'var(--muted-foreground)' }}>
                               Sold by {item.seller}
                             </p>
-                            <div className="flex items-center space-x-2 mb-3">
-                              <Shield className="w-4 h-4" style={{ color: 'var(--chart-1)' }} />
-                              <span className="text-sm" style={{ color: 'var(--chart-1)' }}>
-                                {item.certification}
-                              </span>
-                            </div>
+                            {item.certification && (
+                              <div className="flex items-center space-x-2 mb-3">
+                                <Shield className="w-4 h-4" style={{ color: 'var(--chart-1)' }} />
+                                <span className="text-sm" style={{ color: 'var(--chart-1)' }}>
+                                  {item.certification}
+                                </span>
+                              </div>
+                            )}
                             {!item.inStock && (
                               <p className="text-sm font-medium" style={{ color: 'var(--destructive)' }}>
                                 Currently out of stock
@@ -165,17 +279,27 @@ export default function UserCartPage() {
                           <div className="flex items-center space-x-2">
                             <button
                               onClick={() => moveToWishlist(item.id)}
-                              className="p-2 rounded-lg transition-colors hover:bg-opacity-10"
+                              disabled={actionLoading === item.id}
+                              className="p-2 rounded-lg transition-colors hover:bg-opacity-10 disabled:opacity-50"
                               style={{ color: 'var(--muted-foreground)' }}
                             >
-                              <Heart className="w-5 h-5" />
+                              {actionLoading === item.id ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                              ) : (
+                                <Heart className="w-5 h-5" />
+                              )}
                             </button>
                             <button
                               onClick={() => removeItem(item.id)}
-                              className="p-2 rounded-lg transition-colors hover:bg-opacity-10"
+                              disabled={actionLoading === item.id}
+                              className="p-2 rounded-lg transition-colors hover:bg-opacity-10 disabled:opacity-50"
                               style={{ color: 'var(--destructive)' }}
                             >
-                              <Trash2 className="w-5 h-5" />
+                              {actionLoading === item.id ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-5 h-5" />
+                              )}
                             </button>
                           </div>
                         </div>
@@ -187,27 +311,36 @@ export default function UserCartPage() {
                             <div className="flex items-center space-x-2">
                               <button
                                 onClick={() => updateQuantity(item.id, -1)}
-                                disabled={item.quantity <= 1}
+                                disabled={item.quantity <= 1 || actionLoading === item.id}
                                 className="p-1 rounded border transition-colors disabled:opacity-50"
                                 style={{ 
                                   borderColor: 'var(--border)',
                                   color: 'var(--foreground)'
                                 }}
                               >
-                                <Minus className="w-4 h-4" />
+                                {actionLoading === item.id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <Minus className="w-4 h-4" />
+                                )}
                               </button>
                               <span className="w-8 text-center font-medium" style={{ color: 'var(--card-foreground)' }}>
                                 {item.quantity}
                               </span>
                               <button
                                 onClick={() => updateQuantity(item.id, 1)}
-                                className="p-1 rounded border transition-colors"
+                                disabled={actionLoading === item.id}
+                                className="p-1 rounded border transition-colors disabled:opacity-50"
                                 style={{ 
                                   borderColor: 'var(--border)',
                                   color: 'var(--foreground)'
                                 }}
                               >
-                                <Plus className="w-4 h-4" />
+                                {actionLoading === item.id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <Plus className="w-4 h-4" />
+                                )}
                               </button>
                             </div>
                           </div>
@@ -218,13 +351,13 @@ export default function UserCartPage() {
                               <span className="text-xl font-bold" style={{ color: 'var(--card-foreground)' }}>
                                 ${(item.price * item.quantity).toLocaleString()}
                               </span>
-                              {item.savings > 0 && (
+                              {item.originalPrice && item.originalPrice > item.price && (
                                 <span className="text-sm line-through" style={{ color: 'var(--muted-foreground)' }}>
                                   ${(item.originalPrice * item.quantity).toLocaleString()}
                                 </span>
                               )}
                             </div>
-                            {item.savings > 0 && (
+                            {item.savings && item.savings > 0 && (
                               <p className="text-sm" style={{ color: 'var(--chart-1)' }}>
                                 Save ${(item.savings * item.quantity).toLocaleString()}
                               </p>
