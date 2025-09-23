@@ -1,3 +1,6 @@
+// User profile and settings API service
+import { API_CONFIG } from '../lib/constants';
+
 // User API service for handling user profile operations
 
 export interface UpdateUserRequest {
@@ -21,7 +24,7 @@ export interface UserUpdateResponse {
 }
 
 class UserService {
-  private baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+  private baseURL = API_CONFIG.BASE_URL.replace('/api/v1', '') // Remove /api/v1 since it's added in endpoints
   
   private getAuthHeaders(token: string) {
     return {

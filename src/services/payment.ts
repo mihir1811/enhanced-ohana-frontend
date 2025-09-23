@@ -1,3 +1,6 @@
+// Payment processing and management API service
+import { API_CONFIG } from '../lib/constants';
+
 // Payment processing services and utilities
 
 export interface PaymentMethod {
@@ -41,7 +44,7 @@ class PaymentService {
   private apiUrl: string
 
   constructor() {
-    this.apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1'
+    this.apiUrl = API_CONFIG.BASE_URL
   }
 
   // Create payment intent

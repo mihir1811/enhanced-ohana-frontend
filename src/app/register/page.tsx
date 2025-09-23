@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { API_CONFIG, buildApiUrl } from '@/lib/constants'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -41,7 +42,7 @@ export default function RegisterPage() {
     if (file) formData.append('profilePicture', file)
 
     try {
-      const res = await fetch('http://localhost:3000/api/v1/auth/register', {
+      const res = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.REGISTER), {
         method: 'POST',
         body: formData,
       })
