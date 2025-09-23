@@ -109,18 +109,24 @@ export const useUserProfile = (): UseUserProfileReturn => {
       if (response.success && response.data) {
         // Transform registration data to SellerData format
         const sellerData: SellerData = {
-          businessName: data.businessName,
-          businessRegistration: data.businessRegistration,
-          taxId: data.taxId,
-          businessAddress: data.businessAddress,
-          certifications: [],
-          isVerifiedSeller: false,
-          sellerRating: 0,
-          totalSales: 0,
-          joinedAsSellerDate: new Date().toISOString(),
-          businessDescription: data.businessDescription,
-          website: data.website,
-          specializations: data.specializations,
+          id: response.data.id || '',
+          userId: user.id,
+          companyName: data.businessName,
+          addressLine1: data.businessAddress.street,
+          addressLine2: '',
+          city: data.businessAddress.city,
+          state: data.businessAddress.state,
+          country: data.businessAddress.country,
+          zipCode: data.businessAddress.zipCode,
+          sellerType: data.specializations[0] || 'general',
+          companyLogo: '',
+          isVerified: false,
+          isBlocked: false,
+          isDeleted: false,
+          panCard: '',
+          gstNumber: '',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         }
 
         dispatch(upgradeToSeller(sellerData))

@@ -41,22 +41,22 @@ function ProductListPage() {
 }
 */
 
-// ===== 2. ORDERS DATA FLOW =====
+// ===== 2. SELLER DATA FLOW =====
 
 /*
-// In a seller orders page:
-import { useOrders } from '@/hooks'
+// In a seller profile page:
+import { useSellerProfile } from '@/hooks'
 
-function SellerOrdersPage() {
+function SellerProfilePage() {
   const { 
-    sellerOrders, 
+    profile, 
     loading, 
-    loadSellerOrders, 
-    updateStatus 
-  } = useOrders()
+    updateProfile, 
+    stats 
+  } = useSellerProfile()
 
   useEffect(() => {
-    loadSellerOrders({ status: 'pending' })
+    // Profile loads automatically
   }, [])
 
   const handleStatusUpdate = async (orderId, newStatus) => {

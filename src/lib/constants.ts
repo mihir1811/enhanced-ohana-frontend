@@ -72,22 +72,7 @@ export const API_CONFIG = {
       BY_SELLER: '/jewelry/seller',
     },
     
-    // Cart & Orders
-    CART: {
-      BASE: '/cart',
-      ADD: '/cart/add',
-      UPDATE: '/cart/update',
-      REMOVE: '/cart/remove',
-      CLEAR: '/cart/clear',
-      PROMO: '/cart/promo',
-    },
-    
-    ORDERS: {
-      BASE: '/orders',
-      CREATE: '/orders/create',
-      HISTORY: '/orders/history',
-      DETAILS: '/orders',
-    },
+
     
     // Auctions
     AUCTIONS: {
@@ -97,12 +82,7 @@ export const API_CONFIG = {
       ENDED: '/auctions/ended',
     },
     
-    // Payments
-    PAYMENTS: {
-      PROCESS: '/payments/process',
-      VERIFY: '/payments/verify',
-      METHODS: '/payments/methods',
-    },
+
     
     // File Uploads
     UPLOADS: {

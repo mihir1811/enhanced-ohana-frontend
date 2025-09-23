@@ -2,10 +2,8 @@ import { GemstoneFilterValues } from './GemstoneFilters';
 
 export const getDefaultGemstoneFilters = (gemstoneType: 'single' | 'melee'): GemstoneFilterValues => {
   const baseFilters: GemstoneFilterValues = {
-    gemType: [],
-    variety: [],
+    gemstoneType: [],
     color: [],
-    shape: [],
     caratWeight: { min: 0.1, max: 50 },
     priceRange: { min: 0, max: 100000 },
     origin: [],
@@ -19,8 +17,9 @@ export const getDefaultGemstoneFilters = (gemstoneType: 'single' | 'melee'): Gem
     transparency: [],
     luster: [],
     phenomena: [],
+    location: [],
     companyName: '',
-    // vendorLocation: ''
+    vendorLocation: ''
   };
 
   // Adjust filters based on gemstone type
