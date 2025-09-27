@@ -5,6 +5,8 @@ import { Filter as FilterIcon } from 'lucide-react';
 import DiamondFilters, { DiamondFilterValues } from './DiamondFilters';
 import DiamondResults, { Diamond } from './DiamondResults';
 import { getDefaultDiamondFilters, transformApiDiamond } from './diamondUtils';
+import { cartService } from '@/services/cartService';
+import { useAppSelector } from '@/store/hooks';
 
 interface DiamondListingPageProps {
   diamondType: 'lab-grown-single' | 'lab-grown-melee' | 'natural-single' | 'natural-melee';
@@ -17,6 +19,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
   fetchDiamonds,
   title = 'Diamonds',
 }) => {
+  const token = useAppSelector((state) => state.auth.token);
   const [filters, setFilters] = useState<DiamondFilterValues>(() => getDefaultDiamondFilters(diamondType));
   const [diamonds, setDiamonds] = useState<Diamond[]>([]);
   const [loading, setLoading] = useState(false);
@@ -178,9 +181,23 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                 window.location.href = `/diamonds/${diamond.id}`;
               }
             } }
-            diamondType={diamondType} onAddToCart={function (diamondId: string): void {
-              throw new Error('Function not implemented.');
-            } }          />
+            diamondType={diamondType}
+            onAddToCart={async (diamondId: string) => {
+              if (!token) {
+                // Silently ignore if not authenticated; could prompt login in future
+                return;
+              }
+              try {
+                await cartService.addToCart({
+                  productId: Number(diamondId),
+                  productType: diamondType.includes('melee') ? 'meleeDiamond' : 'diamond',
+                  quantity: 1,
+                }, token);
+              } catch (e) {
+                // Intentionally swallow errors here; a global toast system can be added
+              }
+            }}
+          />
         </main>
       </div>
     </div>

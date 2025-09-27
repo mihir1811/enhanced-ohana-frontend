@@ -76,13 +76,13 @@ export interface WishlistResponse {
 
 export interface AddToWishlistData {
   productId: number;
-  productType: 'diamond' | 'gemstone' | 'jewellery';
+  productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond';
 }
 
 export interface WishlistFilter {
   page?: number;
   limit?: number;
-  productType?: 'diamond' | 'gemstone' | 'jewellery';
+  productType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond';
   search?: string;
   sort?: string;
 }
@@ -125,7 +125,7 @@ export const wishlistService = {
   // Remove item from wishlist by product ID and type
   removeFromWishlistByProduct: async (
     productId: string | number, 
-    productType: 'diamond' | 'gemstone' | 'jewellery', 
+    productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond', 
     token: string
   ): Promise<ApiResponse<any>> => {
     const requestData = {

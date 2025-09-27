@@ -12,7 +12,7 @@ export interface UseWishlistReturn {
   isInitialized: boolean;
 
   // Actions
-  addToWishlist: (productId: number, productType?: 'diamond' | 'gemstone' | 'jewellery') => Promise<boolean>;
+  addToWishlist: (productId: number, productType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond') => Promise<boolean>;
   removeFromWishlist: (wishlistItemId: number) => Promise<boolean>;
   removeFromWishlistByProduct: (productId: number) => Promise<boolean>;
   toggleWishlist: (productId: number) => Promise<boolean>;
@@ -50,7 +50,7 @@ export function useWishlistActions(): UseWishlistReturn {
  * Hook specifically for wishlist button components
  * Provides optimized state and handlers for wishlist buttons
  */
-export function useWishlistButton(productId: number, productType: 'diamond' | 'gemstone' | 'jewellery' = 'jewellery') {
+export function useWishlistButton(productId: number, productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond' = 'jewellery') {
   const {
     isInWishlist,
     addToWishlist,

@@ -32,7 +32,7 @@ type WishlistAction =
   | { type: 'SET_INITIALIZED'; payload: boolean };
 
 interface WishlistContextType extends WishlistState {
-  addToWishlist: (productId: number, productType?: 'diamond' | 'gemstone' | 'jewellery') => Promise<boolean>;
+  addToWishlist: (productId: number, productType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond') => Promise<boolean>;
   removeFromWishlist: (wishlistItemId: number) => Promise<boolean>;
   removeFromWishlistByProduct: (productId: number) => Promise<boolean>;
   isInWishlist: (productId: number) => boolean;
@@ -141,7 +141,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   }, [token]);
 
   // Add item to wishlist
-  const addToWishlist = useCallback(async (productId: number, productType: 'diamond' | 'gemstone' | 'jewellery' = 'jewellery'): Promise<boolean> => {
+  const addToWishlist = useCallback(async (productId: number, productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond' = 'jewellery'): Promise<boolean> => {
     if (!token) {
       dispatch({ type: 'SET_ERROR', payload: 'Please login to add items to wishlist' });
       return false;
@@ -215,11 +215,16 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       const itemToRemove = itemsArray.find(item => item.productId === productId);
       
       // Determine productType based on the product category or default to 'jewellery'
-      let productType: 'diamond' | 'gemstone' | 'jewellery' = 'jewellery';
+      let productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond' = 'jewellery';
       if (itemToRemove?.product?.category) {
         const category = itemToRemove.product.category.toLowerCase();
         if (category.includes('diamond')) {
-          productType = 'diamond';
+          // If item is a melee diamond, tag accordingly; otherwise fallback to diamond
+          if ((itemToRemove.product as any)?.isMelee || (itemToRemove.product as any)?.category?.toLowerCase()?.includes('melee')) {
+            productType = 'meleeDiamond';
+          } else {
+            productType = 'diamond';
+          }
         } else if (category.includes('gem')) {
           productType = 'gemstone';
         } else {

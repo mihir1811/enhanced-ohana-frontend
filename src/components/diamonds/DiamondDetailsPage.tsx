@@ -22,6 +22,9 @@ import {
 } from 'lucide-react';
 import { Diamond } from './DiamondResults';
 import { WishlistButton } from '@/components/shared/WishlistButton';
+import { cartService } from '@/services/cartService';
+import { useSelector } from 'react-redux'
+import { RootState } from '@/store'
 
 interface DiamondDetailsPageProps {
   diamond: Diamond | null;
@@ -30,6 +33,36 @@ interface DiamondDetailsPageProps {
 const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
   const [imgIdx, setImgIdx] = useState(0);
   const [activeTab, setActiveTab] = useState<'overview' | 'specifications' | 'certification' | 'seller'>('overview');
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+
+  // Get authentication token from Redux store
+  const { token } = useSelector((state: RootState) => state.auth);
+
+  const handleAddToCart = async () => {
+    if (!diamond) return;
+    
+    if (!token) {
+      console.error('User not authenticated');
+      // You can add a toast notification or redirect to login here
+      return;
+    }
+    
+    setIsAddingToCart(true);
+    try {
+      await cartService.addToCart({
+        productId: Number(diamond.id),
+        productType: 'diamond',
+        quantity: 1
+      }, token);
+      console.log('Diamond added to cart successfully');
+      // You can add a toast notification here
+    } catch (error) {
+      console.error('Failed to add diamond to cart:', error);
+      // You can add error handling/toast here
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
 
   console.log(diamond, );
 
@@ -291,9 +324,13 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
           {/* Action Buttons */}
           <div className="space-y-4">
             <div className="flex gap-3">
-              <button className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-2xl transition-all duration-200 shadow-sm hover:shadow-md">
+              <button 
+                onClick={handleAddToCart}
+                disabled={isAddingToCart || diamond.isSold}
+                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-2xl transition-all duration-200 shadow-sm hover:shadow-md"
+              >
                 <ShoppingCart className="w-5 h-5" />
-                Add to Cart
+                {isAddingToCart ? 'Adding...' : diamond.isSold ? 'Sold Out' : 'Add to Cart'}
               </button>
               <WishlistButton
                 productId={typeof diamond?.id === 'string' ? parseInt(diamond.id) : (diamond?.id || 0)}

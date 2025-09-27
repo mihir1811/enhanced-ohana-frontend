@@ -12,6 +12,7 @@ import MobileSidebar from './MobileSidebar'
 import useNavigation from '@/hooks/useNavigation'
 import '@/styles/navigation.css'
 import { SECTION_WIDTH } from '@/lib/constants'
+import { cartService, type Cart } from '@/services'
 
 export default function NavigationUser() {
   const [isOpen, setIsOpen] = useState(false)
@@ -23,6 +24,12 @@ export default function NavigationUser() {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [cartItems] = useState(3) // Mock cart count
   const [notifications] = useState(2) // Mock notification count
+  const [cartDrawerVisible, setCartDrawerVisible] = useState(false)
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false)
+  const [cart, setCart] = useState<Cart | null>(null)
+  const [cartLoading, setCartLoading] = useState(false)
+  const [cartError, setCartError] = useState<string | null>(null)
+  const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set())
   const [suggestedProducts] = useState([
     'Diamond Engagement Rings',
     'Blue Sapphire Earrings',
@@ -30,7 +37,7 @@ export default function NavigationUser() {
     'Lab Grown Diamonds',
     'Gold Wedding Bands'
   ])
-  const { user } = useSelector((state: RootState) => state.auth)
+  const { user, token } = useSelector((state: RootState) => state.auth)
   const dispatch = useAppDispatch()
   const router = useRouter()
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -212,6 +219,82 @@ export default function NavigationUser() {
       router.push('/')
     }
   }, [dispatch, router])
+
+  const loadCartForDrawer = useCallback(async () => {
+    setCartLoading(true)
+    try {
+      setCartError(null)
+      if (!token) {
+        setCart(null)
+        setCartError('Please login to view your cart.')
+        return
+      }
+      const result = await cartService.getCart(token)
+      if (result.success) {
+        setCart(result.data)
+      } else {
+        setCart(result.data || null)
+        setCartError(result.message || 'Failed to load cart')
+      }
+    } catch (error) {
+      setCart(null)
+      setCartError(error instanceof Error ? error.message : 'Failed to load cart')
+    } finally {
+      setCartLoading(false)
+    }
+  }, [token])
+
+  const openCartDrawer = useCallback(() => {
+    setCartDrawerVisible(true)
+    setCartLoading(true)
+    setCartError(null)
+    loadCartForDrawer()
+    // Defer to next frame for smooth transition
+    requestAnimationFrame(() => setCartDrawerOpen(true))
+  }, [loadCartForDrawer])
+
+  const closeCartDrawer = useCallback(() => {
+    setCartDrawerOpen(false)
+    // Match duration-300 to unmount after animation
+    setTimeout(() => setCartDrawerVisible(false), 300)
+  }, [])
+
+  const updateItemQuantity = useCallback(
+    async (itemId: string, newQuantity: number) => {
+      if (!token) {
+        setCartError('Please log in to update your cart.')
+        return
+      }
+      if (!cart) return
+      if (newQuantity < 1) return
+
+      setCartError(null)
+      setUpdatingItems((prev) => {
+        const next = new Set(prev)
+        next.add(itemId)
+        return next
+      })
+      try {
+        await cartService.updateCartItem(itemId, { quantity: newQuantity }, token)
+        const refreshed = await cartService.getCart(token)
+        if (refreshed.success) {
+          setCart(refreshed.data)
+        } else {
+          setCartError(refreshed.message || 'Failed to refresh cart.')
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to update cart.'
+        setCartError(message)
+      } finally {
+        setUpdatingItems((prev) => {
+          const next = new Set(prev)
+          next.delete(itemId)
+          return next
+        })
+      }
+    },
+    [token, cart]
+  )
 
   const handleSearch = useCallback((e: React.FormEvent) => {
     e.preventDefault()
@@ -618,7 +701,13 @@ export default function NavigationUser() {
               </Link>
 
               {/* Shopping Cart */}
-              <Link href="/user/cart" className="relative group p-2 transition-all duration-300 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit" style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}>
+              <button
+                type="button"
+                onClick={openCartDrawer}
+                className="relative group p-2 transition-all duration-300 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit"
+                style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}
+                aria-label="Open cart"
+              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m-2.4 0L3 3H1m6 10v6a1 1 0 001 1h8a1 1 0 001-1v-6M7 13l-1.4-7M7 13l1.5 7m8.5-7L15 20" />
                 </svg>
@@ -627,7 +716,7 @@ export default function NavigationUser() {
                     {cartItems}
                   </span>
                 )}
-              </Link>
+              </button>
 
               {/* Wishlist */}
               <Link href="/user/wishlist" className="relative group p-2 transition-all duration-300 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit" style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}>
@@ -950,6 +1039,204 @@ export default function NavigationUser() {
           </div>
         </nav>
       </header>
+
+      {/* Cart Drawer (right side) */}
+      {cartDrawerVisible && (
+        <>
+          {/* Backdrop */}
+          <div
+            className={`fixed inset-0 bg-black/50 z-[9998] transition-opacity duration-300 ${cartDrawerOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+            onClick={closeCartDrawer}
+            aria-hidden="true"
+          />
+          {/* Drawer panel */}
+          <div
+            className={`fixed top-0 right-0 w-11/12 max-w-sm h-full bg-white dark:bg-slate-900 z-[9999] shadow-2xl p-4 flex flex-col transition-transform duration-300 ${cartDrawerOpen ? 'translate-x-0' : 'translate-x-full'}`}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Cart drawer"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between border-b pb-3" style={{ borderColor: 'var(--border)' }}>
+              <div className="flex items-center gap-3">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m-2.4 0L3 3H1m6 10v6a1 1 0 001 1h8a1 1 0 001-1v-6M7 13l-1.4-7M7 13l1.5 7m8.5-7L15 20" />
+                </svg>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold" style={{ color: 'var(--foreground)' }}>Your Cart</h3>
+                  <span className="px-2 py-0.5 text-xs rounded-full" style={{ background: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                    {cart?.itemCount ?? 0}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={closeCartDrawer}
+                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/50"
+                style={{ borderRadius: 'var(--radius-md)', color: 'var(--muted-foreground)' }}
+                aria-label="Close cart"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Products (scrollable) */}
+            <div className="flex-1 overflow-y-auto py-4 space-y-3">
+              {cartLoading ? (
+                <div className="space-y-3">
+                  {[1,2,3].map((i) => (
+                    <div key={i} className="flex items-center gap-3 p-2 rounded-lg border animate-pulse" style={{ borderColor: 'var(--border)' }}>
+                      <div className="w-14 h-14 rounded bg-muted" />
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div className="h-3 w-2/3 rounded bg-muted" />
+                        <div className="h-3 w-1/3 rounded bg-muted" />
+                      </div>
+                      <div className="h-3 w-12 rounded bg-muted" />
+                    </div>
+                  ))}
+                </div>
+              ) : cartError ? (
+                <div className="space-y-3">
+                  <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>{cartError}</p>
+                  <Link href="/user/cart" className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                    View Cart
+                  </Link>
+                </div>
+              ) : cart && cart.items.length > 0 ? (
+                <>
+                  <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                    You have <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{cart.itemCount}</span> items in your cart.
+                  </p>
+                  <div className="space-y-3">
+                    {cart.items.slice(0, 6).map((item) => (
+                      <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg border" style={{ borderColor: 'var(--border)' }}>
+                        <img
+                          src={item.image && item.image.trim() !== '' ? item.image : '/images/round.png'}
+                          alt={item.name || 'Product'}
+                          className="w-16 h-16 rounded object-cover bg-[var(--muted)]"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/round.png' }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <div className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>{item.name}</div>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                              {item.productType}
+                            </span>
+                          </div>
+                          <div className="text-xs mt-0.5 truncate" style={{ color: 'var(--muted-foreground)' }}>
+                            by {item.seller}{item.certification ? ` • ${item.certification}` : ''}
+                          </div>
+                          <div className="text-xs mt-0.5 truncate" style={{ color: 'var(--muted-foreground)' }}>
+                            Qty {item.quantity}
+                            {item.specifications?.caratWeight ? ` • ${item.specifications.caratWeight}ct` : ''}
+                            {item.specifications?.color ? ` • ${item.specifications.color}` : ''}
+                            {item.specifications?.clarity ? ` • ${item.specifications.clarity}` : ''}
+                          </div>
+                        </div>
+                        <div className="text-right min-w-[132px]">
+                          {item.originalPrice && item.originalPrice > item.price ? (
+                            <div className="text-xs line-through" style={{ color: 'var(--muted-foreground)' }}>
+                              ${item.originalPrice.toFixed(2)}
+                            </div>
+                          ) : null}
+                          <div className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
+                            ${(item.price * item.quantity).toFixed(2)}
+                          </div>
+                          {item.savings && item.savings > 0 ? (
+                            <div className="text-[11px] text-green-600">Save ${item.savings.toFixed(2)}</div>
+                          ) : null}
+                          <div className="mt-2 inline-flex items-center select-none">
+                            <button
+                              type="button"
+                              aria-label="Decrease quantity"
+                              disabled={updatingItems.has(item.id) || item.quantity <= 1}
+                              onClick={() => updateItemQuantity(item.id, item.quantity - 1)}
+                              className="w-7 h-7 rounded-l border border-[var(--border)] text-sm hover:bg-[var(--muted)] disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              −
+                            </button>
+                            <div className="w-9 h-7 flex items-center justify-center border-t border-b border-[var(--border)] text-xs">
+                              {item.quantity}
+                            </div>
+                            <button
+                              type="button"
+                              aria-label="Increase quantity"
+                              disabled={updatingItems.has(item.id)}
+                              onClick={() => updateItemQuantity(item.id, item.quantity + 1)}
+                              className="w-7 h-7 rounded-r border border-[var(--border)] text-sm hover:bg-[var(--muted)] disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Footer will render below */}
+                </>
+              ) : (
+                <div className="space-y-3 text-center">
+                  <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                    <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--muted-foreground)' }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m-2.4 0L3 3H1m6 10v6a1 1 0 001 1h8a1 1 0 001-1v-6M7 13l-1.4-7M7 13l1.5 7m8.5-7L15 20" />
+                    </svg>
+                  </div>
+                  <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Your cart is empty.</p>
+                  <Link href="/diamonds" className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary transition-colors">
+                    Browse products
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Footer (sticky) */}
+            {!cartLoading && !cartError && cart && cart.items.length > 0 && (
+              <div className="border-t pt-3 space-y-2" style={{ borderColor: 'var(--border)' }}>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Subtotal</span>
+                  <span className="font-semibold" style={{ color: 'var(--foreground)' }}>${cart.subtotal.toFixed(2)}</span>
+                </div>
+                {cart.totalSavings > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Savings</span>
+                    <span className="font-semibold text-green-600">-${cart.totalSavings.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Shipping</span>
+                  <span className="font-semibold" style={{ color: 'var(--foreground)' }}>${cart.shipping.toFixed(2)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Tax</span>
+                  <span className="font-semibold" style={{ color: 'var(--foreground)' }}>${cart.tax.toFixed(2)}</span>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
+                  <span className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Total</span>
+                  <span className="text-base font-bold" style={{ color: 'var(--foreground)' }}>${cart.total.toFixed(2)}</span>
+                </div>
+                <div className="mt-3">
+                  <Link
+                    href="/user/cart"
+                    aria-label={`Go to cart with ${cart.items.reduce((sum, i) => sum + i.quantity, 0)} items, total $${cart.total.toFixed(2)}`}
+                    className="group w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-[var(--background)] transition-colors font-semibold shadow-sm"
+                    style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+                  >
+                    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13v6a1 1 0 001 1h8a1 1 0 001-1v-6" />
+                    </svg>
+                    <span>Go to Cart</span>
+                    <span className="text-xs opacity-80">
+                      ({cart.items.reduce((sum, i) => sum + i.quantity, 0)} items • ${cart.total.toFixed(2)})
+                    </span>
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Mobile Sidebar - Outside of header for proper semantic structure */}
       <MobileSidebar

@@ -8,7 +8,7 @@ export interface UnifiedProduct {
   images: string[];
   
   // Product type specific
-  productType: 'diamond' | 'gemstone' | 'jewellery';
+  productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond';
   
   // Common display properties
   mainImage?: string;
@@ -145,9 +145,11 @@ export function transformWishlistItemToUnified(item: any): UnifiedProduct | null
   const product = item.product;
   
   // Determine product type based on available fields or category
-  let productType: 'diamond' | 'gemstone' | 'jewellery' = 'jewellery';
+  let productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond' = 'jewellery';
   
-  if (product.caratWeight && product.cut && product.clarity && !product.gemType) {
+  if (product.productType === 'meleeDiamond' || (product.caratWeight && product.caratWeight < 0.2)) {
+    productType = 'meleeDiamond';
+  } else if (product.caratWeight && product.cut && product.clarity && !product.gemType) {
     productType = 'diamond';
   } else if (product.gemType || product.origin) {
     productType = 'gemstone';
@@ -159,6 +161,8 @@ export function transformWishlistItemToUnified(item: any): UnifiedProduct | null
   switch (productType) {
     case 'diamond':
       return transformDiamondToUnified(product);
+    case 'meleeDiamond':
+      return transformDiamondToUnified(product); // Melee diamonds use same structure as diamonds
     case 'gemstone':
       return transformGemstoneToUnified(product);
     case 'jewellery':

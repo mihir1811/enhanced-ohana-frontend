@@ -4,7 +4,7 @@ import { apiService, ApiResponse } from './api'
 export interface CartItem {
   id: string
   productId: string
-  productType: 'diamond' | 'gemstone' | 'jewelry'
+  productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond'
   name: string
   price: number
   originalPrice?: number
@@ -34,8 +34,8 @@ export interface Cart {
 }
 
 export interface AddToCartData {
-  productId: string
-  productType: 'diamond' | 'gemstone' | 'jewelry'
+  productId: number
+  productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond'
   quantity: number
   specifications?: Record<string, any>
 }
@@ -52,24 +52,52 @@ class CartService {
       const response = await apiService.get('/cart', {}, token)
       
       if (response.success && Array.isArray(response.data)) {
+        // Helper to sanitize URLs coming with stray quotes/backticks
+        const sanitizeUrl = (url?: string | null): string => {
+          if (!url) return ''
+          return String(url).replace(/[`"\s]/g, '')
+        }
+
         // Transform the API response to match our Cart interface
-        const cartItems: CartItem[] = response.data.map((item: any) => ({
-          id: item.id.toString(),
-          productId: item.productId.toString(),
-          productType: item.productType === 'jewellery' ? 'jewelry' : item.productType,
-          name: item.product.name,
-          price: item.product.totalPrice,
-          originalPrice: item.product.basePrice + item.product.makingCharge,
-          image: item.product.image1?.trim() || '',
-          seller: item.user?.name || 'Unknown Seller',
-          certification: item.product.attributes?.certification || undefined,
-          quantity: item.quantity,
-          inStock: !item.product.isSold,
-          savings: (item.product.basePrice + item.product.makingCharge) - item.product.totalPrice,
-          specifications: item.product.attributes || {},
-          createdAt: item.createdAt,
-          updatedAt: item.updatedAt
-        }))
+        const cartItems: CartItem[] = response.data.map((item: any) => {
+          const product = item.product || {}
+          const priceNum = parseFloat(product.price ?? '0')
+          const discountRaw = product.discount ?? '0'
+          const discountNum = typeof discountRaw === 'string' ? parseFloat(discountRaw) : Number(discountRaw) || 0
+          const effectivePrice = isNaN(priceNum) ? 0 : Math.max(0, priceNum - (isNaN(discountNum) ? 0 : discountNum))
+          const originalPrice = isNaN(priceNum) ? undefined : priceNum
+          const savings = originalPrice !== undefined ? Math.max(0, priceNum - effectivePrice) : undefined
+
+          return {
+            id: String(item.id),
+            productId: String(item.productId),
+            productType: item.productType,
+            name: product.name ?? 'Unknown Product',
+            price: effectivePrice,
+            originalPrice,
+            image: sanitizeUrl(product.image1),
+            seller: item.user?.name || 'Unknown Seller',
+            certification: product.certificateNumber || undefined,
+            quantity: Number(item.quantity) || 1,
+            inStock: !product.isSold,
+            savings,
+            specifications: {
+              stockNumber: product.stockNumber,
+              sellerSKU: product.sellerSKU,
+              caratWeight: product.caratWeight,
+              cut: product.cut,
+              color: product.color,
+              clarity: product.clarity,
+              shape: product.shape,
+              origin: product.origin,
+              treatment: product.treatment,
+              measurement: product.measurement,
+              ratio: product.ratio,
+            },
+            createdAt: item.createdAt,
+            updatedAt: item.updatedAt,
+          }
+        })
 
         // Calculate cart totals
         const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
@@ -80,7 +108,7 @@ class CartService {
 
         const cart: Cart = {
           id: 'user-cart',
-          userId: cartItems[0]?.productId || '',
+          userId: response.data[0]?.userId?.toString?.() || '',
           items: cartItems,
           subtotal,
           totalSavings,
@@ -145,12 +173,16 @@ class CartService {
 
   // Add item to cart
   async addToCart(data: AddToCartData, token: string): Promise<ApiResponse<CartItem>> {
-    return apiService.post('/cart/items', data, token)
+    return apiService.post('/cart/add', data, token)
   }
 
   // Update cart item quantity
   async updateCartItem(itemId: string, data: UpdateCartItemData, token: string): Promise<ApiResponse<CartItem>> {
-    return apiService.patch(`/cart/items/${itemId}`, data, token)
+    const payload = {
+      cartId: Number(itemId),
+      quantity: Number(data.quantity)
+    }
+    return apiService.put('/cart/update', payload, token)
   }
 
   // Remove item from cart

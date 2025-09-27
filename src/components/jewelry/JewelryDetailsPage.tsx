@@ -22,6 +22,9 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { WishlistButton } from '@/components/shared/WishlistButton';
+import { useSelector } from 'react-redux'
+import { RootState } from '@/store'
+import { cartService } from '@/services/cartService';
 
 // Minimalistic Image Gallery Component
 interface ImageGalleryProps {
@@ -132,16 +135,48 @@ interface JewelryDetailsPageProps {
 }
 
 const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
-  const [selectedTab, setSelectedTab] = useState('details');
+  const [imgIdx, setImgIdx] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [selectedTab, setSelectedTab] = useState('details');
   const [collapsedSections, setCollapsedSections] = useState({
-    technicalSpecs: false,
+    overview: false,
+    specifications: false,
     priceBreakdown: false,
-    stoneDetails: false,
     metalDetails: false,
+    stoneDetails: false,
     stones: {} as Record<number, boolean>
   });
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
   const router = useRouter();
+
+  // Get authentication token from Redux store
+  const { token } = useSelector((state: RootState) => state.auth);
+
+  const handleAddToCart = async () => {
+    if (!jewelry) return;
+    
+    if (!token) {
+      console.error('User not authenticated');
+      // You can add a toast notification or redirect to login here
+      return;
+    }
+    
+    setIsAddingToCart(true);
+    try {
+      await cartService.addToCart({
+        productId: Number(jewelry.id),
+        productType: 'jewellery',
+        quantity: quantity
+      }, token);
+      console.log('Jewelry added to cart successfully');
+      // You can add a toast notification here
+    } catch (error) {
+      console.error('Failed to add jewelry to cart:', error);
+      // You can add error handling/toast here
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
 
   const toggleSection = (section: string, stoneIndex?: number) => {
     setCollapsedSections(prev => {
@@ -307,9 +342,13 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
 
             {/* Action Buttons - Minimal */}
             <div className="space-y-4">
-              <button className="w-full bg-gray-900 text-white py-4 rounded-full font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 touch-target">
+              <button 
+                onClick={handleAddToCart}
+                disabled={isAddingToCart}
+                className="w-full bg-gray-900 text-white py-4 rounded-full font-medium hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 touch-target"
+              >
                 <ShoppingCart className="w-4 h-4" />
-                Add to Cart
+                {isAddingToCart ? 'Adding...' : 'Add to Cart'}
               </button>
 
               <div className="flex gap-3">

@@ -401,10 +401,18 @@ export default function UserCartPage() {
                     <div className="flex justify-between">
                       <span style={{ color: 'var(--muted-foreground)' }}>Shipping</span>
                       <div className="text-right">
-                        <span style={{ color: 'var(--chart-1)' }}>FREE</span>
-                        <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                          On orders over $1,000
-                        </p>
+                        {shipping === 0 ? (
+                          <>
+                            <span style={{ color: 'var(--chart-1)' }}>FREE</span>
+                            <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                              On orders over $1,000
+                            </p>
+                          </>
+                        ) : (
+                          <span style={{ color: 'var(--card-foreground)' }}>
+                            ${shipping.toLocaleString()}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="flex justify-between">

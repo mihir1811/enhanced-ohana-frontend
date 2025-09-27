@@ -35,11 +35,23 @@ class ApiService {
       const data = await response.json();
 
       if (!response.ok) {
+        // Handle 401 Unauthorized errors specifically
+        if (response.status === 401) {
+          console.log('not logged in');
+          console.error('Authentication required: User is not logged in or token is invalid');
+        }
+        
         throw new Error(data.message || `HTTP error! status: ${response.status}`);
       }
 
       return data;
     } catch (error) {
+      // Check if it's a 401 error in the catch block as well
+      if (error instanceof Error && error.message.includes('401')) {
+        console.log('not logged in');
+        console.error('Authentication required: User is not logged in or token is invalid');
+      }
+      
       console.error('Upload PATCH Error:', error);
       throw error;
     }
@@ -70,11 +82,23 @@ class ApiService {
       const data = await response.json()
 
       if (!response.ok) {
+        // Handle 401 Unauthorized errors specifically
+        if (response.status === 401) {
+          console.log('not logged in')
+          console.error('Authentication required: User is not logged in or token is invalid')
+        }
+        
         throw new Error(data.message || `HTTP error! status: ${response.status}`)
       }
 
       return data
     } catch (error) {
+      // Check if it's a 401 error in the catch block as well
+      if (error instanceof Error && error.message.includes('401')) {
+        console.log('not logged in')
+        console.error('Authentication required: User is not logged in or token is invalid')
+      }
+      
       console.error('API Request Error:', error)
       throw error
     }
@@ -135,11 +159,23 @@ class ApiService {
       const data = await response.json()
 
       if (!response.ok) {
+        // Handle 401 Unauthorized errors specifically
+        if (response.status === 401) {
+          console.log('not logged in')
+          console.error('Authentication required: User is not logged in or token is invalid')
+        }
+        
         throw new Error(data.message || `HTTP error! status: ${response.status}`)
       }
 
       return data
     } catch (error) {
+      // Check if it's a 401 error in the catch block as well
+      if (error instanceof Error && error.message.includes('401')) {
+        console.log('not logged in')
+        console.error('Authentication required: User is not logged in or token is invalid')
+      }
+      
       console.error('Upload Error:', error)
       throw error
     }
