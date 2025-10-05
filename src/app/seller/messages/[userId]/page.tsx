@@ -9,6 +9,7 @@ import { toast } from 'react-hot-toast'
 import { useSocket } from '@/components/chat/SocketProvider'
 import { CHAT_EVENTS } from '@/components/chat/socket'
 import { chatService } from '@/services/chat.service'
+import { extractMessageArray, normalizeMessageDto } from '@/services/chat.utils'
 
 type ChatMessage = {
   id: string
@@ -28,48 +29,17 @@ export default function SellerChatWithUserPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const listRef = useRef<HTMLDivElement | null>(null)
-  const { socket, sendMessage, connected } = useSocket()
+  const { socket, sendMessage, connected, register } = useSocket()
   const [serverChatId, setServerChatId] = useState<string | null>(null)
 
   // Auth gating: require seller role
   useEffect(() => {
-    if (!token || !isSeller) {
+    if (!isSeller) {
       toast.error('Please login as a seller to access chat')
     }
-  }, [token, isSeller])
+  }, [isSeller])
 
-  // Load persisted messages
-  useEffect(() => {
-    try {
-      const raw = typeof window !== 'undefined' ? window.localStorage.getItem(storageKey) : null
-      if (raw) {
-        const parsed = JSON.parse(raw) as ChatMessage[]
-        setMessages(parsed)
-      } else {
-        setMessages([
-          {
-            id: `seed-${Date.now()}`,
-            from: 'user',
-            text: 'New conversation started with customer.',
-            timestamp: Date.now(),
-          },
-        ])
-      }
-    } catch (e) {
-      // ignore parse errors
-    }
-  }, [storageKey])
-
-  // Persist on change
-  useEffect(() => {
-    try {
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(storageKey, JSON.stringify(messages))
-      }
-    } catch (e) {
-      // ignore
-    }
-  }, [messages, storageKey])
+  // Remove localStorage persistence to avoid stale or duplicated state
 
   // Auto-scroll
   useEffect(() => {
@@ -83,11 +53,11 @@ export default function SellerChatWithUserPage() {
     let cancelled = false
     const loadHistory = async () => {
       try {
-        if (!token || !user?.id || !userId) return
+        if (!user?.id || !userId) return
         const myId = String(user.id)
         const mySellerId = String((user as any)?.sellerData?.id || '')
         const peerId = String(userId)
-        const chatsRes = await chatService.listChats(token)
+        const chatsRes = await chatService.listChats({ limit: 50, page: 1 }, token)
         const chatsRaw: any = chatsRes?.data
         const chats: any[] = Array.isArray(chatsRaw)
           ? chatsRaw
@@ -95,6 +65,33 @@ export default function SellerChatWithUserPage() {
             ? chatsRaw.data
             : []
         console.log('[chat:history] listChats (seller page):', chats)
+
+        // If listChats already returned messages (message-shaped), map directly
+        const isMessageArray = chats.length > 0 && (typeof chats[0]?.message === 'string' || typeof chats[0]?.text === 'string')
+        if (isMessageArray) {
+          const relevant = chats.filter((dto: any) => {
+            const fromId = String(dto?.fromUserId ?? dto?.fromId ?? dto?.from?.id ?? '')
+            const toId = String(dto?.toUserId ?? dto?.toId ?? dto?.to?.id ?? '')
+            const fromRole = (dto?.from?.role || '').toLowerCase()
+            const toRole = (dto?.to?.role || '').toLowerCase()
+            const involvesPeer = (fromRole === 'user' && fromId === peerId) || (toRole === 'user' && toId === peerId)
+            const involvesMe = (fromId === myId || toId === myId || (mySellerId && (fromId === mySellerId || toId === mySellerId)))
+            return involvesPeer && involvesMe
+          })
+          const mapped = relevant.map((dto: any) => {
+            const n = normalizeMessageDto(dto)
+            const isFromMe = (n.fromId && (n.fromId === myId || (mySellerId && n.fromId === mySellerId)))
+            return {
+              id: n.id,
+              from: isFromMe ? ('me' as const) : ('user' as const),
+              text: n.text,
+              timestamp: n.timestamp,
+            }
+          })
+          const sorted = mapped.sort((a, b) => a.timestamp - b.timestamp)
+          if (!cancelled) setMessages(sorted)
+          return
+        }
         const match = chats.find((c) => {
           const hasMeUser = c.participants.some((p) => String(p.id) === myId)
           const hasMeSeller = mySellerId ? c.participants.some((p) => String(p.id) === mySellerId) : false
@@ -115,30 +112,21 @@ export default function SellerChatWithUserPage() {
         }
         if (chatId) {
           if (!cancelled) setServerChatId(String(chatId))
-          const msgsRes = await chatService.getMessages(chatId, token)
+          const msgsRes = await chatService.getMessages(chatId, { limit: 100, page: 1 }, token)
           const raw: any = msgsRes?.data
-          console.log('[chat:history] getMessages result (seller page):', raw)
-          // Support legacy array, { data: [...] }, and { data: { data: [...] } }
-          const arr: any[] = Array.isArray(raw)
-            ? raw
-            : Array.isArray(raw?.data)
-              ? raw.data
-              : Array.isArray(raw?.data?.data)
-                ? raw.data.data
-                : []
+          const arr = extractMessageArray(raw)
           const mapped = arr.map((dto: any) => {
-            const fromId = String(dto?.fromUserId ?? dto?.fromId ?? dto?.from?.id ?? '')
-            const isFromMe = fromId === myId || (mySellerId && fromId === mySellerId)
-            const text = dto?.text ?? dto?.message ?? ''
-            const ts = dto?.timestamp ?? (dto?.createdAt ? Date.parse(dto.createdAt) : Date.now())
+            const n = normalizeMessageDto(dto)
+            const isFromMe = (n.fromId && (n.fromId === myId || (mySellerId && n.fromId === mySellerId)))
             return {
-              id: String(dto?.id ?? `${fromId}-${ts}`),
+              id: n.id,
               from: isFromMe ? ('me' as const) : ('user' as const),
-              text,
-              timestamp: ts,
+              text: n.text,
+              timestamp: n.timestamp,
             }
           })
-          if (!cancelled) setMessages(mapped)
+          const sorted = mapped.sort((a, b) => a.timestamp - b.timestamp)
+          if (!cancelled) setMessages(sorted)
         }
       } catch (e) {
         console.warn('Failed to load chat history (seller page)', e)
@@ -148,7 +136,25 @@ export default function SellerChatWithUserPage() {
     return () => {
       cancelled = true
     }
-  }, [token, userId, user])
+  }, [userId, user])
+
+  // Ensure socket is registered once user and connection are ready
+  useEffect(() => {
+    if (!socket || !connected || !user?.id) return
+    try {
+      console.log('📡 [SellerChat] Manual socket registration with userId:', user.id)
+      register(user.id)
+      
+      // Also register with sellerId if available
+      const sellerId = (user as any)?.sellerData?.id
+      if (sellerId && sellerId !== user.id) {
+        console.log('📡 [SellerChat] Additional registration with sellerId:', sellerId)
+        register(sellerId)
+      }
+    } catch (e) {
+      console.error('❌ [SellerChat] Registration error:', e)
+    }
+  }, [socket, connected, user?.id, register])
 
   // Listen for incoming messages from backend
   useEffect(() => {
@@ -230,7 +236,7 @@ export default function SellerChatWithUserPage() {
     }
   }
 
-  if (!token || !isSeller) {
+  if (!isSeller) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 py-6">

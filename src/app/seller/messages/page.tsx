@@ -12,19 +12,38 @@ import { useSocket } from '@/components/chat/SocketProvider'
 export default function SellerMessagesPage() {
   const router = useRouter()
   const { token, user, isSeller } = useAppSelector((s) => s.auth)
-  const { connected } = useSocket()
+  const { connected, register, socket } = useSocket()
 
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState<string>('')
-  const [chats, setChats] = useState<ChatSummary[]>([])
+  const [chats, setChats] = useState<any[]>([])
 
   const myId = user?.id
+  const mySellerId = String((user as any)?.sellerData?.id || '')
+
+  // Ensure socket is registered once user and connection are ready
+  useEffect(() => {
+    if (!socket || !connected || !user?.id) return
+    try {
+      console.log('📡 [SellerMessages] Manual socket registration with userId:', user.id)
+      register(user.id)
+      
+      // Also register with sellerId if available
+      const sellerId = (user as any)?.sellerData?.id
+      if (sellerId && sellerId !== user.id) {
+        console.log('📡 [SellerMessages] Additional registration with sellerId:', sellerId)
+        register(sellerId)
+      }
+    } catch (e) {
+      console.error('❌ [SellerMessages] Registration error:', e)
+    }
+  }, [socket, connected, user?.id, register])
 
   useEffect(() => {
     let active = true
     const run = async () => {
-      if (!token || !isSeller) {
+      if (!isSeller) {
         setError('Please login as a seller to view messages')
         setLoading(false)
         return
@@ -32,9 +51,10 @@ export default function SellerMessagesPage() {
       setLoading(true)
       setError(null)
       try {
-        const res: ApiResponse<ChatSummary[]> = await chatService.listChats(token)
+        const res: ApiResponse<ChatSummary[]> = await chatService.listChats({ limit: 50, page: 1 }, token)
         if (!active) return
-        const data = Array.isArray(res?.data) ? res.data : []
+        const raw = res?.data as any
+        const data = Array.isArray(raw) ? raw : (Array.isArray(raw?.data) ? raw.data : [])
         setChats(data)
       } catch (e: any) {
         setError(e?.message || 'Failed to load conversations')
@@ -46,25 +66,69 @@ export default function SellerMessagesPage() {
     return () => {
       active = false
     }
-  }, [token, isSeller])
+  }, [isSeller, token])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
-    return chats
-      .filter((c) => (c?.participants || []).some((p) => String(p.id) === String(myId)))
+    const isMessageArray = chats.length > 0 && (typeof chats[0]?.message === 'string' || typeof chats[0]?.text === 'string')
+    if (isMessageArray) {
+      const groups = new Map<string, { otherId: string; otherLabel: string; lastText: string; lastTimestamp: number; unread: number }>()
+      for (const dto of chats) {
+        const fromId = String(dto?.fromUserId ?? dto?.fromId ?? dto?.from?.id ?? '')
+        const toId = String(dto?.toUserId ?? dto?.toId ?? dto?.to?.id ?? '')
+        const fromRole = (dto?.from?.role || '').toLowerCase()
+        const toRole = (dto?.to?.role || '').toLowerCase()
+        const involvesMe = (fromId === String(myId) || toId === String(myId) || (mySellerId && (fromId === String(mySellerId) || toId === String(mySellerId))))
+        if (!involvesMe) continue
+        const otherId = fromRole === 'user' ? fromId : toRole === 'user' ? toId : ''
+        if (!otherId) continue
+        const labelRole = fromRole === 'user' ? 'User' : toRole === 'user' ? 'User' : 'Unknown'
+        const label = `${labelRole} ${otherId}`
+        const ts = (typeof dto?.timestamp === 'number') ? dto.timestamp : (dto?.createdAt ? Date.parse(dto.createdAt) : Date.now())
+        const text = dto?.text ?? dto?.message ?? ''
+        const existing = groups.get(otherId)
+        if (!existing || ts > existing.lastTimestamp) {
+          groups.set(otherId, { otherId, otherLabel: label, lastText: text, lastTimestamp: ts, unread: 0 })
+        }
+      }
+      const items = Array.from(groups.values())
+        .filter((c) => (q ? c.otherLabel.toLowerCase().includes(q) || c.lastText.toLowerCase().includes(q) : true))
+        .sort((a, b) => b.lastTimestamp - a.lastTimestamp)
+        .map((c) => ({ chatId: c.otherId, otherId: c.otherId, otherLabel: c.otherLabel, lastText: c.lastText, lastTime: new Date(c.lastTimestamp).toLocaleString(), lastTimestamp: c.lastTimestamp, unread: c.unread }))
+      return items
+    }
+    const items = chats
+      .filter((c) => {
+        const parts = c?.participants || []
+        const hasMeUser = parts.some((p: any) => String(p.id) === String(myId))
+        const hasMeSeller = mySellerId ? parts.some((p: any) => String(p.id) === String(mySellerId)) : false
+        return hasMeUser || hasMeSeller
+      })
       .map((c) => {
-        const other = (c.participants || []).find((p) => String(p.id) !== String(myId))
+        const other = (c.participants || []).find((p: any) => String(p.id) !== String(myId) && String(p.id) !== String(mySellerId))
+        const lastTs = ((): number | undefined => {
+          const lm: any = c.lastMessage || {}
+          if (typeof lm?.timestamp === 'number') return lm.timestamp
+          if (lm?.createdAt) {
+            const parsed = Date.parse(lm.createdAt)
+            return Number.isNaN(parsed) ? undefined : parsed
+          }
+          return undefined
+        })()
         return {
           chatId: c.id,
           otherId: other?.id ? String(other.id) : undefined,
-          otherLabel: other?.id ? `User ${other.id}` : 'Unknown user',
-          lastText: c.lastMessage?.text || '',
-          lastTime: c.lastMessage?.timestamp ? new Date(c.lastMessage.timestamp).toLocaleString() : '',
+          otherLabel: other?.id ? `${(other?.role || 'user').toString().charAt(0).toUpperCase() + (other?.role || 'user').toString().slice(1)} ${other.id}` : 'Unknown',
+          lastText: (c.lastMessage as any)?.text || (c.lastMessage as any)?.message || '',
+          lastTime: lastTs ? new Date(lastTs).toLocaleString() : '',
+          lastTimestamp: lastTs || 0,
           unread: c.unreadCount || 0,
         }
       })
       .filter((c) => (q ? c.otherLabel.toLowerCase().includes(q) || c.lastText.toLowerCase().includes(q) : true))
-  }, [chats, search, myId])
+      .sort((a, b) => (b.lastTimestamp - a.lastTimestamp))
+    return items
+  }, [chats, search, myId, mySellerId])
 
   return (
     <div className="min-h-screen">

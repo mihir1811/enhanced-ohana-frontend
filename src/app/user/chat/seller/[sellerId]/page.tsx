@@ -8,7 +8,6 @@ import { useAppSelector } from '@/store/hooks'
 import { toast } from 'react-hot-toast'
 import { useSocket } from '@/components/chat/SocketProvider'
 import { CHAT_EVENTS } from '@/components/chat/socket'
-import { sellerService } from '@/services/sellerService'
 import { chatService } from '@/services/chat.service'
 
 type ChatMessage = {
@@ -35,13 +34,45 @@ export default function UserChatWithSellerPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const listRef = useRef<HTMLDivElement | null>(null)
-  const { socket, sendMessage, connected } = useSocket()
-  const [sellerUserId, setSellerUserId] = useState<string | null>(null)
+  const { socket, sendMessage, connected, register } = useSocket()
   const [serverChatId, setServerChatId] = useState<string | null>(null)
   const [chatSummaries, setChatSummaries] = useState<any[]>([])
   const [sellerDisplayName, setSellerDisplayName] = useState<string>('Seller')
   // Cache of sellerId -> display name for the left pane
   const [sellerDirectory, setSellerDirectory] = useState<Record<string, string>>({})
+
+  // Pagination state (dynamic via URL params, manageable in state)
+  const initialMsgLimit = useMemo(() => {
+    const v = Number(searchParams.get('limit'))
+    return Number.isFinite(v) && v > 0 ? v : 20
+  }, [searchParams])
+  const initialMsgPage = useMemo(() => {
+    const v = Number(searchParams.get('page'))
+    return Number.isFinite(v) && v > 0 ? v : 1
+  }, [searchParams])
+  const initialChatsLimit = useMemo(() => {
+    const v = Number(searchParams.get('chatsLimit'))
+    return Number.isFinite(v) && v > 0 ? v : 50
+  }, [searchParams])
+  const initialChatsPage = useMemo(() => {
+    const v = Number(searchParams.get('chatsPage'))
+    return Number.isFinite(v) && v > 0 ? v : 1
+  }, [searchParams])
+  const [messageLimit, setMessageLimit] = useState<number>(initialMsgLimit)
+  const [messagePage, setMessagePage] = useState<number>(initialMsgPage)
+  const [hasMoreMessages, setHasMoreMessages] = useState<boolean>(false)
+  const [loadingMore, setLoadingMore] = useState<boolean>(false)
+  const [chatsLimit, setChatsLimit] = useState<number>(initialChatsLimit)
+  const [chatsPage, setChatsPage] = useState<number>(initialChatsPage)
+  const [skipNextAutoScroll, setSkipNextAutoScroll] = useState<boolean>(false)
+
+  // Keep pagination state in sync with URL if it changes
+  useEffect(() => {
+    setMessageLimit(initialMsgLimit)
+    setMessagePage(initialMsgPage)
+    setChatsLimit(initialChatsLimit)
+    setChatsPage(initialChatsPage)
+  }, [initialMsgLimit, initialMsgPage, initialChatsLimit, initialChatsPage])
 
   // Auth gating: allow any logged-in user, prompt otherwise
   useEffect(() => {
@@ -86,20 +117,26 @@ export default function UserChatWithSellerPage() {
 
   // Auto-scroll
   useEffect(() => {
+    if (skipNextAutoScroll) {
+      // Skip one auto-scroll when we prepend older history
+      setSkipNextAutoScroll(false)
+      return
+    }
     if (listRef.current) {
       listRef.current.scrollTop = listRef.current.scrollHeight
     }
-  }, [messages])
+  }, [messages, skipNextAutoScroll])
 
   // Fetch historical messages from backend on load
   useEffect(() => {
     let cancelled = false
     const loadHistory = async () => {
       try {
-        if (!token || !user?.id || !sellerUserId) return
+        if (!token || !user?.id) return
         const myId = String(user.id)
-        const peerId = String(sellerUserId)
-        const chatsRes = await chatService.listChats(token)
+        const sellerIdStr = String(sellerId)
+        // Request chats with dynamic pagination state
+        const chatsRes = await chatService.listChats({ limit: chatsLimit, page: chatsPage }, token)
         const chatsRaw: any = chatsRes?.data
         const chats: any[] = Array.isArray(chatsRaw)
           ? chatsRaw
@@ -138,35 +175,35 @@ export default function UserChatWithSellerPage() {
         if (isSummaryArray) {
           const match = chats.find((c) => {
             const hasMe = c.participants?.some((p: any) => String(p.id) === myId)
-            const hasSellerUser = c.participants?.some((p: any) => String(p.id) === peerId)
-            const hasSellerEntity = c.participants?.some((p: any) => String(p.id) === String(sellerId))
-            const hasSellerRole = c.participants?.some((p: any) => (p.role || '').toLowerCase() === 'seller')
-            const ok = hasMe && (hasSellerUser || hasSellerEntity || hasSellerRole)
+            const hasSellerByRoleAndId = c.participants?.some((p: any) => (p?.role || '').toLowerCase() === 'seller' && String(p?.id) === sellerIdStr)
+            const ok = Boolean(hasMe && hasSellerByRoleAndId)
             if (ok) {
-              console.log('[chat:history] candidate match (user page):', { chatId: c.id, participants: c.participants, hasMe, hasSellerUser, hasSellerEntity, hasSellerRole })
+              console.log('[chat:history] candidate match (user page):', { chatId: c.id, participants: c.participants, hasMe, hasSellerByRoleAndId })
             }
             return ok
           })
           const chatId = match?.id
           if (!chatId) {
-            console.warn('[chat:history] no chat found for participants (user page):', { myId, peerId })
+            console.warn('[chat:history] no chat found for participants (user page):', { myId, sellerId: sellerIdStr })
           } else {
             console.log('[chat:history] resolved chatId (user page):', chatId)
           }
           if (chatId) {
             if (!cancelled) setServerChatId(String(chatId))
-            const msgsRes = await chatService.getMessages(chatId, token)
-            const raw: any = msgsRes?.data
-            console.log('[chat:history] getMessages result (user page):', raw)
+            // Fetch messages using dynamic pagination state
+            const msgsRes = await chatService.getMessages(chatId, { limit: messageLimit, page: messagePage }, token)
+            const raw1: any = msgsRes?.data
+            console.log('[chat:history] getMessages (user page):', raw1)
             // Support legacy array, { data: [...] }, and { data: { data: [...] } }
-            const arr: any[] = Array.isArray(raw)
-              ? raw
-              : Array.isArray(raw?.data)
-                ? raw.data
-                : Array.isArray(raw?.data?.data)
-                  ? raw.data.data
+            const arr1: any[] = Array.isArray(raw1)
+              ? raw1
+              : Array.isArray(raw1?.data)
+                ? raw1.data
+                : Array.isArray(raw1?.data?.data)
+                  ? raw1.data.data
                   : []
-            const mapped = arr.map((dto: any) => {
+
+            const mapped = arr1.map((dto: any) => {
               const fromId = String(dto?.fromUserId ?? dto?.fromId ?? dto?.from?.id ?? '')
               const isFromMe = fromId === myId
               const text = dto?.text ?? dto?.message ?? ''
@@ -182,7 +219,11 @@ export default function UserChatWithSellerPage() {
                 receiverRole,
               }
             })
-            if (!cancelled) setMessages(mapped)
+            if (!cancelled) {
+              const sorted = [...mapped].sort((a, b) => a.timestamp - b.timestamp)
+              setMessages(sorted)
+              setHasMoreMessages(arr1.length >= messageLimit)
+            }
           }
         }
       } catch (e) {
@@ -193,7 +234,54 @@ export default function UserChatWithSellerPage() {
     return () => {
       cancelled = true
     }
-  }, [token, sellerUserId, user])
+  }, [token, sellerId, user, chatsLimit, chatsPage, messageLimit, messagePage])
+
+  // Load older messages (next page)
+  const loadMoreMessages = async () => {
+    try {
+      if (!token || !serverChatId) return
+      setLoadingMore(true)
+      const nextPage = messagePage + 1
+      const res = await chatService.getMessages(serverChatId, { limit: messageLimit, page: nextPage }, token)
+      const raw: any = res?.data
+      const arr: any[] = Array.isArray(raw)
+        ? raw
+        : Array.isArray(raw?.data)
+          ? raw.data
+          : Array.isArray(raw?.data?.data)
+            ? raw.data.data
+            : []
+      const mapped: ChatMessage[] = arr.map((dto: any) => {
+        const fromId = String(dto?.fromUserId ?? dto?.fromId ?? dto?.from?.id ?? '')
+        const isFromMe = fromId === String(user?.id ?? '')
+        const text = dto?.text ?? dto?.message ?? ''
+        const ts = dto?.timestamp ?? (dto?.createdAt ? Date.parse(dto.createdAt) : Date.now())
+        const senderRole = dto?.from?.role || (isFromMe ? 'user' : 'seller')
+        const receiverRole = dto?.to?.role || (isFromMe ? 'seller' : 'user')
+        return {
+          id: String(dto?.id ?? `${fromId}-${ts}`),
+          from: isFromMe ? 'me' : 'seller',
+          text,
+          timestamp: ts,
+          senderRole,
+          receiverRole,
+        }
+      })
+      // Merge, de-duplicate by id, and sort by timestamp asc
+      const mergedMap = new Map<string, ChatMessage>()
+      for (const m of [...messages, ...mapped]) mergedMap.set(m.id, m)
+      const merged = Array.from(mergedMap.values()).sort((a, b) => a.timestamp - b.timestamp)
+      // Avoid auto-scroll when prepending older messages
+      setSkipNextAutoScroll(true)
+      setMessages(merged)
+      setMessagePage(nextPage)
+      setHasMoreMessages(mapped.length >= messageLimit)
+    } catch (e) {
+      console.warn('Failed to load more messages', e)
+    } finally {
+      setLoadingMore(false)
+    }
+  }
 
   // Build seller directory (id -> name) whenever chatSummaries change
   useEffect(() => {
@@ -230,14 +318,8 @@ export default function UserChatWithSellerPage() {
           updates[id] = localName
           continue
         }
-        // Fallback: fetch seller info
-        try {
-          const res = await sellerService.getSellerInfo(String(id))
-          const name = (res as any)?.data?.name || (res as any)?.data?.seller?.companyName || (res as any)?.data?.companyName || (res as any)?.data?.seller?.name || null
-          if (name) updates[id] = String(name)
-        } catch {
-          // ignore individual failures
-        }
+        // No external fetch; fall back to a generic label
+        updates[id] = updates[id] || `Seller ${String(id).slice(0, 6)}`
       }
       if (!cancelled && Object.keys(updates).length > 0) {
         setSellerDirectory((prev) => ({ ...prev, ...updates }))
@@ -259,13 +341,14 @@ export default function UserChatWithSellerPage() {
         const fromUserId = payload?.fromUserId ?? payload?.fromId ?? payload?.from?.id
         const toUserId = payload?.toUserId ?? payload?.toId ?? payload?.to?.id
         const myId = user?.id
-        const peerId = sellerUserId
-
-        // Only accept messages that belong to this conversation (me <-> seller)
-        if (!myId || !peerId) return
-        const isRelevant = (String(fromUserId) === String(peerId) && String(toUserId) === String(myId))
-          || (String(fromUserId) === String(myId) && String(toUserId) === String(peerId))
-        console.log('[chat:user->seller] relevance check:', { myId, peerId, fromUserId, toUserId, isRelevant })
+        const sellerIdStr = String(sellerId)
+        const fromRole = (payload?.from?.role || '').toLowerCase()
+        const toRole = (payload?.to?.role || '').toLowerCase()
+        const fromSellerMatch = fromRole === 'seller' && String(payload?.from?.id ?? fromUserId) === sellerIdStr
+        const toSellerMatch = toRole === 'seller' && String(payload?.to?.id ?? toUserId) === sellerIdStr
+        const involvesMe = myId ? (String(fromUserId) === String(myId) || String(toUserId) === String(myId)) : true
+        const isRelevant = (fromSellerMatch || toSellerMatch) && involvesMe
+        console.log('[chat:user->seller] relevance check:', { myId, sellerId: sellerIdStr, fromUserId, toUserId, fromRole, toRole, isRelevant })
         if (!isRelevant) return
 
         const isFromMe = myId && (String(fromUserId) === String(myId))
@@ -287,25 +370,32 @@ export default function UserChatWithSellerPage() {
     return () => {
       socket.off(CHAT_EVENTS.SERVER.MESSAGE, onIncoming)
     }
-  }, [socket, user, sellerUserId])
+  }, [socket, user, sellerId])
 
-  // Resolve seller owner userId for proper routing
+  // Ensure socket is registered once user and connection are ready
   useEffect(() => {
-    let cancelled = false
-    const fetchSeller = async () => {
-      try {
-        const res = await sellerService.getSellerInfo(sellerId)
-        const uid = (res as any)?.data?.userId || (res as any)?.data?.seller?.userId || (res as any)?.data?.ownerUserId || null
-        const name = (res as any)?.data?.name || (res as any)?.data?.seller?.companyName || (res as any)?.data?.companyName || (res as any)?.data?.seller?.name || null
-        if (!cancelled) setSellerUserId(uid ?? null)
-        if (!cancelled && name) setSellerDisplayName(String(name))
-      } catch (e) {
-        console.warn('Failed to fetch seller info', e)
+    if (!socket || !connected || !user?.id) return
+    try {
+      register(user.id)
+    } catch {}
+  }, [socket, connected, user?.id])
+
+  // Derive seller display name from chat summaries/messages; avoid extra network calls
+  useEffect(() => {
+    let nameFromChats: string | undefined
+    for (const c of chatSummaries) {
+      if (Array.isArray(c?.participants)) {
+        const sellerP = (c?.participants || []).find((p: any) => (p?.role || '').toLowerCase() === 'seller' && String(p?.id) === String(sellerId))
+        if (sellerP?.name) { nameFromChats = String(sellerP.name); break }
+      } else {
+        const fromRole = (c?.from?.role || '').toLowerCase()
+        const toRole = (c?.to?.role || '').toLowerCase()
+        const sellerObj = fromRole === 'seller' ? c?.from : toRole === 'seller' ? c?.to : undefined
+        if (sellerObj && String(sellerObj?.id) === String(sellerId) && sellerObj?.name) { nameFromChats = String(sellerObj.name); break }
       }
     }
-    fetchSeller()
-    return () => { cancelled = true }
-  }, [sellerId])
+    setSellerDisplayName(nameFromChats || `Seller ${String(sellerId).slice(0, 6)}`)
+  }, [chatSummaries, sellerId])
 
   const handleSend = () => {
     const trimmed = input.trim()
@@ -322,16 +412,14 @@ export default function UserChatWithSellerPage() {
       const emitChatId = serverChatId || undefined
       console.log('[chat:user->seller] emit SEND_MESSAGE (user page):', {
         chatId: emitChatId ?? '(none)',
-        toUserId: sellerUserId ?? undefined,
         toSellerId: sellerId,
         productId,
         text: trimmed,
         clientTempId: `me-${now}`,
       })
-      // Prefer routing by toUserId; include toSellerId for backend backward compatibility if needed
+      // Route by sellerId and roles; no need to resolve seller userId
       sendMessage({
         chatId: emitChatId,
-        toUserId: sellerUserId ?? undefined,
         toSellerId: sellerId,
         productId,
         text: trimmed,
@@ -350,7 +438,7 @@ export default function UserChatWithSellerPage() {
     }
   }
 
-  if (!token) {
+  if (false && !token) { 
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 py-6">
@@ -404,10 +492,17 @@ export default function UserChatWithSellerPage() {
                 <MessageSquare className="w-5 h-5 text-gray-900" />
                 <h1 className="text-xl font-semibold text-gray-900">Chat with {sellerDisplayName}</h1>
               </div>
-              <p className="text-sm text-gray-600">Seller ID: {sellerId} • {connected ? 'Online' : 'Offline'}{sellerUserId ? '' : ' • Resolving user...'}</p>
+              <p className="text-sm text-gray-600">Seller ID: {sellerId} • {connected ? 'Online' : 'Offline'}</p>
             </div>
           </div>
         </div>
+
+        {/* Auth notice for logged-out users */}
+        {!token && (
+          <div className="mb-3 rounded-md border border-amber-300 bg-amber-50 text-amber-800 px-3 py-2 text-sm">
+            You are not logged in. Login to send messages.
+          </div>
+        )}
 
         {/* Two-pane layout (pure flex) */}
         <div className="flex flex-col md:flex-row gap-4 flex-1 overflow-hidden h-full">
@@ -488,23 +583,39 @@ export default function UserChatWithSellerPage() {
                     }
                   }
                   const items = Array.from(groups.values())
-                  return items.map((g) => (
-                    <li key={g.sellerId} className="py-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">{g.sellerName}</p>
-                          <p className="text-sm text-gray-600 truncate">{g.lastText || 'No messages yet'}</p>
-                          {g.lastTime && <p className="text-xs text-gray-400">{g.lastTime}</p>}
+                  return items.map((g) => {
+                    const isSelected = String(g.sellerId) === String(sellerId)
+                    const base = 'rounded-md cursor-pointer'
+                    const touch = 'px-3 py-3 md:py-2'
+                    const colors = isSelected ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50 border border-transparent'
+                    return (
+                      <li
+                        key={g.sellerId}
+                        className={`${base} ${touch} ${colors}`}
+                        role="button"
+                        aria-current={isSelected ? 'true' : undefined}
+                        data-seller-id={g.sellerId}
+                        onClick={() => {
+                          const target = String(g.sellerId)
+                          const current = String(sellerId)
+                          if (target !== current) {
+                            router.push(`/user/chat/seller/${encodeURIComponent(target)}`)
+                          }
+                        }}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">{g.sellerName}</p>
+                            <p className="text-sm text-gray-600 truncate">{g.lastText || 'No messages yet'}</p>
+                            {g.lastTime && <p className="text-xs text-gray-400">{g.lastTime}</p>}
+                          </div>
+                          {isSelected && (
+                            <span className="text-xs font-medium text-blue-700">Selected</span>
+                          )}
                         </div>
-                        <Link
-                          href={`/user/chat/seller/${encodeURIComponent(String(g.sellerId))}`}
-                          className="ml-3 px-2 py-1 rounded-md text-xs bg-gray-100 hover:bg-gray-200 text-gray-800"
-                        >
-                          Open
-                        </Link>
-                      </div>
-                    </li>
-                  ))
+                      </li>
+                    )
+                  })
                 })()}
               </ul>
             ) : (
@@ -516,6 +627,17 @@ export default function UserChatWithSellerPage() {
           {/* Chat window (messages scroll independently) */}
           <div className="flex-1 rounded-xl border border-gray-200 flex flex-col bg-white h-full">
             <div ref={listRef} className="flex-1 min-h-0 overflow-y-auto p-3 md:p-4 space-y-3">
+              {hasMoreMessages && (
+                <div className="flex justify-center">
+                  <button
+                    onClick={loadMoreMessages}
+                    disabled={loadingMore}
+                    className="px-3 py-1.5 text-xs rounded-md border border-gray-300 bg-white text-gray-900 hover:bg-gray-50"
+                  >
+                    {loadingMore ? 'Loading…' : 'Load older messages'}
+                  </button>
+                </div>
+              )}
               {messages.map((m) => (
                 <div key={m.id} className={`flex ${m.from === 'me' ? 'justify-end' : 'justify-start'}`}>
                   <div
@@ -547,10 +669,12 @@ export default function UserChatWithSellerPage() {
                 onKeyDown={handleKeyDown}
                 placeholder={`Message ${sellerDisplayName}…`}
                 className="flex-1 px-3 py-2 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={!token}
               />
               <button
                 onClick={handleSend}
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-md font-medium bg-blue-600 hover:bg-blue-700 text-white"
+                className={`inline-flex items-center gap-2 px-3 py-2 rounded-md font-medium text-white ${!token ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                disabled={!token}
               >
                 <Send className="w-4 h-4" />
                 Send

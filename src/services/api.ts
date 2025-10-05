@@ -20,12 +20,25 @@ export interface ApiResponse<T = any> {
 }
 
 class ApiService {
+  // Safely read token from cookie on client
+  private readCookieToken(): string | undefined {
+    try {
+      if (typeof document === 'undefined') return undefined
+      const row = document.cookie
+        .split('; ')
+        .find((entry) => entry.startsWith('token='))
+      return row ? row.split('=')[1] : undefined
+    } catch {
+      return undefined
+    }
+  }
   // File upload with PATCH
   async uploadPatch<T>(endpoint: string, formData: FormData, token?: string): Promise<ApiResponse<T>> {
+    const resolvedToken = token ?? this.readCookieToken()
     const config: RequestInit = {
       method: 'PATCH',
       headers: {
-        ...(token && { 'Authorization': `Bearer ${token}` }),
+        ...(resolvedToken && { 'Authorization': `Bearer ${resolvedToken}` }),
       },
       body: formData,
     };
@@ -67,11 +80,12 @@ class ApiService {
     options: RequestInit = {},
     token?: string
   ): Promise<ApiResponse<T>> {
+    const resolvedToken = token ?? this.readCookieToken()
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` }),
+        ...(resolvedToken && { 'Authorization': `Bearer ${resolvedToken}` }),
         ...options.headers,
       },
       ...options,
@@ -146,10 +160,11 @@ class ApiService {
 
   // File upload
   async upload<T>(endpoint: string, formData: FormData, token?: string): Promise<ApiResponse<T>> {
+    const resolvedToken = token ?? this.readCookieToken()
     const config: RequestInit = {
       method: 'POST',
       headers: {
-        ...(token && { 'Authorization': `Bearer ${token}` }),
+        ...(resolvedToken && { 'Authorization': `Bearer ${resolvedToken}` }),
       },
       body: formData,
     }

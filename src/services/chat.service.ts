@@ -20,12 +20,20 @@ export type ChatMessageDto = {
 const BASE = '/chat'
 
 export const chatService = {
-  async listChats(token?: string): Promise<ApiResponse<ChatSummary[]>> {
-    return apiService.get<ChatSummary[]>(`${BASE}`, undefined, token)
+  async listChats(params?: { limit?: number; page?: number }, token?: string): Promise<ApiResponse<ChatSummary[]>> {
+    const query = {
+      ...(params?.limit ? { limit: params!.limit } : {}),
+      ...(params?.page ? { page: params!.page } : {}),
+    }
+    return apiService.get<ChatSummary[]>(`${BASE}`, query, token)
   },
 
-  async getMessages(chatId: string, token?: string): Promise<ApiResponse<ChatMessageDto[]>> {
-    return apiService.get<ChatMessageDto[]>(`${BASE}/${chatId}/messages`, undefined, token)
+  async getMessages(chatId: string, params?: { limit?: number; page?: number }, token?: string): Promise<ApiResponse<ChatMessageDto[]>> {
+    const query = {
+      ...(params?.limit ? { limit: params!.limit } : {}),
+      ...(params?.page ? { page: params!.page } : {}),
+    }
+    return apiService.get<ChatMessageDto[]>(`${BASE}/${chatId}/messages`, query, token)
   },
 
   async markAsRead(chatId: string, token?: string): Promise<ApiResponse<{ success: boolean }>> {

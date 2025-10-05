@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { createSocket, CHAT_EVENTS, OutgoingMessagePayload } from './socket'
 import { useAppSelector } from '@/store/hooks'
+import { getCookie } from '@/lib/cookie-utils'
 
 type SocketContextValue = {
   socket: ReturnType<typeof createSocket> | null
@@ -20,11 +21,15 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Establish/teardown socket based on token
   useEffect(() => {
+    const cookieToken = getCookie('token')
+    const effectiveToken = token || cookieToken
     console.log('🔄 [SocketProvider] Auth state changed:', { 
-      hasToken: Boolean(token), 
+      hasReduxToken: Boolean(token),
+      hasCookieToken: Boolean(cookieToken),
+      hasEffectiveToken: Boolean(effectiveToken),
       userId: user?.id, 
       userRole: user?.role,
-      tokenLength: token?.length || 0
+      tokenLength: effectiveToken?.length || 0
     })
 
     // Disconnect existing if token changes or becomes falsy
@@ -34,14 +39,14 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       socketRef.current = null
     }
 
-    if (!token) {
-      console.log('❌ [SocketProvider] No token available, skipping socket connection')
+    if (!effectiveToken) {
+      console.log('❌ [SocketProvider] No token available (redux/cookie), skipping socket connection')
       setConnected(false)
       return
     }
 
     console.log('🚀 [SocketProvider] Creating new socket connection with auth token')
-    const socket = createSocket({ token })
+    const socket = createSocket({ token: effectiveToken })
     socketRef.current = socket
 
     // Connection lifecycle
@@ -55,10 +60,10 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       
       const userId = user?.id
       if (userId) {
-        const payload = { userId, token }
+        const payload = { userId, token: effectiveToken }
         console.log('📡 [SocketProvider] Emitting REGISTER_SOCKET:', {
           userId,
-          tokenPrefix: token.substring(0, 10) + '...',
+          tokenPrefix: effectiveToken.substring(0, 10) + '...',
           eventName: CHAT_EVENTS.CLIENT.REGISTER_SOCKET
         })
         socket.emit(CHAT_EVENTS.CLIENT.REGISTER_SOCKET, payload)
@@ -161,14 +166,16 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     },
     register: (userId: string | number) => {
       const s = socketRef.current
-      if (!s || !token) {
+      const cookieToken = getCookie('token')
+      const effectiveToken = token || cookieToken
+      if (!s || !effectiveToken) {
         console.warn('⚠️ [SocketProvider] Cannot register socket - missing socket or token')
         return
       }
-      const payload = { userId, token }
+      const payload = { userId, token: effectiveToken }
       console.log('📡 [SocketProvider] Manual socket registration:', {
         userId,
-        tokenPrefix: token.substring(0, 10) + '...',
+        tokenPrefix: effectiveToken.substring(0, 10) + '...',
         socketConnected: s.connected
       })
       s.emit(CHAT_EVENTS.CLIENT.REGISTER_SOCKET, payload)

@@ -33,7 +33,7 @@ export default function AdminMessagesPage() {
       if (!token) return
       setLoading(true)
       try {
-        const res: ApiResponse<ChatSummary[]> = await chatService.listChats(token)
+        const res: ApiResponse<ChatSummary[]> = await chatService.listChats({ limit: 50, page: 1 }, token)
         if (!cancelled) setChats(res?.data ?? [])
       } catch (e) {
         console.warn('[admin:messages] failed to list chats', e)
