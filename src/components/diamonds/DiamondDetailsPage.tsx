@@ -18,8 +18,11 @@ import {
   CheckCircle,
   AlertCircle,
   Camera,
-  Play
+  Play,
+  MessageSquare
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 import { Diamond } from './DiamondResults';
 import { WishlistButton } from '@/components/shared/WishlistButton';
 import { cartService } from '@/services/cartService';
@@ -35,8 +38,9 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'specifications' | 'certification' | 'seller'>('overview');
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-  // Get authentication token from Redux store
-  const { token } = useSelector((state: RootState) => state.auth);
+  // Get authentication info from Redux store
+  const { token, isSeller } = useSelector((state: RootState) => state.auth);
+  const router = useRouter();
 
   const handleAddToCart = async () => {
     if (!diamond) return;
@@ -62,6 +66,20 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
     } finally {
       setIsAddingToCart(false);
     }
+  };
+
+  const handleChatClick = () => {
+    const isAuthenticated = Boolean(token);
+    if (!isAuthenticated) {
+      toast.error('Please login to start a chat');
+      router.push('/login');
+      return;
+    }
+
+    const sellerId = diamond?.seller?.id || diamond?.sellerId || 'default-seller';
+    const productName = diamond?.name || `${diamond?.caratWeight}ct ${diamond?.shape || 'Diamond'}`;
+    const chatUrl = `/user/chat/seller/${sellerId}?productId=${diamond?.id}&productName=${encodeURIComponent(productName || '')}`;
+    router.push(chatUrl);
   };
 
   console.log(diamond, );
@@ -337,6 +355,15 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
                 productType="diamond"
                 className="px-6 py-4 border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-semibold rounded-2xl transition-all duration-200"
               />
+                <button
+                  onClick={handleChatClick}
+                  className="px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-2xl transition-all duration-200 flex items-center gap-2"
+                  aria-label="Chat with Seller"
+                >
+                  <MessageSquare className="w-5 h-5" />
+                  Chat with Seller
+                </button>
+              
               <button className="px-6 py-4 border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-semibold rounded-2xl transition-all duration-200">
                 <Share2 className="w-5 h-5" />
               </button>

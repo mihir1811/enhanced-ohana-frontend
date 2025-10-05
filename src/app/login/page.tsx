@@ -33,6 +33,11 @@ export default function LoginPage() {
     setIsLoading(true)
     setError('')
 
+    console.log('🔐 [Login] Starting login process:', {
+      userName: formData.userName,
+      hasPassword: Boolean(formData.password)
+    })
+
     try {
       const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.LOGIN), {
         method: 'POST',
@@ -44,38 +49,62 @@ export default function LoginPage() {
       })
 
       const result = await response.json()
+      console.log('🔐 [Login] API response received:', {
+        success: result.success,
+        hasUser: Boolean(result.data?.user),
+        hasToken: Boolean(result.data?.accessToken),
+        userRole: result.data?.user?.role,
+        userId: result.data?.user?.id
+      })
 
       if (response.ok && result.success) {
         const { user, accessToken } = result.data
 
-        // Save to Redux store
+        console.log('✅ [Login] Login successful, setting credentials:', {
+          userId: user.id,
+          userRole: user.role,
+          userName: user.userName,
+          tokenLength: accessToken?.length || 0,
+          tokenPrefix: accessToken ? accessToken.substring(0, 10) + '...' : 'none'
+        })
+
+        // Save to Redux store - this will trigger SocketProvider to connect
         dispatch(setCredentials({ user, token: accessToken }))
+        
+        console.log('📡 [Login] Credentials dispatched to Redux - SocketProvider should now connect')
 
         // If seller, fetch and store seller profile in sellerSlice
         if (user.role === 'seller') {
+          console.log('🏪 [Login] Fetching seller info for seller role')
           appDispatch(fetchSellerInfo(result?.data?.sellerId))
         }
 
         // Save cookies for middleware
         document.cookie = `role=${user.role}; path=/`
         document.cookie = `token=${accessToken}; path=/`
+        console.log('🍪 [Login] Cookies set for middleware')
 
         // Redirect based on role
+        let redirectPath = '/'
         switch (user.role) {
           case 'admin':
-            router.push('/admin')
+            redirectPath = '/admin'
             break
           case 'seller':
-            router.push('/seller/dashboard')
+            redirectPath = '/seller/dashboard'
             break
           default:
-            router.push('/')
+            redirectPath = '/'
         }
+        
+        console.log('🔄 [Login] Redirecting to:', redirectPath)
+        router.push(redirectPath)
       } else {
+        console.error('❌ [Login] Login failed:', result.message)
         setError(result.message || 'Login failed. Please check your credentials.')
       }
     } catch (err) {
-      console.error('Login error:', err)
+      console.error('🚨 [Login] Network error:', err)
       setError('Network error. Please check your connection and try again.')
     } finally {
       setIsLoading(false)

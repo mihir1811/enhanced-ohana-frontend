@@ -5,6 +5,7 @@ import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 import { PersistLoading } from './components/ui/PersistLoading'
 import { WishlistProvider } from './contexts/WishlistContext'
+import { SocketProvider } from './components/chat/SocketProvider'
 import { Toaster } from 'react-hot-toast'
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
@@ -12,7 +13,9 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     <Provider store={store}>
       <PersistGate loading={<PersistLoading />} persistor={persistor}>
         <WishlistProvider>
-          {children}
+          <SocketProvider>
+            {children}
+          </SocketProvider>
           <Toaster
             position="top-center"
             toastOptions={{

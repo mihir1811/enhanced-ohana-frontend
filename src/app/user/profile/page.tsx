@@ -244,28 +244,28 @@ export default function UserProfilePage() {
       isVerified: true,
       role: 'seller' as const,
       sellerData: {
-        businessName: 'Doe Jewelry Co.',
-        businessRegistration: 'REG123456789',
-        taxId: 'TAX987654321',
-        businessAddress: {
-          street: '456 Business Ave',
-          city: 'San Francisco',
-          state: 'CA',
-          zipCode: '94103',
-          country: 'USA'
-        },
-        certifications: ['GIA Certified', 'ISO 9001'],
-        isVerifiedSeller: true,
-        sellerRating: 4.8,
-        totalSales: 125000,
-        joinedAsSellerDate: '2024-02-01T00:00:00Z',
-        businessDescription: 'Premium jewelry and gemstone specialist',
-        website: 'https://doejewelry.com',
-        specializations: ['diamonds', 'gemstones', 'custom jewelry']
-      }
+        addressLine1: '456 Business Ave',
+        addressLine2: 'Suite 200',
+        city: 'San Francisco',
+        companyLogo: '',
+        companyName: 'Doe Jewelry Co.',
+        country: 'USA',
+        createdAt: '2024-02-01T00:00:00Z',
+        gstNumber: 'GST-REG-123456789',
+        id: 'seller-1',
+        isBlocked: false,
+        isDeleted: false,
+        isVerified: true,
+        panCard: 'PAN-987654321',
+        sellerType: 'retail',
+        state: 'CA',
+        updatedAt: '2024-12-10T00:00:00Z',
+        userId: '1',
+        zipCode: '94103',
+      },
     }
-    
-    dispatch(setCredentials({ user: testUser, token: 'test-token-123' }))
+
+    dispatch(setCredentials({ user: testUser as any, token: 'test-token-123' }))
   }
 
   return (
@@ -443,14 +443,14 @@ export default function UserProfilePage() {
                   {isSeller && user.sellerData && (
                     <>
                       <div className="flex items-center justify-between">
-                        <span style={{ color: 'var(--muted-foreground)' }}>Total Sales</span>
-                        <span style={{ color: 'var(--chart-1)' }}>${user.sellerData.totalSales.toLocaleString()}</span>
+                        <span style={{ color: 'var(--muted-foreground)' }}>Seller Type</span>
+                        <span style={{ color: 'var(--card-foreground)' }}>{user.sellerData.sellerType}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span style={{ color: 'var(--muted-foreground)' }}>Seller Rating</span>
+                        <span style={{ color: 'var(--muted-foreground)' }}>GST Number</span>
                         <div className="flex items-center space-x-1">
-                          <Star className="w-4 h-4" style={{ color: 'var(--chart-3)' }} />
-                          <span style={{ color: 'var(--card-foreground)' }}>{user.sellerData.sellerRating}</span>
+                          <Award className="w-4 h-4" style={{ color: 'var(--chart-3)' }} />
+                          <span style={{ color: 'var(--card-foreground)' }}>{user.sellerData.gstNumber}</span>
                         </div>
                       </div>
                     </>
@@ -468,12 +468,12 @@ export default function UserProfilePage() {
                   borderColor: 'var(--border)'
                 }}
               >
-                <h3 
-                  className="text-lg font-semibold mb-6"
-                  style={{ color: 'var(--card-foreground)' }}
-                >
-                  Personal Information
-                </h3>
+                  <h3 
+                    className="text-lg font-semibold mb-6"
+                    style={{ color: 'var(--card-foreground)' }}
+                  >
+                    Personal Information
+                  </h3>
                 {isEditing && (
                   <div className="mb-4 p-3 rounded-lg border" style={{ backgroundColor: 'var(--muted)', borderColor: 'var(--border)' }}>
                     <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
@@ -634,10 +634,10 @@ export default function UserProfilePage() {
                     <div>
                       <label className="flex items-center space-x-2 text-sm font-medium mb-2" style={{ color: 'var(--muted-foreground)' }}>
                         <Building className="w-4 h-4" />
-                        <span>Business Name</span>
+                        <span>Company Name</span>
                       </label>
                       <p className="text-lg" style={{ color: 'var(--card-foreground)' }}>
-                        {user.sellerData.businessName}
+                        {user.sellerData.companyName}
                       </p>
                     </div>
 
@@ -645,10 +645,10 @@ export default function UserProfilePage() {
                     <div>
                       <label className="flex items-center space-x-2 text-sm font-medium mb-2" style={{ color: 'var(--muted-foreground)' }}>
                         <Award className="w-4 h-4" />
-                        <span>Business Registration</span>
+                        <span>GST Number</span>
                       </label>
                       <p className="text-lg" style={{ color: 'var(--card-foreground)' }}>
-                        {user.sellerData.businessRegistration}
+                        {user.sellerData.gstNumber}
                       </p>
                     </div>
 
@@ -659,7 +659,12 @@ export default function UserProfilePage() {
                         <span>Business Address</span>
                       </label>
                       <p className="text-lg" style={{ color: 'var(--card-foreground)' }}>
-                        {formatAddress(user.sellerData.businessAddress)}
+                        {[
+                          user.sellerData.addressLine1,
+                          user.sellerData.addressLine2,
+                          `${user.sellerData.city}, ${user.sellerData.state} ${user.sellerData.zipCode}`,
+                          user.sellerData.country,
+                        ].filter(Boolean).join(', ')}
                       </p>
                     </div>
 
@@ -672,37 +677,34 @@ export default function UserProfilePage() {
                       <div className="flex items-center space-x-2">
                         <div 
                           className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                            user.sellerData.isVerifiedSeller ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                            user.sellerData.isVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                           }`}
                         >
                           <Shield className="w-4 h-4 mr-1" />
-                          {user.sellerData.isVerifiedSeller ? 'Verified Seller' : 'Pending Verification'}
+                          {user.sellerData.isVerified ? 'Verified Seller' : 'Pending Verification'}
                         </div>
                       </div>
                     </div>
 
-                    {/* Seller Stats */}
+                    {/* Seller Meta */}
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="flex items-center space-x-2 text-sm font-medium mb-2" style={{ color: 'var(--muted-foreground)' }}>
                           <TrendingUp className="w-4 h-4" />
-                          <span>Total Sales</span>
+                          <span>Seller Type</span>
                         </label>
-                        <p className="text-lg font-semibold" style={{ color: 'var(--chart-1)' }}>
-                          ${user.sellerData.totalSales.toLocaleString()}
+                        <p className="text-lg font-semibold" style={{ color: 'var(--card-foreground)' }}>
+                          {user.sellerData.sellerType}
                         </p>
                       </div>
                       <div>
                         <label className="flex items-center space-x-2 text-sm font-medium mb-2" style={{ color: 'var(--muted-foreground)' }}>
-                          <Star className="w-4 h-4" />
-                          <span>Seller Rating</span>
+                          <Calendar className="w-4 h-4" />
+                          <span>Joined</span>
                         </label>
-                        <div className="flex items-center space-x-1">
-                          <Star className="w-4 h-4" style={{ color: 'var(--chart-3)' }} />
-                          <p className="text-lg font-semibold" style={{ color: 'var(--card-foreground)' }}>
-                            {user.sellerData.sellerRating}
-                          </p>
-                        </div>
+                        <p className="text-lg font-semibold" style={{ color: 'var(--card-foreground)' }}>
+                          {formatDate(user.sellerData.createdAt)}
+                        </p>
                       </div>
                     </div>
 
@@ -713,33 +715,11 @@ export default function UserProfilePage() {
                         <span>Seller Since</span>
                       </label>
                       <p className="text-lg" style={{ color: 'var(--card-foreground)' }}>
-                        {formatDate(user.sellerData.joinedAsSellerDate)}
+                        {formatDate(user.sellerData.createdAt)}
                       </p>
                     </div>
 
-                    {/* Specializations */}
-                    {user.sellerData.specializations && user.sellerData.specializations.length > 0 && (
-                      <div>
-                        <label className="flex items-center space-x-2 text-sm font-medium mb-2" style={{ color: 'var(--muted-foreground)' }}>
-                          <Award className="w-4 h-4" />
-                          <span>Specializations</span>
-                        </label>
-                        <div className="flex flex-wrap gap-2">
-                          {user.sellerData.specializations.map((spec, index) => (
-                            <span 
-                              key={index}
-                              className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
-                              style={{ 
-                                backgroundColor: 'var(--accent)',
-                                color: 'var(--accent-foreground)'
-                              }}
-                            >
-                              {spec}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    {/* Additional fields can be added here as needed */}
                   </div>
                 </div>
               )}
