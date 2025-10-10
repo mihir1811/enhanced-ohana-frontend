@@ -18,13 +18,15 @@ import {
   CheckCircle,
   AlertCircle,
   Camera,
-  Play
+  Play,
+  MessageSquare
 } from 'lucide-react';
 import { Diamond } from './DiamondResults';
 import { WishlistButton } from '@/components/shared/WishlistButton';
 import { cartService } from '@/services/cartService';
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
+import { useRouter } from 'next/navigation'
 
 interface DiamondDetailsPageProps {
   diamond: Diamond | null;
@@ -34,9 +36,10 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
   const [imgIdx, setImgIdx] = useState(0);
   const [activeTab, setActiveTab] = useState<'overview' | 'specifications' | 'certification' | 'seller'>('overview');
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const router = useRouter();
 
   // Get authentication token from Redux store
-  const { token } = useSelector((state: RootState) => state.auth);
+  const { token, user } = useSelector((state: RootState) => state.auth);
 
   const handleAddToCart = async () => {
     if (!diamond) return;
@@ -64,7 +67,41 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
     }
   };
 
-  console.log(diamond, );
+  const handleChatWithSeller = () => {
+    // Try to get seller ID from multiple possible locations
+    const sellerId = diamond?.seller?.id || diamond?.sellerId
+    
+    if (!sellerId) {
+      console.warn('No seller information available', { 
+        diamond: diamond,
+        sellerId: diamond?.seller?.id,
+        directSellerId: diamond?.sellerId
+      })
+      return
+    }
+
+    if (!user) {
+      // Redirect to login if not authenticated
+      router.push('/login')
+      return
+    }
+
+    // Navigate to user chat with seller page
+    const productId = diamond.id
+    const productName = diamond.name || `${diamond.caratWeight}ct ${diamond.shape} Diamond`
+    
+    const chatUrl = `/user/chat/seller/${sellerId}?productId=${productId}&productType=diamond&productName=${encodeURIComponent(productName)}`
+    console.log('Navigating to chat:', { sellerId, productId, productName, chatUrl })
+    router.push(chatUrl)
+  };
+
+  console.log('Diamond data for chat debug:', { 
+    diamond, 
+    sellerId: diamond?.seller?.id, 
+    directSellerId: diamond?.sellerId,
+    hasSeller: !!diamond?.seller,
+    hasDirectSellerId: !!diamond?.sellerId
+  });
 
   if (!diamond) {
     return (
@@ -341,6 +378,17 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
                 <Share2 className="w-5 h-5" />
               </button>
             </div>
+            
+            {/* Chat with Seller Button */}
+            {(diamond?.seller?.id || diamond?.sellerId) && (
+              <button
+                onClick={handleChatWithSeller}
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 border-2 border-blue-300 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 text-blue-700 hover:text-blue-800 font-semibold rounded-2xl transition-all duration-200"
+              >
+                <MessageSquare className="w-5 h-5" />
+                Chat with Seller
+              </button>
+            )}
             
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
               <div className="flex items-start gap-3">

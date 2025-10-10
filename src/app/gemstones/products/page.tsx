@@ -42,49 +42,47 @@ export default function GemstoneProductsPage() {
 
   // Gemstone filters
   const [filters, setFilters] = useState<GemstoneFilterValues>({
-    gemType: category !== 'all' ? [category] : [],
-    variety: [],
-    color: [],
-    shape: [],
+    gemstoneType: category !== 'all' ? [category] : [],
     caratWeight: { min: 0.1, max: 50 },
-    priceRange: { min: 0, max: 100000 },
-    origin: [],
-    treatment: [],
+    color: [],
     clarity: [],
     cut: [],
+    priceRange: { min: 0, max: 100000 },
     certification: [],
-    reportNumber: '',
-    searchTerm: '',
+    origin: [],
+    treatment: [],
     enhancement: [],
     transparency: [],
     luster: [],
     phenomena: [],
+    location: [],
     companyName: '',
-    vendorLocation: ''
+    vendorLocation: '',
+    reportNumber: '',
+    searchTerm: ''
   });
 
   // Clear filters function
   const clearFilters = () => {
     setFilters({
-      gemType: [],
-      variety: [],
-      color: [],
-      shape: [],
+      gemstoneType: [],
       caratWeight: { min: 0.1, max: 50 },
-      priceRange: { min: 0, max: 100000 },
-      origin: [],
-      treatment: [],
+      color: [],
       clarity: [],
       cut: [],
+      priceRange: { min: 0, max: 100000 },
       certification: [],
-      reportNumber: '',
-      searchTerm: '',
+      origin: [],
+      treatment: [],
       enhancement: [],
       transparency: [],
       luster: [],
       phenomena: [],
+      location: [],
       companyName: '',
-      vendorLocation: ''
+      vendorLocation: '',
+      reportNumber: '',
+      searchTerm: ''
     });
     setSearchQuery('');
     setSortBy('-createdAt');
@@ -234,6 +232,7 @@ export default function GemstoneProductsPage() {
             <GemstoneFilters
               filters={filters}
               onFiltersChange={handleFiltersChange}
+              gemstoneType="single"
             />
           </div>
 

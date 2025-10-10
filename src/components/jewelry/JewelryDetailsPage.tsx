@@ -18,7 +18,8 @@ import {
   Info,
   Plus,
   Minus,
-  Check
+  Check,
+  MessageSquare
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { WishlistButton } from '@/components/shared/WishlistButton';
@@ -149,8 +150,8 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const router = useRouter();
 
-  // Get authentication token from Redux store
-  const { token } = useSelector((state: RootState) => state.auth);
+  // Get authentication token and user from Redux store
+  const { token, user } = useSelector((state: RootState) => state.auth);
 
   const handleAddToCart = async () => {
     if (!jewelry) return;
@@ -176,6 +177,32 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
     } finally {
       setIsAddingToCart(false);
     }
+  };
+
+  const handleChatWithSeller = () => {
+    // Try to get seller ID from multiple possible locations
+    const sellerId = jewelry?.user_id || jewelry?.seller?.id || jewelry?.sellerId
+    
+    if (!sellerId) {
+      console.warn('No seller information available', { 
+        jewelry: jewelry,
+        userId: jewelry?.user_id,
+        sellerId: jewelry?.seller?.id,
+        directSellerId: jewelry?.sellerId
+      })
+      return
+    }
+
+    if (!user) {
+      // Redirect to login if not authenticated
+      router.push('/login')
+      return
+    }
+    
+    // Navigate to chat with product context
+    const chatUrl = `/user/chat/seller/${sellerId}?productId=${jewelry.id}&productType=jewelry&productName=${encodeURIComponent(jewelry.name || 'Jewelry')}`
+    console.log('Navigating to jewelry chat:', { sellerId, productId: jewelry.id, productName: jewelry.name, chatUrl })
+    router.push(chatUrl)
   };
 
   const toggleSection = (section: string, stoneIndex?: number) => {
@@ -358,6 +385,13 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                   showText
                   className="flex-1 border border-gray-200 rounded-full py-3 font-medium transition-colors flex items-center justify-center gap-2 touch-target hover:bg-gray-50"
                 />
+                <button 
+                  onClick={handleChatWithSeller}
+                  className="flex-1 border border-gray-200 rounded-full py-3 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 touch-target"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Chat
+                </button>
                 <button className="flex-1 border border-gray-200 rounded-full py-3 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 touch-target">
                   <Share2 className="w-4 h-4" />
                   Share

@@ -4,7 +4,7 @@ export const SECTION_WIDTH = 1400;
 // API Configuration
 export const API_CONFIG = {
   // Base API URL - can be overridden by environment variable
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1',
+  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api/v1',
   
   // API Endpoints
   ENDPOINTS: {
