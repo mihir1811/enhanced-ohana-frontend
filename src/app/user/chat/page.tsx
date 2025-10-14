@@ -40,6 +40,13 @@ export default function UserMessagesPage() {
   const locallyAddedMessagesRef = useRef<Set<string>>(new Set())
   // Track all processed messages to prevent any duplicates
   const processedMessagesRef = useRef<Set<string>>(new Set())
+  // Track current selected participant to avoid stale closures
+  const selectedParticipantRef = useRef<string | null>(null)
+
+  // Update ref when selectedParticipantId changes
+  useEffect(() => {
+    selectedParticipantRef.current = selectedParticipantId
+  }, [selectedParticipantId])
 
   // Register socket for receiving messages when user is available
   useEffect(() => {
@@ -156,12 +163,13 @@ export default function UserMessagesPage() {
       return
     }
     
-    console.log('✅ [UserChat] Setting up message listener')
+    console.log('✅ [UserChat] Setting up message listener for user:', user?.id)
 
     const handleNewMessage = (message: any) => {
       console.log('📨 [UserChat] Received new message:', message)
       console.log('🔍 [UserChat] Current user ID:', user?.id)
-      console.log('🔍 [UserChat] Selected participant:', selectedParticipantId)
+      console.log('🔍 [UserChat] Socket connected:', connected)
+      console.log('🔍 [UserChat] Message timestamp:', new Date().toISOString())
       
       // Handle different possible message structures from backend
       const fromId = String(message.fromId || message.fromUserId || message.from?.id || '')
@@ -206,10 +214,14 @@ export default function UserMessagesPage() {
       
       // If message is for current conversation, add to messages
       const currentUserId = String(user?.id || '')
-      const isFromCurrentUser = safeMessage.fromId === currentUserId
-      const shouldAddToCurrentConversation = selectedParticipantId && currentUserId && 
-          ((safeMessage.fromId === selectedParticipantId && safeMessage.toId === currentUserId) ||
-           (safeMessage.fromId === currentUserId && safeMessage.toId === selectedParticipantId))
+      const selectedParticipant = String(selectedParticipantRef.current || '')
+      const messageFromId = String(safeMessage.fromId)
+      const messageToId = String(safeMessage.toId)
+      
+      const isFromCurrentUser = messageFromId === currentUserId
+      const shouldAddToCurrentConversation = selectedParticipant && currentUserId && 
+          ((messageFromId === selectedParticipant && messageToId === currentUserId) ||
+           (messageFromId === currentUserId && messageToId === selectedParticipant))
       
       // Check if this message was already processed
       const messageKey = `${safeMessage.fromId}-${safeMessage.toId}-${safeMessage.message}-${safeMessage.createdAt}`
@@ -221,8 +233,12 @@ export default function UserMessagesPage() {
         wasAddedLocally,
         wasAlreadyProcessed,
         shouldAddToCurrentConversation,
-        messageFromId: safeMessage.fromId,
-        currentUserId
+        messageFromId,
+        messageToId,
+        currentUserId,
+        selectedParticipant,
+        condition1: selectedParticipant && currentUserId && messageFromId === selectedParticipant && messageToId === currentUserId,
+        condition2: selectedParticipant && currentUserId && messageFromId === currentUserId && messageToId === selectedParticipant
       })
       
       // Only add messages that we haven't already processed
@@ -264,20 +280,45 @@ export default function UserMessagesPage() {
       
       // Update conversations list
       setConversations(prev => {
-        return prev.map(conv => {
+        const updatedConversations = prev.map(conv => {
           // Only update conversations that involve the current user and this participant
           if (currentUserId && 
-              ((conv.participantId === safeMessage.fromId && safeMessage.toId === currentUserId) ||
-               (conv.participantId === safeMessage.toId && safeMessage.fromId === currentUserId))) {
+              ((conv.participantId === messageFromId && messageToId === currentUserId) ||
+               (conv.participantId === messageToId && messageFromId === currentUserId))) {
             return {
               ...conv,
               lastMessage: safeMessage,
-              unreadCount: conv.participantId === safeMessage.fromId ? conv.unreadCount + 1 : conv.unreadCount,
+              unreadCount: conv.participantId === messageFromId ? conv.unreadCount + 1 : conv.unreadCount,
               messages: [...(conv.messages || []), safeMessage]
             }
           }
           return conv
         })
+        
+        // If message is from a new seller that doesn't have a conversation yet, create one
+        const isMessageFromSeller = safeMessage.from?.role === 'seller' && messageToId === currentUserId
+        const hasExistingConversation = prev.find(conv => conv.participantId === messageFromId)
+        
+        if (isMessageFromSeller && !hasExistingConversation && currentUserId) {
+          console.log('🆕 [UserChat] Creating new conversation for seller who sent message:', {
+            sellerId: messageFromId,
+            sellerName: safeMessage.from?.name,
+            message: safeMessage.message.substring(0, 50) + '...'
+          })
+          
+          const newConversation: ChatConversation = {
+            participantId: messageFromId,
+            participantName: safeMessage.from?.name || 'Seller',
+            participantRole: 'seller',
+            lastMessage: safeMessage,
+            unreadCount: 1,
+            messages: [safeMessage]
+          }
+          
+          return [...updatedConversations, newConversation]
+        }
+        
+        return updatedConversations
       })
     }
 
@@ -285,7 +326,7 @@ export default function UserMessagesPage() {
     const unsubscribe = onMessage(handleNewMessage)
     
     return unsubscribe
-  }, [connected, selectedParticipantId, onMessage, user?.id])
+  }, [connected, onMessage, user?.id]) // Removed selectedParticipantId from dependencies
 
   // Load messages for a conversation with pagination
   const loadConversationMessages = useCallback(async (participantId: string, page: number = 1, append: boolean = false) => {
@@ -442,81 +483,12 @@ export default function UserMessagesPage() {
       if (targetConversation) {
         console.log('✅ [UserChat] Found existing conversation with seller:', targetConversation)
         handleSelectConversation(preSelectedSellerId)
-      } else if (conversations.length >= 0) {
-        // Create a new conversation entry for this seller when coming from product page
-        console.log('🆕 [UserChat] Creating new conversation for seller:', preSelectedSellerId)
-        
-        // Fetch seller info to get proper name
-        const createNewConversation = async () => {
-          try {
-            let sellerName = 'Seller'
-            
-            console.log('🔍 [UserChat] Fetching seller info for:', preSelectedSellerId)
-            
-            // Try to fetch seller info for better name
-            try {
-              const sellerInfo = await diamondService.getSellerInfo(preSelectedSellerId)
-              console.log('📡 [UserChat] Seller info response:', sellerInfo)
-              
-              if (sellerInfo?.data?.user?.firstName) {
-                sellerName = sellerInfo.data.user.firstName
-                if (sellerInfo.data.user.lastName) {
-                  sellerName += ` ${sellerInfo.data.user.lastName}`
-                }
-              } else if (sellerInfo?.data?.user?.name) {
-                sellerName = sellerInfo.data.user.name
-              }
-              console.log('✅ [UserChat] Fetched seller name:', sellerName)
-            } catch (error) {
-              console.log('⚠️ [UserChat] Could not fetch seller info, using fallback name:', error)
-              // Use product-based fallback name
-              sellerName = productName ? 
-                `Seller (${productType === 'gemstone' ? 'Gemstone' : productType === 'diamond' ? 'Diamond' : 'Product'} Seller)` :
-                'Seller'
-            }
-            
-            const newConversation: ChatConversation = {
-              participantId: preSelectedSellerId,
-              participantName: sellerName,
-              participantRole: 'seller',
-              lastMessage: undefined,
-              unreadCount: 0,
-              messages: []
-            }
-            
-            console.log('🎯 [UserChat] Creating new conversation object:', newConversation)
-            
-            // Add to conversations list
-            setConversations(prev => {
-              const exists = prev.find(conv => conv.participantId === preSelectedSellerId)
-              if (exists) {
-                console.log('⚠️ [UserChat] Conversation already exists, not adding duplicate')
-                return prev
-              }
-              console.log('➕ [UserChat] Adding new conversation to list')
-              return [...prev, newConversation]
-            })
-            
-            // Select this new conversation
-            console.log('🎯 [UserChat] Selecting new conversation:', preSelectedSellerId)
-            handleSelectConversation(preSelectedSellerId)
-            
-            console.log('✅ [UserChat] Created and selected new conversation for seller:', {
-              sellerId: preSelectedSellerId,
-              sellerName,
-              productType,
-              productName
-            })
-          } catch (error) {
-            console.error('❌ [UserChat] Error creating new conversation:', error)
-            setError('Could not start chat with seller. Please try again.')
-          }
-        }
-        
-        createNewConversation()
+      } else {
+        console.log('❌ [UserChat] No existing conversation found with seller:', preSelectedSellerId)
+        // Don't create new conversation automatically - user needs to start chat from messages
       }
     }
-  }, [preSelectedSellerId, conversations, handleSelectConversation, productName, productType])
+  }, [preSelectedSellerId, conversations, handleSelectConversation])
 
   // Auto-scroll to bottom for new messages (but not when loading older messages)
   useEffect(() => {
@@ -744,6 +716,51 @@ export default function UserMessagesPage() {
   }
 
   const selectedConversation = filteredConversations.find(c => c.participantId === selectedParticipantId)
+
+  // Add debug functions for development
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      (window as any).debugChatConnection = () => {
+        console.group('🔌 [UserChat] Connection Debug')
+        console.log('Socket connected:', connected)
+        console.log('Socket instance:', !!socket)
+        console.log('Socket ID:', socket?.id)
+        console.log('User ID:', user?.id)
+        console.log('Selected participant:', selectedParticipantId)
+        console.log('Conversations count:', conversations.length)
+        console.log('Messages count:', messages.length)
+        console.log('Register function available:', !!register)
+        console.log('OnMessage function available:', !!onMessage)
+        console.groupEnd()
+      }
+      
+      (window as any).testMessageReceive = () => {
+        console.log('🧪 [UserChat] Testing message receive with current setup')
+        console.log('Current user ID:', user?.id)
+        console.log('Selected participant (state):', selectedParticipantId)
+        console.log('Selected participant (ref):', selectedParticipantRef.current)
+        console.log('Should receive from:', selectedParticipantRef.current)
+        console.log('Should receive to:', user?.id)
+        console.log('Message listener active:', !!onMessage)
+        console.log('Socket connected:', connected)
+      }
+      
+      (window as any).forceRefreshMessages = () => {
+        console.log('🔄 [UserChat] Force refreshing messages for current conversation')
+        if (selectedParticipantRef.current) {
+          loadConversationMessages(selectedParticipantRef.current, 1, false)
+        } else {
+          console.log('❌ No conversation selected to refresh')
+        }
+      }
+      
+      console.log('🧪 [UserChat] Debug functions available:')
+      console.log('  - window.debugChatConnection()')
+      console.log('  - window.testMessageReceive()')
+      console.log('  - window.forceRefreshMessages()')
+      console.log('  - window.debugConversations() (if conversations loaded)')
+    }
+  }, [connected, socket, user?.id, selectedParticipantId, conversations.length, messages.length, register, onMessage])
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">

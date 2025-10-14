@@ -185,20 +185,24 @@ export default function SellerMessagesPage() {
       
       // If message is for current conversation, add to messages
       const currentUserId = String(user?.id || '')
-      const isFromCurrentUser = safeMessage.fromId === currentUserId
+      const selectedParticipant = String(selectedConversation?.participantId || '')
+      const messageFromId = String(safeMessage.fromId)
+      const messageToId = String(safeMessage.toId)
+      
+      const isFromCurrentUser = messageFromId === currentUserId
       const shouldAddToCurrentConversation = selectedConversation && currentUserId && 
-          ((safeMessage.fromId === selectedConversation.participantId && safeMessage.toId === currentUserId) ||
-           (safeMessage.fromId === currentUserId && safeMessage.toId === selectedConversation.participantId))
+          ((messageFromId === selectedParticipant && messageToId === currentUserId) ||
+           (messageFromId === currentUserId && messageToId === selectedParticipant))
       
       console.log('🔍 [SellerMessages] Message filtering:', {
         shouldAdd: shouldAddToCurrentConversation,
         isFromCurrentUser,
-        selectedConversationId: selectedConversation?.participantId,
+        selectedConversationId: selectedParticipant,
         currentUserId,
-        messageFromId: safeMessage.fromId,
-        messageToId: safeMessage.toId,
-        condition1: selectedConversation && currentUserId && safeMessage.fromId === selectedConversation.participantId && safeMessage.toId === currentUserId,
-        condition2: selectedConversation && currentUserId && safeMessage.fromId === currentUserId && safeMessage.toId === selectedConversation.participantId
+        messageFromId,
+        messageToId,
+        condition1: selectedConversation && currentUserId && messageFromId === selectedParticipant && messageToId === currentUserId,
+        condition2: selectedConversation && currentUserId && messageFromId === currentUserId && messageToId === selectedParticipant
       })
       
       // Check if this message was already processed
@@ -212,8 +216,10 @@ export default function SellerMessagesPage() {
         isFromCurrentUser,
         wasAddedLocally,
         wasAlreadyProcessed,
-        messageFromId: safeMessage.fromId,
+        messageFromId,
+        messageToId,
         currentUserId,
+        selectedParticipant,
         messageKey: messageKey.substring(0, 50) + '...'
       })
       
