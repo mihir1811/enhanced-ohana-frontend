@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAppSelector } from '@/store/hooks'
 import { chatService } from '@/services/chat.service'
+import { diamondService } from '@/services/diamondService'
 import type { ChatConversation, ChatMessageDto } from '@/services/chat.service'
 import { MessageSquare, Search, Wifi, User, Send } from 'lucide-react'
 import { useSocket } from '@/components/chat/SocketProvider'
@@ -376,19 +377,79 @@ export default function UserMessagesPage() {
 
   // Auto-select seller from URL parameters
   useEffect(() => {
-    if (preSelectedSellerId && conversations.length > 0) {
+    if (preSelectedSellerId) {
       const targetConversation = conversations.find(conv => 
         conv.participantId === preSelectedSellerId && 
         conv.participantRole.toLowerCase() === 'seller'
       )
       
       if (targetConversation) {
+        console.log('✅ [UserChat] Found existing conversation with seller:', targetConversation)
         handleSelectConversation(preSelectedSellerId)
-      } else {
-        setError(`No existing conversation found with this seller. The seller needs to initiate the chat first.`)
+      } else if (conversations.length >= 0) {
+        // Create a new conversation entry for this seller when coming from product page
+        console.log('🆕 [UserChat] Creating new conversation for seller:', preSelectedSellerId)
+        
+        // Fetch seller info to get proper name
+        const createNewConversation = async () => {
+          try {
+            let sellerName = 'Seller'
+            
+            // Try to fetch seller info for better name
+            try {
+              const sellerInfo = await diamondService.getSellerInfo(preSelectedSellerId)
+              if (sellerInfo?.data?.user?.firstName) {
+                sellerName = sellerInfo.data.user.firstName
+                if (sellerInfo.data.user.lastName) {
+                  sellerName += ` ${sellerInfo.data.user.lastName}`
+                }
+              } else if (sellerInfo?.data?.user?.name) {
+                sellerName = sellerInfo.data.user.name
+              }
+              console.log('✅ [UserChat] Fetched seller name:', sellerName)
+            } catch (error) {
+              console.log('⚠️ [UserChat] Could not fetch seller info, using fallback name:', error)
+              // Use product-based fallback name
+              sellerName = productName ? 
+                `Seller (${productType === 'gemstone' ? 'Gemstone' : productType === 'diamond' ? 'Diamond' : 'Product'} Seller)` :
+                'Seller'
+            }
+            
+            const newConversation: ChatConversation = {
+              participantId: preSelectedSellerId,
+              participantName: sellerName,
+              participantRole: 'seller',
+              lastMessage: undefined,
+              unreadCount: 0,
+              messages: []
+            }
+            
+            // Add to conversations list
+            setConversations(prev => {
+              const exists = prev.find(conv => conv.participantId === preSelectedSellerId)
+              if (exists) return prev
+              return [...prev, newConversation]
+            })
+            
+            // Select this new conversation
+            handleSelectConversation(preSelectedSellerId)
+            
+            console.log('✅ [UserChat] Created and selected new conversation for seller:', {
+              sellerId: preSelectedSellerId,
+              sellerName,
+              productType,
+              productName
+            })
+          } catch (error) {
+            console.error('❌ [UserChat] Error creating new conversation:', error)
+            setError('Could not start chat with seller. Please try again.')
+          }
+        }
+        
+        createNewConversation()
       }
     }
-  }, [preSelectedSellerId, conversations, handleSelectConversation])
+  }, [preSelectedSellerId, conversations, handleSelectConversation, productName, productType])
 
   // Auto-scroll to bottom for new messages (but not when loading older messages)
   useEffect(() => {
@@ -643,11 +704,19 @@ export default function UserMessagesPage() {
                   <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
                     {selectedConversation.participantName.charAt(0).toUpperCase()}
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h3 className="font-medium text-gray-900">
                       {selectedConversation.participantName}
                     </h3>
-                    <p className="text-sm text-gray-500">{selectedConversation.participantRole}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-gray-500">{selectedConversation.participantRole}</p>
+                      {/* Show product context if this conversation was started from a product page */}
+                      {preSelectedSellerId === selectedConversation.participantId && productName && (
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-md">
+                          About: {decodeURIComponent(productName)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -681,8 +750,20 @@ export default function UserMessagesPage() {
                 ) : messages.length === 0 ? (
                   <div className="text-center py-8">
                     <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">No messages yet</p>
-                    <p className="text-sm text-gray-500">Start the conversation!</p>
+                    {preSelectedSellerId === selectedParticipantId && productName ? (
+                      <>
+                        <p className="text-gray-600 mb-2">Start chatting with {selectedConversation?.participantName}</p>
+                        <p className="text-sm text-gray-500 mb-4">Ask questions about <strong>{decodeURIComponent(productName)}</strong></p>
+                        <div className="text-xs text-gray-400 bg-gray-50 px-3 py-2 rounded-md inline-block">
+                          💎 {productType === 'gemstone' ? 'Gemstone' : productType === 'diamond' ? 'Diamond' : 'Product'} Chat
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-gray-600">No messages yet</p>
+                        <p className="text-sm text-gray-500">Start the conversation!</p>
+                      </>
+                    )}
                   </div>
                 ) : (
                   <>
