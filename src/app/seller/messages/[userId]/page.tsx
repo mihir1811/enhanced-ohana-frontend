@@ -81,65 +81,40 @@ export default function SellerChatWithUserPage() {
     const loadHistory = async () => {
       if (!token || !user || !isSeller) return
       try {
-        console.log('[chat:seller->user] Loading or creating chat with user:', { userId, sellerId: user.id })
+        console.log('[chat:seller->user] Loading messages with user:', { userId, sellerId: user.id })
         
-        // Use getOrCreateChat to ensure we have a chatId
-        const chatRes = await chatService.getOrCreateChat(
-          { 
-            userId: userId, 
-            sellerId: user.id
-          }, 
-          token || undefined
-        )
+        // Load messages directly using getAllMessages and filter for this conversation
+        const messagesRes = await chatService.getAllMessages({ limit: 100, page: 1 }, token)
         
-        if (!cancelled && chatRes?.data) {
-          const chat = chatRes.data
-          setServerChatId(chat.id)
-          console.log('[chat:seller->user] Chat ready:', { 
-            chatId: chat.id, 
-            isNew: chat.isNew,
-            participants: chat.participants 
-          })
+        if (!cancelled && messagesRes?.data?.data) {
+          // Filter messages for this specific user conversation
+          const conversationMessages = messagesRes.data.data.filter(msg => 
+            (msg.fromId === user.id && msg.toId === userId) ||
+            (msg.fromId === userId && msg.toId === user.id)
+          )
           
-          // Load messages for this chat if it's not new
-          if (!chat.isNew) {
-            const msgRes = await chatService.getMessages(chat.id, { limit: 50, page: 1 }, token || undefined)
-            if (!cancelled && msgRes?.data) {
-              const rawMessages = extractMessageArray(msgRes.data)
-              console.log('Raw messages from API (seller side):', { count: rawMessages.length, sample: rawMessages[0] })
-              
-              const chatMessages: ChatMessage[] = rawMessages.map(rawMsg => {
-                const normalizedMsg = normalizeMessageDto(rawMsg)
-                const isFromMe = String(normalizedMsg.fromUserId) === String(user.id)
-                const senderName = isFromMe ? user.name : extractSenderName(rawMsg, userName)
-                
-                return {
-                  id: normalizedMsg.id,
-                  from: isFromMe ? 'me' : 'user',
-                  text: normalizedMsg.text,
-                  timestamp: normalizedMsg.timestamp,
-                  senderName
-                }
-              })
-              setMessages(chatMessages)
-              console.log('Processed chat messages (seller side):', { 
-                count: chatMessages.length, 
-                sample: chatMessages[0] 
-              })
-            }
-          } else {
-            console.log('[chat:seller->user] New chat created, starting with empty messages')
-          }
+          // Transform to local format
+          const localMessages: ChatMessage[] = conversationMessages.map(msg => ({
+            id: msg.id,
+            from: msg.fromId === user.id ? 'me' : 'user',
+            text: msg.message,
+            timestamp: new Date(msg.createdAt).getTime(),
+            senderName: extractSenderName(msg)
+          }))
+          
+          setMessages(localMessages)
+          setUserName(conversationMessages[0]?.from?.name || conversationMessages[0]?.to?.name || 'User')
+          console.log('[chat:seller->user] Messages loaded:', localMessages.length)
         }
       } catch (e) {
-        console.error('Failed to load/create chat:', e)
+        console.error('Failed to load messages:', e)
       }
     }
     loadHistory()
     return () => {
       cancelled = true
     }
-  }, [token, user, userId, userName, isSeller])
+  }, [token, user, userId, isSeller])
 
   // Listen for incoming messages
   useEffect(() => {
@@ -248,10 +223,9 @@ export default function SellerChatWithUserPage() {
         clientTempId: `me-${now}`,
       })
       sendMessage({
-        chatId: emitChatId,
-        toUserId: userId,
-        text: trimmed,
-        clientTempId: `me-${now}`,
+        fromId: String(user?.id || ''),
+        toId: userId,
+        message: trimmed,
       })
     } catch (e) {
       console.warn('Failed to send message:', e)

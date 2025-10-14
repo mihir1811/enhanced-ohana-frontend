@@ -67,7 +67,7 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
     }
   };
 
-  const handleChatWithSeller = () => {
+  const handleChatWithSeller = async () => {
     // Try to get seller ID from multiple possible locations
     const sellerId = diamond?.seller?.id || diamond?.sellerId
     
@@ -86,13 +86,23 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
       return
     }
 
-    // Navigate to user chat with seller page
-    const productId = diamond.id
-    const productName = diamond.name || `${diamond.caratWeight}ct ${diamond.shape} Diamond`
-    
-    const chatUrl = `/user/chat/seller/${sellerId}?productId=${productId}&productType=diamond&productName=${encodeURIComponent(productName)}`
-    console.log('Navigating to chat:', { sellerId, productId, productName, chatUrl })
-    router.push(chatUrl)
+    try {
+      // Try to create or get existing chat with seller
+      const productId = diamond.id
+      const productName = diamond.name || `${diamond.caratWeight}ct ${diamond.shape} Diamond`
+      
+      // Navigate to main chat page with seller pre-selected
+      const chatUrl = `/user/chat?sellerId=${sellerId}&productId=${productId}&productType=diamond&productName=${encodeURIComponent(productName)}`
+      console.log('Navigating to chat:', { sellerId, productId, productName, chatUrl })
+      router.push(chatUrl)
+    } catch (error) {
+      console.error('Failed to initiate chat:', error)
+      // Still navigate to chat page, let it handle the error
+      const productId = diamond.id
+      const productName = diamond.name || `${diamond.caratWeight}ct ${diamond.shape} Diamond`
+      const chatUrl = `/user/chat?sellerId=${sellerId}&productId=${productId}&productType=diamond&productName=${encodeURIComponent(productName)}`
+      router.push(chatUrl)
+    }
   };
 
   console.log('Diamond data for chat debug:', { 

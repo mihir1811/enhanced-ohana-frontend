@@ -4,13 +4,15 @@ import { io, Socket } from "socket.io-client";
 import { API_CONFIG } from "@/lib/constants";
 
 // Event names used by the backend chat module
+// Backend uses a single "CHAT_EVENT" wrapper with type/data structure
 export const CHAT_EVENTS = {
   CLIENT: {
-    REGISTER_SOCKET: "REGISTER_SOCKET",
-    SEND_MESSAGE: "SEND_MESSAGE",
+    CHAT_EVENT: "CHAT_EVENT", // Main event wrapper
+    REGISTER_SOCKET: "REGISTER_SOCKET", // type for CHAT_EVENT
+    SEND_MESSAGE: "SEND_MESSAGE", // type for CHAT_EVENT
   },
   SERVER: {
-    MESSAGE: "MESSAGE",
+    MESSAGE: "MESSAGE", // Direct server events
     ERROR: "ERROR",
     READ_RECEIPT: "READ_RECEIPT",
     CHAT_DELETED: "CHAT_DELETED",
@@ -95,14 +97,27 @@ export const createSocket = ({ token }: CreateSocketOptions): Socket => {
 };
 
 export type OutgoingMessagePayload = {
-  chatId?: string; // client/local conversation id if available
-  toSellerId?: string | number;
-  toUserId?: string | number;
-  toId?: string | number; // seller API compatible
-  fromId?: string | number; // seller API compatible
-  fromUserId?: string | number; // explicit sender user ID
-  productId?: string | number;
-  text: string;
-  message?: string; // alias for text
-  clientTempId?: string;
+  fromId: string;
+  toId: string;
+  message: string;
+};
+
+export type SocketRegisterPayload = {
+  userId: string;
+};
+
+// Helper functions to wrap events in CHAT_EVENT format
+export const wrapChatEvent = (type: string, data: any) => {
+  return JSON.stringify({ type, data });
+};
+
+export const sendChatEvent = (socket: Socket, type: string, data: any) => {
+  if (!socket.connected) {
+    console.warn('⚠️ [socket] Cannot send event - socket not connected');
+    return;
+  }
+  
+  const payload = wrapChatEvent(type, data);
+  console.log('📤 [socket] Sending CHAT_EVENT:', { type, data, payload });
+  socket.emit(CHAT_EVENTS.CLIENT.CHAT_EVENT, payload);
 };

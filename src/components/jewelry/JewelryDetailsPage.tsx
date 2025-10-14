@@ -200,7 +200,7 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
     }
     
     // Navigate to chat with product context
-    const chatUrl = `/user/chat/seller/${sellerId}?productId=${jewelry.id}&productType=jewelry&productName=${encodeURIComponent(jewelry.name || 'Jewelry')}`
+    const chatUrl = `/user/chat?sellerId=${sellerId}&productId=${jewelry.id}&productType=jewelry&productName=${encodeURIComponent(jewelry.name || 'Jewelry')}`
     console.log('Navigating to jewelry chat:', { sellerId, productId: jewelry.id, productName: jewelry.name, chatUrl })
     router.push(chatUrl)
   };

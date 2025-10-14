@@ -90,11 +90,11 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
       return
     }
 
-    // Navigate to user chat with seller page
+    // Navigate to main chat page with seller pre-selected
     const productId = gemstone.id
     const productName = gemstone.name || `${gemstone.caratWeight}ct ${gemstone.shape} ${gemstone.gemType}`
     
-    const chatUrl = `/user/chat/seller/${sellerId}?productId=${productId}&productName=${encodeURIComponent(productName)}`
+    const chatUrl = `/user/chat?sellerId=${sellerId}&productId=${productId}&productType=gemstone&productName=${encodeURIComponent(productName)}`
     router.push(chatUrl)
   };
 

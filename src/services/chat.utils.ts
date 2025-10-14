@@ -17,58 +17,30 @@ export const extractMessageArray = (response: any): ChatMessageDto[] => {
   return []
 }
 
-// Normalize message DTO to consistent format
+// Normalize message DTO to consistent format matching backend structure
 export const normalizeMessageDto = (msg: any): ChatMessageDto => {
-  const id = String(msg?.id ?? msg?._id ?? `temp-${Date.now()}`)
-  const chatId = String(msg?.chatId ?? msg?.conversationId ?? '')
-  
-  // Handle different field names for user IDs
-  const fromUserId = String(
-    msg?.fromUserId ?? 
-    msg?.fromId ?? 
-    msg?.from?.id ?? 
-    msg?.senderId ?? 
-    ''
-  )
-  
-  const toUserId = String(
-    msg?.toUserId ?? 
-    msg?.toId ?? 
-    msg?.to?.id ?? 
-    msg?.receiverId ?? 
-    ''
-  )
-  
-  // Handle different field names for message text
-  const text = String(
-    msg?.text ?? 
-    msg?.message ?? 
-    msg?.content ?? 
-    msg?.body ?? 
-    ''
-  )
-  
-  // Handle timestamp
-  const timestamp = msg?.timestamp ?? msg?.createdAt ?? msg?.created_at ?? Date.now()
-  
-  // Handle read status
-  const read = Boolean(
-    msg?.read ?? 
-    msg?.isRead ?? 
-    msg?.is_read ?? 
-    msg?.readAt ?? 
-    msg?.read_at ?? 
-    false
-  )
-
   return {
-    id,
-    chatId,
-    fromUserId,
-    toUserId,
-    text,
-    timestamp: typeof timestamp === 'string' ? Date.parse(timestamp) : timestamp,
-    read
+    id: String(msg?.id ?? msg?._id ?? `temp-${Date.now()}`),
+    fromId: String(msg?.fromId ?? msg?.fromUserId ?? msg?.from?.id ?? msg?.senderId ?? ''),
+    toId: String(msg?.toId ?? msg?.toUserId ?? msg?.to?.id ?? msg?.receiverId ?? ''),
+    message: String(msg?.message ?? msg?.text ?? msg?.content ?? msg?.body ?? ''),
+    fileUrl: msg?.fileUrl || null,
+    messageType: msg?.messageType || 'TEXT',
+    createdAt: msg?.createdAt ?? msg?.timestamp ?? msg?.created_at ?? new Date().toISOString(),
+    deletedBySender: Boolean(msg?.deletedBySender ?? false),
+    deletedByReceiver: Boolean(msg?.deletedByReceiver ?? false),
+    isRead: Boolean(msg?.isRead ?? msg?.read ?? msg?.is_read ?? false),
+    readAt: msg?.readAt || null,
+    from: {
+      id: String(msg?.from?.id ?? msg?.fromId ?? ''),
+      name: String(msg?.from?.name ?? 'User'),
+      role: String(msg?.from?.role ?? 'USER')
+    },
+    to: {
+      id: String(msg?.to?.id ?? msg?.toId ?? ''),
+      name: String(msg?.to?.name ?? 'User'),
+      role: String(msg?.to?.role ?? 'USER')
+    }
   }
 }
 

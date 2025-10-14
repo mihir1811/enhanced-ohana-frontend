@@ -1,81 +1,494 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAppSelector } from '@/store/hooks'
 import { chatService } from '@/services/chat.service'
-import type { ApiResponse } from '@/services/api'
-import type { ChatSummary } from '@/services/chat.service'
-import { MessageSquare, Search, Wifi, User } from 'lucide-react'
+import type { ChatConversation, ChatMessageDto } from '@/services/chat.service'
+import { MessageSquare, Search, Wifi, User, Send } from 'lucide-react'
 import { useSocket } from '@/components/chat/SocketProvider'
 import { formatMessageTime } from '@/services/chat.utils'
 
-type ConversationItem = {
-  chatId: string
-  sellerId: string
-  sellerName: string
-  lastText: string
-  lastTime: string
-  unread: number
-}
-
 export default function UserMessagesPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { token, user } = useAppSelector((s) => s.auth)
-  const { connected } = useSocket()
+  const { connected, socket, sendMessage: sendSocketMessage, register, onMessage } = useSocket()
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)
-  const [chats, setChats] = useState<ChatSummary[]>([])
+  const [conversations, setConversations] = useState<ChatConversation[]>([])
+  const [selectedParticipantId, setSelectedParticipantId] = useState<string | null>(null)
+  const [messages, setMessages] = useState<ChatMessageDto[]>([])
+  const [newMessage, setNewMessage] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  
+  // Pagination and loading states for messages
+  const [messagesPage, setMessagesPage] = useState(1)
+  const [messagesLimit] = useState(20) // Messages per page
+  const [hasMoreMessages, setHasMoreMessages] = useState(true)
+  const [loadingMoreMessages, setLoadingMoreMessages] = useState(false)
+  const [totalMessages, setTotalMessages] = useState(0)
+  const [loadingMessages, setLoadingMessages] = useState(false)
+  
+  // Track locally added messages to prevent duplicates
+  const locallyAddedMessagesRef = useRef<Set<string>>(new Set())
+  // Track all processed messages to prevent any duplicates
+  const processedMessagesRef = useRef<Set<string>>(new Set())
 
+  // Register socket for receiving messages when user is available
+  useEffect(() => {
+    if (user?.id && register) {
+      console.log('👤 [UserChat] Registering socket for user:', user.id)
+      register(user.id)
+    }
+  }, [user?.id, register])
+
+  // Get URL parameters for auto-selecting seller
+  const preSelectedSellerId = searchParams.get('sellerId')
+  const productId = searchParams.get('productId')
+  const productName = searchParams.get('productName')
+  const productType = searchParams.get('productType')
+
+  // Load conversations from backend
   useEffect(() => {
     let cancelled = false
-    const load = async () => {
-      if (!token || !user) return
+    const loadConversations = async () => {
+      if (!token || !user) {
+        console.log('⚠️ [UserChat] No token or user, skipping conversation load')
+        return
+      }
+      
+      console.log('🔄 [UserChat] Starting to load conversations...', { userId: user.id, userRole: user.role })
       setLoading(true)
       try {
-        const res: ApiResponse<ChatSummary[]> = await chatService.listChats({ limit: 50, page: 1 }, token)
-        if (!cancelled) setChats(res?.data ?? [])
-      } catch (e) {
-        console.warn('[user:messages] failed to list chats', e)
+        const response = await chatService.getConversations({ limit: 50, page: 1 }, token, user.id)
+        console.log('📡 [UserChat] getConversations response:', response)
+        
+        if (!cancelled && response?.data) {
+          console.log(`📊 [UserChat] Processing ${response.data.length} conversations:`, response.data)
+          
+          // Filter to show only conversations with sellers (since user is chatting with sellers)
+          const sellerConversations = response.data.filter(conv => 
+            conv.participantRole.toLowerCase() === 'seller'
+          )
+          
+          console.log(`🎯 [UserChat] Filtered seller conversations: ${sellerConversations.length}`, sellerConversations)
+          
+          setConversations(sellerConversations)
+          
+          // If we have a preselected seller, try to find and select that conversation
+          if (preSelectedSellerId) {
+            console.log(`🔍 [UserChat] Looking for preselected seller: ${preSelectedSellerId}`)
+            const preSelected = sellerConversations.find(conv => conv.participantId === preSelectedSellerId)
+            if (preSelected) {
+              console.log('✅ [UserChat] Found preselected conversation, will be handled by auto-select effect')
+            } else {
+              console.log('❌ [UserChat] Preselected seller not found in conversations')
+            }
+          }
+        } else {
+          console.log('⚠️ [UserChat] No conversation data received')
+        }
+      } catch (error) {
+        console.error('❌ [UserChat] Failed to load conversations:', error)
+        if (!cancelled) {
+          setError('Failed to load conversations. Please try again.')
+        }
       } finally {
         if (!cancelled) setLoading(false)
       }
     }
-    load()
-    return () => { cancelled = true }
-  }, [token, user])
-
-  const conversations = React.useMemo((): ConversationItem[] => {
-    const q = search.trim().toLowerCase()
     
-    const formatted = chats.map((chat): ConversationItem => {
-      // Find the seller participant
-      const sellerParticipant = chat.participants?.find(p => p.role?.toLowerCase() === 'seller')
-      const sellerId = sellerParticipant?.id ? String(sellerParticipant.id) : 'unknown'
-      const sellerName = sellerParticipant?.name || `Seller ${sellerId}`
-      
-      return {
-        chatId: chat.id,
-        sellerId,
-        sellerName,
-        lastText: chat.lastMessage?.text || 'No messages yet',
-        lastTime: chat.lastMessage?.timestamp ? formatMessageTime(chat.lastMessage.timestamp) : '',
-        unread: chat.unreadCount || 0
-      }
-    })
+    loadConversations()
+    return () => { cancelled = true }
+  }, [token, user, preSelectedSellerId])
 
-    // Filter by search
-    return formatted.filter(conv => 
-      q ? (
-        conv.sellerName.toLowerCase().includes(q) || 
-        conv.lastText.toLowerCase().includes(q)
+  // Handle incoming messages via WebSocket through SocketProvider
+  useEffect(() => {
+    if (!connected || !onMessage) {
+      console.log('⚠️ [UserChat] Message listener not set up:', { connected, hasOnMessage: !!onMessage })
+      return
+    }
+    
+    console.log('✅ [UserChat] Setting up message listener')
+
+    const handleNewMessage = (message: any) => {
+      console.log('📨 [UserChat] Received new message:', message)
+      console.log('🔍 [UserChat] Current user ID:', user?.id)
+      console.log('🔍 [UserChat] Selected participant:', selectedParticipantId)
+      
+      // Handle different possible message structures from backend
+      const fromId = String(message.fromId || message.fromUserId || message.from?.id || '')
+      const toId = String(message.toId || message.toUserId || message.to?.id || '')
+      const messageText = String(message.message || message.text || '')
+      
+      // Safety check for message structure
+      if (!fromId || !toId || !messageText) {
+        console.warn('⚠️ [UserChat] Invalid message structure received:', {
+          message,
+          extractedFromId: fromId,
+          extractedToId: toId,
+          extractedMessage: messageText
+        })
+        return
+      }
+      
+      // Ensure message has proper structure
+      const safeMessage: ChatMessageDto = {
+        id: message.id || `temp-${Date.now()}`,
+        fromId,
+        toId,
+        message: messageText,
+        messageType: message.messageType || 'TEXT',
+        createdAt: message.createdAt || message.timestamp || new Date().toISOString(),
+        deletedBySender: message.deletedBySender || false,
+        deletedByReceiver: message.deletedByReceiver || false,
+        isRead: message.isRead || false,
+        readAt: message.readAt || null,
+        fileUrl: message.fileUrl || null,
+        from: {
+          id: fromId,
+          name: String(message.from?.name || message.fromName || 'Unknown User'),
+          role: String(message.from?.role || message.fromRole || 'seller')
+        },
+        to: {
+          id: toId,
+          name: String(message.to?.name || message.toName || 'Unknown User'),
+          role: String(message.to?.role || message.toRole || 'user')
+        }
+      }
+      
+      // If message is for current conversation, add to messages
+      const currentUserId = String(user?.id || '')
+      const isFromCurrentUser = safeMessage.fromId === currentUserId
+      const shouldAddToCurrentConversation = selectedParticipantId && currentUserId && 
+          ((safeMessage.fromId === selectedParticipantId && safeMessage.toId === currentUserId) ||
+           (safeMessage.fromId === currentUserId && safeMessage.toId === selectedParticipantId))
+      
+      // Check if this message was already processed
+      const messageKey = `${safeMessage.fromId}-${safeMessage.toId}-${safeMessage.message}-${safeMessage.createdAt}`
+      const wasAddedLocally = locallyAddedMessagesRef.current.has(messageKey)
+      const wasAlreadyProcessed = processedMessagesRef.current.has(messageKey)
+      
+      console.log('🔍 [UserChat] Message processing check:', {
+        messageKey: messageKey.substring(0, 50) + '...',
+        wasAddedLocally,
+        wasAlreadyProcessed,
+        shouldAddToCurrentConversation,
+        messageFromId: safeMessage.fromId,
+        currentUserId
+      })
+      
+      // Only add messages that we haven't already processed
+      if (shouldAddToCurrentConversation && !wasAlreadyProcessed) {
+        console.log('✅ [UserChat] Adding message to current conversation')
+        
+        // Mark as processed immediately to prevent duplicates
+        processedMessagesRef.current.add(messageKey)
+        
+        setMessages(prev => {
+          // Additional duplicate check based on ID and content (backup check)
+          const isDuplicate = prev.some(existingMsg => 
+            (existingMsg.id === safeMessage.id && !existingMsg.id.startsWith('temp-')) ||
+            (existingMsg.message === safeMessage.message &&
+             existingMsg.fromId === safeMessage.fromId &&
+             existingMsg.toId === safeMessage.toId &&
+             Math.abs(new Date(existingMsg.createdAt).getTime() - new Date(safeMessage.createdAt).getTime()) < 3000)
+          )
+          
+          if (isDuplicate) {
+            console.log('🔄 [UserChat] Skipping duplicate message (backup check - ID or content match)')
+            return prev
+          }
+          
+          console.log('✅ [UserChat] Message added, new count:', prev.length + 1)
+          
+          // Update total messages count when adding new messages
+          setTotalMessages(prevTotal => prevTotal + 1)
+          
+          return [...prev, safeMessage]
+        })
+      } else if (wasAlreadyProcessed) {
+        console.log('🔄 [UserChat] Skipping message (already processed)')
+      } else if (wasAddedLocally) {
+        console.log('🔄 [UserChat] Skipping message (already added locally)')
+      } else {
+        console.log('❌ [UserChat] Message not added - not for current conversation')
+      }
+      
+      // Update conversations list
+      setConversations(prev => {
+        return prev.map(conv => {
+          // Only update conversations that involve the current user and this participant
+          if (currentUserId && 
+              ((conv.participantId === safeMessage.fromId && safeMessage.toId === currentUserId) ||
+               (conv.participantId === safeMessage.toId && safeMessage.fromId === currentUserId))) {
+            return {
+              ...conv,
+              lastMessage: safeMessage,
+              unreadCount: conv.participantId === safeMessage.fromId ? conv.unreadCount + 1 : conv.unreadCount,
+              messages: [...(conv.messages || []), safeMessage]
+            }
+          }
+          return conv
+        })
+      })
+    }
+
+    // Subscribe to messages through SocketProvider
+    const unsubscribe = onMessage(handleNewMessage)
+    
+    return unsubscribe
+  }, [connected, selectedParticipantId, onMessage, user?.id])
+
+  // Load messages for a conversation with pagination
+  const loadConversationMessages = useCallback(async (participantId: string, page: number = 1, append: boolean = false) => {
+    if (!token || !user?.id) return
+    
+    try {
+      setLoadingMessages(!append)
+      setLoadingMoreMessages(append)
+      
+      console.log(`📥 [UserChat] Loading messages for conversation with participant ${participantId}`, {
+        page,
+        limit: messagesLimit,
+        append
+      })
+      
+      // Get messages from API with proper pagination
+      const response = await chatService.getAllMessages({
+        page,
+        limit: messagesLimit
+      }, token)
+      
+      if (response.data?.data) {
+        const allMessages = response.data.data
+        const meta = response.data.meta
+        
+        console.log('📊 [UserChat] API Meta data:', meta)
+        
+        // Filter messages for this specific conversation
+        const conversationMessages = allMessages.filter(msg => 
+          (msg.fromId === user.id && msg.toId === participantId) ||
+          (msg.fromId === participantId && msg.toId === user.id)
+        )
+        
+        // Sort by creation date (oldest first for chat display)
+        const sortedMessages = conversationMessages.sort((a, b) => 
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        )
+        
+        // Use API meta data for pagination info
+        if (meta) {
+          setTotalMessages(meta.total || sortedMessages.length)
+          setHasMoreMessages(meta.currentPage < meta.lastPage)
+        } else {
+          // Fallback to local pagination
+          setTotalMessages(sortedMessages.length)
+          setHasMoreMessages(false)
+        }
+        
+        if (append) {
+          // For loading older messages, prepend to the beginning
+          setMessages(prev => [...sortedMessages, ...prev])
+        } else {
+          // For initial load, replace all messages
+          setMessages(sortedMessages)
+          setMessagesPage(1)
+        }
+        
+        console.log(`✅ [UserChat] Loaded ${sortedMessages.length} messages for conversation`, {
+          totalFromMeta: meta?.total,
+          currentPage: meta?.currentPage,
+          lastPage: meta?.lastPage,
+          hasMore: meta ? meta.currentPage < meta.lastPage : false
+        })
+      }
+    } catch (error) {
+      console.error('❌ [UserChat] Failed to load conversation messages:', error)
+      setError('Failed to load messages')
+    } finally {
+      setLoadingMessages(false)
+      setLoadingMoreMessages(false)
+    }
+  }, [token, user?.id, messagesLimit])
+
+  // Load more messages (older messages)
+  const loadMoreMessages = useCallback(async () => {
+    if (!selectedParticipantId || !hasMoreMessages || loadingMoreMessages) return
+    
+    const nextPage = messagesPage + 1
+    setMessagesPage(nextPage)
+    await loadConversationMessages(selectedParticipantId, nextPage, true)
+  }, [selectedParticipantId, hasMoreMessages, loadingMoreMessages, messagesPage, loadConversationMessages])
+
+  // Handle selecting a conversation
+  const handleSelectConversation = useCallback((participantId: string) => {
+    const selectedConversation = conversations.find(c => c.participantId === participantId)
+    if (selectedConversation) {
+      console.log('🔄 [UserChat] Switching to conversation:', participantId)
+      
+      // Reset all chat states for new conversation
+      setSelectedParticipantId(participantId)
+      setMessages([]) // Clear current messages immediately
+      setNewMessage('') // Clear any unsent message
+      setError(null) // Clear any errors
+      
+      // Reset pagination states
+      setMessagesPage(1)
+      setHasMoreMessages(true)
+      setTotalMessages(0)
+      setLoadingMessages(false)
+      setLoadingMoreMessages(false)
+      
+      // Clear message tracking for duplicate prevention
+      processedMessagesRef.current.clear()
+      locallyAddedMessagesRef.current.clear()
+      console.log('🔄 [UserChat] Cleared all tracking and states for new conversation')
+      
+      // Load messages with pagination for new conversation
+      loadConversationMessages(participantId, 1, false)
+      
+      // Reset scroll position to bottom for new conversation (after a short delay to let messages load)
+      setTimeout(() => {
+        const messagesContainer = document.querySelector('.messages-container')
+        if (messagesContainer) {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight
+        }
+      }, 100)
+      
+      // Mark messages as read (we'll handle this after loading messages)
+      if (token) {
+        chatService.markMessagesAsRead([], token) // We'll mark as read after loading
+          .then(() => {
+            // Update conversation unread count
+            setConversations(prev => prev.map(conv => 
+              conv.participantId === participantId 
+                ? { ...conv, unreadCount: 0 }
+                : conv
+            ))
+          })
+          .catch(err => console.error('Failed to mark messages as read:', err))
+      }
+    }
+  }, [conversations, user, token, loadConversationMessages])
+
+  // Auto-select seller from URL parameters
+  useEffect(() => {
+    if (preSelectedSellerId && conversations.length > 0) {
+      const targetConversation = conversations.find(conv => 
+        conv.participantId === preSelectedSellerId && 
+        conv.participantRole.toLowerCase() === 'seller'
+      )
+      
+      if (targetConversation) {
+        handleSelectConversation(preSelectedSellerId)
+      } else {
+        setError(`No existing conversation found with this seller. The seller needs to initiate the chat first.`)
+      }
+    }
+  }, [preSelectedSellerId, conversations, handleSelectConversation])
+
+  // Auto-scroll to bottom for new messages (but not when loading older messages)
+  useEffect(() => {
+    if (!loadingMoreMessages) {
+      // Scroll to bottom when messages change (new message added)
+      const messagesContainer = document.querySelector('.messages-container')
+      if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight
+      }
+    }
+  }, [messages.length, loadingMoreMessages])
+
+  // Filter conversations by search
+  const filteredConversations = React.useMemo(() => {
+    const query = search.trim().toLowerCase()
+    return conversations.filter(conv => 
+      query ? (
+        conv.participantName.toLowerCase().includes(query) || 
+        conv.lastMessage?.message.toLowerCase().includes(query)
       ) : true
     )
-  }, [chats, search])
+  }, [conversations, search])
 
-  const openChat = (sellerId: string) => {
-    router.push(`/user/chat/seller/${sellerId}`)
-  }
+  // Send message
+  const handleSendMessage = useCallback(async () => {
+    if (!newMessage.trim() || !selectedParticipantId || !user || !socket) return
+
+    const messageText = newMessage.trim()
+    setNewMessage('')
+
+    try {
+      console.log('📤 [UserChat] Sending message:', {
+        fromId: user.id,
+        toId: selectedParticipantId,
+        message: messageText.substring(0, 50) + '...',
+        socketConnected: socket.connected
+      })
+
+      // Send via WebSocket using the same method as seller
+      chatService.sendMessageViaSocket(
+        String(user.id),
+        selectedParticipantId,
+        messageText,
+        socket
+      )
+
+      // Optimistically add message to UI
+      const tempMessage: ChatMessageDto = {
+        id: `temp-${Date.now()}`,
+        fromId: String(user.id),
+        toId: selectedParticipantId,
+        message: messageText,
+        messageType: 'TEXT',
+        createdAt: new Date().toISOString(),
+        deletedBySender: false,
+        deletedByReceiver: false,
+        isRead: false,
+        readAt: null,
+        from: {
+          id: String(user.id),
+          name: user.name || 'You',
+          role: user.role || 'USER'
+        },
+        to: {
+          id: selectedParticipantId,
+          name: filteredConversations.find(c => c.participantId === selectedParticipantId)?.participantName || 'User',
+          role: filteredConversations.find(c => c.participantId === selectedParticipantId)?.participantRole || 'USER'
+        }
+      }
+
+      // Track this message as locally added and processed
+      const messageKey = `${tempMessage.fromId}-${tempMessage.toId}-${tempMessage.message}-${tempMessage.createdAt}`
+      locallyAddedMessagesRef.current.add(messageKey)
+      processedMessagesRef.current.add(messageKey)
+      
+      // Clean up old tracking entries (keep only last 100 messages to prevent memory leaks)
+      if (locallyAddedMessagesRef.current.size > 100) {
+        const localEntries = Array.from(locallyAddedMessagesRef.current)
+        const processedEntries = Array.from(processedMessagesRef.current)
+        
+        locallyAddedMessagesRef.current.clear()
+        processedMessagesRef.current.clear()
+        
+        localEntries.slice(-50).forEach(key => locallyAddedMessagesRef.current.add(key))
+        processedEntries.slice(-50).forEach(key => processedMessagesRef.current.add(key))
+      }
+
+      setMessages(prev => {
+        // Update total messages count when sending messages
+        setTotalMessages(prevTotal => prevTotal + 1)
+        
+        return [...prev, tempMessage]
+      })
+
+    } catch (error) {
+      console.error('[UserMessages] Failed to send message:', error)
+      // Re-add the message to input on error
+      setNewMessage(messageText)
+    }
+  }, [newMessage, selectedParticipantId, user, socket, sendSocketMessage, filteredConversations])
 
   if (!token || !user) {
     return (
@@ -94,8 +507,10 @@ export default function UserMessagesPage() {
     )
   }
 
+  const selectedConversation = filteredConversations.find(c => c.participantId === selectedParticipantId)
+
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
+    <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
@@ -108,75 +523,231 @@ export default function UserMessagesPage() {
         </div>
       </div>
 
-      {/* Search */}
-      <div className="mb-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search conversations..."
-            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+      {/* Product Context Banner (if applicable) */}
+      {productName && (
+        <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-2 mb-6">
+          <div className="flex items-center gap-2 text-sm text-yellow-800">
+            <MessageSquare className="w-4 h-4" />
+            <span>Chat about: <strong>{decodeURIComponent(productName)}</strong></span>
+            {productType && <span className="text-xs bg-yellow-200 px-2 py-1 rounded">({productType})</span>}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Conversations List */}
-      <div className="rounded-xl border border-gray-200 bg-white">
-        {loading ? (
-          <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-gray-500 mt-2">Loading conversations...</p>
+      {/* Error Banner */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 px-4 py-3 mb-6 rounded-lg">
+          <div className="flex items-center gap-2 text-sm text-red-800">
+            <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+              <span className="text-white text-xs">!</span>
+            </div>
+            <span>{error}</span>
+            <button 
+              onClick={() => setError(null)}
+              className="ml-auto text-red-600 hover:text-red-800"
+            >
+              ×
+            </button>
           </div>
-        ) : conversations.length === 0 ? (
-          <div className="p-8 text-center">
-            {search ? (
-              <>
-                <Search className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-500">No conversations found matching "{search}"</p>
-              </>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[700px]">
+        {/* Left Side - Conversations List */}
+        <div className="lg:col-span-1 bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="p-4 border-b border-gray-200">
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search conversations..."
+                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+          
+          <div className="overflow-y-auto h-full">
+            {loading ? (
+              <div className="p-8 text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="text-gray-500 mt-2">Loading...</p>
+              </div>
+            ) : filteredConversations.length === 0 ? (
+              <div className="p-8 text-center">
+                {search ? (
+                  <>
+                    <p className="text-gray-600 mb-2">No conversations found for "{search}"</p>
+                    <button 
+                      onClick={() => setSearch('')}
+                      className="text-blue-600 hover:text-blue-700 text-sm"
+                    >
+                      Clear search
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600 mb-2">No conversations yet</p>
+                    <p className="text-sm text-gray-500">Sellers will initiate conversations with you about products</p>
+                  </>
+                )}
+              </div>
             ) : (
-              <>
-                <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-500 mb-2">No conversations yet</p>
-                <p className="text-sm text-gray-400">
-                  Start chatting with sellers by visiting product pages and clicking "Chat with Seller"
-                </p>
-              </>
-            )}
-          </div>
-        ) : (
-          <ul className="divide-y divide-gray-200">
-            {conversations.map((conv) => (
-              <li key={conv.chatId}>
-                <button
-                  onClick={() => openChat(conv.sellerId)}
-                  className="w-full px-4 py-3 hover:bg-gray-50 flex items-center gap-3 text-left"
-                >
-                  <div className="flex-shrink-0">
-                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5 text-gray-500" />
+              <div className="divide-y divide-gray-100">
+                {filteredConversations.map((conversation) => (
+                  <div
+                    key={conversation.participantId}
+                    onClick={() => handleSelectConversation(conversation.participantId)}
+                    className={`flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
+                      selectedParticipantId === conversation.participantId ? 'bg-blue-50 border-r-2 border-blue-500' : ''
+                    }`}
+                  >
+                    <div className="flex-shrink-0">
+                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
+                        {conversation.participantName.charAt(0).toUpperCase()}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-semibold text-gray-900 truncate">
-                        {conv.sellerName}
-                        {conv.unread > 0 && (
-                          <span className="ml-2 inline-flex items-center justify-center text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">
-                            {conv.unread}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="font-medium text-gray-900 truncate text-sm">
+                          {conversation.participantName}
+                        </h3>
+                        {conversation.unreadCount > 0 && (
+                          <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium bg-red-500 text-white rounded-full">
+                            {conversation.unreadCount}
                           </span>
                         )}
-                      </h3>
-                      <span className="text-xs text-gray-400">{conv.lastTime}</span>
+                      </div>
+                      <p className="text-gray-500 text-xs truncate">
+                        {conversation.lastMessage?.message || 'No messages yet'}
+                      </p>
+                      <p className="text-gray-400 text-xs">
+                        {conversation.lastMessage ? formatMessageTime(new Date(conversation.lastMessage.createdAt).getTime()) : ''}
+                      </p>
                     </div>
-                    <p className="text-sm text-gray-600 truncate mt-1">{conv.lastText}</p>
                   </div>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Side - Chat Messages */}
+        <div className="lg:col-span-2 bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col">
+          {selectedParticipantId && selectedConversation ? (
+            <>
+              {/* Chat Header */}
+              <div className="p-4 border-b border-gray-200 bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
+                    {selectedConversation.participantName.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900">
+                      {selectedConversation.participantName}
+                    </h3>
+                    <p className="text-sm text-gray-500">{selectedConversation.participantRole}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Messages Area */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 messages-container">
+                {/* Load More Messages Button */}
+                {hasMoreMessages && messages.length > 0 && (
+                  <div className="flex justify-center mb-4">
+                    <button
+                      onClick={loadMoreMessages}
+                      disabled={loadingMoreMessages}
+                      className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loadingMoreMessages ? (
+                        <div className="flex items-center gap-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                          Loading older messages...
+                        </div>
+                      ) : (
+                        `Load older messages (${totalMessages - messages.length} more)`
+                      )}
+                    </button>
+                  </div>
+                )}
+                
+                {loadingMessages ? (
+                  <div className="flex justify-center items-center h-full">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="text-center py-8">
+                    <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">No messages yet</p>
+                    <p className="text-sm text-gray-500">Start the conversation!</p>
+                  </div>
+                ) : (
+                  <>
+                    {messages.map((message, index) => {
+                      const isOwnMessage = message.fromId === String(user.id)
+                      return (
+                        <div key={message.id || index} className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                            isOwnMessage 
+                              ? 'bg-blue-500 text-white' 
+                              : 'bg-gray-100 text-gray-900'
+                          }`}>
+                            <p className="text-sm">{message.message}</p>
+                            <p className={`text-xs mt-1 ${isOwnMessage ? 'text-blue-100' : 'text-gray-500'}`}>
+                              {formatMessageTime(new Date(message.createdAt).getTime())}
+                            </p>
+                          </div>
+                        </div>
+                      )
+                    })}
+                    
+                    {/* Message Count Info */}
+                    {totalMessages > messages.length && (
+                      <div className="flex justify-center py-2">
+                        <p className="text-xs text-gray-500">
+                          Showing {messages.length} of {totalMessages} messages
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Message Input */}
+              <div className="p-4 border-t border-gray-200">
+                <div className="flex gap-2">
+                  <input
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+                    placeholder="Type your message..."
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    disabled={!connected}
+                  />
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!newMessage.trim() || !connected}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center">
+                <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 mb-2">Select a conversation to start chatting</p>
+                <p className="text-sm text-gray-500">Choose a conversation from the left to view messages</p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

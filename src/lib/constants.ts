@@ -82,6 +82,12 @@ export const API_CONFIG = {
       ENDED: '/auctions/ended',
     },
     
+    // Chat
+    CHAT: {
+      BASE: '/chat',
+      DELETE_MESSAGE: '/chat/:messageId',
+      READ: '/chat/read',
+    },
 
     
     // File Uploads

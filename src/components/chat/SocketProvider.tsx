@@ -10,6 +10,7 @@ type SocketContextValue = {
   connected: boolean
   sendMessage: (payload: OutgoingMessagePayload) => void
   register: (userId: string | number) => void
+  onMessage: (callback: (message: any) => void) => () => void
 }
 
 const SocketContext = createContext<SocketContextValue | undefined>(undefined)
@@ -18,6 +19,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const { token, user } = useAppSelector((s) => s.auth)
   const [connected, setConnected] = useState(false)
   const socketRef = useRef<ReturnType<typeof createSocket> | null>(null)
+  const messageListenersRef = useRef<Set<(message: any) => void>>(new Set())
 
   // Establish/teardown socket based on token
   useEffect(() => {
@@ -61,13 +63,17 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       
       const userId = user?.id
       if (userId) {
-        const payload = { userId, token: effectiveToken }
-        console.log('📡 [SocketProvider] Emitting REGISTER_SOCKET:', {
+        console.log('📡 [SocketProvider] Registering socket with CHAT_EVENT wrapper:', {
           userId,
-          tokenPrefix: effectiveToken.substring(0, 10) + '...',
-          eventName: CHAT_EVENTS.CLIENT.REGISTER_SOCKET
+          tokenPrefix: effectiveToken.substring(0, 10) + '...'
         })
-        socket.emit(CHAT_EVENTS.CLIENT.REGISTER_SOCKET, payload)
+        
+        // Use the backend's CHAT_EVENT wrapper pattern
+        const payload = JSON.stringify({
+          type: 'REGISTER_SOCKET',
+          data: { userId: String(userId) }
+        })
+        socket.emit(CHAT_EVENTS.CLIENT.CHAT_EVENT, payload)
       } else {
         console.warn('⚠️ [SocketProvider] No userId available for socket registration')
       }
@@ -95,15 +101,27 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       console.error('🚨 [SocketProvider] Server error received:', err)
     })
 
-    // Enhanced message logging
+    // Enhanced message logging and listener notification
     socket.on(CHAT_EVENTS.SERVER.MESSAGE, (payload: any) => {
-      console.log('💬 [SocketProvider] Message received:', {
-        messageId: payload?.id,
-        fromUserId: payload?.fromUserId,
-        toUserId: payload?.toUserId,
-        chatId: payload?.chatId,
-        textLength: payload?.text?.length || 0,
-        timestamp: payload?.timestamp
+      console.log('💬 [SocketProvider] Message received (full payload):', payload)
+      console.log('💬 [SocketProvider] Message structure check:', {
+        hasId: !!payload?.id,
+        hasFromId: !!payload?.fromId,
+        hasToId: !!payload?.toId,
+        hasFromUserId: !!payload?.fromUserId,
+        hasToUserId: !!payload?.toUserId,
+        hasFrom: !!payload?.from,
+        hasTo: !!payload?.to,
+        messageLength: payload?.message?.length || payload?.text?.length || 0
+      })
+      
+      // Notify all registered message listeners
+      messageListenersRef.current.forEach(listener => {
+        try {
+          listener(payload)
+        } catch (error) {
+          console.error('🚨 [SocketProvider] Error in message listener:', error)
+        }
       })
     })
     
@@ -153,33 +171,34 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         console.warn('⚠️ [SocketProvider] Cannot send message - no socket connection')
         return
       }
-      const enriched: OutgoingMessagePayload = {
-        ...payload,
-        message: payload.message ?? payload.text,
-        toId: payload.toId ?? payload.toUserId ?? payload.toSellerId,
-        toUserId: payload.toUserId ?? payload.toSellerId, // Ensure toUserId is set for backend compatibility
-        fromId: payload.fromId ?? payload.fromUserId ?? ((typeof user?.id !== 'undefined') ? String(user!.id) : undefined),
-        fromUserId: payload.fromUserId ?? ((typeof user?.id !== 'undefined') ? String(user!.id) : undefined)
+      
+      // Ensure fromId is set if not provided
+      const fromId = payload.fromId || (user?.id ? String(user.id) : '')
+      if (!fromId) {
+        console.error('❌ [SocketProvider] Cannot send message - no fromId available')
+        return
       }
-      console.log('📤 [SocketProvider] Sending message:', {
-        chatId: enriched.chatId,
-        toUserId: enriched.toUserId,
-        toSellerId: enriched.toSellerId,
-        toId: enriched.toId,
-        fromId: enriched.fromId,
-        fromUserId: enriched.fromUserId,
-        productId: enriched.productId,
-        textLength: (enriched.text ?? enriched.message ?? '').length,
-        clientTempId: enriched.clientTempId,
-        socketConnected: s.connected,
-        originalPayload: {
-          toUserId: payload.toUserId,
-          toSellerId: payload.toSellerId,
-          toId: payload.toId,
-          fromUserId: payload.fromUserId
-        }
+      
+      const messagePayload = {
+        fromId,
+        toId: payload.toId,
+        message: payload.message
+      }
+      
+      console.log('📤 [SocketProvider] Sending message via CHAT_EVENT:', {
+        fromId: messagePayload.fromId,
+        toId: messagePayload.toId,
+        messageLength: messagePayload.message.length,
+        socketConnected: s.connected
       })
-      s.emit(CHAT_EVENTS.CLIENT.SEND_MESSAGE, enriched)
+      
+      // Use CHAT_EVENT wrapper pattern
+      const chatEventPayload = JSON.stringify({
+        type: 'SEND_MESSAGE',
+        data: messagePayload
+      })
+      
+      s.emit(CHAT_EVENTS.CLIENT.CHAT_EVENT, chatEventPayload)
     },
     register: (userId: string | number) => {
       const s = socketRef.current
@@ -187,8 +206,22 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         console.warn('⚠️ [SocketProvider] Cannot register - no socket connection')
         return
       }
-      console.log('📡 [SocketProvider] Registering additional userId:', userId)
-      s.emit(CHAT_EVENTS.CLIENT.REGISTER_SOCKET, { userId, token })
+      console.log('📡 [SocketProvider] Registering additional userId via CHAT_EVENT:', userId)
+      
+      const registerPayload = JSON.stringify({
+        type: 'REGISTER_SOCKET',
+        data: { userId: String(userId) }
+      })
+      
+      s.emit(CHAT_EVENTS.CLIENT.CHAT_EVENT, registerPayload)
+    },
+    onMessage: (callback: (message: any) => void) => {
+      messageListenersRef.current.add(callback)
+      
+      // Return cleanup function
+      return () => {
+        messageListenersRef.current.delete(callback)
+      }
     }
   }), [connected, token, user])
 
