@@ -309,8 +309,15 @@ export default function SellerMessagesPage() {
     setSendingMessage(true)
     
     try {
-      // Send via WebSocket
-      if (socket && connected) {
+      console.log('🔍 [SellerMessages] Send message attempt:', {
+        hasSocket: !!socket,
+        reactConnected: connected,
+        socketConnected: socket?.connected,
+        socketId: socket?.id
+      })
+      
+      // Send via WebSocket - check actual socket connection, not just React state
+      if (socket && socket.connected) {
         const currentUserId = String(user.id)
         chatService.sendMessageViaSocket(
           currentUserId,
@@ -374,6 +381,20 @@ export default function SellerMessagesPage() {
           
           return [...prev, tempMessage]
         })
+        setMessageText('')
+      } else {
+        // Socket not connected, use REST API fallback
+        console.log('⚠️ [SellerMessages] Socket not connected, using REST API fallback')
+        const currentUserId = String(user.id)
+        
+        await chatService.sendMessageViaRest(
+          currentUserId,
+          selectedConversation.participantId,
+          messageText.trim(),
+          token || undefined
+        )
+        
+        console.log('✅ [SellerMessages] Message sent via REST API')
         setMessageText('')
       }
     } catch (error) {

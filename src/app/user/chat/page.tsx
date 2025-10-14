@@ -171,6 +171,9 @@ export default function UserMessagesPage() {
       console.log('🔍 [UserChat] Socket connected:', connected)
       console.log('🔍 [UserChat] Message timestamp:', new Date().toISOString())
       
+      // Add a prominent log that's easy to spot
+      console.log('🔥🔥🔥 [UserChat] MESSAGE RECEIVED - THIS SHOULD BE VISIBLE 🔥🔥🔥')
+      
       // Handle different possible message structures from backend
       const fromId = String(message.fromId || message.fromUserId || message.from?.id || '')
       const toId = String(message.toId || message.toUserId || message.to?.id || '')
@@ -237,8 +240,10 @@ export default function UserMessagesPage() {
         messageToId,
         currentUserId,
         selectedParticipant,
+        hasSelectedParticipant: !!selectedParticipant,
         condition1: selectedParticipant && currentUserId && messageFromId === selectedParticipant && messageToId === currentUserId,
-        condition2: selectedParticipant && currentUserId && messageFromId === currentUserId && messageToId === selectedParticipant
+        condition2: selectedParticipant && currentUserId && messageFromId === currentUserId && messageToId === selectedParticipant,
+        messageForCurrentUser: messageToId === currentUserId || messageFromId === currentUserId
       })
       
       // Only add messages that we haven't already processed
@@ -274,8 +279,23 @@ export default function UserMessagesPage() {
         console.log('🔄 [UserChat] Skipping message (already processed)')
       } else if (wasAddedLocally) {
         console.log('🔄 [UserChat] Skipping message (already added locally)')
+      } else if (messageToId === currentUserId && messageFromId !== currentUserId) {
+        // Message is for current user but not for selected conversation
+        console.log('📬 [UserChat] Message received for current user from different seller:', messageFromId)
+        console.log('🎯 [UserChat] Current selected participant:', selectedParticipant)
+        
+        // If no conversation is selected, auto-select this one
+        if (!selectedParticipant) {
+          console.log('🔄 [UserChat] No conversation selected, auto-selecting sender:', messageFromId)
+          setSelectedParticipantId(messageFromId)
+        }
       } else {
-        console.log('❌ [UserChat] Message not added - not for current conversation')
+        console.log('❌ [UserChat] Message not relevant to current user')
+        console.log('🔍 [UserChat] Message details:', {
+          isForCurrentUser: messageToId === currentUserId,
+          isFromCurrentUser: messageFromId === currentUserId,
+          hasSelectedConversation: !!selectedParticipant
+        })
       }
       
       // Update conversations list
@@ -754,10 +774,65 @@ export default function UserMessagesPage() {
         }
       }
       
+      (window as any).monitorSocketEvents = () => {
+        if (!socket) {
+          console.log('❌ No socket available to monitor')
+          return
+        }
+        
+        console.log('👂 [UserChat] Starting socket event monitoring...')
+        
+        // Listen to ALL events on the socket
+        const originalOn = socket.on.bind(socket)
+        const originalEmit = socket.emit.bind(socket)
+        
+        socket.on = function(event: string, listener: any) {
+          console.log(`📡 [UserChat] Socket listener added for event: ${event}`)
+          return originalOn(event, (...args: any[]) => {
+            console.log(`📨 [UserChat] Socket event received: ${event}`, args)
+            return listener(...args)
+          })
+        }
+        
+        socket.emit = function(event: string, ...args: any[]) {
+          console.log(`📤 [UserChat] Socket event emitted: ${event}`, args)
+          return originalEmit(event, ...args)
+        }
+        
+        console.log('✅ Socket monitoring active - check console for all socket events')
+      }
+      (window as any).testLiveMessaging = () => {
+        console.group('🧪 [UserChat] Live Messaging Test')
+        console.log('1. Socket Status:')
+        console.log('   - Connected:', connected)
+        console.log('   - Socket exists:', !!socket)
+        console.log('   - Socket ID:', socket?.id)
+        console.log('   - User ID:', user?.id)
+        
+        console.log('2. Message Listener:')
+        console.log('   - OnMessage function exists:', !!onMessage)
+        console.log('   - Register function exists:', !!register)
+        
+        console.log('3. Current State:')
+        console.log('   - Selected participant:', selectedParticipantRef.current)
+        console.log('   - Messages count:', messages.length)
+        console.log('   - Conversations count:', conversations.length)
+        
+        console.log('4. Test Instructions:')
+        console.log('   - Go to seller messages page')
+        console.log('   - Send a message to this user')
+        console.log('   - Watch this console for message receipt')
+        console.log('   - Expected: "🔥🔥🔥 MESSAGE RECEIVED" and "📨 [UserChat] Received new message"')
+        
+        console.groupEnd()
+      }
+      
       console.log('🧪 [UserChat] Debug functions available:')
       console.log('  - window.debugChatConnection()')
       console.log('  - window.testMessageReceive()')
       console.log('  - window.forceRefreshMessages()')
+      console.log('  - window.monitorSocketEvents() - Monitor ALL socket events')
+      console.log('  - window.testLiveMessaging() - COMPREHENSIVE TEST')
       console.log('  - window.debugConversations() (if conversations loaded)')
     }
   }, [connected, socket, user?.id, selectedParticipantId, conversations.length, messages.length, register, onMessage])

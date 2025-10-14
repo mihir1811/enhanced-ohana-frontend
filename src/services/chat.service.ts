@@ -233,31 +233,54 @@ export const chatService = {
   // Send message via WebSocket (not REST API)
   // This is handled by the WebSocket service, but kept here for consistency
   sendMessageViaSocket(fromId: string, toId: string, message: string, socket: any): void {
-    if (socket && socket.connected) {
-      const payload = JSON.stringify({
-        type: 'SEND_MESSAGE',
-        data: {
-          fromId,
-          toId,
-          message,
-          messageType: 'TEXT',
-          timestamp: new Date().toISOString()
-        }
+    console.log('🔄 [ChatService] sendMessageViaSocket called with:', {
+      fromId,
+      toId,
+      messageLength: message.length,
+      hasSocket: !!socket,
+      socketConnected: socket?.connected,
+      socketId: socket?.id
+    })
+    
+    if (!socket) {
+      console.error('❌ [ChatService] Cannot send message - socket is null/undefined')
+      throw new Error('Socket not available')
+    }
+    
+    if (!socket.connected) {
+      console.error('❌ [ChatService] Cannot send message - socket not connected:', {
+        hasSocket: !!socket,
+        connected: socket.connected,
+        socketId: socket.id,
+        readyState: socket.readyState
       })
-      
-      console.log('📤 [ChatService] Sending via WebSocket:', {
+      throw new Error('Socket not connected')
+    }
+    
+    const payload = JSON.stringify({
+      type: 'SEND_MESSAGE',
+      data: {
         fromId,
         toId,
-        messageLength: message.length,
-        payload: payload.substring(0, 200) + '...'
-      })
-      
+        message,
+        messageType: 'TEXT',
+        timestamp: new Date().toISOString()
+      }
+    })
+    
+    console.log('📤 [ChatService] Sending via WebSocket:', {
+      fromId,
+      toId,
+      messageLength: message.length,
+      payload: payload.substring(0, 200) + '...'
+    })
+    
+    try {
       socket.emit('CHAT_EVENT', payload)
-    } else {
-      console.error('❌ [ChatService] Cannot send message - socket not available or not connected:', {
-        hasSocket: !!socket,
-        connected: socket?.connected
-      })
+      console.log('✅ [ChatService] Message emitted successfully')
+    } catch (emitError) {
+      console.error('❌ [ChatService] Failed to emit message:', emitError)
+      throw emitError
     }
   },
 
