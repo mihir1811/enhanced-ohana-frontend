@@ -24,6 +24,10 @@ export default function UserMessagesPage() {
   const [error, setError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
+  // Rate limiting for message sending
+  const lastMessageTimeRef = useRef<number>(0)
+  const MESSAGE_RATE_LIMIT = 1000 // 1 second between messages
+  
   // Pagination and loading states for messages
   const [messagesPage, setMessagesPage] = useState(1)
   const [messagesLimit] = useState(20) // Messages per page
@@ -538,6 +542,15 @@ export default function UserMessagesPage() {
 
   // Send message
   const handleSendMessage = useCallback(async () => {
+    // Rate limiting check
+    const now = Date.now()
+    if (now - lastMessageTimeRef.current < MESSAGE_RATE_LIMIT) {
+      console.log('⚠️ [UserChat] Rate limited - please wait before sending another message')
+      setError('Please wait a moment before sending another message.')
+      setTimeout(() => setError(null), 2000)
+      return
+    }
+    
     if (!newMessage.trim() || !selectedParticipantId || !user || !socket) {
       console.log('⚠️ [UserChat] Cannot send message - missing requirements:', {
         hasMessage: !!newMessage.trim(),
@@ -548,6 +561,8 @@ export default function UserMessagesPage() {
       })
       return
     }
+
+    lastMessageTimeRef.current = now
 
     const messageText = newMessage.trim()
     
@@ -605,34 +620,48 @@ export default function UserMessagesPage() {
         return
       }
 
-      console.log('🚀 [UserChat] Sending via WebSocket...')
+      console.log('🚀 [UserChat] Sending via WebSocket with conversation initialization...')
       
-      // Try WebSocket first
+      // Try enhanced WebSocket sending with conversation initialization first
       try {
-        chatService.sendMessageViaSocket(
+        await chatService.sendMessageWithInit(
           String(user.id),
           selectedParticipantId,
           messageText,
-          socket
+          socket,
+          token || undefined
         )
-        console.log('✅ [UserChat] Message sent via WebSocket')
+        console.log('✅ [UserChat] Message sent via enhanced WebSocket')
       } catch (wsError) {
-        console.error('❌ [UserChat] WebSocket send failed, trying REST API fallback:', wsError)
+        console.error('❌ [UserChat] Enhanced WebSocket send failed, trying basic WebSocket:', wsError)
         
-        // Fallback to REST API
+        // Fallback to basic WebSocket
         try {
-          await chatService.sendMessageViaRest(
+          chatService.sendMessageViaSocket(
             String(user.id),
             selectedParticipantId,
             messageText,
-            token
+            socket
           )
-          console.log('✅ [UserChat] Message sent via REST API fallback')
-        } catch (restError) {
-          console.error('❌ [UserChat] Both WebSocket and REST API failed:', restError)
-          setError('Failed to send message. Please check your connection and try again.')
-          setNewMessage(messageText) // Restore the message text
-          return
+          console.log('✅ [UserChat] Message sent via basic WebSocket')
+        } catch (basicWsError) {
+          console.error('❌ [UserChat] Basic WebSocket failed, trying REST API fallback:', basicWsError)
+          
+          // Final fallback to REST API
+          try {
+            await chatService.sendMessageViaRest(
+              String(user.id),
+              selectedParticipantId,
+              messageText,
+              token || undefined
+            )
+            console.log('✅ [UserChat] Message sent via REST API fallback')
+          } catch (restError) {
+            console.error('❌ [UserChat] All sending methods failed:', restError)
+            setError('Failed to send message. Please check your connection and try again.')
+            setNewMessage(messageText) // Restore the message text
+            return
+          }
         }
       }
 
