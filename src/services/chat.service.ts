@@ -243,8 +243,38 @@ export const chatService = {
         }
       })
       
+      console.log('📤 [ChatService] Sending via WebSocket:', {
+        fromId,
+        toId,
+        messageLength: message.length,
+        payload: payload.substring(0, 200) + '...'
+      })
+      
       socket.emit('CHAT_EVENT', payload)
+    } else {
+      console.error('❌ [ChatService] Cannot send message - socket not available or not connected:', {
+        hasSocket: !!socket,
+        connected: socket?.connected
+      })
     }
+  },
+
+  // Send message via REST API (fallback method)
+  async sendMessageViaRest(fromId: string, toId: string, message: string, token?: string): Promise<ApiResponse<ChatMessageDto>> {
+    const payload = {
+      fromId,
+      toId,
+      message,
+      messageType: 'TEXT'
+    }
+    
+    console.log('📤 [ChatService] Sending via REST API:', {
+      fromId,
+      toId,
+      messageLength: message.length
+    })
+    
+    return apiService.post(API_CONFIG.ENDPOINTS.CHAT.BASE, payload, token)
   },
 
   // Register socket connection

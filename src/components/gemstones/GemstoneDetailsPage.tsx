@@ -71,32 +71,72 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
     }
   };
 
-  const handleChatWithSeller = () => {
+  const handleChatWithSeller = async () => {
+    console.log('🔍 [GemstoneChat] Starting chat with seller process...')
+    console.log('🔍 [GemstoneChat] Gemstone data:', {
+      gemstone,
+      sellerId: gemstone?.seller?.id,
+      directSellerId: gemstone?.sellerId,
+      hasSellerObject: !!gemstone?.seller,
+      sellerObject: gemstone?.seller
+    })
+    
     // Try to get seller ID from multiple possible locations
     const sellerId = gemstone?.seller?.id || gemstone?.sellerId
     
+    console.log('🔍 [GemstoneChat] Resolved seller ID:', sellerId)
+    
     if (!sellerId) {
-      console.warn('No seller information available', { 
+      console.error('❌ [GemstoneChat] No seller information available', { 
         gemstone: gemstone,
         sellerId: gemstone?.seller?.id,
         directSellerId: gemstone?.sellerId
       })
+      alert('No seller information available for this gemstone.')
       return
     }
 
     if (!user) {
-      // Redirect to login if not authenticated
+      console.log('⚠️ [GemstoneChat] User not logged in, redirecting to login')
       router.push('/login')
       return
     }
 
-    // Navigate to main chat page with seller pre-selected
-    const productId = gemstone.id
-    const productName = gemstone.name || `${gemstone.caratWeight}ct ${gemstone.shape} ${gemstone.gemType}`
-    
-    const chatUrl = `/user/chat?sellerId=${sellerId}&productId=${productId}&productType=gemstone&productName=${encodeURIComponent(productName)}`
-    router.push(chatUrl)
+    console.log('✅ [GemstoneChat] User authenticated:', user.id)
+
+    try {
+      // Navigate to main chat page with seller pre-selected
+      const productId = gemstone.id
+      const productName = gemstone.name || `${gemstone.caratWeight}ct ${gemstone.shape} ${gemstone.gemType}`
+      
+      const chatUrl = `/user/chat?sellerId=${sellerId}&productId=${productId}&productType=gemstone&productName=${encodeURIComponent(productName)}`
+      console.log('🚀 [GemstoneChat] Navigating to chat:', { 
+        sellerId, 
+        productId, 
+        productName, 
+        chatUrl,
+        encodedProductName: encodeURIComponent(productName)
+      })
+      
+      router.push(chatUrl)
+    } catch (error) {
+      console.error('❌ [GemstoneChat] Failed to initiate gemstone chat:', error)
+      // Still navigate to chat page, let it handle the error
+      const productId = gemstone.id
+      const productName = gemstone.name || `${gemstone.caratWeight}ct ${gemstone.shape} ${gemstone.gemType}`
+      const chatUrl = `/user/chat?sellerId=${sellerId}&productId=${productId}&productType=gemstone&productName=${encodeURIComponent(productName)}`
+      console.log('🔄 [GemstoneChat] Fallback navigation:', chatUrl)
+      router.push(chatUrl)
+    }
   };
+
+  console.log('Gemstone data for chat debug:', { 
+    gemstone, 
+    sellerId: gemstone?.seller?.id, 
+    directSellerId: gemstone?.sellerId,
+    hasSeller: !!gemstone?.seller,
+    hasDirectSellerId: !!gemstone?.sellerId
+  });
 
   if (!gemstone) {
     return (

@@ -45,11 +45,51 @@ export default function UserMessagesPage() {
     }
   }, [user?.id, register])
 
+  // Listen for socket errors
+  useEffect(() => {
+    if (!socket) return
+
+    const handleError = (error: any) => {
+      console.error('🚨 [UserChat] Socket error received:', error)
+      
+      // Check if this is a CHAT_EVENT error
+      if (error?.pattern === 'CHAT_EVENT') {
+        console.error('❌ [UserChat] CHAT_EVENT error details:', {
+          pattern: error.pattern,
+          data: error.data,
+          cause: error.cause,
+          message: error.message
+        })
+        
+        // Show user-friendly error
+        setError('Failed to send message. Please try again.')
+      }
+    }
+
+    // Listen for ERROR events from the socket
+    socket.on('ERROR', handleError)
+    socket.on('error', handleError)
+    socket.on('connect_error', handleError)
+
+    return () => {
+      socket.off('ERROR', handleError)
+      socket.off('error', handleError)
+      socket.off('connect_error', handleError)
+    }
+  }, [socket])
+
   // Get URL parameters for auto-selecting seller
   const preSelectedSellerId = searchParams.get('sellerId')
   const productId = searchParams.get('productId')
   const productName = searchParams.get('productName')
   const productType = searchParams.get('productType')
+
+  console.log('🔍 [UserChat] URL Parameters received:', {
+    preSelectedSellerId,
+    productId,
+    productName: productName ? decodeURIComponent(productName) : null,
+    productType
+  })
 
   // Load conversations from backend
   useEffect(() => {
@@ -377,11 +417,23 @@ export default function UserMessagesPage() {
 
   // Auto-select seller from URL parameters
   useEffect(() => {
+    console.log('🔍 [UserChat] Auto-select effect triggered:', {
+      preSelectedSellerId,
+      conversationsCount: conversations.length,
+      conversations: conversations.map(c => ({ id: c.participantId, name: c.participantName, role: c.participantRole }))
+    })
+    
     if (preSelectedSellerId) {
       const targetConversation = conversations.find(conv => 
         conv.participantId === preSelectedSellerId && 
         conv.participantRole.toLowerCase() === 'seller'
       )
+      
+      console.log('🔍 [UserChat] Looking for existing conversation:', {
+        targetSellerId: preSelectedSellerId,
+        foundConversation: !!targetConversation,
+        conversationDetails: targetConversation || null
+      })
       
       if (targetConversation) {
         console.log('✅ [UserChat] Found existing conversation with seller:', targetConversation)
@@ -395,9 +447,13 @@ export default function UserMessagesPage() {
           try {
             let sellerName = 'Seller'
             
+            console.log('🔍 [UserChat] Fetching seller info for:', preSelectedSellerId)
+            
             // Try to fetch seller info for better name
             try {
               const sellerInfo = await diamondService.getSellerInfo(preSelectedSellerId)
+              console.log('📡 [UserChat] Seller info response:', sellerInfo)
+              
               if (sellerInfo?.data?.user?.firstName) {
                 sellerName = sellerInfo.data.user.firstName
                 if (sellerInfo.data.user.lastName) {
@@ -424,14 +480,21 @@ export default function UserMessagesPage() {
               messages: []
             }
             
+            console.log('🎯 [UserChat] Creating new conversation object:', newConversation)
+            
             // Add to conversations list
             setConversations(prev => {
               const exists = prev.find(conv => conv.participantId === preSelectedSellerId)
-              if (exists) return prev
+              if (exists) {
+                console.log('⚠️ [UserChat] Conversation already exists, not adding duplicate')
+                return prev
+              }
+              console.log('➕ [UserChat] Adding new conversation to list')
               return [...prev, newConversation]
             })
             
             // Select this new conversation
+            console.log('🎯 [UserChat] Selecting new conversation:', preSelectedSellerId)
             handleSelectConversation(preSelectedSellerId)
             
             console.log('✅ [UserChat] Created and selected new conversation for seller:', {
@@ -475,26 +538,103 @@ export default function UserMessagesPage() {
 
   // Send message
   const handleSendMessage = useCallback(async () => {
-    if (!newMessage.trim() || !selectedParticipantId || !user || !socket) return
+    if (!newMessage.trim() || !selectedParticipantId || !user || !socket) {
+      console.log('⚠️ [UserChat] Cannot send message - missing requirements:', {
+        hasMessage: !!newMessage.trim(),
+        hasSelectedParticipant: !!selectedParticipantId,
+        hasUser: !!user,
+        hasSocket: !!socket,
+        socketConnected: socket?.connected
+      })
+      return
+    }
 
     const messageText = newMessage.trim()
+    
+    // Validate message content
+    if (messageText.length === 0) {
+      console.log('⚠️ [UserChat] Empty message, not sending')
+      return
+    }
+    
+    if (messageText.length > 1000) {
+      console.error('❌ [UserChat] Message too long:', messageText.length)
+      setError('Message is too long. Please keep it under 1000 characters.')
+      return
+    }
+    
     setNewMessage('')
 
     try {
-      console.log('📤 [UserChat] Sending message:', {
+      console.log('📤 [UserChat] Preparing to send message:', {
         fromId: user.id,
         toId: selectedParticipantId,
-        message: messageText.substring(0, 50) + '...',
-        socketConnected: socket.connected
+        message: messageText.substring(0, 50) + (messageText.length > 50 ? '...' : ''),
+        socketConnected: socket.connected,
+        userRole: user.role,
+        selectedConversation: filteredConversations.find(c => c.participantId === selectedParticipantId)
       })
 
-      // Send via WebSocket using the same method as seller
-      chatService.sendMessageViaSocket(
-        String(user.id),
-        selectedParticipantId,
-        messageText,
-        socket
-      )
+      // Add validation for user and participant IDs
+      if (!user.id || !selectedParticipantId) {
+        console.error('❌ [UserChat] Invalid user or participant ID:', {
+          userId: user.id,
+          participantId: selectedParticipantId
+        })
+        setError('Invalid user or seller ID. Please refresh the page and try again.')
+        return
+      }
+
+      // Validate UUID format (basic check)
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+      if (!uuidRegex.test(user.id) || !uuidRegex.test(selectedParticipantId)) {
+        console.error('❌ [UserChat] Invalid UUID format:', {
+          userId: user.id,
+          userIdValid: uuidRegex.test(user.id),
+          participantId: selectedParticipantId,
+          participantIdValid: uuidRegex.test(selectedParticipantId)
+        })
+        setError('Invalid ID format. Please refresh the page and try again.')
+        return
+      }
+
+      // Add socket connection validation
+      if (!socket.connected) {
+        console.error('❌ [UserChat] Socket not connected, cannot send message')
+        setError('Connection lost. Please refresh the page and try again.')
+        return
+      }
+
+      console.log('🚀 [UserChat] Sending via WebSocket...')
+      
+      // Try WebSocket first
+      try {
+        chatService.sendMessageViaSocket(
+          String(user.id),
+          selectedParticipantId,
+          messageText,
+          socket
+        )
+        console.log('✅ [UserChat] Message sent via WebSocket')
+      } catch (wsError) {
+        console.error('❌ [UserChat] WebSocket send failed, trying REST API fallback:', wsError)
+        
+        // Fallback to REST API
+        try {
+          await chatService.sendMessageViaRest(
+            String(user.id),
+            selectedParticipantId,
+            messageText,
+            token
+          )
+          console.log('✅ [UserChat] Message sent via REST API fallback')
+        } catch (restError) {
+          console.error('❌ [UserChat] Both WebSocket and REST API failed:', restError)
+          setError('Failed to send message. Please check your connection and try again.')
+          setNewMessage(messageText) // Restore the message text
+          return
+        }
+      }
 
       // Optimistically add message to UI
       const tempMessage: ChatMessageDto = {
@@ -519,6 +659,12 @@ export default function UserMessagesPage() {
           role: filteredConversations.find(c => c.participantId === selectedParticipantId)?.participantRole || 'USER'
         }
       }
+
+      console.log('➕ [UserChat] Adding optimistic message to UI:', {
+        messageId: tempMessage.id,
+        from: tempMessage.from.name,
+        to: tempMessage.to.name
+      })
 
       // Track this message as locally added and processed
       const messageKey = `${tempMessage.fromId}-${tempMessage.toId}-${tempMessage.message}-${tempMessage.createdAt}`
