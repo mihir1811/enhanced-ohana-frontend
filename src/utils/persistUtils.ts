@@ -1,18 +1,29 @@
 // Utility functions for Redux Persist operations
 import { store, persistor } from '../store'
 import { logout } from '../features/auth/authSlice'
+import { clearSellerProfile } from '../features/seller/sellerSlice'
+import { clearCompare } from '../features/compare/compareSlice'
+import { clearFilters, clearCurrentProduct, clearSearchResults } from '../features/products/productSlice'
 
-// Enhanced logout that clears persisted data
+// Enhanced logout that clears persisted data and all stats
 export const performLogout = async () => {
-  // Dispatch logout action
-  store.dispatch(logout())
+  console.log('🚪 [persistUtils] Performing complete logout with stats clearing')
+  
+  // Dispatch all clear actions to empty stats
+  store.dispatch(logout()) // Clear auth data
+  store.dispatch(clearSellerProfile()) // Clear seller data  
+  store.dispatch(clearCompare()) // Clear compare data
+  store.dispatch(clearFilters()) // Clear product filters
+  store.dispatch(clearCurrentProduct()) // Clear current product
+  store.dispatch(clearSearchResults()) // Clear search results
   
   // Clear persisted data
   try {
     await persistor.purge()
     await persistor.flush()
+    console.log('✅ [persistUtils] All persisted data cleared')
   } catch (error) {
-    console.error('Error clearing persisted data:', error)
+    console.error('❌ [persistUtils] Error clearing persisted data:', error)
   }
   
   // Redirect to login page

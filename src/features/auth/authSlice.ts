@@ -138,31 +138,13 @@ export const updateProfilePictureAsync = createAsyncThunk(
   }
 )
 
-// Async thunk for logout
+// Async thunk for logout (frontend only - no API call)
 export const logoutAsync = createAsyncThunk(
   'auth/logout',
-  async (_, { getState, rejectWithValue }) => {
-    try {
-      const state = getState() as { auth: AuthState }
-      const token = state.auth.token
-      
-      if (!token) {
-        // If no token, just clear local data
-        return { message: 'Logged out locally' }
-      }
-      
-      const response = await userService.logout(token)
-      
-      if (!response.success) {
-        return rejectWithValue(response.message)
-      }
-      
-      return response.data
-    } catch (error) {
-      // Even if logout API fails, we should clear local data
-      console.warn('Logout API failed, clearing local data anyway:', error)
-      return { message: 'Logged out locally due to API error' }
-    }
+  async (_, { getState }) => {
+    console.log('🚪 [authSlice] Logging out user (frontend only)')
+    // Handle logout entirely on frontend - no API call needed
+    return { message: 'Logged out successfully' }
   }
 )
 
@@ -220,6 +202,7 @@ const authSlice = createSlice({
     },
     
     logout: (state) => {
+      // Clear all auth data
       state.user = null
       state.role = null
       state.token = null
@@ -264,8 +247,8 @@ const authSlice = createSlice({
         state.isAdmin = false
       })
       .addCase(logoutAsync.rejected, (state, action) => {
-        // Even if logout fails, clear local data for security
-        console.warn('Logout API failed, clearing local data anyway:', action.payload)
+        // Frontend logout should not fail, but clear data as safeguard
+        console.warn('Logout process failed, clearing local data anyway:', action.payload)
         state.user = null
         state.role = null
         state.token = null

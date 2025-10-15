@@ -126,33 +126,6 @@ class UserService {
       }
     }
   }
-
-  async logout(token: string): Promise<UserUpdateResponse> {
-    try {
-      const response = await fetch(`${this.baseURL}/api/v1/auth/logout`, {
-        method: 'POST',
-        headers: this.getAuthHeaders(token)
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
-      return {
-        success: true,
-        message: 'Logged out successfully',
-        data
-      }
-    } catch (error) {
-      console.error('Error during logout:', error)
-      return {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to logout'
-      }
-    }
-  }
 }
 
 export const userService = new UserService()

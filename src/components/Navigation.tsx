@@ -28,11 +28,11 @@ export default function Navigation() {
   const handleLogout = async () => {
     setIsLoggingOut(true)
     try {
-      // Call async logout to invalidate token on server
+      // Logout is handled entirely on frontend now
       await dispatch(logoutAsync()).unwrap()
     } catch (error) {
-      // Even if API fails, we'll continue with local logout
-      console.warn('Logout API failed, continuing with local logout:', error)
+      // Frontend logout should not fail, but handle edge cases
+      console.warn('Logout process failed, continuing with cleanup:', error)
     } finally {
       // Clear all local storage, cookies, and redirect
       document.cookie = 'role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'

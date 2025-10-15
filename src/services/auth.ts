@@ -109,10 +109,6 @@ class AuthService {
     return apiService.upload('/auth/register', formData)
   }
 
-  async logout(): Promise<ApiResponse<void>> {
-    return apiService.post('/auth/logout')
-  }
-
   async refreshToken(): Promise<ApiResponse<{
     accessToken: string
     refreshToken: string

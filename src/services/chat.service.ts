@@ -284,18 +284,6 @@ export const chatService = {
     }
   },
 
-  // Initialize conversation between user and seller
-  async initializeConversation(participantId: string, token?: string): Promise<ApiResponse<{ conversationId: string; participant: any }>> {
-    console.log('🔄 [ChatService] Initializing conversation with participant:', participantId)
-    
-    const payload = {
-      participantId,
-      action: 'initialize'
-    }
-    
-    return apiService.post(`${API_CONFIG.ENDPOINTS.CHAT.BASE}/conversation`, payload, token)
-  },
-
   // Send message via REST API (fallback method)
   async sendMessageViaRest(fromId: string, toId: string, message: string, token?: string): Promise<ApiResponse<ChatMessageDto>> {
     const payload = {
@@ -314,24 +302,16 @@ export const chatService = {
     return apiService.post(API_CONFIG.ENDPOINTS.CHAT.BASE, payload, token)
   },
 
-  // Enhanced WebSocket message sending with conversation initialization
+  // Enhanced WebSocket message sending (simplified without conversation initialization)
   async sendMessageWithInit(fromId: string, toId: string, message: string, socket: any, token?: string): Promise<void> {
     try {
-      // First try to initialize conversation if needed
-      if (token) {
-        try {
-          console.log('🔄 [ChatService] Ensuring conversation exists between users')
-          await this.initializeConversation(toId, token)
-          
-          // Small delay to ensure backend processes the conversation initialization
-          await new Promise(resolve => setTimeout(resolve, 100))
-        } catch (initError) {
-          console.log('⚠️ [ChatService] Conversation initialization failed (might already exist):', initError)
-          // Continue anyway - conversation might already exist
-        }
-      }
+      console.log('� [ChatService] Sending message via WebSocket:', {
+        fromId,
+        toId,
+        messageLength: message.length
+      })
       
-      // Then send via WebSocket
+      // Send via WebSocket directly
       this.sendMessageViaSocket(fromId, toId, message, socket)
     } catch (error) {
       console.error('❌ [ChatService] Enhanced message sending failed:', error)
