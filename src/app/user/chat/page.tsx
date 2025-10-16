@@ -24,6 +24,10 @@ export default function UserMessagesPage() {
   const [error, setError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
+  // Auto-selection state to prevent duplicate processing
+  const [autoSelectionProcessed, setAutoSelectionProcessed] = useState(false)
+  const autoSelectionAttemptedRef = useRef<string | null>(null)
+  
   // Rate limiting for message sending
   const lastMessageTimeRef = useRef<number>(0)
   const MESSAGE_RATE_LIMIT = 1000 // 1 second between messages
@@ -102,6 +106,38 @@ export default function UserMessagesPage() {
     productType
   })
 
+  // Reliable function to find existing conversation
+  const findExistingConversation = useCallback((sellerId: string): ChatConversation | null => {
+    if (!sellerId || !conversations.length) {
+      console.log('🔍 [findExistingConversation] No seller ID or conversations:', { sellerId, conversationsLength: conversations.length })
+      return null
+    }
+
+    console.log('🔍 [findExistingConversation] Searching for seller:', {
+      sellerId,
+      trimmedSellerId: sellerId.trim(),
+      totalConversations: conversations.length,
+      allParticipantIds: conversations.map(c => c.participantId)
+    })
+
+    // Primary check: exact ID match (most reliable)
+    const exactMatch = conversations.find(conv => conv.participantId === sellerId)
+    if (exactMatch) {
+      console.log('✅ [findExistingConversation] Found exact match:', exactMatch)
+      return exactMatch
+    }
+
+    // Secondary check: trimmed ID match (handles whitespace)
+    const trimmedMatch = conversations.find(conv => conv.participantId?.trim() === sellerId?.trim())
+    if (trimmedMatch) {
+      console.log('✅ [findExistingConversation] Found trimmed match:', trimmedMatch)
+      return trimmedMatch
+    }
+
+    console.log('❌ [findExistingConversation] No existing conversation found for seller:', sellerId)
+    return null
+  }, [conversations])
+
   // Load conversations from backend
   useEffect(() => {
     let cancelled = false
@@ -127,7 +163,24 @@ export default function UserMessagesPage() {
           
           console.log(`🎯 [UserChat] Filtered seller conversations: ${sellerConversations.length}`, sellerConversations)
           
-          setConversations(sellerConversations)
+          setConversations(prev => {
+            // If we have locally created conversations (from auto-selection), merge them
+            const localConversations = prev.filter(conv => 
+              !sellerConversations.some(serverConv => serverConv.participantId === conv.participantId)
+            )
+            
+            if (localConversations.length > 0) {
+              console.log('� [UserChat] Merging server conversations with local conversations:', {
+                serverCount: sellerConversations.length,
+                localCount: localConversations.length,
+                localIds: localConversations.map(c => c.participantId)
+              })
+              return [...sellerConversations, ...localConversations]
+            } else {
+              console.log('📝 [UserChat] Using server conversations (no local conversations to merge)')
+              return sellerConversations
+            }
+          })
           
           // If we have a preselected seller, try to find and select that conversation
           if (preSelectedSellerId) {
@@ -154,7 +207,7 @@ export default function UserMessagesPage() {
     
     loadConversations()
     return () => { cancelled = true }
-  }, [token, user, preSelectedSellerId])
+  }, [token, user]) // Removed preSelectedSellerId to prevent overwriting local conversations
 
   // Handle incoming messages via WebSocket through SocketProvider
   useEffect(() => {
@@ -402,6 +455,30 @@ export default function UserMessagesPage() {
           // For initial load, replace all messages
           setMessages(sortedMessages)
           setMessagesPage(1)
+          
+          // Mark unread messages as read (only for initial load, not pagination)
+          const unreadMessageIds = sortedMessages
+            .filter(msg => msg.fromId === participantId && !msg.isRead) // Only messages from the other person that are unread
+            .map(msg => msg.id)
+            .filter(id => id && !id.startsWith('temp-')) // Exclude temporary/local message IDs
+          
+          if (unreadMessageIds.length > 0) {
+            console.log(`📖 [UserChat] Marking ${unreadMessageIds.length} messages as read`)
+            chatService.markMessagesAsRead(unreadMessageIds, token)
+              .then(() => {
+                console.log('✅ [UserChat] Messages marked as read successfully')
+                // Update conversation unread count
+                setConversations(prev => prev.map(conv => 
+                  conv.participantId === participantId 
+                    ? { ...conv, unreadCount: 0 }
+                    : conv
+                ))
+              })
+              .catch(err => {
+                console.error('❌ [UserChat] Failed to mark messages as read:', err)
+                // Don't show error to user as this is not critical for UX
+              })
+          }
         }
         
         console.log(`✅ [UserChat] Loaded ${sortedMessages.length} messages for conversation`, {
@@ -464,51 +541,100 @@ export default function UserMessagesPage() {
         }
       }, 100)
       
-      // Mark messages as read (we'll handle this after loading messages)
-      if (token) {
-        chatService.markMessagesAsRead([], token) // We'll mark as read after loading
-          .then(() => {
-            // Update conversation unread count
-            setConversations(prev => prev.map(conv => 
-              conv.participantId === participantId 
-                ? { ...conv, unreadCount: 0 }
-                : conv
-            ))
-          })
-          .catch(err => console.error('Failed to mark messages as read:', err))
-      }
+      // Note: Messages will be marked as read after they are loaded in loadConversationMessages
     }
   }, [conversations, user, token, loadConversationMessages])
 
-  // Auto-select seller from URL parameters
+  // Reset auto-selection state when seller ID changes
   useEffect(() => {
-    console.log('🔍 [UserChat] Auto-select effect triggered:', {
-      preSelectedSellerId,
-      conversationsCount: conversations.length,
-      conversations: conversations.map(c => ({ id: c.participantId, name: c.participantName, role: c.participantRole }))
+    console.log('🔄 [UserChat] Seller ID changed, resetting auto-selection state:', {
+      newSellerId: preSelectedSellerId,
+      previousAttempted: autoSelectionAttemptedRef.current
     })
     
-    if (preSelectedSellerId) {
-      const targetConversation = conversations.find(conv => 
-        conv.participantId === preSelectedSellerId && 
-        conv.participantRole.toLowerCase() === 'seller'
-      )
-      
-      console.log('🔍 [UserChat] Looking for existing conversation:', {
-        targetSellerId: preSelectedSellerId,
-        foundConversation: !!targetConversation,
-        conversationDetails: targetConversation || null
+    if (preSelectedSellerId !== autoSelectionAttemptedRef.current) {
+      setAutoSelectionProcessed(false)
+      autoSelectionAttemptedRef.current = null
+    }
+  }, [preSelectedSellerId])
+
+  // Auto-select seller from URL parameters - SIMPLE AND RELIABLE
+  useEffect(() => {
+    // Only proceed if we have necessary conditions
+    if (!preSelectedSellerId || !user?.id || loading) {
+      return
+    }
+
+    // Prevent processing the same seller ID multiple times
+    if (autoSelectionAttemptedRef.current === preSelectedSellerId) {
+      return
+    }
+
+    console.log('🔍 [UserChat] Processing seller ID from URL:', {
+      sellerId: preSelectedSellerId,
+      conversationsCount: conversations.length,
+      allSellerIds: conversations.map(c => c.participantId)
+    })
+
+    // Mark this seller ID as being processed
+    autoSelectionAttemptedRef.current = preSelectedSellerId
+
+    // Check if seller ID exists in current conversations
+    const existingConversation = conversations.find(conv => conv.participantId === preSelectedSellerId)
+
+    if (existingConversation) {
+      // Seller exists in conversations - select it
+      console.log('✅ [UserChat] Seller exists in conversations - selecting existing:', {
+        sellerId: preSelectedSellerId,
+        sellerName: existingConversation.participantName
       })
       
-      if (targetConversation) {
-        console.log('✅ [UserChat] Found existing conversation with seller:', targetConversation)
-        handleSelectConversation(preSelectedSellerId)
-      } else {
-        console.log('❌ [UserChat] No existing conversation found with seller:', preSelectedSellerId)
-        // Don't create new conversation automatically - user needs to start chat from messages
+      handleSelectConversation(preSelectedSellerId)
+      setAutoSelectionProcessed(true)
+    } else {
+      // Seller does NOT exist in conversations - create new box
+      console.log('🆕 [UserChat] Seller NOT in conversations - creating new box:', {
+        sellerId: preSelectedSellerId,
+        existingConversations: conversations.map(c => ({ id: c.participantId, name: c.participantName }))
+      })
+
+      const sellerName = productName ? `Seller (${decodeURIComponent(productName)})` : 'Seller'
+      
+      const newConversation: ChatConversation = {
+        participantId: preSelectedSellerId,
+        participantName: sellerName,
+        participantRole: 'seller',
+        lastMessage: undefined,
+        unreadCount: 0,
+        messages: []
       }
+
+      // Add new conversation to the list
+      setConversations(prev => {
+        console.log('🔄 [UserChat] Adding new conversation to list:', {
+          newConversation: newConversation,
+          currentCount: prev.length,
+          newCount: prev.length + 1
+        })
+        return [...prev, newConversation]
+      })
+
+      // Use setTimeout to ensure conversation is added before selection
+      setTimeout(() => {
+        console.log('⏰ [UserChat] Selecting new conversation after timeout:', preSelectedSellerId)
+        handleSelectConversation(preSelectedSellerId)
+        
+        // Pre-fill welcome message if product info available
+        if (productName && productType) {
+          const welcomeMessage = `Hello! I'm interested in your ${productType}: ${decodeURIComponent(productName)}`
+          console.log('📩 [UserChat] Pre-filling welcome message:', welcomeMessage)
+          setNewMessage(welcomeMessage)
+        }
+        
+        setAutoSelectionProcessed(true)
+      }, 100) // Small delay to ensure state update is processed
     }
-  }, [preSelectedSellerId, conversations, handleSelectConversation])
+  }, [preSelectedSellerId, conversations, user?.id, loading, handleSelectConversation, productName, productType])
 
   // Auto-scroll to bottom for new messages (but not when loading older messages)
   useEffect(() => {
@@ -524,13 +650,23 @@ export default function UserMessagesPage() {
   // Filter conversations by search
   const filteredConversations = React.useMemo(() => {
     const query = search.trim().toLowerCase()
-    return conversations.filter(conv => 
+    const filtered = conversations.filter(conv => 
       query ? (
         conv.participantName.toLowerCase().includes(query) || 
         conv.lastMessage?.message.toLowerCase().includes(query)
       ) : true
     )
-  }, [conversations, search])
+    
+    console.log('🔍 [UserChat] Filtered conversations updated:', {
+      totalConversations: conversations.length,
+      filteredCount: filtered.length,
+      searchQuery: query,
+      conversationIds: filtered.map(c => ({ id: c.participantId, name: c.participantName })),
+      preSelectedSellerId
+    })
+    
+    return filtered
+  }, [conversations, search, preSelectedSellerId])
 
   // Send message
   const handleSendMessage = useCallback(async () => {
@@ -612,22 +748,21 @@ export default function UserMessagesPage() {
         return
       }
 
-      console.log('🚀 [UserChat] Sending via WebSocket with conversation initialization...')
+      console.log('🚀 [UserChat] Sending via WebSocket only...')
       
-      // Try enhanced WebSocket sending with conversation initialization first
+      // Send via WebSocket (no REST API fallback)
       try {
         await chatService.sendMessageWithInit(
           String(user.id),
           selectedParticipantId,
           messageText,
-          socket,
-          token || undefined
+          socket
         )
-        console.log('✅ [UserChat] Message sent via enhanced WebSocket')
+        console.log('✅ [UserChat] Message sent via WebSocket')
       } catch (wsError) {
-        console.error('❌ [UserChat] Enhanced WebSocket send failed, trying basic WebSocket:', wsError)
+        console.error('❌ [UserChat] WebSocket send failed:', wsError)
         
-        // Fallback to basic WebSocket
+        // Try basic WebSocket as fallback
         try {
           chatService.sendMessageViaSocket(
             String(user.id),
@@ -637,23 +772,10 @@ export default function UserMessagesPage() {
           )
           console.log('✅ [UserChat] Message sent via basic WebSocket')
         } catch (basicWsError) {
-          console.error('❌ [UserChat] Basic WebSocket failed, trying REST API fallback:', basicWsError)
-          
-          // Final fallback to REST API
-          try {
-            await chatService.sendMessageViaRest(
-              String(user.id),
-              selectedParticipantId,
-              messageText,
-              token || undefined
-            )
-            console.log('✅ [UserChat] Message sent via REST API fallback')
-          } catch (restError) {
-            console.error('❌ [UserChat] All sending methods failed:', restError)
-            setError('Failed to send message. Please check your connection and try again.')
-            setNewMessage(messageText) // Restore the message text
-            return
-          }
+          console.error('❌ [UserChat] All WebSocket methods failed:', basicWsError)
+          setError('Failed to send message. Please check your connection and try again.')
+          setNewMessage(messageText) // Restore the message text
+          return
         }
       }
 

@@ -221,6 +221,17 @@ export const chatService = {
 
   // Mark messages as read - backend expects array of messageIds
   async markMessagesAsRead(messageIds: string[], token?: string): Promise<ApiResponse<{ success: boolean; messageIds: string[] }>> {
+    // Validate that messageIds is not empty
+    if (!messageIds || messageIds.length === 0) {
+      console.log('⚠️ [ChatService] markMessagesAsRead called with empty array, skipping API call')
+      return {
+        success: true,
+        data: { success: true, messageIds: [] },
+        message: 'No messages to mark as read'
+      }
+    }
+    
+    console.log(`📖 [ChatService] Marking ${messageIds.length} messages as read:`, messageIds)
     const payload = { messageIds }
     return apiService.patch(API_CONFIG.ENDPOINTS.CHAT.READ, payload, token)
   },
@@ -284,26 +295,8 @@ export const chatService = {
     }
   },
 
-  // Send message via REST API (fallback method)
-  async sendMessageViaRest(fromId: string, toId: string, message: string, token?: string): Promise<ApiResponse<ChatMessageDto>> {
-    const payload = {
-      fromId,
-      toId,
-      message,
-      messageType: 'TEXT'
-    }
-    
-    console.log('📤 [ChatService] Sending via REST API:', {
-      fromId,
-      toId,
-      messageLength: message.length
-    })
-    
-    return apiService.post(API_CONFIG.ENDPOINTS.CHAT.BASE, payload, token)
-  },
-
-  // Enhanced WebSocket message sending (simplified without conversation initialization)
-  async sendMessageWithInit(fromId: string, toId: string, message: string, socket: any, token?: string): Promise<void> {
+  // Enhanced WebSocket message sending (socket-only, no API fallback)
+  async sendMessageWithInit(fromId: string, toId: string, message: string, socket: any): Promise<void> {
     try {
       console.log('� [ChatService] Sending message via WebSocket:', {
         fromId,

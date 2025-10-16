@@ -383,19 +383,9 @@ export default function SellerMessagesPage() {
         })
         setMessageText('')
       } else {
-        // Socket not connected, use REST API fallback
-        console.log('⚠️ [SellerMessages] Socket not connected, using REST API fallback')
-        const currentUserId = String(user.id)
-        
-        await chatService.sendMessageViaRest(
-          currentUserId,
-          selectedConversation.participantId,
-          messageText.trim(),
-          token || undefined
-        )
-        
-        console.log('✅ [SellerMessages] Message sent via REST API')
-        setMessageText('')
+        // Socket not connected, show error instead of fallback
+        console.log('⚠️ [SellerMessages] Socket not connected, cannot send message')
+        setError('Connection lost. Please refresh the page and try again.')
       }
     } catch (error) {
       console.error('Failed to send message:', error)
