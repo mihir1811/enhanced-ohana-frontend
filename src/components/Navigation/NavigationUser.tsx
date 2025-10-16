@@ -10,6 +10,7 @@ import { logoutAsync } from '@/features/auth/authSlice'
 import ThemeSwitcher from '../ThemeSwitcher'
 import MobileSidebar from './MobileSidebar'
 import useNavigation from '@/hooks/useNavigation'
+// @ts-ignore: allow importing CSS side-effect without type declarations
 import '@/styles/navigation.css'
 import { SECTION_WIDTH } from '@/lib/constants'
 import { cartService, type Cart } from '@/services'
@@ -557,7 +558,7 @@ export default function NavigationUser() {
                                 ) : (
                                   // For other items, use regular Link
                                   <Link
-                                    key={dropdownItem.href}
+                                    key={`${dropdownItem.href}-${dropdownItem.label}`}
                                     href={'params' in dropdownItem ? `${dropdownItem.href}?${new URLSearchParams((dropdownItem as { params: Record<string, string> }).params).toString()}` : dropdownItem.href}
                                     className="block p-3 rounded-lg transition-all duration-200 hover:scale-[1.02]"
                                     style={{
@@ -1015,7 +1016,7 @@ export default function NavigationUser() {
                           <div className="grid gap-2">
                             {item.dropdownItems?.map((dropdownItem) => (
                               <Link
-                                key={dropdownItem.href}
+                                key={`${dropdownItem.href}-${dropdownItem.label}`}
                                 href={dropdownItem.href}
                                 className="block p-3 rounded-lg transition-all duration-200 hover:scale-[1.02]"
                                 style={{
