@@ -4,20 +4,16 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { auctionService } from '@/services/auctionService';
 import { 
-  Clock, 
   ArrowLeft, 
   Heart, 
   Share2, 
-  Eye, 
   MapPin, 
-  Award, 
   Shield,
-  Users,
-  TrendingUp,
   Gavel,
   Timer
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import NavigationUser from '@/components/Navigation/NavigationUser';
 import Footer from '@/components/Footer';
 
@@ -74,7 +70,7 @@ interface JewelryProduct {
   makingCharge: number;
   tax: number;
   totalPrice: number;
-  attributes: any;
+  attributes: Record<string, unknown>;
   description: string;
   image1?: string;
   image2?: string;
@@ -201,9 +197,11 @@ const ImageGallery: React.FC<{ product: GemsProduct | JewelryProduct }> = ({ pro
     <div className="space-y-4">
       {/* Main Image */}
       <div className="aspect-square bg-slate-100 rounded-lg overflow-hidden">
-        <img
+        <Image
           src={images[selectedImage]}
           alt={product.name}
+          width={400}
+          height={400}
           className="w-full h-full object-cover"
         />
       </div>
@@ -221,9 +219,11 @@ const ImageGallery: React.FC<{ product: GemsProduct | JewelryProduct }> = ({ pro
                   : 'border-slate-200 hover:border-slate-300'
               }`}
             >
-              <img
+              <Image
                 src={image}
                 alt={`${product.name} ${index + 1}`}
+                width={80}
+                height={80}
                 className="w-full h-full object-cover"
               />
             </button>
@@ -340,8 +340,9 @@ export default function AuctionDetailsPage() {
         } else {
           setError('Auction not found');
         }
-      } catch (err: any) {
-        setError(err.message || 'Failed to load auction details');
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load auction details';
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -533,9 +534,11 @@ export default function AuctionDetailsPage() {
                 
                 <div className="flex items-center gap-4">
                   {auction.seller.companyLogo && (
-                    <img
+                    <Image
                       src={auction.seller.companyLogo}
                       alt={auction.seller.companyName}
+                      width={48}
+                      height={48}
                       className="w-12 h-12 rounded-lg object-cover"
                     />
                   )}

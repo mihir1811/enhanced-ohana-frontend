@@ -10,7 +10,7 @@ export interface ValidationRule {
   numeric?: boolean
   min?: number
   max?: number
-  custom?: (value: any) => string | null
+  custom?: (value: unknown, data?: Record<string, unknown>) => string | null
 }
 
 export interface ValidationError {
@@ -25,7 +25,7 @@ export class FormValidator {
     this.rules = rules
   }
 
-  validate(data: Record<string, any>): ValidationError[] {
+  validate(data: Record<string, unknown>): ValidationError[] {
     const errors: ValidationError[] = []
 
     for (const [field, rule] of Object.entries(this.rules)) {
@@ -39,7 +39,7 @@ export class FormValidator {
     return errors
   }
 
-  validateField(field: string, value: any, rule: ValidationRule): ValidationError | null {
+  validateField(field: string, value: unknown, rule: ValidationRule): ValidationError | null {
     // Required validation
     if (rule.required && (!value || (typeof value === 'string' && value.trim() === ''))) {
       return { field, message: `${this.formatFieldName(field)} is required` }
@@ -148,7 +148,7 @@ export const authValidationRules = {
   },
   confirmPassword: {
     required: true,
-    custom: (value: string, data: any) => {
+    custom: (value: string, data: Record<string, unknown>) => {
       if (value !== data.password) return 'Passwords do not match'
       return null
     }
@@ -234,7 +234,7 @@ export const createValidator = (rules: Record<string, ValidationRule>) => {
 export const useFormValidation = (rules: Record<string, ValidationRule>) => {
   const validator = new FormValidator(rules)
   
-  const validate = (data: Record<string, any>) => {
+  const validate = (data: Record<string, unknown>) => {
     const errors = validator.validate(data)
     const errorMap = errors.reduce((acc, error) => {
       acc[error.field] = error.message
@@ -248,7 +248,7 @@ export const useFormValidation = (rules: Record<string, ValidationRule>) => {
     }
   }
   
-  const validateField = (field: string, value: any) => {
+  const validateField = (field: string, value: unknown) => {
     const rule = rules[field]
     if (!rule) return null
     

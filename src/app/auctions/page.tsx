@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { auctionService } from '@/services/auctionService';
 import { Clock, Search, RefreshCw } from 'lucide-react';
 import NavigationUser from '@/components/Navigation/NavigationUser';
@@ -59,7 +60,7 @@ interface JewelryProduct {
   makingCharge: number;
   tax: number;
   totalPrice: number;
-  attributes: any;
+  attributes: Record<string, unknown>;
   description: string;
   image1?: string;
   image2?: string;
@@ -188,9 +189,11 @@ const AuctionCard: React.FC<{ auction: AuctionItem }> = ({ auction }) => {
 
         {/* Product Image */}
         {product.image1 ? (
-          <img
+          <Image
             src={product.image1}
             alt={product.name}
+            width={300}
+            height={300}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
@@ -373,13 +376,13 @@ export default function AuctionsPage() {
   const [activeFilter, setActiveFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const fetchAuctions = async () => {
+  const fetchAuctions = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
       const response = await auctionService.getLiveAuctions({
-        productType: activeFilter as any,
+        productType: activeFilter === '' ? undefined : activeFilter as 'diamond' | 'gemstone' | 'jewellery',
         page: 1,
         limit: 12
       });
@@ -391,17 +394,18 @@ export default function AuctionsPage() {
       } else {
         setAuctions([]);
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to load auctions');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load auctions';
+      setError(errorMessage);
       setAuctions([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeFilter]);
 
   useEffect(() => {
     fetchAuctions();
-  }, [activeFilter]);
+  }, [fetchAuctions]);
 
   const filters = [
     { value: '', label: 'All' },

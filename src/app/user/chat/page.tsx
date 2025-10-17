@@ -859,105 +859,22 @@ export default function UserMessagesPage() {
 
   const selectedConversation = filteredConversations.find(c => c.participantId === selectedParticipantId)
 
-  // Add debug functions for development
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      (window as any).debugChatConnection = () => {
-        console.group('🔌 [UserChat] Connection Debug')
-        console.log('Socket connected:', connected)
-        console.log('Socket instance:', !!socket)
-        console.log('Socket ID:', socket?.id)
-        console.log('User ID:', user?.id)
-        console.log('Selected participant:', selectedParticipantId)
-        console.log('Conversations count:', conversations.length)
-        console.log('Messages count:', messages.length)
-        console.log('Register function available:', !!register)
-        console.log('OnMessage function available:', !!onMessage)
-        console.groupEnd()
-      }
-      
-      (window as any).testMessageReceive = () => {
-        console.log('🧪 [UserChat] Testing message receive with current setup')
-        console.log('Current user ID:', user?.id)
-        console.log('Selected participant (state):', selectedParticipantId)
-        console.log('Selected participant (ref):', selectedParticipantRef.current)
-        console.log('Should receive from:', selectedParticipantRef.current)
-        console.log('Should receive to:', user?.id)
-        console.log('Message listener active:', !!onMessage)
-        console.log('Socket connected:', connected)
-      }
-      
-      (window as any).forceRefreshMessages = () => {
-        console.log('🔄 [UserChat] Force refreshing messages for current conversation')
-        if (selectedParticipantRef.current) {
-          loadConversationMessages(selectedParticipantRef.current, 1, false)
-        } else {
-          console.log('❌ No conversation selected to refresh')
-        }
-      }
-      
-      (window as any).monitorSocketEvents = () => {
-        if (!socket) {
-          console.log('❌ No socket available to monitor')
-          return
-        }
-        
-        console.log('👂 [UserChat] Starting socket event monitoring...')
-        
-        // Listen to ALL events on the socket
-        const originalOn = socket.on.bind(socket)
-        const originalEmit = socket.emit.bind(socket)
-        
-        socket.on = function(event: string, listener: any) {
-          console.log(`📡 [UserChat] Socket listener added for event: ${event}`)
-          return originalOn(event, (...args: any[]) => {
-            console.log(`📨 [UserChat] Socket event received: ${event}`, args)
-            return listener(...args)
-          })
-        }
-        
-        socket.emit = function(event: string, ...args: any[]) {
-          console.log(`📤 [UserChat] Socket event emitted: ${event}`, args)
-          return originalEmit(event, ...args)
-        }
-        
-        console.log('✅ Socket monitoring active - check console for all socket events')
-      }
-      (window as any).testLiveMessaging = () => {
-        console.group('🧪 [UserChat] Live Messaging Test')
-        console.log('1. Socket Status:')
-        console.log('   - Connected:', connected)
-        console.log('   - Socket exists:', !!socket)
-        console.log('   - Socket ID:', socket?.id)
-        console.log('   - User ID:', user?.id)
-        
-        console.log('2. Message Listener:')
-        console.log('   - OnMessage function exists:', !!onMessage)
-        console.log('   - Register function exists:', !!register)
-        
-        console.log('3. Current State:')
-        console.log('   - Selected participant:', selectedParticipantRef.current)
-        console.log('   - Messages count:', messages.length)
-        console.log('   - Conversations count:', conversations.length)
-        
-        console.log('4. Test Instructions:')
-        console.log('   - Go to seller messages page')
-        console.log('   - Send a message to this user')
-        console.log('   - Watch this console for message receipt')
-        console.log('   - Expected: "🔥🔥🔥 MESSAGE RECEIVED" and "📨 [UserChat] Received new message"')
-        
-        console.groupEnd()
-      }
-      
-      console.log('🧪 [UserChat] Debug functions available:')
-      console.log('  - window.debugChatConnection()')
-      console.log('  - window.testMessageReceive()')
-      console.log('  - window.forceRefreshMessages()')
-      console.log('  - window.monitorSocketEvents() - Monitor ALL socket events')
-      console.log('  - window.testLiveMessaging() - COMPREHENSIVE TEST')
-      console.log('  - window.debugConversations() (if conversations loaded)')
-    }
-  }, [connected, socket, user?.id, selectedParticipantId, conversations.length, messages.length, register, onMessage])
+  if (!token || !user) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-2">Authentication Required</h3>
+          <p className="text-gray-600 mb-4">Please log in to view your messages</p>
+          <button 
+            onClick={() => router.push('/login')}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
