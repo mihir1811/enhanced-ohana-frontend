@@ -204,11 +204,11 @@ export default function NavigationUser() {
   const handleLogout = useCallback(async () => {
     setIsLoggingOut(true)
     try {
-      // Call async logout to invalidate token on server
+      // Logout is handled entirely on frontend now
       await dispatch(logoutAsync()).unwrap()
     } catch (error) {
-      // Even if API fails, we'll continue with local logout
-      console.warn('Logout API failed, continuing with local logout:', error)
+      // Frontend logout should not fail, but handle edge cases
+      console.warn('Logout process failed, continuing with cleanup:', error)
     } finally {
       // Clear all local storage, cookies, and redirect
       document.cookie = 'role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
@@ -879,6 +879,19 @@ export default function NavigationUser() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                               </svg>
                               <span className="font-medium">My Reviews</span>
+                            </Link>
+
+                            <Link
+                              href="/user/chat"
+                              className="flex items-center space-x-3 px-3 py-3 text-slate-700 dark:text-slate-200 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 group"
+                              style={{ color: 'var(--popover-foreground)', borderRadius: 'var(--radius-lg)' }}
+                              role="menuitem"
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              <svg className="w-5 h-5 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z" />
+                              </svg>
+                              <span className="font-medium">Messages</span>
                             </Link>
 
                             <Link

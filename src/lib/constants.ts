@@ -4,7 +4,7 @@ export const SECTION_WIDTH = 1400;
 // API Configuration
 export const API_CONFIG = {
   // Base API URL - can be overridden by environment variable
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1',
+  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api/v1',
   
   // API Endpoints
   ENDPOINTS: {
@@ -12,7 +12,6 @@ export const API_CONFIG = {
     AUTH: {
       LOGIN: '/auth/login',
       REGISTER: '/auth/register',
-      LOGOUT: '/auth/logout',
       REFRESH: '/auth/refresh',
       FORGOT_PASSWORD: '/auth/forgot-password',
       RESET_PASSWORD: '/auth/reset-password',
@@ -82,6 +81,12 @@ export const API_CONFIG = {
       ENDED: '/auctions/ended',
     },
     
+    // Chat
+    CHAT: {
+      BASE: '/chat',
+      DELETE_MESSAGE: '/chat/:messageId',
+      READ: '/chat/read',
+    },
 
     
     // File Uploads

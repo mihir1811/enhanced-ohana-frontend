@@ -2,6 +2,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useCallback } from 'react'
 import { RootState, AppDispatch } from '@/store'
 import { setCredentials, logout } from '@/features/auth/authSlice'
+import { clearSellerProfile } from '@/features/seller/sellerSlice'
+import { clearCompare } from '@/features/compare/compareSlice'
+import { clearFilters, clearCurrentProduct, clearSearchResults } from '@/features/products/productSlice'
 import { authService, userService, sellerService } from '@/services/auth'
 import { setCookie, deleteCookie } from '@/lib/cookie-utils'
 
@@ -59,15 +62,19 @@ export const useAuth = () => {
   }, [])
 
   const logoutUser = useCallback(async () => {
-    try {
-      await authService.logout()
-    } catch (error) {
-      console.error('Logout API call failed:', error)
-    } finally {
-      // Always clear local state even if API fails
-      dispatch(logout())
-      deleteCookie('role')
-    }
+    // Handle logout entirely on frontend - no API call needed
+    console.log('🚪 [useAuth] Logging out user and clearing all stats (frontend only)')
+    
+    // Clear all Redux stores
+    dispatch(logout()) // Clear auth data
+    dispatch(clearSellerProfile()) // Clear seller data
+    dispatch(clearCompare()) // Clear compare data
+    dispatch(clearFilters()) // Clear product filters
+    dispatch(clearCurrentProduct()) // Clear current product
+    dispatch(clearSearchResults()) // Clear search results
+    
+    // Clear cookies
+    deleteCookie('role')
   }, [dispatch])
 
   const refreshToken = useCallback(async () => {

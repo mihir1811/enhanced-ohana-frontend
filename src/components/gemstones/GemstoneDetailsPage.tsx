@@ -19,12 +19,14 @@ import {
   AlertCircle,
   Camera,
   Play,
+  MessageSquare,
 } from "lucide-react";
 import { GemstonItem } from "@/services/gemstoneService";
 import WishlistButton from "@/components/shared/WishlistButton";
 import { cartService } from "@/services/cartService";
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
+import { useRouter } from 'next/navigation'
 
 interface GemstoneDetailsPageProps {
   gemstone: GemstonItem | null;
@@ -38,9 +40,10 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
     "overview" | "specifications" | "certification"
   >("overview");
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const router = useRouter();
 
   // Get authentication token from Redux store
-  const { token } = useSelector((state: RootState) => state.auth);
+  const { token, user } = useSelector((state: RootState) => state.auth);
 
   const handleAddToCart = async () => {
     if (!gemstone) return;
@@ -67,6 +70,73 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
       setIsAddingToCart(false);
     }
   };
+
+  const handleChatWithSeller = async () => {
+    console.log('🔍 [GemstoneChat] Starting chat with seller process...')
+    console.log('🔍 [GemstoneChat] Gemstone data:', {
+      gemstone,
+      sellerId: gemstone?.seller?.id,
+      directSellerId: gemstone?.sellerId,
+      hasSellerObject: !!gemstone?.seller,
+      sellerObject: gemstone?.seller
+    })
+    
+    // Try to get seller ID from multiple possible locations
+    const sellerId = gemstone?.seller?.id || gemstone?.sellerId
+    
+    console.log('🔍 [GemstoneChat] Resolved seller ID:', sellerId)
+    
+    if (!sellerId) {
+      console.error('❌ [GemstoneChat] No seller information available', { 
+        gemstone: gemstone,
+        sellerId: gemstone?.seller?.id,
+        directSellerId: gemstone?.sellerId
+      })
+      alert('No seller information available for this gemstone.')
+      return
+    }
+
+    if (!user) {
+      console.log('⚠️ [GemstoneChat] User not logged in, redirecting to login')
+      router.push('/login')
+      return
+    }
+
+    console.log('✅ [GemstoneChat] User authenticated:', user.id)
+
+    try {
+      // Navigate to main chat page with seller pre-selected
+      const productId = gemstone.id
+      const productName = gemstone.name || `${gemstone.caratWeight}ct ${gemstone.shape} ${gemstone.gemType}`
+      
+      const chatUrl = `/user/chat?sellerId=${sellerId}&productId=${productId}&productType=gemstone&productName=${encodeURIComponent(productName)}`
+      console.log('🚀 [GemstoneChat] Navigating to chat:', { 
+        sellerId, 
+        productId, 
+        productName, 
+        chatUrl,
+        encodedProductName: encodeURIComponent(productName)
+      })
+      
+      router.push(chatUrl)
+    } catch (error) {
+      console.error('❌ [GemstoneChat] Failed to initiate gemstone chat:', error)
+      // Still navigate to chat page, let it handle the error
+      const productId = gemstone.id
+      const productName = gemstone.name || `${gemstone.caratWeight}ct ${gemstone.shape} ${gemstone.gemType}`
+      const chatUrl = `/user/chat?sellerId=${sellerId}&productId=${productId}&productType=gemstone&productName=${encodeURIComponent(productName)}`
+      console.log('🔄 [GemstoneChat] Fallback navigation:', chatUrl)
+      router.push(chatUrl)
+    }
+  };
+
+  console.log('Gemstone data for chat debug:', { 
+    gemstone, 
+    sellerId: gemstone?.seller?.id, 
+    directSellerId: gemstone?.sellerId,
+    hasSeller: !!gemstone?.seller,
+    hasDirectSellerId: !!gemstone?.sellerId
+  });
 
   if (!gemstone) {
     return (
@@ -322,7 +392,14 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
               <span>{isAddingToCart ? 'Adding...' : 'Add to Cart'}</span>
             </button>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
+              <button 
+                onClick={handleChatWithSeller}
+                className="flex items-center justify-center space-x-2 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>Chat</span>
+              </button>
               <button className="flex items-center justify-center space-x-2 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
                 <Share2 className="w-4 h-4" />
                 <span>Share</span>
