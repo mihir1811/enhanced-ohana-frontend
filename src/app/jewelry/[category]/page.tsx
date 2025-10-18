@@ -718,7 +718,6 @@ export default function JewelryCategoryPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [showFilters, setShowFilters] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [pagination, setPagination] = useState({
     page: 1,
@@ -765,7 +764,7 @@ export default function JewelryCategoryPage() {
   const getCategoryFilters = () => {
     const categoryKey = category as keyof typeof CATEGORY_FILTERS
     const filters = CATEGORY_FILTERS[categoryKey] || {}
-    return filters as any // Type assertion to avoid complex union type issues
+    return filters as any // Type assertion needed for complex union types
   }
 
   const categoryFilters = getCategoryFilters()
@@ -885,7 +884,7 @@ export default function JewelryCategoryPage() {
   }
 
   // Handle filter changes
-  const handleFilterChange = (filterType: keyof JewelryFilters, value: any) => {
+  const handleFilterChange = (filterType: keyof JewelryFilters, value: string | string[] | { min: number; max: number }) => {
     setFilters(prev => ({
       ...prev,
       [filterType]: value
@@ -980,7 +979,7 @@ export default function JewelryCategoryPage() {
                 <div className="flex flex-wrap gap-2">
                   {/* Ring Types */}
                   {(filters.ringTypes || []).map(ringType => {
-                    const ringTypeLabel = categoryFilters.ringTypes?.find((r: any) => r.value === ringType)?.label || ringType
+                    const ringTypeLabel = categoryFilters.ringTypes?.find((r: FilterOption) => r.value === ringType)?.label || ringType
                     return (
                       <span key={ringType} className="inline-flex items-center gap-1 px-3 py-1 bg-rose-100 text-rose-800 text-sm rounded-full">
                         Ring: {ringTypeLabel}
@@ -1044,7 +1043,7 @@ export default function JewelryCategoryPage() {
                 </button>
                 
                 {/* Brand Logo Buttons */}
-                {categoryFilters.brands.map((brand: any) => {
+                {categoryFilters.brands.map((brand: FilterOption) => {
                   const isSelected = filters.brands?.includes(brand.value) || false
                   const logoPath = WATCH_BRAND_LOGOS[brand.value as keyof typeof WATCH_BRAND_LOGOS]
                   
@@ -1111,7 +1110,7 @@ export default function JewelryCategoryPage() {
             <h3 className="text-lg font-semibold text-slate-900 mb-4">Ring Types</h3>
             <div className="relative">
               <div className="flex overflow-x-auto scrollbar-hide gap-3 pb-2">
-                {categoryFilters.ringTypes.map((ringType: any) => {
+                {categoryFilters.ringTypes.map((ringType: FilterOption) => {
                   const isSelected = filters.ringTypes?.includes(ringType.value) || false
 
                   return (

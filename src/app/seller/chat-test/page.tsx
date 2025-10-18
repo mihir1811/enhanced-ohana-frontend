@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react'
 import { useAppSelector } from '@/store/hooks'
 import { useSocket } from '@/components/chat/SocketProvider'
-import { chatService } from '@/services/chat.service'
-import { MessageSquare, Send, User, Wifi } from 'lucide-react'
+import { chatService, type ChatMessageDto, type ChatConversation } from '@/services/chat.service'
+import { MessageSquare, Send, Wifi } from 'lucide-react'
 
 /**
  * Test page for verifying seller-to-user chat functionality
@@ -20,8 +20,8 @@ export default function SellerChatTestPage() {
   
   const [testUserId, setTestUserId] = useState('')
   const [testMessage, setTestMessage] = useState('')
-  const [messages, setMessages] = useState<any[]>([])
-  const [conversations, setConversations] = useState<any[]>([])
+  const [messages, setMessages] = useState<ChatMessageDto[]>([])
+  const [conversations, setConversations] = useState<ChatConversation[]>([])
   const [logs, setLogs] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
 
@@ -46,7 +46,7 @@ export default function SellerChatTestPage() {
   useEffect(() => {
     if (!socket || !connected) return
 
-    const handleNewMessage = (message: any) => {
+    const handleNewMessage = (message: ChatMessageDto) => {
       addLog(`📨 Received message: ${JSON.stringify(message)}`)
       setMessages(prev => [...prev, message])
     }
@@ -74,7 +74,7 @@ export default function SellerChatTestPage() {
       addLog(`📋 Conversations data: ${JSON.stringify(response.data, null, 2)}`)
       
       if (response.data) {
-        const userConversations = response.data.filter((conv: any) => 
+        const userConversations = response.data.filter((conv: ChatConversation) => 
           conv.participantRole?.toLowerCase() === 'user'
         )
         setConversations(userConversations)
@@ -115,12 +115,17 @@ export default function SellerChatTestPage() {
       )
       
       // Add message locally for immediate feedback
-      const localMessage = {
+      const localMessage: ChatMessageDto = {
         id: `local-${Date.now()}`,
         fromId: user.id,
         toId: testUserId,
         message: testMessage,
+        messageType: 'TEXT',
         createdAt: new Date().toISOString(),
+        deletedBySender: false,
+        deletedByReceiver: false,
+        isRead: false,
+        readAt: null,
         from: { id: user.id, name: 'You (Seller)', role: 'seller' },
         to: { id: testUserId, name: 'Test User', role: 'user' }
       }

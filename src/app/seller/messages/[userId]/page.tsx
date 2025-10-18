@@ -8,8 +8,8 @@ import { useAppSelector } from '@/store/hooks'
 import { toast } from 'react-hot-toast'
 import { useSocket } from '@/components/chat/SocketProvider'
 import { CHAT_EVENTS } from '@/components/chat/socket'
-import { chatService } from '@/services/chat.service'
-import { extractMessageArray, normalizeMessageDto, formatMessageTime, extractSenderName } from '@/services/chat.utils'
+import { chatService, type ChatMessageDto } from '@/services/chat.service'
+import { formatMessageTime, extractSenderName } from '@/services/chat.utils'
 
 type ChatMessage = {
   id: string
@@ -119,17 +119,17 @@ export default function SellerChatWithUserPage() {
   // Listen for incoming messages
   useEffect(() => {
     if (!socket) return
-    const onIncoming = (payload: any) => {
+    const onIncoming = (payload: ChatMessageDto) => {
       console.log('[chat:seller->user] on MESSAGE:', payload)
       try {
-        const text = payload?.text ?? payload?.message ?? ''
-        const ts = payload?.timestamp ?? (payload?.createdAt ? Date.parse(payload.createdAt) : Date.now())
-        const fromUserId = payload?.fromUserId ?? payload?.fromId ?? payload?.from?.id
+        const text = payload?.message ?? ''
+        const ts = payload?.createdAt ? Date.parse(payload.createdAt) : Date.now()
+        const fromUserId = payload?.fromId ?? payload?.from?.id
         const myId = user?.id
         const isFromMe = myId && (String(fromUserId) === String(myId))
         
         // Only process messages relevant to this chat
-        const msgUserId = payload?.toUserId ?? payload?.toId
+        const msgUserId = payload?.toId
         if (msgUserId && String(msgUserId) !== String(userId)) {
           return // Not for this user
         }
@@ -142,9 +142,10 @@ export default function SellerChatWithUserPage() {
           senderName: isFromMe ? user?.name : userName
         }])
         
-        if (payload?.chatId && !serverChatId) {
-          setServerChatId(payload.chatId)
-        }
+        // Note: chatId property not available in ChatMessageDto interface
+        // if (payload?.chatId && !serverChatId) {
+        //   setServerChatId(payload.chatId)
+        // }
       } catch (e) {
         console.warn('Failed to process incoming message:', e)
       }

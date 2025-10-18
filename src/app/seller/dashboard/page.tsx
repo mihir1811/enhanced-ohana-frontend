@@ -37,7 +37,7 @@ export default function SellerDashboardPage() {
             className="mt-2 text-lg"
             style={{ color: 'var(--muted-foreground)' }}
           >
-            Welcome back! Here's what's happening with your store today.
+            Welcome back! Here&rsquo;s what&rsquo;s happening with your store today.
           </p>
         </div>
         <div className="flex items-center space-x-3">

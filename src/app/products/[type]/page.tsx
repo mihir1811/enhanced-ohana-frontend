@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { GenericProduct } from "@/components/products/GenericProductResults";
 
 const allowedTypes = ["diamonds", "jewelry", "gemstones"];
 
@@ -9,7 +10,7 @@ export default function ProductTypeListingPage() {
   const params = useParams();
   const router = useRouter();
   const type = typeof params.type === 'string' ? params.type : Array.isArray(params.type) ? params.type[0] : '';
-  const [products, setProducts] = useState<any[]>([]); // Replace any with your product type
+  const [products, setProducts] = useState<GenericProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,8 +22,22 @@ export default function ProductTypeListingPage() {
     setLoading(true);
     setTimeout(() => {
       setProducts([
-        { id: 1, name: `${type} Product 1` },
-        { id: 2, name: `${type} Product 2` },
+        { 
+          id: "1", 
+          name: `${type} Product 1`, 
+          price: 1000, 
+          images: [], 
+          category: type,
+          type: "standard"
+        },
+        { 
+          id: "2", 
+          name: `${type} Product 2`, 
+          price: 2000, 
+          images: [], 
+          category: type,
+          type: "premium"
+        },
       ]);
       setLoading(false);
     }, 1000);

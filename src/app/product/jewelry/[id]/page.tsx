@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import JewelryDetailsPage from '@/components/jewelry/JewelryDetailsPage';
-import { jewelryService } from '@/services/jewelryService';
+import { jewelryService, JewelryItem } from '@/services/jewelryService';
 import NavigationUser from '@/components/Navigation/NavigationUser';
 import Footer from '@/components/Footer';
 import { SECTION_WIDTH } from '@/lib/constants';
@@ -11,7 +11,7 @@ import { SECTION_WIDTH } from '@/lib/constants';
 export default function JewelryDetailPage() {
   const params = useParams();
   const jewelryId = params?.id as string;
-  const [jewelry, setJewelry] = useState<any>(null);
+  const [jewelry, setJewelry] = useState<JewelryItem | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

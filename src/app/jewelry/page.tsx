@@ -225,8 +225,8 @@ export default function JewelryHomePage() {
             </div>
             
             <blockquote className="text-2xl md:text-3xl font-light text-slate-700 mb-8 leading-relaxed">
-              "The quality and craftsmanship exceeded all expectations. 
-              This ring will be passed down through generations."
+              &ldquo;The quality and craftsmanship exceeded all expectations. 
+              This ring will be passed down through generations.&rdquo;
             </blockquote>
             
             <div>
