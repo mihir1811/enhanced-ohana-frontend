@@ -13,7 +13,7 @@ export default function SellerMessagesPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { token, user } = useAppSelector((s) => s.auth)
-  const { connected, socket, sendMessage: sendSocketMessage, register, onMessage } = useSocket()
+  const { connected, socket, register, onMessage } = useSocket()
   
   // State management
   const [search, setSearch] = useState('')
@@ -64,69 +64,63 @@ export default function SellerMessagesPage() {
     }
   }, [socket, connected, user?.id, register])
 
-  // Load conversations
-  useEffect(() => {
-    let cancelled = false
-    
-    const loadConversations = async () => {
-      if (!isSeller || !token) {
-        console.log('⚠️ [SellerMessages] No seller access or token, skipping conversation load')
-        return
-      }
-      
-      console.log('🔄 [SellerMessages] Starting to load conversations...', { userId: user?.id, userRole: user?.role })
-      setLoading(true)
-      setError(null)
-      
-      try {
-        const response = await chatService.getConversations({ limit: 50, page: 1 }, token, user?.id)
-        
-        console.log('📡 [SellerMessages] getConversations response:', response)
-        
-        if (!cancelled && response.data) {
-          console.log(`📊 [SellerMessages] Processing ${response.data.length} conversations`)
-          
-          // Filter conversations to show only user-to-seller chats (where participant is user)
-          const userConversations = response.data.filter(conv => 
-            conv.participantRole.toLowerCase() === 'user'
-          )
-          
-          console.log(`🎯 [SellerMessages] Filtered user conversations: ${userConversations.length}`, userConversations)
-          
-          setConversations(userConversations)
-          
-          // Auto-select conversation if userId provided in URL
-          if (preSelectedUserId) {
-            console.log(`🔍 [SellerMessages] Looking for preselected user: ${preSelectedUserId}`)
-            const preSelected = userConversations.find(conv => 
-              conv.participantId === preSelectedUserId
-            )
-            if (preSelected) {
-              console.log('✅ [SellerMessages] Found and selecting preselected conversation:', preSelected)
-              setSelectedConversation(preSelected)
-              setMessages(preSelected.messages || [])
-            } else {
-              console.log('❌ [SellerMessages] Preselected user not found in conversations')
-            }
-          }
-        } else {
-          console.log('⚠️ [SellerMessages] No conversation data received')
-        }
-      } catch (err) {
-        console.error('❌ [SellerMessages] Failed to load conversations:', err)
-        if (!cancelled) {
-          setError('Failed to load conversations')
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false)
-        }
-      }
+  // Load conversations function
+  const loadConversations = useCallback(async () => {
+    if (!isSeller || !token) {
+      console.log('⚠️ [SellerMessages] No seller access or token, skipping conversation load')
+      return
     }
-
-    loadConversations()
-    return () => { cancelled = true }
+    
+    console.log('🔄 [SellerMessages] Starting to load conversations...', { userId: user?.id, userRole: user?.role })
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const response = await chatService.getConversations({ limit: 50, page: 1 }, token, user?.id)
+      
+      console.log('📡 [SellerMessages] getConversations response:', response)
+      
+      if (response.data) {
+        console.log(`📊 [SellerMessages] Processing ${response.data.length} conversations`)
+        
+        // Filter conversations to show only user-to-seller chats (where participant is user)
+        const userConversations = response.data.filter(conv => 
+          conv.participantRole.toLowerCase() === 'user'
+        )
+        
+        console.log(`🎯 [SellerMessages] Filtered user conversations: ${userConversations.length}`, userConversations)
+        
+        setConversations(userConversations)
+        
+        // Auto-select conversation if userId provided in URL
+        if (preSelectedUserId) {
+          console.log(`🔍 [SellerMessages] Looking for preselected user: ${preSelectedUserId}`)
+          const preSelected = userConversations.find(conv => 
+            conv.participantId === preSelectedUserId
+          )
+          if (preSelected) {
+            console.log('✅ [SellerMessages] Found and selecting preselected conversation:', preSelected)
+            setSelectedConversation(preSelected)
+            setMessages(preSelected.messages || [])
+          } else {
+            console.log('❌ [SellerMessages] Preselected user not found in conversations')
+          }
+        }
+      } else {
+        console.log('⚠️ [SellerMessages] No conversation data received')
+      }
+    } catch (err) {
+      console.error('❌ [SellerMessages] Failed to load conversations:', err)
+      setError('Failed to load conversations')
+    } finally {
+      setLoading(false)
+    }
   }, [token, isSeller, preSelectedUserId, user])
+
+  // Load conversations on mount
+  useEffect(() => {
+    loadConversations()
+  }, [loadConversations])
 
   // Handle incoming messages via WebSocket through SocketProvider
   useEffect(() => {
@@ -137,15 +131,15 @@ export default function SellerMessagesPage() {
     
     console.log('✅ [SellerMessages] Setting up message listener')
 
-    const handleNewMessage = (message: any) => {
+    const handleNewMessage = (message: ChatMessageDto) => {
       console.log('📨 [SellerMessages] Received new message:', message)
       console.log('🔍 [SellerMessages] Current user ID:', user?.id)
       console.log('🔍 [SellerMessages] Selected conversation:', selectedConversation?.participantId)
       
       // Handle different possible message structures from backend
-      const fromId = String(message.fromId || message.fromUserId || message.from?.id || '')
-      const toId = String(message.toId || message.toUserId || message.to?.id || '')
-      const messageText = String(message.message || message.text || '')
+      const fromId = String(message.fromId || message.from?.id || '')
+      const toId = String(message.toId || message.to?.id || '')
+      const messageText = String(message.message || '')
       
       // Safety check for message structure
       if (!fromId || !toId || !messageText) {
@@ -165,7 +159,7 @@ export default function SellerMessagesPage() {
         toId,
         message: messageText,
         messageType: message.messageType || 'TEXT',
-        createdAt: message.createdAt || message.timestamp || new Date().toISOString(),
+        createdAt: message.createdAt || new Date().toISOString(),
         deletedBySender: message.deletedBySender || false,
         deletedByReceiver: message.deletedByReceiver || false,
         isRead: message.isRead || false,
@@ -173,13 +167,13 @@ export default function SellerMessagesPage() {
         fileUrl: message.fileUrl || null,
         from: {
           id: fromId,
-          name: String(message.from?.name || message.fromName || 'Unknown User'),
-          role: String(message.from?.role || message.fromRole || 'user')
+          name: String(message.from?.name || 'Unknown User'),
+          role: String(message.from?.role || 'user')
         },
         to: {
           id: toId,
-          name: String(message.to?.name || message.toName || 'Unknown User'),
-          role: String(message.to?.role || message.toRole || 'seller')
+          name: String(message.to?.name || 'Unknown User'),
+          role: String(message.to?.role || 'user')
         }
       }
       
@@ -393,7 +387,7 @@ export default function SellerMessagesPage() {
     } finally {
       setSendingMessage(false)
     }
-  }, [messageText, selectedConversation, sendingMessage, user, socket, connected])
+  }, [messageText, selectedConversation, sendingMessage, user, socket, connected, messages.length])
 
   // Load messages for a conversation with pagination
   const loadConversationMessages = useCallback(async (conversation: ChatConversation, page: number = 1, append: boolean = false) => {
@@ -603,7 +597,23 @@ export default function SellerMessagesPage() {
             <p className="text-xs text-gray-500 mt-1">Customers who messaged you</p>
           </div>
           <div className="p-3">
-            {loading ? (
+            {error ? (
+              <div className="p-8 text-center">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-red-600 text-xl">!</span>
+                </div>
+                <p className="text-red-600 mb-2">{error}</p>
+                <button 
+                  onClick={() => {
+                    setError(null)
+                    loadConversations()
+                  }}
+                  className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : loading ? (
               <div className="p-8 text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                 <p className="text-gray-500 mt-2">Loading conversations...</p>
@@ -613,7 +623,7 @@ export default function SellerMessagesPage() {
                 {search ? (
                   <>
                     <Search className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-500">No conversations found matching "{search}"</p>
+                    <p className="text-gray-500">No conversations found matching &ldquo;{search}&rdquo;</p>
                   </>
                 ) : (
                   <>

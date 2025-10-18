@@ -4,7 +4,6 @@ import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAppSelector } from '@/store/hooks'
 import { chatService } from '@/services/chat.service'
-import { diamondService } from '@/services/diamondService'
 import type { ChatConversation, ChatMessageDto } from '@/services/chat.service'
 import { MessageSquare, Search, Wifi, User, Send } from 'lucide-react'
 import { useSocket } from '@/components/chat/SocketProvider'
@@ -14,7 +13,7 @@ export default function UserMessagesPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { token, user } = useAppSelector((s) => s.auth)
-  const { connected, socket, sendMessage: sendSocketMessage, register, onMessage } = useSocket()
+  const { connected, socket, register, onMessage } = useSocket()
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)
   const [conversations, setConversations] = useState<ChatConversation[]>([])
@@ -25,7 +24,6 @@ export default function UserMessagesPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
   // Auto-selection state to prevent duplicate processing
-  const [autoSelectionProcessed, setAutoSelectionProcessed] = useState(false)
   const autoSelectionAttemptedRef = useRef<string | null>(null)
   
   // Rate limiting for message sending
@@ -64,7 +62,7 @@ export default function UserMessagesPage() {
   useEffect(() => {
     if (!socket) return
 
-    const handleError = (error: any) => {
+    const handleError = (error: { pattern?: string; data?: unknown; cause?: unknown; message?: string }) => {
       console.error('🚨 [UserChat] Socket error received:', error)
       
       // Check if this is a CHAT_EVENT error
@@ -105,38 +103,6 @@ export default function UserMessagesPage() {
     productName: productName ? decodeURIComponent(productName) : null,
     productType
   })
-
-  // Reliable function to find existing conversation
-  const findExistingConversation = useCallback((sellerId: string): ChatConversation | null => {
-    if (!sellerId || !conversations.length) {
-      console.log('🔍 [findExistingConversation] No seller ID or conversations:', { sellerId, conversationsLength: conversations.length })
-      return null
-    }
-
-    console.log('🔍 [findExistingConversation] Searching for seller:', {
-      sellerId,
-      trimmedSellerId: sellerId.trim(),
-      totalConversations: conversations.length,
-      allParticipantIds: conversations.map(c => c.participantId)
-    })
-
-    // Primary check: exact ID match (most reliable)
-    const exactMatch = conversations.find(conv => conv.participantId === sellerId)
-    if (exactMatch) {
-      console.log('✅ [findExistingConversation] Found exact match:', exactMatch)
-      return exactMatch
-    }
-
-    // Secondary check: trimmed ID match (handles whitespace)
-    const trimmedMatch = conversations.find(conv => conv.participantId?.trim() === sellerId?.trim())
-    if (trimmedMatch) {
-      console.log('✅ [findExistingConversation] Found trimmed match:', trimmedMatch)
-      return trimmedMatch
-    }
-
-    console.log('❌ [findExistingConversation] No existing conversation found for seller:', sellerId)
-    return null
-  }, [conversations])
 
   // Load conversations from backend
   useEffect(() => {
@@ -207,7 +173,7 @@ export default function UserMessagesPage() {
     
     loadConversations()
     return () => { cancelled = true }
-  }, [token, user]) // Removed preSelectedSellerId to prevent overwriting local conversations
+  }, [token, user, preSelectedSellerId])
 
   // Handle incoming messages via WebSocket through SocketProvider
   useEffect(() => {
@@ -218,7 +184,7 @@ export default function UserMessagesPage() {
     
     console.log('✅ [UserChat] Setting up message listener for user:', user?.id)
 
-    const handleNewMessage = (message: any) => {
+    const handleNewMessage = (message: ChatMessageDto) => {
       console.log('📨 [UserChat] Received new message:', message)
       console.log('🔍 [UserChat] Current user ID:', user?.id)
       console.log('🔍 [UserChat] Socket connected:', connected)
@@ -228,9 +194,9 @@ export default function UserMessagesPage() {
       console.log('🔥🔥🔥 [UserChat] MESSAGE RECEIVED - THIS SHOULD BE VISIBLE 🔥🔥🔥')
       
       // Handle different possible message structures from backend
-      const fromId = String(message.fromId || message.fromUserId || message.from?.id || '')
-      const toId = String(message.toId || message.toUserId || message.to?.id || '')
-      const messageText = String(message.message || message.text || '')
+      const fromId = String(message.fromId || message.from?.id || '')
+      const toId = String(message.toId || message.to?.id || '')
+      const messageText = String(message.message || '')
       
       // Safety check for message structure
       if (!fromId || !toId || !messageText) {
@@ -250,7 +216,7 @@ export default function UserMessagesPage() {
         toId,
         message: messageText,
         messageType: message.messageType || 'TEXT',
-        createdAt: message.createdAt || message.timestamp || new Date().toISOString(),
+        createdAt: message.createdAt || new Date().toISOString(),
         deletedBySender: message.deletedBySender || false,
         deletedByReceiver: message.deletedByReceiver || false,
         isRead: message.isRead || false,
@@ -258,13 +224,13 @@ export default function UserMessagesPage() {
         fileUrl: message.fileUrl || null,
         from: {
           id: fromId,
-          name: String(message.from?.name || message.fromName || 'Unknown User'),
-          role: String(message.from?.role || message.fromRole || 'seller')
+          name: String(message.from?.name || 'Unknown User'),
+          role: String(message.from?.role || 'seller')
         },
         to: {
           id: toId,
-          name: String(message.to?.name || message.toName || 'Unknown User'),
-          role: String(message.to?.role || message.toRole || 'user')
+          name: String(message.to?.name || 'Unknown User'),
+          role: String(message.to?.role || 'user')
         }
       }
       
@@ -274,7 +240,6 @@ export default function UserMessagesPage() {
       const messageFromId = String(safeMessage.fromId)
       const messageToId = String(safeMessage.toId)
       
-      const isFromCurrentUser = messageFromId === currentUserId
       const shouldAddToCurrentConversation = selectedParticipant && currentUserId && 
           ((messageFromId === selectedParticipant && messageToId === currentUserId) ||
            (messageFromId === currentUserId && messageToId === selectedParticipant))
@@ -543,7 +508,7 @@ export default function UserMessagesPage() {
       
       // Note: Messages will be marked as read after they are loaded in loadConversationMessages
     }
-  }, [conversations, user, token, loadConversationMessages])
+  }, [conversations, loadConversationMessages])
 
   // Reset auto-selection state when seller ID changes
   useEffect(() => {
@@ -553,7 +518,6 @@ export default function UserMessagesPage() {
     })
     
     if (preSelectedSellerId !== autoSelectionAttemptedRef.current) {
-      setAutoSelectionProcessed(false)
       autoSelectionAttemptedRef.current = null
     }
   }, [preSelectedSellerId])
@@ -590,7 +554,6 @@ export default function UserMessagesPage() {
       })
       
       handleSelectConversation(preSelectedSellerId)
-      setAutoSelectionProcessed(true)
     } else {
       // Seller does NOT exist in conversations - create new box
       console.log('🆕 [UserChat] Seller NOT in conversations - creating new box:', {
@@ -630,8 +593,6 @@ export default function UserMessagesPage() {
           console.log('📩 [UserChat] Pre-filling welcome message:', welcomeMessage)
           setNewMessage(welcomeMessage)
         }
-        
-        setAutoSelectionProcessed(true)
       }, 100) // Small delay to ensure state update is processed
     }
   }, [preSelectedSellerId, conversations, user?.id, loading, handleSelectConversation, productName, productType])
@@ -838,7 +799,7 @@ export default function UserMessagesPage() {
       // Re-add the message to input on error
       setNewMessage(messageText)
     }
-  }, [newMessage, selectedParticipantId, user, socket, sendSocketMessage, filteredConversations])
+  }, [newMessage, selectedParticipantId, user, socket, filteredConversations])
 
   if (!token || !user) {
     return (
@@ -968,7 +929,7 @@ export default function UserMessagesPage() {
                 {search ? (
                   <>
                     <Search className="w-12 h-12 text-gray-400 mb-4" />
-                    <p className="text-gray-600 mb-2">No conversations found for "{search}"</p>
+                    <p className="text-gray-600 mb-2">No conversations found for &ldquo;{search}&rdquo;</p>
                     <button 
                       onClick={() => setSearch('')}
                       className="text-blue-600 hover:text-blue-700 text-sm font-medium"

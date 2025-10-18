@@ -66,7 +66,7 @@ export class ErrorBoundary extends Component<Props, State> {
               className="text-sm mb-4"
               style={{ color: 'var(--muted-foreground)' }}
             >
-              We're sorry, but an unexpected error occurred. Please try refreshing the page.
+              We&rsquo;re sorry, but an unexpected error occurred. Please try refreshing the page.
             </p>
             <button
               onClick={() => window.location.reload()}

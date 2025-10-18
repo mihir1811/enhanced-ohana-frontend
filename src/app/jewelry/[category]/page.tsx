@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
-  Filter, Grid, List, Search, X, Heart, ShoppingCart,
+  Grid, List, Search, X, ShoppingCart,
   Eye, MapPin, Star, Loader2, ChevronDown, ChevronUp,
   ChevronLeft, ChevronRight
 } from 'lucide-react';
@@ -12,6 +12,7 @@ import Footer from '@/components/Footer';
 import { jewelryService } from '@/services/jewelryService';
 import Image from 'next/image';
 import Slider from 'rc-slider';
+// @ts-ignore TS7016: Could not find a declaration file for module 'rc-slider/assets/index.css'.
 import 'rc-slider/assets/index.css';
 import debounce from 'lodash.debounce';
 import WishlistButton from '@/components/shared/WishlistButton';
@@ -47,7 +48,13 @@ interface JewelryItem {
   image5?: string | null;
   image6?: string | null;
   sellerId: string;
-  stones?: any[];
+  stones?: Array<{
+    type?: string;
+    count?: number;
+    weight?: number;
+    color?: string;
+    clarity?: string;
+  }>;
   isOnAuction?: boolean;
 }
 
@@ -683,8 +690,6 @@ const CATEGORY_FILTERS = {
   }
 };
 
-const CERTIFICATION_OPTIONS = ['GIA', 'AGS', 'SSEF', 'Gübelin', 'AGL']
-
 const SORT_OPTIONS = [
   { value: '-createdAt', label: 'Newest First' },
   { value: 'createdAt', label: 'Oldest First' },
@@ -761,10 +766,10 @@ export default function JewelryCategoryPage() {
   const [localPriceRange, setLocalPriceRange] = useState({ min: 0, max: 50000 })
 
   // Get category-specific filter options with proper typing
-  const getCategoryFilters = () => {
+  const getCategoryFilters = (): Record<string, Array<{label: string; value: string}>> => {
     const categoryKey = category as keyof typeof CATEGORY_FILTERS
     const filters = CATEGORY_FILTERS[categoryKey] || {}
-    return filters as any // Type assertion needed for complex union types
+    return filters
   }
 
   const categoryFilters = getCategoryFilters()
@@ -808,14 +813,18 @@ export default function JewelryCategoryPage() {
 
   // Debounced price range update function
   const debouncedPriceRangeUpdate = useCallback(
-    debounce((newPriceRange: { min: number; max: number }) => {
-      setFilters(prev => ({
-        ...prev,
-        priceRange: newPriceRange
-      }))
-      setPagination(prev => ({ ...prev, page: 1 }))
-    }, 500), // 500ms delay
-    []
+    (newPriceRange: { min: number; max: number }) => {
+      const debouncedFn = debounce((range: { min: number; max: number }) => {
+        setFilters(prev => ({
+          ...prev,
+          priceRange: range
+        }))
+        setPagination(prev => ({ ...prev, page: 1 }))
+      }, 500)
+      
+      debouncedFn(newPriceRange)
+    },
+    [setFilters, setPagination]
   )
 
   // Handle price range change with immediate UI update and debounced API call
@@ -870,7 +879,7 @@ export default function JewelryCategoryPage() {
     }
     console.log('Query params:', params) // Debug log
     return params
-  }, [category, searchQuery, pagination.page, pagination.limit, filters])
+  }, [searchQuery, pagination.page, pagination.limit, filters])
 
   // Load data on mount and filter changes
   useEffect(() => {
@@ -1768,7 +1777,7 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
       {/* No Results */}
       {searchQuery && filteredOptions.length === 0 && (
         <div className="text-center py-4 text-slate-500 text-sm">
-          No options found for "{searchQuery}"
+          No options found for &ldquo;{searchQuery}&rdquo;
         </div>
       )}
 
@@ -1783,182 +1792,6 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
 };
 
 // Enhanced Range Component
-interface RangeInputProps {
-  title: string;
-  min: number;
-  max: number;
-  value: { min: number; max: number };
-  onChange: (value: { min: number; max: number }) => void;
-  currency?: string;
-  step?: number;
-}
-
-const RangeInput: React.FC<RangeInputProps> = ({
-  title,
-  min,
-  max,
-  value,
-  onChange,
-  currency = '$',
-  step = 1
-}) => {
-  const [localValue, setLocalValue] = useState(value);
-
-  useEffect(() => {
-    setLocalValue(value);
-  }, [value]);
-
-  const handleInputChange = (type: 'min' | 'max', inputValue: string) => {
-    const numValue = Number(inputValue) || 0;
-    const newValue = {
-      ...localValue,
-      [type]: numValue
-    };
-    setLocalValue(newValue);
-  };
-
-  const handleBlur = () => {
-    // Ensure min doesn't exceed max and vice versa
-    const correctedValue = {
-      min: Math.min(localValue.min, localValue.max),
-      max: Math.max(localValue.min, localValue.max)
-    };
-    onChange(correctedValue);
-  };
-
-  const handleRangeChange = (type: 'min' | 'max', rangeValue: string) => {
-    const numValue = Number(rangeValue);
-    const newValue = {
-      ...localValue,
-      [type]: numValue
-    };
-
-    // Auto-correct ranges
-    if (type === 'min' && numValue > localValue.max) {
-      newValue.max = numValue;
-    }
-    if (type === 'max' && numValue < localValue.min) {
-      newValue.min = numValue;
-    }
-
-    setLocalValue(newValue);
-    onChange(newValue);
-  };
-
-  return (
-    <div className="space-y-4">
-      {/* Input Fields */}
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">
-            Min {title}
-          </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 text-sm">
-              {currency}
-            </span>
-            <input
-              type="number"
-              min={min}
-              max={max}
-              step={step}
-              value={localValue.min === min ? '' : localValue.min}
-              onChange={(e) => handleInputChange('min', e.target.value)}
-              onBlur={handleBlur}
-              placeholder={min.toString()}
-              className="w-full pl-8 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">
-            Max {title}
-          </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 text-sm">
-              {currency}
-            </span>
-            <input
-              type="number"
-              min={min}
-              max={max}
-              step={step}
-              value={localValue.max === max ? '' : localValue.max}
-              onChange={(e) => handleInputChange('max', e.target.value)}
-              onBlur={handleBlur}
-              placeholder={max.toString()}
-              className="w-full pl-8 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Range Sliders */}
-      <div className="space-y-3">
-        <div className="relative">
-          <input
-            type="range"
-            min={min}
-            max={max}
-            step={step}
-            value={localValue.min}
-            onChange={(e) => handleRangeChange('min', e.target.value)}
-            className="absolute w-full h-2 bg-transparent range-slider z-10"
-          />
-          <input
-            type="range"
-            min={min}
-            max={max}
-            step={step}
-            value={localValue.max}
-            onChange={(e) => handleRangeChange('max', e.target.value)}
-            className="absolute w-full h-2 bg-transparent range-slider"
-          />
-
-          {/* Range Track */}
-          <div className="relative h-2 bg-slate-200 rounded-lg">
-            <div
-              className="absolute h-2 bg-blue-500 rounded-lg"
-              style={{
-                left: `${((localValue.min - min) / (max - min)) * 100}%`,
-                width: `${((localValue.max - localValue.min) / (max - min)) * 100}%`
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Range Display */}
-        <div className="flex justify-between text-xs text-slate-600">
-          <span>{currency}{localValue.min.toLocaleString()}</span>
-          <span>{currency}{localValue.max.toLocaleString()}</span>
-        </div>
-      </div>
-
-      {/* Quick Selection Buttons */}
-      <div className="flex flex-wrap gap-2">
-        {[
-          { label: 'Under 1K', min: 0, max: 1000 },
-          { label: '1K-5K', min: 1000, max: 5000 },
-          { label: '5K-10K', min: 5000, max: 10000 },
-          { label: '10K+', min: 10000, max: 50000 }
-        ].map((preset) => (
-          <button
-            key={preset.label}
-            onClick={() => onChange({ min: preset.min, max: preset.max })}
-            className={`px-3 py-1 text-xs rounded-full border transition-colors ${localValue.min === preset.min && localValue.max === preset.max
-                ? 'bg-blue-500 text-white border-blue-500'
-                : 'bg-white text-slate-600 border-slate-300 hover:border-blue-300 hover:text-blue-600'
-              }`}
-          >
-            {preset.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-};
-
 // Image Carousel Component
 interface ImageCarouselProps {
   images: (string | null | undefined)[]
@@ -1995,13 +1828,13 @@ function ImageCarousel({ images, alt, className = "" }: ImageCarouselProps) {
 
   return (
     <div className={`relative group ${className}`}>
-      <img
+      <Image
         src={validImages[currentImageIndex]}
         alt={alt}
-        className="w-full h-full object-cover transition-transform duration-300"
+        fill
+        className="object-cover transition-transform duration-300"
         onError={(e) => {
           // Fallback to next image if current one fails
-          const target = e.target as HTMLImageElement;
           const nextIndex = (currentImageIndex + 1) % validImages.length;
           if (nextIndex !== currentImageIndex && validImages[nextIndex]) {
             setCurrentImageIndex(nextIndex);

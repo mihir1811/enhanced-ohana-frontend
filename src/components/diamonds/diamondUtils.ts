@@ -1,6 +1,47 @@
 import { DiamondFilterValues } from './DiamondFilters';
 import { Diamond } from './DiamondResults';
 
+// Interface for API diamond data
+interface ApiDiamondData {
+  id: string | number;
+  shape?: string;
+  caratWeight?: string | number;
+  color?: string;
+  clarity?: string;
+  cut?: string;
+  price?: string | number;
+  certification?: string;
+  certificateNumber?: string | number;
+  fluorescence?: string;
+  polish?: string;
+  symmetry?: string;
+  measurement?: string;
+  table?: string | number;
+  depth?: string | number;
+  gridleMin?: string | number;
+  culetSize?: string | number;
+  origin?: string;
+  image1?: string;
+  image2?: string;
+  image3?: string;
+  image4?: string;
+  image5?: string;
+  image6?: string;
+  videoURL?: string;
+  isSold?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  seller?: {
+    id: string | number;
+    sellerType?: string;
+    companyName?: string;
+    companyLogo?: string;
+  };
+  sellerId?: string;
+  sellerSKU?: string;
+  stockNumber?: string | number;
+}
+
 // Default filter values for each diamond type
 export function getDefaultDiamondFilters(diamondType: 'natural-single' | 'natural-melee' | 'lab-grown-single' | 'lab-grown-melee'): DiamondFilterValues {
   return {
@@ -31,7 +72,7 @@ export function getDefaultDiamondFilters(diamondType: 'natural-single' | 'natura
 }
 
 // Transform API diamond to UI Diamond type
-export function transformApiDiamond(apiDiamond: any): Diamond {
+export function transformApiDiamond(apiDiamond: ApiDiamondData): Diamond {
   let length = 0, width = 0, depth = 0;
   if (typeof apiDiamond.measurement === 'string') {
     const parts = apiDiamond.measurement.split(/x|X|\*/).map(Number);
@@ -63,15 +104,15 @@ export function transformApiDiamond(apiDiamond: any): Diamond {
       apiDiamond.image4,
       apiDiamond.image5,
       apiDiamond.image6,
-    ].filter(Boolean),
+    ].filter((img): img is string => Boolean(img)),
     videoURL: apiDiamond.videoURL,
     isSold: apiDiamond.isSold,
-    createdAt: apiDiamond.createdAt,
-    updatedAt: apiDiamond.updatedAt,
+    createdAt: apiDiamond.createdAt || new Date().toISOString(),
+    updatedAt: apiDiamond.updatedAt || new Date().toISOString(),
     // Add all seller fields for UI
     seller: apiDiamond.seller
       ? {
-          id: apiDiamond.seller.id,
+          id: String(apiDiamond.seller.id),
           sellerType: apiDiamond.seller.sellerType,
           companyName: apiDiamond.seller.companyName,
           companyLogo: apiDiamond.seller.companyLogo,
