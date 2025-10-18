@@ -14,11 +14,40 @@ export interface UpdateSellerInfoPayload {
   gstNumber?: File | null;
 }
 
+export interface SellerInfo {
+  id: string;
+  userId: string;
+  companyName: string;
+  companyLogo?: string;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode: string;
+  panCard?: string;
+  gstNumber?: string;
+  isVerified: boolean;
+  verificationStatus: 'pending' | 'verified' | 'rejected';
+  businessType?: string;
+  description?: string;
+  website?: string;
+  phone?: string;
+  email?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateSellerInfoResponse {
+  message: string;
+  seller: SellerInfo;
+}
+
 class SellerService {
   async updateSellerInfo(
     data: UpdateSellerInfoPayload,
     token: string
-  ): Promise<ApiResponse<any>> {
+  ): Promise<ApiResponse<UpdateSellerInfoResponse>> {
     const formData = new FormData();
     formData.append('companyName', data.companyName);
     if (data.companyLogo) formData.append('companyLogo', data.companyLogo);
@@ -47,7 +76,7 @@ class SellerService {
     return response.json();
   }
 
-  async getSellerInfo(sellerId: string): Promise<ApiResponse<any>> {
+  async getSellerInfo(sellerId: string): Promise<ApiResponse<SellerInfo>> {
     const url = buildApiUrl(API_CONFIG.ENDPOINTS.SELLER.INFO, { seller_id: sellerId });
     const response = await fetch(url, {
       method: 'GET',

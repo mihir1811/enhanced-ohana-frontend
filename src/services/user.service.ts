@@ -14,6 +14,80 @@ export interface UserProfileUpdateData {
   profilePicture?: string
 }
 
+export interface OrderItem {
+  id: string
+  productId: string
+  productName: string
+  productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond'
+  quantity: number
+  price: number
+  totalPrice: number
+  image?: string
+}
+
+export interface UserOrder {
+  id: string
+  userId: string
+  sellerId: string
+  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
+  totalAmount: number
+  shippingAddress: {
+    street: string
+    city: string
+    state: string
+    zipCode: string
+    country: string
+  }
+  items: OrderItem[]
+  createdAt: string
+  updatedAt: string
+  deliveredAt?: string
+  trackingNumber?: string
+}
+
+export interface UserOrdersResponse {
+  orders: UserOrder[]
+  pagination: {
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+  }
+}
+
+export interface SellerSale {
+  id: string
+  orderId: string
+  buyerId: string
+  buyerName: string
+  buyerEmail: string
+  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
+  totalAmount: number
+  commission: number
+  netAmount: number
+  items: OrderItem[]
+  createdAt: string
+  updatedAt: string
+  deliveredAt?: string
+  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded'
+}
+
+export interface SellerSalesResponse {
+  sales: SellerSale[]
+  pagination: {
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+  }
+  summary: {
+    totalSales: number
+    totalRevenue: number
+    totalCommission: number
+    totalNetAmount: number
+  }
+}
+
 export interface SellerRegistrationData {
   businessName: string
   businessRegistration: string
@@ -221,7 +295,7 @@ class UserService {
       limit?: number
       status?: string
     }
-  ): Promise<ApiResponse<any>> {
+  ): Promise<ApiResponse<UserOrdersResponse>> {
     const queryParams = new URLSearchParams()
     
     if (params?.page) queryParams.append('page', params.page.toString())
@@ -253,7 +327,7 @@ class UserService {
       startDate?: string
       endDate?: string
     }
-  ): Promise<ApiResponse<any>> {
+  ): Promise<ApiResponse<SellerSalesResponse>> {
     const queryParams = new URLSearchParams()
     
     if (params?.page) queryParams.append('page', params.page.toString())

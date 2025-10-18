@@ -44,7 +44,7 @@ export interface WishlistItem {
     makingCharge: number;
     tax: number;
     totalPrice: number;
-    attributes: any;
+    attributes: Record<string, unknown>;
     description: string;
     image1?: string;
     image2?: string;
@@ -118,8 +118,8 @@ export const wishlistService = {
   },
 
   // Remove item from wishlist
-  removeFromWishlist: async (wishlistItemId: string, token: string): Promise<ApiResponse<any>> => {
-    return api.delete<any>(`/favorites/${wishlistItemId}`, token);
+  removeFromWishlist: async (wishlistItemId: string, token: string): Promise<ApiResponse<{ message: string }>> => {
+    return api.delete<{ message: string }>(`/favorites/${wishlistItemId}`, token);
   },
 
   // Remove item from wishlist by product ID and type
@@ -127,13 +127,13 @@ export const wishlistService = {
     productId: string | number, 
     productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond', 
     token: string
-  ): Promise<ApiResponse<any>> => {
+  ): Promise<ApiResponse<{ message: string }>> => {
     const requestData = {
       productId: Number(productId),
       productType: productType
     };
     
-    return api.deleteWithBody<any>('/favorites/remove', requestData, token);
+    return api.deleteWithBody<{ message: string }>('/favorites/remove', requestData, token);
   },
 
   // Check if item is in wishlist
@@ -154,8 +154,8 @@ export const wishlistService = {
   },
 
   // Clear entire wishlist
-  clearWishlist: async (token: string): Promise<ApiResponse<any>> => {
-    return api.delete<any>('/favorites/clear', token);
+  clearWishlist: async (token: string): Promise<ApiResponse<{ message: string; count: number }>> => {
+    return api.delete<{ message: string; count: number }>('/favorites/clear', token);
   },
 };
 

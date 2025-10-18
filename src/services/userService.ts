@@ -17,10 +17,33 @@ export interface UpdateUserRequest {
   }
 }
 
+export interface UserData {
+  id?: string;
+  sub?: string;
+  name?: string;
+  email?: string;
+  userName?: string;
+  phone?: string;
+  role?: 'user' | 'seller' | 'admin';
+  profilePicture?: string;
+  isDeleted?: boolean;
+  isVerified?: boolean;
+  isBlocked?: boolean;
+  socketId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  seller?: {
+    id: string;
+    sellerType: string;
+  };
+  iat?: number;
+  exp?: number;
+}
+
 export interface UserUpdateResponse {
   success: boolean
   message: string
-  data?: any
+  data?: UserData
 }
 
 class UserService {
