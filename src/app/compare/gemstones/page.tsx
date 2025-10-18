@@ -4,10 +4,36 @@ import React, { useState } from 'react'
 import { useCompare } from '@/hooks/useCompare'
 import { ArrowLeft, X, Heart, ShoppingCart, Eye, CheckCircle, Info, Grid, List, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { CompareProduct } from '@/features/compare/compareSlice'
+
+// Define types for gemstone data structure
+interface GemstoneData {
+  price?: number | string
+  weight?: number | string
+  gemstoneType?: string
+  origin?: string
+  cut?: string
+  color?: string
+  clarity?: string
+  treatment?: string
+  dimensions?: string
+  shape?: string
+  hardness?: string
+  certification?: string
+  certificateNumber?: string
+  [key: string]: unknown
+}
+
+interface AttributeDefinition {
+  key: string
+  label: string
+  type: 'currency' | 'text'
+  suffix?: string
+}
 
 const ModernGemstoneComparePage = () => {
   const router = useRouter()
-  const { products, removeProduct, clearAll, getProductsByType } = useCompare()
+  const { removeProduct, clearAll, getProductsByType } = useCompare()
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
   const [scrollPosition, setScrollPosition] = useState(0)
 
@@ -54,40 +80,40 @@ const ModernGemstoneComparePage = () => {
     {
       title: 'Basic Information',
       attributes: [
-        { key: 'price', label: 'Price', type: 'currency' },
-        { key: 'weight', label: 'Weight', type: 'text', suffix: 'ct' },
-        { key: 'gemstoneType', label: 'Type', type: 'text' },
-        { key: 'origin', label: 'Origin', type: 'text' }
+        { key: 'price', label: 'Price', type: 'currency' as const },
+        { key: 'weight', label: 'Weight', type: 'text' as const, suffix: 'ct' },
+        { key: 'gemstoneType', label: 'Type', type: 'text' as const },
+        { key: 'origin', label: 'Origin', type: 'text' as const }
       ]
     },
     {
       title: 'Quality & Grading',
       attributes: [
-        { key: 'cut', label: 'Cut', type: 'text' },
-        { key: 'color', label: 'Color', type: 'text' },
-        { key: 'clarity', label: 'Clarity', type: 'text' },
-        { key: 'treatment', label: 'Treatment', type: 'text' }
+        { key: 'cut', label: 'Cut', type: 'text' as const },
+        { key: 'color', label: 'Color', type: 'text' as const },
+        { key: 'clarity', label: 'Clarity', type: 'text' as const },
+        { key: 'treatment', label: 'Treatment', type: 'text' as const }
       ]
     },
     {
       title: 'Measurements',
       attributes: [
-        { key: 'dimensions', label: 'Dimensions', type: 'text' },
-        { key: 'shape', label: 'Shape', type: 'text' },
-        { key: 'hardness', label: 'Hardness', type: 'text' }
+        { key: 'dimensions', label: 'Dimensions', type: 'text' as const },
+        { key: 'shape', label: 'Shape', type: 'text' as const },
+        { key: 'hardness', label: 'Hardness', type: 'text' as const }
       ]
     },
     {
       title: 'Certification',
       attributes: [
-        { key: 'certification', label: 'Lab', type: 'text' },
-        { key: 'certificateNumber', label: 'Certificate #', type: 'text' }
+        { key: 'certification', label: 'Lab', type: 'text' as const },
+        { key: 'certificateNumber', label: 'Certificate #', type: 'text' as const }
       ]
     }
   ]
 
-  const renderAttributeValue = (gemstone: any, attribute: any) => {
-    const value = gemstone.data[attribute.key]
+  const renderAttributeValue = (gemstone: CompareProduct, attribute: AttributeDefinition) => {
+    const value = (gemstone.data as GemstoneData)[attribute.key]
     
     if (!value) {
       return <span className="text-gray-400">N/A</span>
@@ -95,34 +121,34 @@ const ModernGemstoneComparePage = () => {
     
     switch (attribute.type) {
       case 'currency':
-        return <span className="font-bold text-green-600">{formatPrice(value)}</span>
+        return <span className="font-bold text-green-600">{formatPrice(value as number | string)}</span>
       case 'text':
         return (
           <span className="text-sm">
-            {value}{attribute.suffix || ''}
+            {String(value)}{attribute.suffix || ''}
           </span>
         )
       default:
-        return <span className="text-sm">{value}</span>
+        return <span className="text-sm">{value as string}</span>
     }
   }
 
   // Find best value for highlighting
-  const getBestValue = (attribute: any) => {
+  const getBestValue = (attribute: AttributeDefinition) => {
     if (attribute.key === 'price') {
-      return Math.min(...gemstones.map(g => parseFloat(g.data[attribute.key] || Infinity)))
+      return Math.min(...gemstones.map(g => parseFloat(String((g.data as GemstoneData)[attribute.key] || Infinity))))
     }
     if (attribute.key === 'weight') {
-      return Math.max(...gemstones.map(g => parseFloat(g.data[attribute.key] || 0)))
+      return Math.max(...gemstones.map(g => parseFloat(String((g.data as GemstoneData)[attribute.key] || 0))))
     }
     return null
   }
 
-  const isBestValue = (gemstone: any, attribute: any) => {
+  const isBestValue = (gemstone: CompareProduct, attribute: AttributeDefinition) => {
     const bestValue = getBestValue(attribute)
     if (bestValue === null) return false
     
-    const currentValue = parseFloat(gemstone.data[attribute.key] || 0)
+    const currentValue = parseFloat(String((gemstone.data as GemstoneData)[attribute.key] || 0))
     return currentValue === bestValue
   }
 
@@ -279,19 +305,19 @@ const ModernGemstoneComparePage = () => {
                         <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-xs">
                           <span className="text-gray-500 dark:text-gray-400">Weight:</span>
                           <span className="font-semibold text-gray-900 dark:text-white">
-                            {gemstone.data.weight || 'N/A'}
+                            {(gemstone.data as GemstoneData).weight || 'N/A'}
                           </span>
                           <span className="text-gray-500 dark:text-gray-400">Type:</span>
                           <span className="font-semibold text-gray-900 dark:text-white">
-                            {gemstone.data.gemstoneType || 'N/A'}
+                            {(gemstone.data as GemstoneData).gemstoneType || 'N/A'}
                           </span>
                           <span className="text-gray-500 dark:text-gray-400">Color:</span>
                           <span className="font-semibold text-gray-900 dark:text-white">
-                            {gemstone.data.color || 'N/A'}
+                            {(gemstone.data as GemstoneData).color || 'N/A'}
                           </span>
                           <span className="text-gray-500 dark:text-gray-400">Origin:</span>
                           <span className="font-semibold text-gray-900 dark:text-white">
-                            {gemstone.data.origin || 'N/A'}
+                            {(gemstone.data as GemstoneData).origin || 'N/A'}
                           </span>
                         </div>
                       </div>

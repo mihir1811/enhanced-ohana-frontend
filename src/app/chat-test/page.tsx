@@ -3,12 +3,20 @@
 import React, { useEffect, useState } from 'react'
 import { useSocket } from '@/components/chat/SocketProvider'
 import { useAppSelector } from '@/store/hooks'
+import type { ChatMessageDto } from '@/services/chat.service'
+
+// Define types for the test page
+interface ReceivedEvent {
+  timestamp: number;
+  data: ChatMessageDto | Record<string, unknown> | string;
+  type: string;
+}
 
 export default function ChatTestPage() {
   const { connected, socket, sendMessage } = useSocket()
   const { user } = useAppSelector(s => s.auth)
   const [testMessage, setTestMessage] = useState('')
-  const [receivedMessages, setReceivedMessages] = useState<any[]>([])
+  const [receivedMessages, setReceivedMessages] = useState<ReceivedEvent[]>([])
   const [connectionStatus, setConnectionStatus] = useState('Disconnected')
 
   useEffect(() => {
@@ -17,7 +25,7 @@ export default function ChatTestPage() {
     setConnectionStatus(connected ? 'Connected' : 'Disconnected')
 
     // Listen for the exact event name backend sends
-    const handleMessage = (data: any) => {
+    const handleMessage = (data: ChatMessageDto | Record<string, unknown>) => {
       console.log('🎯 [ChatTest] Received MESSAGE event:', data)
       setReceivedMessages(prev => [...prev, {
         timestamp: Date.now(),
@@ -27,7 +35,7 @@ export default function ChatTestPage() {
     }
 
     // Listen for all events to debug
-    const handleAnyEvent = (eventName: string, data: any) => {
+    const handleAnyEvent = (eventName: string, data: ChatMessageDto | Record<string, unknown> | string) => {
       console.log('📨 [ChatTest] Any event received:', { eventName, data })
       setReceivedMessages(prev => [...prev, {
         timestamp: Date.now(),

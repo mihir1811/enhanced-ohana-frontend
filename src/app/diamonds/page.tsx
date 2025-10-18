@@ -107,11 +107,11 @@ const DIAMOND_CONSTANTS = {
   CERTIFICATIONS: filterOptions.certifications,
   FLUORESCENCE_LEVELS: filterOptions.fluorescences,
   POLISH_SYMMETRY_OPTIONS: filterOptions.polish,
-  GIRDLE_OPTIONS: filterOptions.gridleOptions.map((option: any) =>
-    option.split(' ').map((word: any) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+  GIRDLE_OPTIONS: filterOptions.gridleOptions.map((option: string) =>
+    option.split(' ').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
   ),
-  CULET_OPTIONS: filterOptions.culetSizeOptions.map((option: any) =>
-    option.split(' ').map((word: any) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+  CULET_OPTIONS: filterOptions.culetSizeOptions.map((option: string) =>
+    option.split(' ').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
   ),
   CULET_SIZE_OPTIONS: filterOptions.culetSizeOptions,
   OVERTONE_OPTIONS: filterOptions.overTone,
@@ -527,7 +527,7 @@ const MultiSelectFilter = React.memo(({
     orange: 'border-orange-500 bg-orange-50 text-orange-700'
   }), [])
 
-  const fieldMap: Record<string, keyof DiamondSearchForm> = {
+  const fieldMap: Record<string, keyof DiamondSearchForm> = useMemo(() => ({
     'growth method (cvd / hpht)': 'grownMethod',
     'manufacturing process': 'process',
     'fancy colors': 'fancyColors',
@@ -546,7 +546,7 @@ const MultiSelectFilter = React.memo(({
     'origin': 'origin',
     'company': 'company',
     'location': 'location'
-  }
+  }), [])
 
   const memoizedButtons = useMemo(() =>
     options.map(option => {
@@ -785,6 +785,16 @@ export default function DiamondsSearchPage() {
       ...prev,
       [field]: {
         ...(prev[field] as { min: number; max: number }),
+        [type]: value
+      }
+    }))
+  }, [])
+
+  const handleStringRangeChange = useCallback((field: keyof DiamondSearchForm, type: 'min' | 'max', value: string) => {
+    setSearchForm(prev => ({
+      ...prev,
+      [field]: {
+        ...(prev[field] as { min: string; max: string }),
         [type]: value
       }
     }))
@@ -1331,7 +1341,7 @@ export default function DiamondsSearchPage() {
                         <label className="block text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Minimum</label>
                         <select
                           value={searchForm.gridleRange.min}
-                          onChange={(e) => handleRangeChange('gridleRange', 'min', e.target.value as any)}
+                          onChange={(e) => handleStringRangeChange('gridleRange', 'min', e.target.value)}
                           className="w-full p-3 border rounded-lg"
                           style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                         >
@@ -1347,7 +1357,7 @@ export default function DiamondsSearchPage() {
                         <label className="block text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Maximum</label>
                         <select
                           value={searchForm.gridleRange.max}
-                          onChange={(e) => handleRangeChange('gridleRange', 'max', e.target.value as any)}
+                          onChange={(e) => handleStringRangeChange('gridleRange', 'max', e.target.value)}
                           className="w-full p-3 border rounded-lg"
                           style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                         >

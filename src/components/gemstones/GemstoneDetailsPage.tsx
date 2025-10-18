@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import {
   ShoppingCart,
   Share2,
@@ -233,9 +234,11 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
           <div className="relative aspect-square bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl overflow-hidden group border border-gray-200">
             {hasImages ? (
               <>
-                <img
+                <Image
                   src={images[imgIdx]}
                   alt={`${gemstone.gemType} Gemstone`}
+                  width={800}
+                  height={600}
                   className="w-full h-full object-contain p-8 transition-transform duration-500 group-hover:scale-105"
                 />
 
@@ -287,9 +290,11 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <img
+                  <Image
                     src={img}
                     alt={`View ${index + 1}`}
+                    width={120}
+                    height={120}
                     className="w-full h-full object-cover"
                   />
                 </button>
@@ -425,7 +430,7 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as "overview" | "specifications" | "certification")}
                 className={`py-4 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === tab.id
                     ? "border-amber-500 text-amber-600"

@@ -93,11 +93,11 @@ const DIAMOND_CONSTANTS = {
   CERTIFICATIONS: filterOptions.certifications,
   FLUORESCENCE_LEVELS: filterOptions.fluorescences,
   POLISH_SYMMETRY_OPTIONS: filterOptions.polish,
-  GIRDLE_OPTIONS: filterOptions.gridleOptions.map((option: any) => 
-    option.split(' ').map((word: any) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+  GIRDLE_OPTIONS: filterOptions.gridleOptions.map((option: string) => 
+    option.split(' ').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
   ),
-  CULET_OPTIONS: filterOptions.culetSizeOptions.map((option: any) => 
-    option.split(' ').map((word: any) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+  CULET_OPTIONS: filterOptions.culetSizeOptions.map((option: string) => 
+    option.split(' ').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
   ),
   OVERTONE_OPTIONS: filterOptions.overTone,
   INTENSITY_OPTIONS: filterOptions.intensity,
@@ -482,7 +482,7 @@ const MultiSelectFilter = React.memo(({
     orange: 'border-orange-500 bg-orange-50 text-orange-700'
   }), [])
 
-  const fieldMap: Record<string, keyof DiamondSearchForm> = {
+  const fieldMap = useMemo((): Record<string, keyof DiamondSearchForm> => ({
     'growth method (cvd / hpht)': 'grownMethod',
     'fancy colors': 'fancyColors',
     'overtone': 'overtone',
@@ -495,7 +495,7 @@ const MultiSelectFilter = React.memo(({
     'symmetry': 'symmetry',
     'girdle': 'girdle',
     'culet': 'culet'
-  }
+  }), [])
 
   const memoizedButtons = useMemo(() => 
     options.map(option => {

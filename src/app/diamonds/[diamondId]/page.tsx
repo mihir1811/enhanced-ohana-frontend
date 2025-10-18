@@ -8,11 +8,12 @@ import { transformApiDiamond } from '@/components/diamonds/diamondUtils';
 import NavigationUser from '@/components/Navigation/NavigationUser';
 import Footer from '@/components/Footer';
 import { SECTION_WIDTH } from '@/lib/constants';
+import { Diamond } from '@/components/diamonds/DiamondResults';
 
 export default function DiamondDetailPage() {
-  const params = useParams();
+  const params = useParams<{ diamondId: string }>();
   const diamondId = params?.diamondId as string;
-  const [diamond, setDiamond] = useState<any>(null);
+  const [diamond, setDiamond] = useState<Diamond | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
