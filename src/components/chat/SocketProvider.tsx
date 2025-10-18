@@ -4,13 +4,34 @@ import React, { createContext, useContext, useEffect, useMemo, useRef, useState 
 import { createSocket, CHAT_EVENTS, OutgoingMessagePayload } from './socket'
 import { useAppSelector } from '@/store/hooks'
 import { getCookie } from '@/lib/cookie-utils'
+import type { ChatMessageDto } from '@/services/chat.service'
+import { normalizeMessageDto } from '@/services/chat.utils'
+
+interface SocketError extends Error {
+  type?: string;
+  description?: string;
+}
+
+// Raw socket message data - will be normalized to ChatMessageDto
+interface SocketMessage {
+  [key: string]: unknown;
+}
+
+interface ChatEvent {
+  chatId?: string;
+  id?: string;
+  participants?: unknown[];
+  createdBy?: string;
+  initiatedBy?: string;
+  [key: string]: unknown;
+}
 
 type SocketContextValue = {
   socket: ReturnType<typeof createSocket> | null
   connected: boolean
   sendMessage: (payload: OutgoingMessagePayload) => void
   register: (userId: string | number) => void
-  onMessage: (callback: (message: any) => void) => () => void
+  onMessage: (callback: (message: ChatMessageDto) => void) => () => void
 }
 
 const SocketContext = createContext<SocketContextValue | undefined>(undefined)
@@ -19,7 +40,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const { token, user } = useAppSelector((s) => s.auth)
   const [connected, setConnected] = useState(false)
   const socketRef = useRef<ReturnType<typeof createSocket> | null>(null)
-  const messageListenersRef = useRef<Set<(message: any) => void>>(new Set())
+  const messageListenersRef = useRef<Set<(message: ChatMessageDto) => void>>(new Set())
 
   // Establish/teardown socket based on token
   useEffect(() => {
@@ -87,7 +108,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setConnected(false)
     })
     
-    socket.on('connect_error', (err: any) => {
+    socket.on('connect_error', (err: SocketError) => {
       console.error('🚨 [SocketProvider] Connection error:', {
         error: err.message,
         type: err.type,
@@ -97,12 +118,12 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     })
 
     // Basic server error logging
-    socket.on(CHAT_EVENTS.SERVER.ERROR, (err: any) => {
+    socket.on(CHAT_EVENTS.SERVER.ERROR, (err: SocketError) => {
       console.error('🚨 [SocketProvider] Server error received:', err)
     })
 
     // Enhanced message logging and listener notification
-    socket.on(CHAT_EVENTS.SERVER.MESSAGE, (payload: any) => {
+    socket.on(CHAT_EVENTS.SERVER.MESSAGE, (payload: SocketMessage) => {
       console.log('💬 [SocketProvider] Message received (full payload):', payload)
       console.log('💬 [SocketProvider] Message structure check:', {
         hasId: !!payload?.id,
@@ -112,28 +133,31 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         hasToUserId: !!payload?.toUserId,
         hasFrom: !!payload?.from,
         hasTo: !!payload?.to,
-        messageLength: payload?.message?.length || payload?.text?.length || 0
+        messageLength: (typeof payload?.message === 'string' ? payload.message.length : 0) || (typeof payload?.text === 'string' ? payload.text.length : 0)
       })
+      
+      // Normalize raw socket message to ChatMessageDto format
+      const normalizedMessage = normalizeMessageDto(payload)
       
       // Notify all registered message listeners
       messageListenersRef.current.forEach(listener => {
         try {
-          listener(payload)
+          listener(normalizedMessage)
         } catch (error) {
           console.error('🚨 [SocketProvider] Error in message listener:', error)
         }
       })
     })
     
-    socket.on(CHAT_EVENTS.SERVER.READ_RECEIPT, (payload: any) => {
+    socket.on(CHAT_EVENTS.SERVER.READ_RECEIPT, (payload: SocketMessage) => {
       console.log('👁️ [SocketProvider] Read receipt received:', payload)
     })
 
-    socket.on(CHAT_EVENTS.SERVER.CHAT_DELETED, (payload: any) => {
+    socket.on(CHAT_EVENTS.SERVER.CHAT_DELETED, (payload: ChatEvent) => {
       console.log('🗑️ [SocketProvider] Chat deleted event:', payload)
     })
 
-    socket.on(CHAT_EVENTS.SERVER.CHAT_CREATED, (payload: any) => {
+    socket.on(CHAT_EVENTS.SERVER.CHAT_CREATED, (payload: ChatEvent) => {
       console.log('🆕 [SocketProvider] Chat created event:', {
         chatId: payload?.chatId || payload?.id,
         participants: payload?.participants,
@@ -142,8 +166,16 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     })
 
     // Catch-all logger with enhanced details
-    socket.onAny((event: string, ...args: any[]) => {
-      if ([CHAT_EVENTS.SERVER.MESSAGE, CHAT_EVENTS.SERVER.ERROR, CHAT_EVENTS.SERVER.READ_RECEIPT, CHAT_EVENTS.SERVER.CHAT_DELETED, CHAT_EVENTS.SERVER.CHAT_CREATED].includes(event as any)) {
+    socket.onAny((event: string, ...args: unknown[]) => {
+      const knownEvents = [
+        CHAT_EVENTS.SERVER.MESSAGE, 
+        CHAT_EVENTS.SERVER.ERROR, 
+        CHAT_EVENTS.SERVER.READ_RECEIPT, 
+        CHAT_EVENTS.SERVER.CHAT_DELETED, 
+        CHAT_EVENTS.SERVER.CHAT_CREATED
+      ] as string[]
+      
+      if (knownEvents.includes(event)) {
         // already logged above with more details
         return
       }
@@ -215,7 +247,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       
       s.emit(CHAT_EVENTS.CLIENT.CHAT_EVENT, registerPayload)
     },
-    onMessage: (callback: (message: any) => void) => {
+    onMessage: (callback: (message: ChatMessageDto) => void) => {
       messageListenersRef.current.add(callback)
       
       // Return cleanup function
@@ -223,7 +255,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         messageListenersRef.current.delete(callback)
       }
     }
-  }), [connected, token, user])
+  }), [connected, user])
 
   return (
     <SocketContext.Provider value={value}>

@@ -12,6 +12,7 @@ import ThemeSwitcher from '../ThemeSwitcher'
 import MobileSidebar from './MobileSidebar'
 import useNavigation from '@/hooks/useNavigation'
 // @ts-ignore: global CSS side-effect import without TypeScript declarations
+
 import '@/styles/navigation.css'
 import { SECTION_WIDTH } from '@/lib/constants'
 import { cartService, type Cart } from '@/services'

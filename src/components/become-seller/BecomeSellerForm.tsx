@@ -166,7 +166,7 @@ const BecomeSellerForm: React.FC<BecomeSellerFormProps> = ({ onSuccess }) => {
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Application Submitted!</h2>
             <p className="text-gray-600 mb-6">
-              Your seller application has been received. We'll review your information and get back to you within 24-48 hours.
+              Your seller application has been received. We&apos;ll review your information and get back to you within 24-48 hours.
             </p>
             <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-200">
               <p className="text-sm text-emerald-700">
@@ -523,7 +523,7 @@ interface FormFieldProps {
   type?: string;
   placeholder?: string;
   required?: boolean;
-  icon?: React.ComponentType<any>;
+  icon?: React.ComponentType<{ className?: string }>;
   multiline?: boolean;
   rows?: number;
 }
@@ -540,8 +540,6 @@ const FormField: React.FC<FormFieldProps> = ({
   multiline = false,
   rows = 3
 }) => {
-  const [focused, setFocused] = useState(false);
-
   const inputClasses = `w-full px-4 py-3 ${Icon ? 'pl-12' : ''} bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 placeholder-gray-500`;
 
   return (
@@ -562,8 +560,6 @@ const FormField: React.FC<FormFieldProps> = ({
             required={required}
             rows={rows}
             className={inputClasses}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
           />
         ) : (
           <input
@@ -574,8 +570,6 @@ const FormField: React.FC<FormFieldProps> = ({
             placeholder={placeholder}
             required={required}
             className={inputClasses}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
           />
         )}
       </div>
