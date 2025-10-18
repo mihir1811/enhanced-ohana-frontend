@@ -12,15 +12,12 @@ import {
   ChevronLeft, 
   ChevronRight,
   Calendar,
-  MapPin,
-  Zap,
   TrendingUp,
   CheckCircle,
-  AlertCircle,
-  Camera,
   Play,
   MessageSquare
 } from 'lucide-react';
+import Image from 'next/image';
 import { Diamond } from './DiamondResults';
 import { WishlistButton } from '@/components/shared/WishlistButton';
 import { cartService } from '@/services/cartService';
@@ -175,9 +172,11 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
           <div className="relative aspect-square bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl overflow-hidden group border border-gray-200">
             {hasImages ? (
               <>
-                <img
-                  src={images[imgIdx]}
+                <Image
+                  src={images[imgIdx] || 'https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg'}
                   alt={`${diamond.shape} Diamond`}
+                  width={600}
+                  height={600}
                   className="w-full h-full object-contain p-8 transition-transform duration-500 group-hover:scale-105"
                 />
                 
@@ -237,7 +236,13 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
                     imgIdx === idx ? 'border-gray-900' : 'border-gray-200 hover:border-gray-400'
                   }`}
                 >
-                  <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover" />
+                  <Image 
+                    src={img || 'https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg'} 
+                    alt={`View ${idx + 1}`} 
+                    width={80}
+                    height={80}
+                    className="w-full h-full object-cover" 
+                  />
                 </button>
               ))}
             </div>
@@ -431,7 +436,7 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as 'overview' | 'specifications' | 'certification' | 'seller')}
                 className={`flex items-center gap-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors duration-200 ${
                   activeTab === tab.id
                     ? 'border-gray-900 text-gray-900'
@@ -707,9 +712,11 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
               <div className="bg-white rounded-2xl border border-gray-200 p-6">
                 <div className="flex items-center gap-4 mb-6">
                   {diamond.seller && diamond.seller.companyLogo ? (
-                    <img
+                    <Image
                       src={diamond.seller.companyLogo}
                       alt={diamond.seller.companyName || 'Seller Logo'}
+                      width={64}
+                      height={64}
                       className="w-16 h-16 rounded-2xl object-cover border border-gray-200 bg-white"
                     />
                   ) : (

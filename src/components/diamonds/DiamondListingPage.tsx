@@ -1,16 +1,26 @@
 "use client";
 
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { Filter as FilterIcon } from 'lucide-react';
 import DiamondFilters, { DiamondFilterValues } from './DiamondFilters';
 import DiamondResults, { Diamond } from './DiamondResults';
 import { getDefaultDiamondFilters, transformApiDiamond } from './diamondUtils';
 import { cartService } from '@/services/cartService';
 import { useAppSelector } from '@/store/hooks';
 
+interface ApiResponse {
+  data: {
+    data: unknown[]
+    meta?: {
+      total?: number
+      currentPage?: number
+      perPage?: number
+    }
+  }
+}
+
 interface DiamondListingPageProps {
   diamondType: 'lab-grown-single' | 'lab-grown-melee' | 'natural-single' | 'natural-melee';
-  fetchDiamonds: (params: any) => Promise<any>; // expects API response with data & meta
+  fetchDiamonds: (params: Record<string, unknown>) => Promise<ApiResponse>;
   title?: string;
 }
 
@@ -38,7 +48,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
     })
       .then((res) => {
         // API: { data: [...], meta: { total, currentPage, perPage } }
-        setDiamonds(res.data.data.map(transformApiDiamond));
+        setDiamonds(res.data.data.map((item) => transformApiDiamond(item as any)));
         setTotalCount(res.data.meta?.total || 0);
         setCurrentPage(res.data.meta?.currentPage || 1);
         setPageSize(res.data.meta?.perPage || 20);
@@ -193,7 +203,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                   productType: diamondType.includes('melee') ? 'meleeDiamond' : 'diamond',
                   quantity: 1,
                 }, token);
-              } catch (e) {
+              } catch {
                 // Intentionally swallow errors here; a global toast system can be added
               }
             }}

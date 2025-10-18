@@ -2,14 +2,30 @@
 
 import React, { useState } from 'react'
 import { useCompare } from '@/hooks/useCompare'
-import { ArrowLeft, X, Heart, ShoppingCart, Grid, List, CheckCircle } from 'lucide-react'
+import { ArrowLeft, X, Heart, Grid, List, CheckCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import Navigation from '@/components/Navigation'
 import Footer from '@/components/Footer'
 
+interface CompareProduct {
+  id: string
+  name: string
+  price: number | string
+  image: string
+  data: Record<string, unknown>
+}
+
+interface AttributeConfig {
+  key: string
+  label: string
+  type: 'currency' | 'text' | 'badge' | 'rating'
+  icon: string
+}
+
 const ModernJewelryComparePage = () => {
   const router = useRouter()
-  const { products, removeProduct, clearAll, getProductsByType } = useCompare()
+  const { removeProduct, clearAll, getProductsByType } = useCompare()
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('table')
 
   const jewelry = getProductsByType('jewelry')
@@ -53,7 +69,7 @@ const ModernJewelryComparePage = () => {
   }
 
   // Simplified comparison attributes
-  const comparisonData = [
+  const comparisonData: AttributeConfig[] = [
     { key: 'price', label: 'Price', type: 'currency', icon: '💰' },
     { key: 'category', label: 'Type', type: 'text', icon: '📝' },
     { key: 'material', label: 'Material', type: 'text', icon: '💎' },
@@ -62,16 +78,16 @@ const ModernJewelryComparePage = () => {
     { key: 'weight', label: 'Weight', type: 'text', icon: '⚖️' },
     { key: 'certification', label: 'Certified', type: 'badge', icon: '🛡️' },
     { key: 'rating', label: 'Rating', type: 'rating', icon: '⭐' },
-  ]
+  ] as const
 
-  const formatValue = (value: any, type: string) => {
+  const formatValue = (value: unknown, type: string): string => {
     if (value === null || value === undefined || value === '') return '—'
     
     switch (type) {
       case 'currency':
-        return formatPrice(value)
+        return formatPrice(typeof value === 'string' || typeof value === 'number' ? value : 0)
       case 'badge':
-        return value ? 'Yes' : 'No'
+        return Boolean(value) ? 'Yes' : 'No'
       case 'rating':
         return value ? `${value}/5` : '—'
       default:
@@ -79,20 +95,20 @@ const ModernJewelryComparePage = () => {
     }
   }
 
-  const getBestValue = (attribute: any) => {
+  const getBestValue = (attribute: AttributeConfig): number | null => {
     const values = jewelry.map(p => p.data[attribute.key]).filter(v => v != null && v !== '')
     if (values.length === 0) return null
     
     if (attribute.type === 'currency') {
-      return Math.min(...values.map(v => typeof v === 'string' ? parseFloat(v) : v))
+      return Math.min(...values.map(v => typeof v === 'string' ? parseFloat(v) : Number(v)))
     }
     if (attribute.type === 'rating') {
-      return Math.max(...values.map(v => typeof v === 'string' ? parseFloat(v) : v))
+      return Math.max(...values.map(v => typeof v === 'string' ? parseFloat(v) : Number(v)))
     }
     return null
   }
 
-  const isBestValue = (value: any, attribute: any) => {
+  const isBestValue = (value: unknown, attribute: AttributeConfig): boolean => {
     const bestValue = getBestValue(attribute)
     if (bestValue === null) return false
     const numValue = typeof value === 'string' ? parseFloat(value) : value
@@ -171,9 +187,11 @@ const ModernJewelryComparePage = () => {
                 >
                   {/* Product Image */}
                   <div className="relative aspect-square bg-muted">
-                    <img
+                    <Image
                       src={product.image}
                       alt={product.name}
+                      width={400}
+                      height={400}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement
@@ -249,9 +267,11 @@ const ModernJewelryComparePage = () => {
                       <div key={product.id} className="text-center">
                         <div className="bg-background border border-border rounded-lg p-4 space-y-3">
                           <div className="relative">
-                            <img
+                            <Image
                               src={product.image}
                               alt={product.name}
+                              width={80}
+                              height={80}
                               className="w-20 h-20 mx-auto object-cover rounded-lg"
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement

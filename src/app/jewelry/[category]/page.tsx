@@ -719,7 +719,6 @@ export default function JewelryCategoryPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [showFilters, setShowFilters] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [pagination, setPagination] = useState({
     page: 1,
@@ -763,10 +762,10 @@ export default function JewelryCategoryPage() {
   const [localPriceRange, setLocalPriceRange] = useState({ min: 0, max: 50000 })
 
   // Get category-specific filter options with proper typing
-  const getCategoryFilters = () => {
+  const getCategoryFilters = (): Record<string, unknown> => {
     const categoryKey = category as keyof typeof CATEGORY_FILTERS
     const filters = CATEGORY_FILTERS[categoryKey] || {}
-    return filters as any // Type assertion to avoid complex union type issues
+    return filters as Record<string, unknown>
   }
 
   const categoryFilters = getCategoryFilters()
@@ -817,7 +816,7 @@ export default function JewelryCategoryPage() {
       }))
       setPagination(prev => ({ ...prev, page: 1 }))
     }, 500), // 500ms delay
-    []
+    [setFilters, setPagination]
   )
 
   // Handle price range change with immediate UI update and debounced API call
@@ -872,7 +871,7 @@ export default function JewelryCategoryPage() {
     }
     console.log('Query params:', params) // Debug log
     return params
-  }, [category, searchQuery, pagination.page, pagination.limit, filters])
+  }, [searchQuery, pagination.page, pagination.limit, filters])
 
   // Load data on mount and filter changes
   useEffect(() => {
@@ -886,7 +885,7 @@ export default function JewelryCategoryPage() {
   }
 
   // Handle filter changes
-  const handleFilterChange = (filterType: keyof JewelryFilters, value: any) => {
+  const handleFilterChange = (filterType: keyof JewelryFilters, value: unknown) => {
     setFilters(prev => ({
       ...prev,
       [filterType]: value
@@ -981,7 +980,7 @@ export default function JewelryCategoryPage() {
                 <div className="flex flex-wrap gap-2">
                   {/* Ring Types */}
                   {(filters.ringTypes || []).map(ringType => {
-                    const ringTypeLabel = categoryFilters.ringTypes?.find((r: any) => r.value === ringType)?.label || ringType
+                    const ringTypeLabel = (categoryFilters.ringTypes as Array<{ value: string; label: string }> | undefined)?.find(r => r.value === ringType)?.label || ringType
                     return (
                       <span key={ringType} className="inline-flex items-center gap-1 px-3 py-1 bg-rose-100 text-rose-800 text-sm rounded-full">
                         Ring: {ringTypeLabel}
@@ -1025,7 +1024,7 @@ export default function JewelryCategoryPage() {
         </div>
 
         {/* Watch Brands Horizontal Filter - For watches category */}
-        {isWatchesCategory() && categoryFilters.brands && (
+        {category === 'watches' && Array.isArray(categoryFilters.brands) && categoryFilters.brands.length > 0 && (
           <div className="mb-2 bg-white rounded-lg shadow-sm p-2">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="flex items-center">
@@ -1045,7 +1044,7 @@ export default function JewelryCategoryPage() {
                 </button>
                 
                 {/* Brand Logo Buttons */}
-                {categoryFilters.brands.map((brand: any) => {
+                {(categoryFilters.brands as Array<{ value: string; label: string }> | undefined)?.map(brand => {
                   const isSelected = filters.brands?.includes(brand.value) || false
                   const logoPath = WATCH_BRAND_LOGOS[brand.value as keyof typeof WATCH_BRAND_LOGOS]
                   
@@ -1107,12 +1106,12 @@ export default function JewelryCategoryPage() {
         )}
 
         {/* Ring Types Filter Bar - For rings category */}
-        {category === 'rings' && categoryFilters.ringTypes && (
+        {category === 'rings' && Array.isArray(categoryFilters.ringTypes) && (
           <div className="bg-white rounded-lg p-6 mb-8 shadow-sm">
             <h3 className="text-lg font-semibold text-slate-900 mb-4">Ring Types</h3>
             <div className="relative">
               <div className="flex overflow-x-auto scrollbar-hide gap-3 pb-2">
-                {categoryFilters.ringTypes.map((ringType: any) => {
+                {(categoryFilters.ringTypes as Array<{ value: string; label: string; image?: string }> | undefined)?.map(ringType => {
                   const isSelected = filters.ringTypes?.includes(ringType.value) || false
 
                   return (
@@ -1278,10 +1277,10 @@ export default function JewelryCategoryPage() {
 
               {/* Category-specific filters */}
               {/* Ring Types for Rings */}
-              {category === 'rings' && categoryFilters.ringTypes && (
+              {category === 'rings' && Array.isArray(categoryFilters.ringTypes) && (
                 <FilterSection title="Ring Types">
                   <CheckboxGroup
-                    options={categoryFilters.ringTypes}
+                    options={categoryFilters.ringTypes as Array<{ value: string; label: string }>}
                     selectedValues={filters.ringTypes || []}
                     onChange={(values) => handleFilterChange('ringTypes', values)}
                   />
@@ -1289,10 +1288,10 @@ export default function JewelryCategoryPage() {
               )}
 
               {/* Ring Settings for Rings */}
-              {category === 'rings' && categoryFilters.ringSettings && (
+              {category === 'rings' && Array.isArray(categoryFilters.ringSettings) && (
                 <FilterSection title="Ring Settings">
                   <CheckboxGroup
-                    options={categoryFilters.ringSettings}
+                    options={categoryFilters.ringSettings as Array<{ value: string; label: string }>}
                     selectedValues={filters.ringSettings || []}
                     onChange={(values) => handleFilterChange('ringSettings', values)}
                   />
@@ -1300,10 +1299,10 @@ export default function JewelryCategoryPage() {
               )}
 
               {/* Watch Brands for Watches */}
-              {category === 'watches' && categoryFilters.brands && (
+              {category === 'watches' && Array.isArray(categoryFilters.brands) && (
                 <FilterSection title="Watch Brands">
                   <CheckboxGroup
-                    options={categoryFilters.brands}
+                    options={categoryFilters.brands as Array<{ value: string; label: string }>}
                     selectedValues={filters.brands || []}
                     onChange={(values) => handleFilterChange('brands', values)}
                   />
@@ -1311,10 +1310,10 @@ export default function JewelryCategoryPage() {
               )}
 
               {/* Watch Models for Watches */}
-              {category === 'watches' && categoryFilters.models && (
+              {category === 'watches' && Array.isArray(categoryFilters.models) && (
                 <FilterSection title="Watch Models">
                   <CheckboxGroup
-                    options={categoryFilters.models}
+                    options={categoryFilters.models as Array<{ value: string; label: string }>}
                     selectedValues={filters.models || []}
                     onChange={(values) => handleFilterChange('models', values)}
                   />
@@ -1322,10 +1321,10 @@ export default function JewelryCategoryPage() {
               )}
 
               {/* Chain Types for Necklaces/Bracelets/Chains */}
-              {(category === 'necklaces' || category === 'bracelets' || category === 'chains') && categoryFilters.chainTypes && (
+              {(category === 'necklaces' || category === 'bracelets' || category === 'chains') && Array.isArray(categoryFilters.chainTypes) && (
                 <FilterSection title="Chain Types">
                   <CheckboxGroup
-                    options={categoryFilters.chainTypes}
+                    options={categoryFilters.chainTypes as Array<{ value: string; label: string }>}
                     selectedValues={filters.chainTypes || []}
                     onChange={(values) => handleFilterChange('chainTypes', values)}
                   />
@@ -1333,10 +1332,10 @@ export default function JewelryCategoryPage() {
               )}
 
               {/* Styles - Common for most categories */}
-              {categoryFilters.styles && (
+              {Array.isArray(categoryFilters.styles) && (
                 <FilterSection title={`${categoryTitle} Styles`}>
                   <CheckboxGroup
-                    options={categoryFilters.styles}
+                    options={categoryFilters.styles as Array<{ value: string; label: string }>}
                     selectedValues={filters.style}
                     onChange={(values) => handleFilterChange('style', values)}
                   />
@@ -1344,10 +1343,10 @@ export default function JewelryCategoryPage() {
               )}
 
               {/* Earring Settings for Earrings */}
-              {category === 'earrings' && categoryFilters.settings && (
+              {category === 'earrings' && Array.isArray(categoryFilters.settings) && (
                 <FilterSection title="Earring Settings">
                   <CheckboxGroup
-                    options={categoryFilters.settings}
+                    options={categoryFilters.settings as Array<{ value: string; label: string }>}
                     selectedValues={filters.settings || []}
                     onChange={(values) => handleFilterChange('settings', values)}
                   />
@@ -1355,10 +1354,10 @@ export default function JewelryCategoryPage() {
               )}
 
               {/* Accessory Types for Accessories */}
-              {category === 'accessories' && categoryFilters.accessoryTypes && (
+              {category === 'accessories' && Array.isArray(categoryFilters.accessoryTypes) && (
                 <FilterSection title="Accessory Types">
                   <CheckboxGroup
-                    options={categoryFilters.accessoryTypes}
+                    options={categoryFilters.accessoryTypes as Array<{ value: string; label: string }>}
                     selectedValues={filters.accessoryTypes || []}
                     onChange={(values) => handleFilterChange('accessoryTypes', values)}
                   />
@@ -1366,10 +1365,10 @@ export default function JewelryCategoryPage() {
               )}
 
               {/* Metal Type - Common for most categories */}
-              {categoryFilters.metalTypes && (
+              {Array.isArray(categoryFilters.metalTypes) && (
                 <FilterSection title="Metal Type">
                   <CheckboxGroup
-                    options={categoryFilters.metalTypes}
+                    options={categoryFilters.metalTypes as Array<{ value: string; label: string }>}
                     selectedValues={filters.metalType}
                     onChange={(values) => handleFilterChange('metalType', values)}
                   />
@@ -1377,10 +1376,10 @@ export default function JewelryCategoryPage() {
               )}
 
               {/* Metal Purity - Common for jewelry categories */}
-              {categoryFilters.metalPurity && (
+              {Array.isArray(categoryFilters.metalPurity) && (
                 <FilterSection title="Metal Purity">
                   <CheckboxGroup
-                    options={categoryFilters.metalPurity}
+                    options={categoryFilters.metalPurity as Array<{ value: string; label: string }>}
                     selectedValues={filters.purity}
                     onChange={(values) => handleFilterChange('purity', values)}
                   />
@@ -1388,10 +1387,10 @@ export default function JewelryCategoryPage() {
               )}
 
               {/* Diamond Shapes - Common for jewelry categories */}
-              {categoryFilters.diamondShapes && (
+              {Array.isArray(categoryFilters.diamondShapes) && (
                 <FilterSection title="Diamond Shapes">
                   <CheckboxGroup
-                    options={categoryFilters.diamondShapes}
+                    options={categoryFilters.diamondShapes as Array<{ value: string; label: string }>}
                     selectedValues={filters.diamondShapes || []}
                     onChange={(values) => handleFilterChange('diamondShapes', values)}
                   />
@@ -1399,10 +1398,10 @@ export default function JewelryCategoryPage() {
               )}
 
               {/* Gemstones - Common for jewelry categories */}
-              {categoryFilters.gemstones && (
+              {Array.isArray(categoryFilters.gemstones) && (
                 <FilterSection title="Gemstones">
                   <CheckboxGroup
-                    options={categoryFilters.gemstones}
+                    options={categoryFilters.gemstones as Array<{ value: string; label: string }>}
                     selectedValues={filters.gemstones || []}
                     onChange={(values) => handleFilterChange('gemstones', values)}
                   />
@@ -1412,100 +1411,100 @@ export default function JewelryCategoryPage() {
               {/* Watch-specific filters */}
               {category === 'watches' && (
                 <>
-                  {categoryFilters.dialColors && (
+                  {Array.isArray(categoryFilters.dialColors) && (
                     <FilterSection title="Dial Color">
                       <CheckboxGroup
-                        options={categoryFilters.dialColors}
+                        options={categoryFilters.dialColors as Array<{ value: string; label: string }>}
                         selectedValues={filters.dialColors || []}
                         onChange={(values) => handleFilterChange('dialColors', values)}
                       />
                     </FilterSection>
                   )}
 
-                  {categoryFilters.caseShapes && (
+                  {Array.isArray(categoryFilters.caseShapes) && (
                     <FilterSection title="Case Shape">
                       <CheckboxGroup
-                        options={categoryFilters.caseShapes}
+                        options={categoryFilters.caseShapes as Array<{ value: string; label: string }>}
                         selectedValues={filters.caseShapes || []}
                         onChange={(values) => handleFilterChange('caseShapes', values)}
                       />
                     </FilterSection>
                   )}
 
-                  {categoryFilters.caseSizes && (
+                  {Array.isArray(categoryFilters.caseSizes) && (
                     <FilterSection title="Case Size">
                       <CheckboxGroup
-                        options={categoryFilters.caseSizes}
+                        options={categoryFilters.caseSizes as Array<{ value: string; label: string }>}
                         selectedValues={filters.caseSizes || []}
                         onChange={(values) => handleFilterChange('caseSizes', values)}
                       />
                     </FilterSection>
                   )}
 
-                  {categoryFilters.caseMaterials && (
+                  {Array.isArray(categoryFilters.caseMaterials) && (
                     <FilterSection title="Case Material">
                       <CheckboxGroup
-                        options={categoryFilters.caseMaterials}
+                        options={categoryFilters.caseMaterials as Array<{ value: string; label: string }>}
                         selectedValues={filters.caseMaterials || []}
                         onChange={(values) => handleFilterChange('caseMaterials', values)}
                       />
                     </FilterSection>
                   )}
 
-                  {categoryFilters.strapMaterials && (
+                  {Array.isArray(categoryFilters.strapMaterials) && (
                     <FilterSection title="Strap Material">
                       <CheckboxGroup
-                        options={categoryFilters.strapMaterials}
+                        options={categoryFilters.strapMaterials as Array<{ value: string; label: string }>}
                         selectedValues={filters.strapMaterials || []}
                         onChange={(values) => handleFilterChange('strapMaterials', values)}
                       />
                     </FilterSection>
                   )}
 
-                  {categoryFilters.strapColors && (
+                  {Array.isArray(categoryFilters.strapColors) && (
                     <FilterSection title="Strap Color">
                       <CheckboxGroup
-                        options={categoryFilters.strapColors}
+                        options={categoryFilters.strapColors as Array<{ value: string; label: string }>}
                         selectedValues={filters.strapColors || []}
                         onChange={(values) => handleFilterChange('strapColors', values)}
                       />
                     </FilterSection>
                   )}
 
-                  {categoryFilters.movements && (
+                  {Array.isArray(categoryFilters.movements) && (
                     <FilterSection title="Movement">
                       <CheckboxGroup
-                        options={categoryFilters.movements}
+                        options={categoryFilters.movements as Array<{ value: string; label: string }>}
                         selectedValues={filters.movements || []}
                         onChange={(values) => handleFilterChange('movements', values)}
                       />
                     </FilterSection>
                   )}
 
-                  {categoryFilters.waterResistance && (
+                  {Array.isArray(categoryFilters.waterResistance) && (
                     <FilterSection title="Water Resistance">
                       <CheckboxGroup
-                        options={categoryFilters.waterResistance}
+                        options={categoryFilters.waterResistance as Array<{ value: string; label: string }>}
                         selectedValues={filters.waterResistance || []}
                         onChange={(values) => handleFilterChange('waterResistance', values)}
                       />
                     </FilterSection>
                   )}
 
-                  {categoryFilters.features && (
+                  {Array.isArray(categoryFilters.features) && (
                     <FilterSection title="Features">
                       <CheckboxGroup
-                        options={categoryFilters.features}
+                        options={categoryFilters.features as Array<{ value: string; label: string }>}
                         selectedValues={filters.features || []}
                         onChange={(values) => handleFilterChange('features', values)}
                       />
                     </FilterSection>
                   )}
 
-                  {categoryFilters.dialStones && (
+                  {Array.isArray(categoryFilters.dialStones) && (
                     <FilterSection title="Dial Stones">
                       <CheckboxGroup
-                        options={categoryFilters.dialStones}
+                        options={categoryFilters.dialStones as Array<{ value: string; label: string }>}
                         selectedValues={filters.dialStones || []}
                         onChange={(values) => handleFilterChange('dialStones', values)}
                       />
@@ -1515,20 +1514,20 @@ export default function JewelryCategoryPage() {
               )}
 
               {/* Size/Length filters for applicable categories */}
-              {category === 'rings' && categoryFilters.sizes && (
+              {category === 'rings' && Array.isArray(categoryFilters.sizes) && (
                 <FilterSection title="Ring Size">
                   <CheckboxGroup
-                    options={categoryFilters.sizes}
+                    options={categoryFilters.sizes as Array<{ value: string; label: string }>}
                     selectedValues={filters.sizes || []}
                     onChange={(values) => handleFilterChange('sizes', values)}
                   />
                 </FilterSection>
               )}
 
-              {((category === 'necklaces' || category === 'bracelets') && categoryFilters.lengths) && (
+              {((category === 'necklaces' || category === 'bracelets') && Array.isArray(categoryFilters.lengths)) && (
                 <FilterSection title="Length">
                   <CheckboxGroup
-                    options={categoryFilters.lengths}
+                    options={categoryFilters.lengths as Array<{ value: string; label: string }>}
                     selectedValues={filters.lengths || []}
                     onChange={(values) => handleFilterChange('lengths', values)}
                   />
@@ -1678,11 +1677,6 @@ const FilterSection: React.FC<FilterSectionProps> = ({ title, isOpen = false, ch
   );
 };
 
-interface FilterOption {
-  label: string;
-  value: string;
-}
-
 interface CheckboxGroupProps {
   options: { value: string; label: string }[];
   selectedValues: string[];
@@ -1770,7 +1764,7 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
       {/* No Results */}
       {searchQuery && filteredOptions.length === 0 && (
         <div className="text-center py-4 text-slate-500 text-sm">
-          No options found for "{searchQuery}"
+          No options found for &quot;{searchQuery}&quot;
         </div>
       )}
 
@@ -1780,183 +1774,6 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
           {selectedValues.length} selected
         </div>
       )}
-    </div>
-  );
-};
-
-// Enhanced Range Component
-interface RangeInputProps {
-  title: string;
-  min: number;
-  max: number;
-  value: { min: number; max: number };
-  onChange: (value: { min: number; max: number }) => void;
-  currency?: string;
-  step?: number;
-}
-
-const RangeInput: React.FC<RangeInputProps> = ({
-  title,
-  min,
-  max,
-  value,
-  onChange,
-  currency = '$',
-  step = 1
-}) => {
-  const [localValue, setLocalValue] = useState(value);
-
-  useEffect(() => {
-    setLocalValue(value);
-  }, [value]);
-
-  const handleInputChange = (type: 'min' | 'max', inputValue: string) => {
-    const numValue = Number(inputValue) || 0;
-    const newValue = {
-      ...localValue,
-      [type]: numValue
-    };
-    setLocalValue(newValue);
-  };
-
-  const handleBlur = () => {
-    // Ensure min doesn't exceed max and vice versa
-    const correctedValue = {
-      min: Math.min(localValue.min, localValue.max),
-      max: Math.max(localValue.min, localValue.max)
-    };
-    onChange(correctedValue);
-  };
-
-  const handleRangeChange = (type: 'min' | 'max', rangeValue: string) => {
-    const numValue = Number(rangeValue);
-    const newValue = {
-      ...localValue,
-      [type]: numValue
-    };
-
-    // Auto-correct ranges
-    if (type === 'min' && numValue > localValue.max) {
-      newValue.max = numValue;
-    }
-    if (type === 'max' && numValue < localValue.min) {
-      newValue.min = numValue;
-    }
-
-    setLocalValue(newValue);
-    onChange(newValue);
-  };
-
-  return (
-    <div className="space-y-4">
-      {/* Input Fields */}
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">
-            Min {title}
-          </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 text-sm">
-              {currency}
-            </span>
-            <input
-              type="number"
-              min={min}
-              max={max}
-              step={step}
-              value={localValue.min === min ? '' : localValue.min}
-              onChange={(e) => handleInputChange('min', e.target.value)}
-              onBlur={handleBlur}
-              placeholder={min.toString()}
-              className="w-full pl-8 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-slate-600 mb-1">
-            Max {title}
-          </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 text-sm">
-              {currency}
-            </span>
-            <input
-              type="number"
-              min={min}
-              max={max}
-              step={step}
-              value={localValue.max === max ? '' : localValue.max}
-              onChange={(e) => handleInputChange('max', e.target.value)}
-              onBlur={handleBlur}
-              placeholder={max.toString()}
-              className="w-full pl-8 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Range Sliders */}
-      <div className="space-y-3">
-        <div className="relative">
-          <input
-            type="range"
-            min={min}
-            max={max}
-            step={step}
-            value={localValue.min}
-            onChange={(e) => handleRangeChange('min', e.target.value)}
-            className="absolute w-full h-2 bg-transparent range-slider z-10"
-          />
-          <input
-            type="range"
-            min={min}
-            max={max}
-            step={step}
-            value={localValue.max}
-            onChange={(e) => handleRangeChange('max', e.target.value)}
-            className="absolute w-full h-2 bg-transparent range-slider"
-          />
-
-          {/* Range Track */}
-          <div className="relative h-2 bg-slate-200 rounded-lg">
-            <div
-              className="absolute h-2 bg-blue-500 rounded-lg"
-              style={{
-                left: `${((localValue.min - min) / (max - min)) * 100}%`,
-                width: `${((localValue.max - localValue.min) / (max - min)) * 100}%`
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Range Display */}
-        <div className="flex justify-between text-xs text-slate-600">
-          <span>{currency}{localValue.min.toLocaleString()}</span>
-          <span>{currency}{localValue.max.toLocaleString()}</span>
-        </div>
-      </div>
-
-      {/* Quick Selection Buttons */}
-      <div className="flex flex-wrap gap-2">
-        {[
-          { label: 'Under 1K', min: 0, max: 1000 },
-          { label: '1K-5K', min: 1000, max: 5000 },
-          { label: '5K-10K', min: 5000, max: 10000 },
-          { label: '10K+', min: 10000, max: 50000 }
-        ].map((preset) => (
-          <button
-            key={preset.label}
-            onClick={() => onChange({ min: preset.min, max: preset.max })}
-            className={`px-3 py-1 text-xs rounded-full border transition-colors ${localValue.min === preset.min && localValue.max === preset.max
-                ? 'bg-blue-500 text-white border-blue-500'
-                : 'bg-white text-slate-600 border-slate-300 hover:border-blue-300 hover:text-blue-600'
-              }`}
-          >
-            {preset.label}
-          </button>
-        ))}
-      </div>
     </div>
   );
 };
@@ -2001,9 +1818,8 @@ function ImageCarousel({ images, alt, className = "" }: ImageCarouselProps) {
         src={validImages[currentImageIndex]}
         alt={alt}
         className="w-full h-full object-cover transition-transform duration-300"
-        onError={(e) => {
+        onError={() => {
           // Fallback to next image if current one fails
-          const target = e.target as HTMLImageElement;
           const nextIndex = (currentImageIndex + 1) % validImages.length;
           if (nextIndex !== currentImageIndex && validImages[nextIndex]) {
             setCurrentImageIndex(nextIndex);

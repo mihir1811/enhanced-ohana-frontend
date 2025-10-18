@@ -1,17 +1,23 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState } from 'react'
 import { useCompare } from '@/hooks/useCompare'
-import { ArrowLeft, X, Heart, ShoppingCart, Download, Info, Share2, Eye, CheckCircle, AlertCircle, Filter, Grid, List, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, X, Heart, ShoppingCart, Info, Eye, CheckCircle, Grid, List, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import * as ShapeIcons from '@/../public/icons'
+import { CompareProduct } from '@/features/compare/compareSlice'
+
+interface AttributeConfig {
+  key: string
+  label: string
+  type: 'currency' | 'shape' | 'text' | 'default'
+  suffix?: string
+}
 
 const ModernDiamondComparePage = () => {
   const router = useRouter()
-  const { products, removeProduct, clearAll, getProductsByType } = useCompare()
-  const [selectedAttributes, setSelectedAttributes] = useState<string[]>([
-    'price', 'caratWeight', 'cut', 'color', 'clarity', 'shape'
-  ])
+  const { removeProduct, clearAll, getProductsByType } = useCompare()
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
   const [scrollPosition, setScrollPosition] = useState(0)
 
@@ -55,7 +61,7 @@ const ModernDiamondComparePage = () => {
 
   // Get shape icon
   const getShapeIcon = (shape: string) => {
-    const shapeIconMap: Record<string, React.ComponentType<any>> = {
+    const shapeIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
       'round': ShapeIcons.RoundIcon,
       'pear': ShapeIcons.PearIcon,
       'emerald': ShapeIcons.EmeraldIcon,
@@ -72,49 +78,52 @@ const ModernDiamondComparePage = () => {
     }
     
     const Icon = shapeIconMap[shape?.toLowerCase?.()] || shapeIconMap['default']
-    return <Icon width={24} height={24} />
+    return <Icon className="w-6 h-6" />
   }
 
   // Comparison attributes configuration
-  const attributeCategories = [
+  const attributeCategories: Array<{
+    title: string
+    attributes: AttributeConfig[]
+  }> = [
     {
       title: 'Basic Information',
       attributes: [
-        { key: 'price', label: 'Price', type: 'currency' },
-        { key: 'caratWeight', label: 'Carat Weight', type: 'text', suffix: 'ct' },
-        { key: 'shape', label: 'Shape', type: 'shape' },
-        { key: 'certificateNumber', label: 'Certificate #', type: 'text' }
+        { key: 'price', label: 'Price', type: 'currency' as const },
+        { key: 'caratWeight', label: 'Carat Weight', type: 'text' as const, suffix: 'ct' },
+        { key: 'shape', label: 'Shape', type: 'shape' as const },
+        { key: 'certificateNumber', label: 'Certificate #', type: 'text' as const }
       ]
     },
     {
       title: '4Cs Grading',
       attributes: [
-        { key: 'cut', label: 'Cut', type: 'text' },
-        { key: 'color', label: 'Color', type: 'text' },
-        { key: 'clarity', label: 'Clarity', type: 'text' }
+        { key: 'cut', label: 'Cut', type: 'text' as const },
+        { key: 'color', label: 'Color', type: 'text' as const },
+        { key: 'clarity', label: 'Clarity', type: 'text' as const }
       ]
     },
     {
       title: 'Measurements',
       attributes: [
-        { key: 'measurement', label: 'Measurements', type: 'text' },
-        { key: 'table', label: 'Table %', type: 'text', suffix: '%' },
-        { key: 'depth', label: 'Depth %', type: 'text', suffix: '%' },
-        { key: 'ratio', label: 'Ratio', type: 'text' }
+        { key: 'measurement', label: 'Measurements', type: 'text' as const },
+        { key: 'table', label: 'Table %', type: 'text' as const, suffix: '%' },
+        { key: 'depth', label: 'Depth %', type: 'text' as const, suffix: '%' },
+        { key: 'ratio', label: 'Ratio', type: 'text' as const }
       ]
     },
     {
       title: 'Additional Details',
       attributes: [
-        { key: 'polish', label: 'Polish', type: 'text' },
-        { key: 'symmetry', label: 'Symmetry', type: 'text' },
-        { key: 'fluorescence', label: 'Fluorescence', type: 'text' },
-        { key: 'certification', label: 'Lab', type: 'text' }
+        { key: 'polish', label: 'Polish', type: 'text' as const },
+        { key: 'symmetry', label: 'Symmetry', type: 'text' as const },
+        { key: 'fluorescence', label: 'Fluorescence', type: 'text' as const },
+        { key: 'certification', label: 'Lab', type: 'text' as const }
       ]
     }
   ]
 
-  const renderAttributeValue = (diamond: any, attribute: any) => {
+  const renderAttributeValue = (diamond: CompareProduct, attribute: AttributeConfig) => {
     const value = diamond.data[attribute.key]
     
     if (!value) {
@@ -123,41 +132,41 @@ const ModernDiamondComparePage = () => {
     
     switch (attribute.type) {
       case 'currency':
-        return <span className="font-bold text-green-600">{formatPrice(value)}</span>
+        return <span className="font-bold text-green-600">{formatPrice(String(value))}</span>
       case 'shape':
         return (
           <div className="flex items-center gap-2 justify-center">
-            {getShapeIcon(value)}
-            <span className="text-sm">{value}</span>
+            {getShapeIcon(String(value))}
+            <span className="text-sm">{String(value)}</span>
           </div>
         )
       case 'text':
         return (
           <span className="text-sm">
-            {value}{attribute.suffix || ''}
+            {String(value)}{attribute.suffix || ''}
           </span>
         )
       default:
-        return <span className="text-sm">{value}</span>
+        return <span className="text-sm">{String(value)}</span>
     }
   }
 
   // Find best value for highlighting
-  const getBestValue = (attribute: any) => {
+  const getBestValue = (attribute: AttributeConfig) => {
     if (attribute.key === 'price') {
-      return Math.min(...diamonds.map(d => parseFloat(d.data[attribute.key] || Infinity)))
+      return Math.min(...diamonds.map(d => parseFloat(String(d.data[attribute.key]) || 'Infinity')))
     }
     if (attribute.key === 'caratWeight') {
-      return Math.max(...diamonds.map(d => parseFloat(d.data[attribute.key] || 0)))
+      return Math.max(...diamonds.map(d => parseFloat(String(d.data[attribute.key]) || '0')))
     }
     return null
   }
 
-  const isBestValue = (diamond: any, attribute: any) => {
+  const isBestValue = (diamond: CompareProduct, attribute: AttributeConfig) => {
     const bestValue = getBestValue(attribute)
     if (bestValue === null) return false
     
-    const currentValue = parseFloat(diamond.data[attribute.key] || 0)
+    const currentValue = parseFloat(String(diamond.data[attribute.key]) || '0')
     return currentValue === bestValue
   }
 
@@ -288,9 +297,11 @@ const ModernDiamondComparePage = () => {
                   <div className="text-center bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm h-full flex flex-col">
                     {/* Image */}
                     <div className="aspect-square bg-gray-50 dark:bg-gray-700 rounded-xl mb-4 overflow-hidden relative group">
-                      <img
+                      <Image
                         src={diamond.image}
                         alt={diamond.name}
+                        width={200}
+                        height={200}
                         className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement

@@ -1,7 +1,7 @@
 
 'use client'
 import { useState } from 'react'
-import { Search, Filter, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
 // Simple Expand/Collapse component
 function Expand({ label, children, defaultOpen = true }: { label: string; children: React.ReactNode; defaultOpen?: boolean }) {
@@ -106,7 +106,7 @@ const DIAMOND_SHAPES = [
 ]
 
 // Map shape names to icon components (default fallback if not found)
-const shapeIconMap: Record<string, React.ComponentType<any>> = {
+const shapeIconMap: Record<string, React.ComponentType<{ width?: number; height?: number }>> = {
   'Round': ShapeIcons.RoundIcon,
   'Pear': ShapeIcons.PearIcon,
   'Emerald': ShapeIcons.EmeraldIcon,
@@ -174,19 +174,7 @@ const GIRDLE_OPTIONS = ['Extremely Thin', 'Very Thin', 'Thin', 'Medium', 'Slight
 
 const CULET_OPTIONS = ['None', 'Very Small', 'Small', 'Medium', 'Large', 'Very Large']
 
-const ORIGIN_OPTIONS = ['Natural', 'Lab-Grown', 'HPHT', 'CVD']
-
 const TREATMENT_OPTIONS = ['None', 'Laser Drilling', 'Fracture Filling', 'HPHT', 'Irradiation', 'Coating']
-
-const MILKYNESS_OPTIONS = ['None', 'Slight', 'Moderate', 'Strong']
-
-const AVAILABILITY_OPTIONS = ['In Stock', 'Available on Memo', 'Made to Order', 'Virtual Inventory']
-
-const DELIVERY_OPTIONS = ['Same Day', '1-2 Days', '3-5 Days', '1 Week', '2+ Weeks']
-
-const OPTICAL_PROPERTIES = ['Excellent', 'Very Good', 'Good', 'Fair', 'Poor']
-
-const GROWN_METHODS = ['HPHT', 'CVD']
 
 const LOCATION_OPTIONS = ['New York', 'Antwerp', 'Mumbai', 'Tel Aviv', 'Hong Kong', 'Bangkok', 'Dubai', 'Surat']
 
@@ -200,53 +188,11 @@ export default function DiamondFilters({
     new Set(['basic', 'price'])
   )
 
-  const toggleSection = (section: string) => {
-    const newExpanded = new Set(expandedSections)
-    if (newExpanded.has(section)) {
-      newExpanded.delete(section)
-    } else {
-      newExpanded.add(section)
-    }
-    setExpandedSections(newExpanded)
-  }
-
-  const updateFilter = (key: keyof DiamondFilterValues, value: any) => {
+  const updateFilter = (key: keyof DiamondFilterValues, value: unknown) => {
     onFiltersChange({
       ...filters,
       [key]: value
     })
-  }
-
-  const resetFilters = () => {
-    const defaultFilters: DiamondFilterValues = {
-      shape: [],
-      caratWeight: { 
-        min: diamondType.includes('melee') ? 0.001 : 0.30, 
-        max: diamondType.includes('melee') ? 0.30 : 10 
-      },
-      color: [],
-      clarity: [],
-      cut: [],
-      priceRange: { min: 0, max: 100000 },
-      certification: [],
-      fluorescence: [],
-      polish: [],
-      symmetry: [],
-      location: [],
-      measurements: {
-        length: { min: 0, max: 20 },
-        width: { min: 0, max: 20 },
-        depth: { min: 0, max: 15 }
-      },
-      tablePercent: { min: 50, max: 70 },
-      depthPercent: { min: 55, max: 75 },
-      girdle: [],
-      culet: [],
-      origin: [],
-      treatment: [],
-      pricePerCarat: { min: 0, max: 10000 }
-    }
-    onFiltersChange(defaultFilters)
   }
 
   const getCaratRange = () => {
@@ -257,65 +203,6 @@ export default function DiamondFilters({
       default:
         return { min: 0.30, max: 10, step: 0.01 }
     }
-  }
-
-  const FilterSection = ({ 
-    title, 
-    sectionKey, 
-    children,
-    badge,
-    description
-  }: { 
-    title: string
-    sectionKey: string
-    children: React.ReactNode
-    badge?: string
-    description?: string
-  }) => {
-    const isExpanded = expandedSections.has(sectionKey)
-    
-    return (
-      <div className="border-b transition-all duration-200" style={{ borderColor: 'var(--border)' }}>
-        <button
-          onClick={() => toggleSection(sectionKey)}
-          className="w-full flex items-center justify-between p-4 text-left hover:bg-opacity-50 transition-all duration-200 group"
-          style={{ backgroundColor: isExpanded ? 'var(--muted)/5' : 'transparent', color: 'var(--foreground)' }}
-        >
-          <div className="flex items-center space-x-3">
-            <h3 className="font-semibold text-base">{title}</h3>
-            {badge && (
-              <span className="px-2 py-1 text-xs font-medium rounded-full"
-                style={{ 
-                  backgroundColor: 'var(--primary)/10', 
-                  color: 'var(--primary)' 
-                }}
-              >
-                {badge}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center space-x-2">
-            {description && (
-              <span className="text-xs hidden md:block" style={{ color: 'var(--muted-foreground)' }}>
-                {description}
-              </span>
-            )}
-            <div className="p-1 rounded-full group-hover:bg-current group-hover:bg-opacity-10 transition-all">
-              {isExpanded ? (
-                <ChevronUp className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-              ) : (
-                <ChevronDown className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
-              )}
-            </div>
-          </div>
-        </button>
-        {isExpanded && (
-          <div className="p-4 pt-0 animate-in slide-in-from-top-2 duration-200">
-            {children}
-          </div>
-        )}
-      </div>
-    )
   }
 
   const CategorizedShapeFilter = ({ 
@@ -391,13 +278,11 @@ export default function DiamondFilters({
     options, 
     selected, 
     onChange, 
-    placeholder,
     layout = 'grid'
   }: { 
     options: string[]
     selected: string[]
     onChange: (values: string[]) => void
-    placeholder: string
     layout?: 'grid' | 'horizontal'
   }) => (
     <div className="space-y-3">
@@ -477,8 +362,7 @@ export default function DiamondFilters({
     value, 
     onChange, 
     step = 1, 
-    unit = '',
-    showSlider = false
+    unit = ''
   }: { 
     min: number
     max: number
@@ -486,7 +370,6 @@ export default function DiamondFilters({
     onChange: (range: { min: number; max: number }) => void
     step?: number
     unit?: string
-    showSlider?: boolean
   }) => (
     <div className="space-y-2">
       {/* Current Range Display */}
@@ -581,6 +464,7 @@ export default function DiamondFilters({
     </div>
   )
 
+  // Get carat range based on diamond type
   const caratRange = getCaratRange()
 
   return (
@@ -623,7 +507,6 @@ export default function DiamondFilters({
           options={DIAMOND_COLORS}
           selected={filters.color}
           onChange={(values) => updateFilter('color', values)}
-          placeholder="Select colors"
         />
       </Expand>
 
@@ -632,7 +515,6 @@ export default function DiamondFilters({
           options={DIAMOND_CLARITY}
           selected={filters.clarity}
           onChange={(values) => updateFilter('clarity', values)}
-          placeholder="Select clarity"
         />
       </Expand>
 
@@ -641,7 +523,6 @@ export default function DiamondFilters({
           options={CUT_GRADES}
           selected={filters.cut}
           onChange={(values) => updateFilter('cut', values)}
-          placeholder="Select cut grades"
         />
       </Expand>
 
@@ -661,7 +542,6 @@ export default function DiamondFilters({
           options={CERTIFICATIONS}
           selected={filters.certification}
           onChange={(values) => updateFilter('certification', values)}
-          placeholder="Select certifications"
         />
       </Expand>
 
@@ -670,7 +550,6 @@ export default function DiamondFilters({
           options={FLUORESCENCE_LEVELS}
           selected={filters.fluorescence}
           onChange={(values) => updateFilter('fluorescence', values)}
-          placeholder="Select fluorescence"
         />
       </Expand>
 
@@ -679,7 +558,6 @@ export default function DiamondFilters({
           options={CUT_GRADES}
           selected={filters.polish}
           onChange={(values) => updateFilter('polish', values)}
-          placeholder="Select polish grades"
         />
       </Expand>
 
@@ -688,7 +566,6 @@ export default function DiamondFilters({
           options={CUT_GRADES}
           selected={filters.symmetry}
           onChange={(values) => updateFilter('symmetry', values)}
-          placeholder="Select symmetry grades"
         />
       </Expand>
 
@@ -697,7 +574,6 @@ export default function DiamondFilters({
           options={LOCATION_OPTIONS}
           selected={filters.location}
           onChange={(values) => updateFilter('location', values)}
-          placeholder="Select locations"
         />
       </Expand>
 
@@ -706,7 +582,6 @@ export default function DiamondFilters({
           options={GIRDLE_OPTIONS}
           selected={filters.girdle}
           onChange={(values) => updateFilter('girdle', values)}
-          placeholder="Select girdle types"
         />
       </Expand>
 
@@ -715,7 +590,6 @@ export default function DiamondFilters({
           options={CULET_OPTIONS}
           selected={filters.culet}
           onChange={(values) => updateFilter('culet', values)}
-          placeholder="Select culet sizes"
         />
       </Expand>
 
@@ -724,7 +598,6 @@ export default function DiamondFilters({
           options={TREATMENT_OPTIONS}
           selected={filters.treatment}
           onChange={(values) => updateFilter('treatment', values)}
-          placeholder="Select treatments"
         />
       </Expand>
 

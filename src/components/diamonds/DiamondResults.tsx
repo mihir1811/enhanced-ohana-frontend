@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import Pagination from '../ui/Pagination';
 import * as ShapeIcons from '@/../public/icons';
 import Dialog from '../ui/Dialog';
-import { X, ChevronLeft, ChevronRight, Heart, ShoppingCart, Share2, Download, Star, Award, Shield, Eye ,Grid, List, ArrowUpDown, ChevronDown, CopyPlus, Filter as FilterIcon} from 'lucide-react'
-import { useCompare } from '@/hooks/useCompare'
+import { ChevronLeft, ChevronRight, ShoppingCart, Share2, Download, Star, Award, Shield, Eye ,Grid, List, ArrowUpDown, ChevronDown, Filter as FilterIcon} from 'lucide-react'
+import Image from 'next/image'
 import CompareButton from '@/components/compare/CompareButton'
 import WishlistButton from '@/components/shared/WishlistButton'
 
@@ -21,6 +21,15 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
   const hasImages = images.length > 0;
   const [activeTab, setActiveTab] = useState<'details' | 'specs' | 'certification'>('details');
 
+  // Navigation functions
+  const prevImg = useCallback(() => {
+    setImgIdx(idx => (idx - 1 + images.length) % images.length);
+  }, [images.length])
+  
+  const nextImg = useCallback(() => {
+    setImgIdx(idx => (idx + 1) % images.length);
+  }, [images.length])
+
   // Keyboard navigation
   React.useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -28,9 +37,10 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
       if (e.key === 'ArrowLeft') prevImg();
       if (e.key === 'ArrowRight') nextImg();
     }
+    
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [hasImages, images.length, imgIdx]);
+  }, [hasImages, images.length, prevImg, nextImg]);
 
   // Touch/swipe support
   const [touchStart, setTouchStart] = React.useState<number | null>(null);
@@ -48,13 +58,6 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
     setTouchStart(null);
     setTouchEnd(null);
   };
-
-  function prevImg() {
-    setImgIdx(idx => (idx - 1 + images.length) % images.length);
-  }
-  function nextImg() {
-    setImgIdx(idx => (idx + 1) % images.length);
-  }
 
   const formatPrice = (price: number | string) => {
     const numPrice = typeof price === 'string' ? parseFloat(price) : price;
@@ -118,9 +121,11 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
             >
               {hasImages ? (
                 <>
-                  <img
+                  <Image
                     src={images[imgIdx]}
                     alt={diamond.shape ? `${diamond.shape} diamond image ${imgIdx + 1}` : `Diamond image ${imgIdx + 1}`}
+                    width={400}
+                    height={400}
                     className="w-full h-full object-contain p-6 transition-all duration-300"
                     draggable={false}
                   />
@@ -189,9 +194,11 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
                         : 'border-gray-200 hover:border-gray-400'
                     }`}
                   >
-                    <img
+                    <Image
                       src={img}
                       alt={`Thumbnail ${idx + 1}`}
+                      width={64}
+                      height={64}
                       className="w-full h-full object-cover"
                       draggable={false}
                     />
@@ -229,7 +236,7 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as 'details' | 'specs' | 'certification')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ${
                   activeTab === tab.id
                     ? 'bg-white text-gray-900 shadow-sm'
@@ -518,7 +525,6 @@ interface DiamondResultsProps {
   className?: string
 }
 
-type SortOption = 'price-asc' | 'price-desc' | 'carat-asc' | 'carat-desc' | 'newest' | 'popular'
 type ViewMode = 'grid' | 'list'
 
 export default function DiamondResults({
@@ -530,11 +536,9 @@ export default function DiamondResults({
   onPageChange,
   onDiamondSelect,
   onAddToCart,
-  diamondType,
   className = ''
 }: DiamondResultsProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
-  const [sortBy, setSortBy] = useState<SortOption>('price-asc')
   const [showSortDropdown, setShowSortDropdown] = useState(false)
   const [selectedShapes, setSelectedShapes] = useState<string[]>(['All'])
   const [quickViewDiamond, setQuickViewDiamond] = useState<Diamond | null>(null);
@@ -579,7 +583,7 @@ export default function DiamondResults({
 
   // Map shape names to icon components (default fallback if not found)
   // Make shapeIconMap case-insensitive by using lowercase keys
-  const shapeIconMap: Record<string, React.ComponentType<any>> = {
+  const shapeIconMap: Record<string, React.ComponentType<{ width?: number; height?: number }>> = {
     'round': ShapeIcons.RoundIcon,
     'pear': ShapeIcons.PearIcon,
     'emerald': ShapeIcons.EmeraldIcon,
@@ -644,15 +648,6 @@ export default function DiamondResults({
   d.shape && selectedShapes.some(sel => d.shape?.toLowerCase() === sel.toLowerCase())
       );
 
-  const sortOptions = [
-    { value: 'price-asc', label: 'Price: Low to High' },
-    { value: 'price-desc', label: 'Price: High to Low' },
-    { value: 'carat-asc', label: 'Carat: Low to High' },
-    { value: 'carat-desc', label: 'Carat: High to Low' },
-    { value: 'newest', label: 'Newest First' },
-    { value: 'popular', label: 'Most Popular' }
-  ]
-
   const totalPages = Math.ceil(totalCount / pageSize)
 
   const formatPrice = (price: number) => {
@@ -664,21 +659,17 @@ export default function DiamondResults({
     }).format(price)
   }
 
-  const getAvailabilityColor = (availability: string) => {
-    switch (availability) {
-      case 'available': return 'text-green-600'
-      case 'reserved': return 'text-yellow-600'
-      case 'sold': return 'text-red-600'
-      default: return 'text-gray-600'
-    }
-  }
-
   // Grid view: tile card (image on top, details below, floating favorite button, compare & quick view)
   const DiamondGridCard = ({ diamond }: { diamond: Diamond }) => {
     // Support both diamond.images and legacy image1-image6
+    const diamondWithImages = diamond as Diamond & { 
+      image1?: string; image2?: string; image3?: string; 
+      image4?: string; image5?: string; image6?: string; 
+    };
     const allImages = [
       ...(diamond.images || []),
-      (diamond as any).image1, (diamond as any).image2, (diamond as any).image3, (diamond as any).image4, (diamond as any).image5, (diamond as any).image6
+      diamondWithImages.image1, diamondWithImages.image2, diamondWithImages.image3, 
+      diamondWithImages.image4, diamondWithImages.image5, diamondWithImages.image6
     ].filter((img, i, arr) => img && typeof img === 'string' && img.trim() && arr.indexOf(img) === i);
     const [imgIdx, setImgIdx] = useState(0);
     const hasImages = allImages.length > 0;
@@ -717,15 +708,16 @@ export default function DiamondResults({
               <Eye className="w-5 h-5" style={{ color: 'var(--primary)' }} />
             </button>
           </div>
-          {hasImages ? (
+          {hasImages && allImages[imgIdx] ? (
             <>
-              <img
-                src={allImages[imgIdx]}
+              <Image
+                src={allImages[imgIdx]!}
                 alt={`${diamond.shape} Diamond`}
+                width={400}
+                height={400}
                 className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 bg-white"
-                loading="lazy"
                 style={{ objectFit: 'contain', background: 'white', borderRadius: 8, maxHeight: '100%', maxWidth: '100%' }}
-                onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />
               {allImages.length > 1 && (
                 <>
@@ -819,12 +811,13 @@ export default function DiamondResults({
     >
       {/* Left: Image & Favorite */}
       <div className="relative w-full sm:w-40 min-w-0 sm:min-w-40 h-40 sm:h-40 bg-gray-50 dark:bg-zinc-800 overflow-hidden flex items-stretch">
-        {diamond.images && diamond.images.length > 0 ? (
-          <img
+        {diamond.images && diamond.images.length > 0 && diamond.images[0] ? (
+          <Image
             src={diamond.images[0]}
             alt={`${diamond.shape} Diamond`}
+            width={320}
+            height={320}
             className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
-            loading="lazy"
             style={{ display: 'block' }}
           />
         ) : (
