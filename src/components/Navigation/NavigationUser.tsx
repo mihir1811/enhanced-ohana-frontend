@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
 import { RootState } from '@/store'
@@ -10,7 +11,7 @@ import { logoutAsync } from '@/features/auth/authSlice'
 import ThemeSwitcher from '../ThemeSwitcher'
 import MobileSidebar from './MobileSidebar'
 import useNavigation from '@/hooks/useNavigation'
-// @ts-ignore: allow importing CSS side-effect without type declarations
+// @ts-ignore: global CSS side-effect import without TypeScript declarations
 import '@/styles/navigation.css'
 import { SECTION_WIDTH } from '@/lib/constants'
 import { cartService, type Cart } from '@/services'
@@ -18,7 +19,6 @@ import { cartService, type Cart } from '@/services'
 export default function NavigationUser() {
   const [isOpen, setIsOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 })
   const [activeNavDropdown, setActiveNavDropdown] = useState<string | null>(null)
   const [dropdownPositions, setDropdownPositions] = useState<{ [key: string]: { left: number, top: number } }>({})
   const [mouseLeaveTimeout, setMouseLeaveTimeout] = useState<NodeJS.Timeout | null>(null)
@@ -57,44 +57,12 @@ export default function NavigationUser() {
     clearSearch
   } = useNavigation()
 
-  // Calculate dropdown position
-  const calculateDropdownPosition = useCallback(() => {
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect()
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-      const dropdownWidth = 256 // 64 * 4 (w-64 in Tailwind)
 
-      // Calculate position
-      let top = rect.bottom + scrollTop + 8 // 8px gap below button
-      let right = window.innerWidth - rect.right // Right align with button
-
-      // Ensure dropdown doesn't go off-screen horizontally
-      if (right < 16) { // 16px minimum margin
-        right = 16
-      }
-
-      // Ensure dropdown doesn't go off-screen horizontally on the right
-      if (window.innerWidth - right < dropdownWidth + 16) {
-        right = window.innerWidth - dropdownWidth - 16
-      }
-
-      // Ensure dropdown doesn't go off-screen vertically
-      const maxHeight = 400 // Approximate dropdown height
-      if (top + maxHeight > window.innerHeight + scrollTop) {
-        top = rect.top + scrollTop - maxHeight - 8 // Position above button
-      }
-
-      setDropdownPosition({ top, right })
-    }
-  }, [])
 
   // Toggle dropdown and calculate position
   const toggleDropdown = useCallback(() => {
-    if (!isDropdownOpen) {
-      calculateDropdownPosition()
-    }
     setIsDropdownOpen(!isDropdownOpen)
-  }, [isDropdownOpen, calculateDropdownPosition])
+  }, [isDropdownOpen])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -169,15 +137,11 @@ export default function NavigationUser() {
   // Recalculate position on window resize
   useEffect(() => {
     const handleResize = () => {
-      if (isDropdownOpen) {
-        calculateDropdownPosition()
-      }
+      // Position calculations no longer needed
     }
 
     const handleScroll = () => {
-      if (isDropdownOpen) {
-        calculateDropdownPosition()
-      }
+      // Position calculations no longer needed
     }
 
     window.addEventListener('resize', handleResize)
@@ -187,7 +151,7 @@ export default function NavigationUser() {
       window.removeEventListener('resize', handleResize)
       window.removeEventListener('scroll', handleScroll)
     }
-  }, [isDropdownOpen, calculateDropdownPosition])
+  }, [isDropdownOpen])
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -1126,9 +1090,11 @@ export default function NavigationUser() {
                   <div className="space-y-3">
                     {cart.items.slice(0, 6).map((item) => (
                       <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg border" style={{ borderColor: 'var(--border)' }}>
-                        <img
+                        <Image
                           src={item.image && item.image.trim() !== '' ? item.image : '/images/round.png'}
                           alt={item.name || 'Product'}
+                          width={64}
+                          height={64}
                           className="w-16 h-16 rounded object-cover bg-[var(--muted)]"
                           onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/round.png' }}
                         />

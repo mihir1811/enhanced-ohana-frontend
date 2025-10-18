@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Star, Filter, Edit, Trash2, Camera, ThumbsUp, MessageCircle } from 'lucide-react'
+import { Star, Filter, Edit, Trash2, ThumbsUp, MessageCircle } from 'lucide-react'
 
 export default function UserReviewsPage() {
   const [activeTab, setActiveTab] = useState<'my-reviews' | 'pending'>('my-reviews')
@@ -366,7 +366,7 @@ export default function UserReviewsPage() {
                     No pending reviews
                   </h3>
                   <p style={{ color: 'var(--muted-foreground)' }}>
-                    You're all caught up! New items will appear here after delivery.
+                    You&apos;re all caught up! New items will appear here after delivery.
                   </p>
                 </div>
               )}

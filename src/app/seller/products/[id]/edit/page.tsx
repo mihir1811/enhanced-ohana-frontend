@@ -8,7 +8,6 @@ import { jewelryService } from "@/services/jewelryService";
 import EditDiamondForm from "@/components/seller/editDiamondForms/EditDiamondForm";
 
 // import EditJewelryForm from "@/components/seller/editJewelryForms/EditJewelryForm";
-import { useAppSelector } from '@/store/hooks';
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import EditGemstoneForm from "@/components/seller/editDiamondForms/EditGemstoneForm";
@@ -16,7 +15,7 @@ import EditJewelryForm from "@/components/seller/editDiamondForms/EditJewelryFor
 
 export default function EditProductPage() {
   const { id } = useParams();
-  const [product, setProduct] = useState(null);
+  const [product, setProduct] = useState<unknown>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
     const sellerType = useSelector(
@@ -26,7 +25,7 @@ export default function EditProductPage() {
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    let fetcher: Promise<any>;
+    let fetcher: Promise<unknown>;
     if (sellerType === 'gemstone') {
       fetcher = gemstoneService.getGemstoneById(id as string);
     } else if (sellerType === 'jewellery') {
@@ -35,7 +34,7 @@ export default function EditProductPage() {
       fetcher = diamondService.getDiamondById(id as string);
     }
     fetcher
-      .then((res) => setProduct(res?.data || null))
+      .then((res) => setProduct((res as { data?: unknown })?.data || null))
       .catch((err) => setError(err.message || "Failed to fetch product"))
       .finally(() => setLoading(false));
   }, [id, sellerType]);

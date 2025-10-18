@@ -12,7 +12,7 @@ import Footer from '@/components/Footer';
 import { jewelryService } from '@/services/jewelryService';
 import Image from 'next/image';
 import Slider from 'rc-slider';
-// @ts-ignore TS7016: Could not find a declaration file for module 'rc-slider/assets/index.css'.
+// @ts-ignore: side-effect CSS import without type declarations
 import 'rc-slider/assets/index.css';
 import debounce from 'lodash.debounce';
 import WishlistButton from '@/components/shared/WishlistButton';
@@ -1833,7 +1833,7 @@ function ImageCarousel({ images, alt, className = "" }: ImageCarouselProps) {
         alt={alt}
         fill
         className="object-cover transition-transform duration-300"
-        onError={(e) => {
+        onError={() => {
           // Fallback to next image if current one fails
           const nextIndex = (currentImageIndex + 1) % validImages.length;
           if (nextIndex !== currentImageIndex && validImages[nextIndex]) {

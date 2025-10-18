@@ -5,7 +5,12 @@ import { CopyPlus } from 'lucide-react'
 import { useCompare } from '@/hooks/useCompare'
 
 interface CompareButtonProps {
-  product: any
+  product: {
+    id: string | number;
+    name?: string;
+    price: string | number;
+    images: string[];
+  }
   productType: 'diamond' | 'gemstone' | 'jewelry'
   className?: string
   size?: 'sm' | 'md' | 'lg'
@@ -27,7 +32,7 @@ const CompareButton: React.FC<CompareButtonProps> = ({
     e.stopPropagation()
     e.preventDefault()
     
-    if (isProductInCompare(product.id)) {
+    if (isProductInCompare(String(product.id))) {
       return // Already in compare
     }
     
@@ -40,7 +45,7 @@ const CompareButton: React.FC<CompareButtonProps> = ({
     addProduct(product, productType)
   }
 
-  const isInCompare = isProductInCompare(product.id)
+  const isInCompare = isProductInCompare(String(product.id))
   const isDisabled = !canAddMore() && !isInCompare
 
   // Size variations

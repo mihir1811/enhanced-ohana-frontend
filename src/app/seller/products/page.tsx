@@ -25,7 +25,7 @@ export default function SellerProductsPage() {
     }, 2000)
 
     return () => clearTimeout(timer)
-  }, []) // Empty dependency array - only run once on mount
+  }, [setPageLoading]) // Include setPageLoading in dependency array
 
 
   // Get sellerType from redux state
@@ -102,7 +102,7 @@ export default function SellerProductsPage() {
             No Products Found
           </h3>
           <p className="text-base" style={{ color: 'var(--muted-foreground)' }}>
-            You haven’t added any products yet. Click "Add New Product" to get started.
+            You haven&apos;t added any products yet. Click &ldquo;Add New Product&rdquo; to get started.
           </p>
         </div>
       )}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import { User, Mail, Phone, MapPin, Calendar, Shield, Star, Edit3, Save, X, Building, Award, TrendingUp, Loader2, Camera } from 'lucide-react'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { updateUserProfile, updateUserProfileAsync, updateProfilePictureAsync, setCredentials } from '@/features/auth/authSlice'
@@ -71,7 +72,7 @@ export default function UserProfilePage() {
   }
 
   // Format address for display
-  const formatAddress = (address: any) => {
+  const formatAddress = (address: { street?: string; city?: string; state?: string; zipCode?: string; country?: string } | null | undefined) => {
     if (!address) return 'No address provided'
     return `${address.street}, ${address.city}, ${address.state} ${address.zipCode}, ${address.country}`
   }
@@ -162,7 +163,7 @@ export default function UserProfilePage() {
       setSelectedProfilePicture(null)
       setProfilePicturePreview(null)
       
-    } catch (error) {
+    } catch {
       setSaveMessage({ type: 'error', text: 'An unexpected error occurred' })
     } finally {
       setIsLoading(false)
@@ -378,15 +379,19 @@ export default function UserProfilePage() {
                     onClick={handleProfilePictureClick}
                   >
                     {profilePicturePreview ? (
-                      <img 
+                      <Image 
                         src={profilePicturePreview} 
                         alt="Profile preview"
+                        width={120}
+                        height={120}
                         className="w-full h-full rounded-full object-cover"
                       />
                     ) : user.profilePicture ? (
-                      <img 
+                      <Image 
                         src={user.profilePicture} 
                         alt={user.name}
+                        width={120}
+                        height={120}
                         className="w-full h-full rounded-full object-cover"
                       />
                     ) : (

@@ -84,7 +84,7 @@ export const createSocket = ({ token }: CreateSocketOptions): Socket => {
     });
   });
 
-  socket.on('connect_error', (error: any) => {
+  socket.on('connect_error', (error: Error & { description?: string; type?: string }) => {
     console.error('❌ [socket] Raw socket connection error:', {
       message: error.message,
       description: error.description || 'Unknown error',
@@ -107,11 +107,11 @@ export type SocketRegisterPayload = {
 };
 
 // Helper functions to wrap events in CHAT_EVENT format
-export const wrapChatEvent = (type: string, data: any) => {
+export const wrapChatEvent = (type: string, data: unknown) => {
   return JSON.stringify({ type, data });
 };
 
-export const sendChatEvent = (socket: Socket, type: string, data: any) => {
+export const sendChatEvent = (socket: Socket, type: string, data: unknown) => {
   if (!socket.connected) {
     console.warn('⚠️ [socket] Cannot send event - socket not connected');
     return;

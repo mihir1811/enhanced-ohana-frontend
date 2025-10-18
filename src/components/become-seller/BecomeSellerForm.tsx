@@ -1,22 +1,18 @@
 'use client'
 
 import React, { useState } from 'react';
-import { SellerType, sellerService, type CreateSellerRequest, type SellerTypeValue } from '../../services/seller.service';
+import { SellerType, sellerService, type SellerTypeValue } from '../../services/seller.service';
+import Image from 'next/image';
 import { 
   Building, 
   MapPin, 
-  Upload, 
   CheckCircle, 
   AlertCircle, 
-  Eye, 
-  EyeOff,
   ArrowRight,
-  Star,
   Shield,
   Award,
   Users,
   Globe,
-  FileText,
   Camera,
   X
 } from 'lucide-react';
@@ -71,7 +67,8 @@ const BecomeSellerForm: React.FC<BecomeSellerFormProps> = ({ onSuccess }) => {
   ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value, files } = e.target as any;
+    const target = e.target as HTMLInputElement & HTMLSelectElement & HTMLTextAreaElement;
+    const { name, value, files } = target;
     if (name === 'companyLogo' && files && files[0]) {
       const file = files[0];
       setForm(f => ({ ...f, companyLogo: file }));
@@ -152,8 +149,8 @@ const BecomeSellerForm: React.FC<BecomeSellerFormProps> = ({ onSuccess }) => {
       setTimeout(() => {
         onSuccess?.();
       }, 2000);
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong. Please try again.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -384,9 +381,11 @@ const BecomeSellerForm: React.FC<BecomeSellerFormProps> = ({ onSuccess }) => {
                     >
                       {logoPreview ? (
                         <div className="relative">
-                          <img 
+                          <Image 
                             src={logoPreview} 
                             alt="Logo preview" 
+                            width={128}
+                            height={128}
                             className="w-32 h-32 object-contain mx-auto rounded-xl border border-gray-200"
                           />
                           <button
