@@ -1,20 +1,17 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { 
   MapPin, 
   Phone, 
   Mail, 
   Building, 
-  Calendar, 
   Shield, 
   Star, 
   CheckCircle, 
   AlertCircle,
   Globe,
-  Award,
-  TrendingUp,
-  Users,
   Package,
   Gem,
   Diamond,
@@ -25,7 +22,63 @@ import { useSellerProducts, SellerType } from "@/hooks/useSellerProducts";
 
 export const SellerTypes = SellerType;
 
-type SellerType = keyof typeof SellerTypes;
+type SellerTypeValue = keyof typeof SellerTypes;
+
+interface SellerInfo {
+  id: string | number;
+  companyName?: string;
+  companyLogo?: string;
+  isVerified?: boolean;
+  sellerType?: SellerTypeValue;
+  email?: string;
+  phone?: string;
+  address?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  country?: string;
+  website?: string;
+  description?: string;
+  rating?: number;
+  totalProducts?: number;
+  joinedDate?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  panCard?: string;
+  gstNumber?: string;
+  [key: string]: unknown;
+}
+
+interface ProductItem {
+  id: string | number;
+  name?: string;
+  price: number;
+  carat?: number;
+  shape?: string;
+  color?: string;
+  clarity?: string;
+  cut?: string;
+  metalType?: string;
+  metalPurity?: string;
+  category?: string;
+  jewelryType?: string;
+  gemstoneType?: string;
+  origin?: string;
+  treatment?: string;
+  image1?: string;
+  images?: string[];
+  discount?: number;
+  isSold?: boolean;
+  isOnAuction?: boolean;
+  [key: string]: unknown;
+}
+
+interface ProductSpec {
+  label: string;
+  value: string | undefined;
+}
 
 interface SellerProfilePageProps {
   sellerId: string;
@@ -81,21 +134,21 @@ const getProductTypeConfig = (sellerType: string) => {
   }
 };
 
-const getProductRoute = (product: any, productType: string) => {
+const getProductRoute = (product: ProductItem, productType: string): string => {
   if (product.shape || productType === 'diamonds') return `/diamonds/${product.id}`;
   if (productType === 'jewelry' || product.jewelryType) return `/product/jewelry/${product.id}`;
   if (productType === 'gemstones' || product.gemstoneType) return `/gemstones/${product.id}`;
   return `/products/${product.id}`;
 };
 
-const getProductIcon = (product: any, productType: string) => {
+const getProductIcon = (product: ProductItem, productType: string): string => {
   if (product.shape || productType === 'diamonds') return '💎';
   if (productType === 'jewelry' || product.jewelryType) return '💍';
   if (productType === 'gemstones' || product.gemstoneType) return '🔮';
   return '📦';
 };
 
-const getProductSpecs = (product: any, productType: string) => {
+const getProductSpecs = (product: ProductItem, productType: string): ProductSpec[] => {
   if (product.shape || productType === 'diamonds') {
     return [
       { label: 'Color', value: product.color },
@@ -121,7 +174,7 @@ const getProductSpecs = (product: any, productType: string) => {
 };
 
 export default function SellerProfilePage({ sellerId }: SellerProfilePageProps) {
-  const [seller, setSeller] = useState<any>(null);
+  const [seller, setSeller] = useState<SellerInfo | null>(null);
   const [loading, setLoading] = useState(true);
   
   // Use custom hook for seller products
@@ -139,7 +192,7 @@ export default function SellerProfilePage({ sellerId }: SellerProfilePageProps) 
         setSeller(sellerData);
         
         // Fetch products using the custom hook with seller type
-        await fetchProducts(sellerId, sellerData?.sellerType);
+        await fetchProducts(sellerId, sellerData?.sellerType as SellerTypeValue);
       } catch (error) {
         console.error('Error fetching seller data:', error);
       } finally {
@@ -177,7 +230,7 @@ export default function SellerProfilePage({ sellerId }: SellerProfilePageProps) 
     });
   };
 
-  const config = seller ? getProductTypeConfig(seller.sellerType) : getProductTypeConfig('');
+  const config = seller ? getProductTypeConfig(seller.sellerType || '') : getProductTypeConfig('');
   const colorClasses: { [key: string]: string } = {
     blue: 'bg-blue-100 text-blue-800',
     green: 'bg-green-100 text-green-800',
@@ -222,9 +275,11 @@ export default function SellerProfilePage({ sellerId }: SellerProfilePageProps) 
           <div className="flex items-end gap-6 -mt-16">
             <div className="relative">
               {seller.companyLogo ? (
-                <img
+                <Image
                   src={seller.companyLogo}
                   alt={seller.companyName || "Company Logo"}
+                  width={128}
+                  height={128}
                   className="w-32 h-32 rounded-2xl object-cover border-4 border-white shadow-lg bg-white"
                 />
               ) : (
@@ -247,7 +302,7 @@ export default function SellerProfilePage({ sellerId }: SellerProfilePageProps) 
             {/* Company Details */}
             <div className="flex-1 mt-4">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {seller.companyName || `Seller #${seller.id?.slice(0, 8)}`}
+                {seller.companyName || `Seller #${String(seller.id).slice(0, 8)}`}
               </h1>
               <div className="flex items-center gap-4 flex-wrap">
                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold ${
@@ -319,20 +374,20 @@ export default function SellerProfilePage({ sellerId }: SellerProfilePageProps) 
               <div className="p-4 bg-gray-50 rounded-xl">
                 <div className="space-y-2">
                   {seller.addressLine1 && (
-                    <p className="text-gray-900 font-medium">{seller.addressLine1}</p>
+                    <p className="text-gray-900 font-medium">{String(seller.addressLine1)}</p>
                   )}
                   {seller.addressLine2 && (
-                    <p className="text-gray-700">{seller.addressLine2}</p>
+                    <p className="text-gray-700">{String(seller.addressLine2)}</p>
                   )}
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <span>{seller.city}</span>
-                    {seller.state && <span>• {seller.state}</span>}
-                    {seller.zipCode && <span>• {seller.zipCode}</span>}
+                  <div className="flex items-center gap-1 text-gray-600">
+                    <span>{String(seller.city)}</span>
+                    {seller.state && <span>• {String(seller.state)}</span>}
+                    {seller.zipCode && <span>• {String(seller.zipCode)}</span>}
                   </div>
                   {seller.country && (
                     <div className="flex items-center gap-2 text-gray-600">
                       <Globe className="w-4 h-4" />
-                      <span>{seller.country}</span>
+                      <span>{String(seller.country)}</span>
                     </div>
                   )}
                 </div>
@@ -349,26 +404,26 @@ export default function SellerProfilePage({ sellerId }: SellerProfilePageProps) 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {seller.panCard && (
                 <div className="p-3 bg-gray-50 rounded-xl">
-                  <p className="text-sm text-gray-600">PAN Card</p>
-                  <p className="font-semibold text-gray-900">{seller.panCard}</p>
+                  <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">PAN Card</p>
+                  <p className="font-semibold text-gray-900">{String(seller.panCard)}</p>
                 </div>
               )}
               
               {seller.gstNumber && (
                 <div className="p-3 bg-gray-50 rounded-xl">
-                  <p className="text-sm text-gray-600">GST Number</p>
-                  <p className="font-semibold text-gray-900">{seller.gstNumber}</p>
+                  <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">GST Number</p>
+                  <p className="font-semibold text-gray-900">{String(seller.gstNumber)}</p>
                 </div>
               )}
 
               <div className="p-3 bg-gray-50 rounded-xl">
                 <p className="text-sm text-gray-600">Member Since</p>
-                <p className="font-semibold text-gray-900">{formatDate(seller.createdAt)}</p>
+                <p className="font-semibold text-gray-900">{formatDate(String(seller.createdAt || ''))}</p>
               </div>
 
               <div className="p-3 bg-gray-50 rounded-xl">
                 <p className="text-sm text-gray-600">Last Updated</p>
-                <p className="font-semibold text-gray-900">{formatDate(seller.updatedAt)}</p>
+                <p className="font-semibold text-gray-900">{formatDate(String(seller.updatedAt || ''))}</p>
               </div>
             </div>
           </div>
@@ -511,7 +566,7 @@ export default function SellerProfilePage({ sellerId }: SellerProfilePageProps) 
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {currentProducts.map((product: any, index: number) => {
+                {currentProducts.map((product: ProductItem, index: number) => {
                   // Determine product type based on seller type and product attributes
                   const productType = seller?.sellerType === SellerType.naturalDiamond || seller?.sellerType === SellerType.labGrownDiamond
                     ? 'diamonds'
@@ -532,9 +587,11 @@ export default function SellerProfilePage({ sellerId }: SellerProfilePageProps) 
                       {/* Product Image */}
                       <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden">
                         {product.image1 || product.images?.[0] ? (
-                          <img
-                            src={product.image1 || product.images?.[0]}
+                          <Image
+                            src={product.image1 || product.images?.[0] || ''}
                             alt={product.name || `${productType} product`}
+                            width={400}
+                            height={400}
                             className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
                           />
                         ) : (
@@ -611,7 +668,7 @@ export default function SellerProfilePage({ sellerId }: SellerProfilePageProps) 
                           </div>
                           {product.discount && (
                             <p className="text-xs text-green-600 font-medium">
-                              {product.discount}% off retail
+                              {String(product.discount)}% off retail
                             </p>
                           )}
                         </div>
@@ -638,7 +695,7 @@ export default function SellerProfilePage({ sellerId }: SellerProfilePageProps) 
                   <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">No Products Available</h3>
                   <p className="text-gray-600">
-                    This seller hasn't listed any {config.primaryLabel.toLowerCase()} yet.
+                    This seller hasn&apos;t listed any {config.primaryLabel.toLowerCase()} yet.
                   </p>
                 </div>
               )}

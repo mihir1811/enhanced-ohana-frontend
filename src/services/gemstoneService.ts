@@ -2,6 +2,15 @@ import api from './api';
 import { ApiResponse } from './api';
 
 // Gemstone interfaces
+export interface GemstoneAuctionBid {
+  id: number;
+  userId: string;
+  auctionId: number;
+  bidAmount: number;
+  bidTime: string;
+  isWinning?: boolean;
+}
+
 export interface GemstonItem {
   id: string | number;
   name: string;
@@ -93,7 +102,7 @@ export interface DetailedGemstone {
     isSold: boolean;
     createdAt: string;
     updatedAt: string;
-    bids: any[];
+    bids: GemstoneAuctionBid[];
   };
 }
 
@@ -141,7 +150,7 @@ export const transformDetailedGemstone = (detailed: DetailedGemstone): GemstonIt
     isSold: boolean;
     createdAt: string;
     updatedAt: string;
-    bids: any[];
+    bids: GemstoneAuctionBid[];
   };
 } => {
   return {
@@ -304,10 +313,12 @@ export const gemstoneService = {
     }>(`/gem-stone?${queryParams.toString()}`);
   },
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getGemstonesBySeller: async <T = any>({ sellerId, page = 1, limit = 10 }: { sellerId: string, page?: number, limit?: number }) => {
     return api.get<T>(`/gem-stone?sellerId=${sellerId}&page=${page}&limit=${limit}`);
   },
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   searchGemstones: async <T = any>(search: string) => {
     const params = new URLSearchParams();
     if (search) {
@@ -325,6 +336,7 @@ export const gemstoneService = {
     return api.upload('/gem-stone', formData, token);
   },
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getGemstoneById: async <T = any>(id: string) => {
     return api.get<T>(`/gem-stone/${id}`, { headers: { Accept: 'application/json' } });
   },

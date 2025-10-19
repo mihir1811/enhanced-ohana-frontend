@@ -1,10 +1,86 @@
 
-import { apiService } from './api';
+import { apiService, ApiResponse } from './api';
 import { API_CONFIG, buildApiUrl } from '../lib/constants';
 
-export interface ApiResponse<T> {
-  data: T;
-  [key: string]: any;
+export interface SellerInfo {
+  id: string | number;
+  name: string;
+  email: string;
+  phone?: string;
+  businessName?: string;
+  verificationStatus?: string;
+  rating?: number;
+  totalProducts?: number;
+  joinedDate?: string;
+  [key: string]: unknown;
+}
+
+export interface DiamondData {
+  id: string | number;
+  price: number;
+  carat: number;
+  cut: string;
+  color: string;
+  clarity: string;
+  shape: string;
+  certification?: string;
+  images?: string[];
+  sellerId: string;
+  [key: string]: unknown;
+}
+
+export interface DiamondResponse extends ApiResponse<DiamondData[]> {
+  total?: number;
+  page?: number;
+  limit?: number;
+}
+
+export interface ProductUploadResponse {
+  success: boolean;
+  message: string;
+  uploadedCount?: number;
+  failedCount?: number;
+  errors?: string[];
+  [key: string]: unknown;
+}
+
+export interface JewelryData {
+  id: string | number;
+  name: string;
+  price: number;
+  category: string;
+  material: string;
+  weight?: number;
+  images?: string[];
+  sellerId: string;
+  [key: string]: unknown;
+}
+
+export interface GemstoneData {
+  id: string | number;
+  name: string;
+  price: number;
+  carat: number;
+  color: string;
+  clarity: string;
+  origin?: string;
+  treatment?: string;
+  images?: string[];
+  sellerId: string;
+  [key: string]: unknown;
+}
+
+export interface ProductsBySellerResponse {
+  data: {
+    diamonds: DiamondData[];
+    jewelry: JewelryData[];
+    gemstones: GemstoneData[];
+    all: (DiamondData | JewelryData | GemstoneData)[];
+  };
+}
+
+export interface SearchParams {
+  [key: string]: string | number | boolean | undefined;
 }
 
 export interface DiamondFilters {
@@ -13,12 +89,12 @@ export interface DiamondFilters {
   sort?: string;
   page?: number;
   limit?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 class DiamondService {
   // Get seller info by sellerId
-  async getSellerInfo(sellerId: string): Promise<ApiResponse<any>> {
+  async getSellerInfo(sellerId: string): Promise<ApiResponse<SellerInfo>> {
     const url = buildApiUrl(API_CONFIG.ENDPOINTS.SELLER.INFO, { seller_id: sellerId });
     const response = await fetch(url, {
       method: 'GET',
@@ -32,13 +108,13 @@ class DiamondService {
     return response.json();
   }
   // Bulk upload products via Excel (dynamic productType)
-  async uploadExcel(file: File, productType: string = 'diamond', token?: string): Promise<any> {
+  async uploadExcel(file: File, productType: string = 'diamond', token?: string): Promise<ApiResponse<ProductUploadResponse>> {
     const formData = new FormData();
     formData.append('file', file);
     return apiService.upload(`/products/upload-excel?productType=${encodeURIComponent(productType)}`, formData, token);
   }
   // Delete diamond by ID
-  async deleteDiamond(id: string | number, token?: string): Promise<any> {
+  async deleteDiamond(id: string | number, token?: string): Promise<ApiResponse<unknown>> {
     const diamondId = typeof id === 'string' ? parseInt(id, 10) : id;
     if (isNaN(diamondId)) {
       throw new Error('Invalid diamond ID provided');
@@ -46,7 +122,7 @@ class DiamondService {
     return apiService.delete(`/diamond/${diamondId}`, token);
   }
   // Update diamond by ID (with file upload)
-  async updateDiamond(id: string | number, formData: FormData, token?: string): Promise<any> {
+  async updateDiamond(id: string | number, formData: FormData, token?: string): Promise<ApiResponse<DiamondData>> {
     // Ensure ID is properly formatted for the API endpoint
     const diamondId = typeof id === 'string' ? parseInt(id, 10) : id;
     if (isNaN(diamondId)) {
@@ -55,7 +131,7 @@ class DiamondService {
     return apiService.uploadPatch(`/diamond/${diamondId}`, formData, token);
   }
   // Update diamond by ID (JSON data only)
-  async updateDiamondData(id: string | number, data: any, token?: string): Promise<any> {
+  async updateDiamondData(id: string | number, data: Partial<DiamondData>, token?: string): Promise<ApiResponse<DiamondData>> {
     const diamondId = typeof id === 'string' ? parseInt(id, 10) : id;
     if (isNaN(diamondId)) {
       throw new Error('Invalid diamond ID provided');
@@ -63,16 +139,16 @@ class DiamondService {
     return apiService.patch(`/diamond/${diamondId}`, data, token);
   }
   // Add new diamond (with file upload)
-  async addDiamond(formData: FormData, token?: string): Promise<any> {
+  async addDiamond(formData: FormData, token?: string): Promise<ApiResponse<DiamondData>> {
     return apiService.upload('/diamond', formData, token);
   }
   // Get all diamonds with filters
-  async getDiamonds(params?: DiamondFilters): Promise<any> {
+  async getDiamonds(params?: DiamondFilters): Promise<ApiResponse<DiamondData[]>> {
     return apiService.get('/diamond', params);
   }
 
   // Get single diamond by ID
-  async getDiamondById(id: string | number): Promise<any> {
+  async getDiamondById(id: string | number): Promise<ApiResponse<DiamondData>> {
     const diamondId = typeof id === 'string' ? parseInt(id, 10) : id;
     if (isNaN(diamondId)) {
       throw new Error('Invalid diamond ID provided');
@@ -81,30 +157,30 @@ class DiamondService {
   }
 
   // Search diamonds
-  async searchDiamonds(query: string, params?: Record<string, any>): Promise<any> {
+  async searchDiamonds(query: string, params?: SearchParams): Promise<ApiResponse<DiamondData[]>> {
     return apiService.get('/diamond/search', { search: query, ...params });
   }
 
   // Get diamonds by seller
-  async getDiamondsBySeller(sellerId: string, params?: Record<string, any>): Promise<any> {
+  async getDiamondsBySeller(sellerId: string, params?: SearchParams): Promise<ApiResponse<DiamondData[]>> {
     return apiService.get(`/diamond/seller/${sellerId}`, params);
   }
 
   // Get jewelry by seller
-  async getJewelryBySeller(sellerId: string, params?: Record<string, any>): Promise<any> {
+  async getJewelryBySeller(sellerId: string, params?: SearchParams): Promise<ApiResponse<JewelryData[]>> {
     const queryParams = { sellerId, ...params };
     return apiService.get('/jewellery', queryParams);
   }
 
   // Get gemstones by seller
-  async getGemstonesBySeller(sellerId: string, params?: Record<string, any>): Promise<any> {
+  async getGemstonesBySeller(sellerId: string, params?: SearchParams): Promise<ApiResponse<GemstoneData[]>> {
     const queryParams = { sellerId, ...params };
     return apiService.get('/gemstone', queryParams);
   }
 
   // Get all products by seller based on seller type
-  async getProductsBySeller(sellerId: string, sellerType?: string, params?: Record<string, any>): Promise<any> {
-    const promises: Promise<any>[] = [];
+  async getProductsBySeller(sellerId: string, sellerType?: string, params?: SearchParams): Promise<ProductsBySellerResponse> {
+    const promises: Promise<ApiResponse<unknown[]>>[] = [];
     
     // Based on seller type, fetch relevant products
     if (!sellerType) {
@@ -137,9 +213,9 @@ class DiamondService {
     }
 
     return Promise.allSettled(promises).then((results) => {
-      const diamonds = results[0]?.status === 'fulfilled' ? results[0].value?.data || [] : [];
-      const jewelry = results[1]?.status === 'fulfilled' ? results[1].value?.data || [] : [];
-      const gemstones = results[2]?.status === 'fulfilled' ? results[2].value?.data || [] : [];
+      const diamonds = results[0]?.status === 'fulfilled' ? (results[0].value?.data || []) as DiamondData[] : [];
+      const jewelry = results[1]?.status === 'fulfilled' ? (results[1].value?.data || []) as JewelryData[] : [];
+      const gemstones = results[2]?.status === 'fulfilled' ? (results[2].value?.data || []) as GemstoneData[] : [];
       
       return {
         data: {
@@ -153,7 +229,7 @@ class DiamondService {
   }
 
   // Get all products (diamonds + jewelry) by seller - keeping for backward compatibility
-  async getAllProductsBySeller(sellerId: string, params?: Record<string, any>): Promise<any> {
+  async getAllProductsBySeller(sellerId: string, params?: SearchParams): Promise<ProductsBySellerResponse> {
     return this.getProductsBySeller(sellerId, undefined, params);
   }
 }

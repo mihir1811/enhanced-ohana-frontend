@@ -37,7 +37,7 @@ export interface JewelryItem {
     chain_type: string;
     clasp_type: string;
     is_adjustable: boolean;
-    [key: string]: any;
+    [key: string]: string | number | boolean;
   };
   description: string;
   image1: string | null;
@@ -82,6 +82,12 @@ export interface JewelryApiResponse {
       next: number | null;
     };
   };
+}
+
+export interface SingleJewelryApiResponse {
+  success: boolean;
+  message: string;
+  data: JewelryItem;
 }
 
 export const jewelryService = {
@@ -146,6 +152,7 @@ export const jewelryService = {
     }>(`/jewellery?${queryParams.toString()}`);
   },
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getJewelriesBySeller: async <T = any>({ sellerId, page = 1, limit = 10, search = '', sort = '-createdAt' }: { sellerId: string, page?: number, limit?: number, search?: string, sort?: string }) => {
     // Compose query string with sellerId and other params
     const params = new URLSearchParams({
@@ -166,6 +173,7 @@ export const jewelryService = {
   addJewelry: async (formData: FormData, token: string) => {
     return api.upload('/jewellery', formData, token);
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getJewelryById: async <T = any>(id: string) => {
     return api.get<T>(`/jewellery/${id}`);
   },

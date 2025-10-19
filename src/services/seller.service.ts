@@ -24,9 +24,51 @@ export interface CreateSellerRequest {
   companyLogo?: File;
 }
 
+export interface SellerInfo {
+  id: string;
+  companyName: string;
+  companyLogo?: string;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode: string;
+  sellerType: SellerTypeValue;
+  verificationStatus?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface UpdateSellerInfoRequest {
+  companyName: string;
+  companyLogo?: File;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode: string;
+  sellerType: SellerTypeValue;
+  panCard?: File | string;
+  gstNumber?: string;
+}
+
+export interface CreateSellerResponse {
+  success: boolean;
+  message: string;
+  seller: SellerInfo;
+}
+
+export interface UpdateSellerInfoResponse {
+  success: boolean;
+  message: string;
+  seller: SellerInfo;
+}
+
 class SellerService {
   // Create seller with exact API call matching the curl request
-  async createSeller(data: CreateSellerRequest, token?: string): Promise<ApiResponse<any>> {
+  async createSeller(data: CreateSellerRequest, token?: string): Promise<ApiResponse<CreateSellerResponse>> {
     // Build FormData exactly matching the curl request
     const formData = new FormData();
     
@@ -63,7 +105,7 @@ class SellerService {
     return response.json();
   }
 
-  async updateSellerInfo(data: any, token?: string): Promise<any> {
+  async updateSellerInfo(data: UpdateSellerInfoRequest, token?: string): Promise<UpdateSellerInfoResponse> {
     const formData = new FormData();
     formData.append('companyName', data.companyName);
     if (data.companyLogo) formData.append('companyLogo', data.companyLogo);
@@ -92,7 +134,7 @@ class SellerService {
     return response.json();
   }
 
-  async getSellerInfo(sellerId: string): Promise<any> {
+  async getSellerInfo(sellerId: string): Promise<SellerInfo> {
     const response = await fetch(`${API_CONFIG.BASE_URL}/seller/${sellerId}`, {
       method: 'GET',
       headers: {
