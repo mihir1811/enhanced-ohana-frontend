@@ -1,19 +1,29 @@
 
 
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import BulkUploadModal from './BulkUploadModal';
-import { toast } from 'react-hot-toast';
 import { gemstoneService } from '@/services/gemstoneService';
 import GemstoneProductCard, { GemstoneProduct } from './GemstoneProductCard';
 
 // API response type
 import { ApiResponse } from '@/services/api';
 import { useSelector } from 'react-redux';
+
+// Redux state interface
+interface RootState {
+  seller: {
+    profile?: {
+      id: string;
+    };
+  };
+}
+
 type GemstoneApiResponse = {
   data: GemstoneProduct[];
   meta?: {
     total?: number;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 };
 
@@ -25,15 +35,15 @@ const GemstonesListing = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const limit = 10;
   const [total, setTotal] = useState(0);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const handleBulkFileSelect = (file: File) => {
+  const handleBulkFileSelect = () => {
     setBulkModalOpen(false);
     setRefreshKey((k) => k + 1);
   };
-  const sellerId = useSelector((state: any) => state.seller.profile?.id) || 'default-seller-id'; // Replace with actual sellerId from auth/user context
+  const sellerId = useSelector((state: RootState) => state.seller.profile?.id) || 'default-seller-id'; // Replace with actual sellerId from auth/user context
 
   // TODO: Replace with actual sellerId from auth/user context
 
@@ -134,9 +144,11 @@ const GemstonesListing = () => {
                   {gemstones.map((gem) => (
                     <tr key={gem.id} className="border-t">
                       <td className="px-4 py-2">
-                        <img
+                        <Image
                           src={gem.image1 || 'https://media.istockphoto.com/id/1493089752/vector/box-and-package-icon-concept.jpg'}
                           alt={gem.name}
+                          width={64}
+                          height={64}
                           className="w-16 h-16 object-cover rounded"
                         />
                       </td>
