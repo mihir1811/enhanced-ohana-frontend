@@ -1,4 +1,5 @@
 import { GemstoneFilterValues } from './GemstoneFilters';
+import { RawGemstone } from '@/types/unified-product';
 
 export const getDefaultGemstoneFilters = (gemstoneType: 'single' | 'melee'): GemstoneFilterValues => {
   const baseFilters: GemstoneFilterValues = {
@@ -34,7 +35,7 @@ export const getDefaultGemstoneFilters = (gemstoneType: 'single' | 'melee'): Gem
   return baseFilters;
 };
 
-export const transformApiGemstone = (apiGemstone: any) => {
+export const transformApiGemstone = (apiGemstone: RawGemstone) => {
   // Transform API gemstone data to match our component interface if needed
   return {
     ...apiGemstone,

@@ -14,27 +14,27 @@ import {
   ArrowLeft,
   Truck,
   RefreshCw,
-  Award,
-  Info,
   Plus,
   Minus,
   Check,
   MessageSquare
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { WishlistButton } from '@/components/shared/WishlistButton';
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
 import { cartService } from '@/services/cartService';
+import { JewelryItem } from '@/services/jewelryService';
+import { RawJewelry } from '@/types/unified-product';
 
 // Minimalistic Image Gallery Component
 interface ImageGalleryProps {
   images: (string | null | undefined)[]
   alt: string
-  className?: string
 }
 
-function ImageGallery({ images, alt, className = "" }: ImageGalleryProps) {
+function ImageGallery({ images, alt }: ImageGalleryProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [showZoom, setShowZoom] = useState(false)
 
@@ -59,9 +59,11 @@ function ImageGallery({ images, alt, className = "" }: ImageGalleryProps) {
       {/* Main Image Display - Minimal Design */}
       <div className="relative bg-white rounded-3xl overflow-hidden border border-gray-100 group">
         <div className="aspect-square relative">
-          <img
+          <Image
             src={validImages[currentImageIndex]}
             alt={alt}
+            width={400}
+            height={400}
             className="w-full h-full object-cover cursor-zoom-in transition-transform duration-700 hover:scale-105"
             onClick={() => setShowZoom(true)}
           />
@@ -103,7 +105,7 @@ function ImageGallery({ images, alt, className = "" }: ImageGalleryProps) {
                   : 'border-gray-200 hover:border-gray-300'
                 }`}
             >
-              <img src={img} alt={`View ${index + 1}`} className="w-full h-full object-cover" />
+              <Image src={img} alt={`View ${index + 1}`} width={64} height={64} className="w-full h-full object-cover" />
             </button>
           ))}
         </div>
@@ -113,9 +115,11 @@ function ImageGallery({ images, alt, className = "" }: ImageGalleryProps) {
       {showZoom && (
         <div className="fixed inset-0 z-50 bg-white/95 backdrop-blur-sm flex items-center justify-center p-8" onClick={() => setShowZoom(false)}>
           <div className="relative max-w-4xl max-h-full">
-            <img
+            <Image
               src={validImages[currentImageIndex]}
               alt={alt}
+              width={800}
+              height={800}
               className="max-w-full max-h-full object-contain rounded-2xl"
             />
             <button
@@ -131,12 +135,59 @@ function ImageGallery({ images, alt, className = "" }: ImageGalleryProps) {
   )
 }
 
+// Extended jewelry type for this component that includes all possible properties
+interface JewelryDetailsItem {
+  id: number | string;
+  name?: string;
+  description?: string;
+  basePrice?: number;
+  makingCharge?: number;
+  tax?: number;
+  totalPrice?: number;
+  stonePrice?: number;
+  metalType?: string;
+  metalPurity?: string;
+  metalWeight?: number;
+  grossWeight?: number;
+  totalWeight?: number;
+  size?: string;
+  category?: string;
+  subcategory?: string;
+  collection?: string;
+  image1?: string | null;
+  image2?: string | null;
+  image3?: string | null;
+  image4?: string | null;
+  image5?: string | null;
+  image6?: string | null;
+  sellerId?: string;
+  user_id?: string;
+  seller?: {
+    id: string;
+    companyName?: string;
+    companyLogo?: string;
+  };
+  attributes?: {
+    [key: string]: any;
+  };
+  stones?: Array<{
+    stoneType?: string;
+    stoneCaratWeight?: number;
+    stoneColor?: string;
+    stoneClarity?: string;
+    stoneCut?: string;
+    stoneShape?: string;
+    stonePrice?: number;
+    [key: string]: any;
+  }>;
+  [key: string]: any; // Allow additional properties
+}
+
 interface JewelryDetailsPageProps {
-  jewelry: any | null;
+  jewelry: JewelryDetailsItem | null;
 }
 
 const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
-  const [imgIdx, setImgIdx] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedTab, setSelectedTab] = useState('details');
   const [collapsedSections, setCollapsedSections] = useState({
@@ -671,7 +722,7 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                                     </div>
                                   ))}
                                 </div>
-                                {index < jewelry.stones.length - 1 && (
+                                {index < (jewelry.stones?.length || 0) - 1 && (
                                   <hr className="border-gray-100" />
                                 )}
                               </div>
