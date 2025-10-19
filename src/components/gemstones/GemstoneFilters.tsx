@@ -58,13 +58,7 @@ const GEMSTONE_TYPES = [
   'Ruby', 'Sapphire', 'Emerald', 'Spinel', 'Tourmaline', 'Garnet', 'Topaz', 'Aquamarine', 'Tanzanite', 'Opal', 'Peridot', 'Amethyst', 'Citrine', 'Morganite', 'Zircon', 'Alexandrite', 'Other'
 ];
 
-const GEMSTONE_COLORS = [
-  'Red', 'Pink', 'Blue', 'Green', 'Yellow', 'Orange', 'Purple', 'Violet', 'Brown', 'Black', 'White', 'Colorless', 'Multi-color'
-];
 
-const GEMSTONE_SHAPES = [
-  'Oval', 'Round', 'Cushion', 'Pear', 'Emerald', 'Marquise', 'Heart', 'Princess', 'Trillion', 'Octagon', 'Cabochon', 'Other'
-];
 
 const GEMSTONE_CLARITY = [
   'IF', 'VVS', 'VS', 'SI', 'I', 'Translucent', 'Opaque', 'Eye Clean', 'Included', 'Other'
@@ -82,21 +76,7 @@ const GEMSTONE_CERTIFICATIONS = [
   'GIA', 'IGI', 'Gübelin', 'SSEF', 'GRS', 'AGL', 'GIT', 'NGTC', 'Other'
 ];
 
-const GEMSTONE_ENHANCEMENTS = [
-  'None', 'Heat', 'Oil', 'Resin', 'Lead Glass', 'Surface Diffusion', 'Other'
-];
 
-const GEMSTONE_TRANSPARENCY = [
-  'Transparent', 'Translucent', 'Opaque'
-];
-
-const GEMSTONE_LUSTER = [
-  'Vitreous', 'Resinous', 'Greasy', 'Silky', 'Pearly', 'Adamantine', 'Dull', 'Other'
-];
-
-const GEMSTONE_PHENOMENA = [
-  'Asterism', 'Chatoyancy', 'Color Change', 'Play-of-Color', 'Adularescence', 'Iridescence', 'Labradorescence', 'Other'
-];
 
 const GEMSTONE_ORIGINS = [
   'Burma', 'Sri Lanka', 'Madagascar', 'Mozambique', 'Colombia', 'Brazil', 'Thailand', 'Tanzania', 'Afghanistan', 'Pakistan', 'Zambia', 'Other'
@@ -105,40 +85,23 @@ const GEMSTONE_ORIGINS = [
 export default function GemstoneFilters({ filters, onFiltersChange, gemstoneType, className = '' }: GemstoneFiltersProps) {
   
   // Helper function to update filters
-  const updateFilter = (key: keyof GemstoneFilterValues, value: any) => {
+  const updateFilter = <K extends keyof GemstoneFilterValues>(key: K, value: GemstoneFilterValues[K]) => {
     onFiltersChange({
       ...filters,
       [key]: value
     })
   }
 
-  // Helper function to handle array updates
-  const handleArrayFilter = (key: keyof GemstoneFilterValues, value: string) => {
-    const currentArray = (filters[key] as string[]) || [];
-    const newArray = currentArray.includes(value)
-      ? currentArray.filter(item => item !== value)
-      : [...currentArray, value];
-    updateFilter(key, newArray);
-  };
-
-  // Helper function to handle range updates
-  const handleRangeFilter = (key: keyof GemstoneFilterValues, field: 'min' | 'max', value: number) => {
-    const currentRange = filters[key] as { min: number; max: number };
-    updateFilter(key, { ...currentRange, [field]: value });
-  };
-
   // Multi-select filter component matching DiamondFilters exactly
   const MultiSelectFilter = ({ 
     options, 
     selected, 
     onChange, 
-    placeholder,
     layout = 'grid'
   }: { 
     options: string[]
     selected: string[]
     onChange: (values: string[]) => void
-    placeholder: string
     layout?: 'grid' | 'horizontal'
   }) => (
     <div className="space-y-3">
@@ -219,8 +182,7 @@ export default function GemstoneFilters({ filters, onFiltersChange, gemstoneType
     value, 
     onChange, 
     step = 1, 
-    unit = '',
-    showSlider = false
+    unit = ''
   }: { 
     min: number
     max: number
@@ -228,7 +190,6 @@ export default function GemstoneFilters({ filters, onFiltersChange, gemstoneType
     onChange: (range: { min: number; max: number }) => void
     step?: number
     unit?: string
-    showSlider?: boolean
   }) => (
     <div className="space-y-2">
       {/* Current Range Display */}
@@ -353,7 +314,6 @@ export default function GemstoneFilters({ filters, onFiltersChange, gemstoneType
           options={GEMSTONE_TYPES}
           selected={filters.gemstoneType}
           onChange={(values) => updateFilter('gemstoneType', values)}
-          placeholder="Select gemstone types"
           layout="grid"
         />
       </Expand>
@@ -376,7 +336,6 @@ export default function GemstoneFilters({ filters, onFiltersChange, gemstoneType
           options={GEMSTONE_CUTS}
           selected={filters.cut}
           onChange={(values) => updateFilter('cut', values)}
-          placeholder="Select cut grades"
           layout="grid"
         />
       </Expand>
@@ -387,7 +346,6 @@ export default function GemstoneFilters({ filters, onFiltersChange, gemstoneType
           options={GEMSTONE_CLARITY}
           selected={filters.clarity}
           onChange={(values) => updateFilter('clarity', values)}
-          placeholder="Select clarity"
           layout="grid"
         />
       </Expand>
@@ -398,7 +356,6 @@ export default function GemstoneFilters({ filters, onFiltersChange, gemstoneType
           options={GEMSTONE_ORIGINS}
           selected={filters.origin}
           onChange={(values) => updateFilter('origin', values)}
-          placeholder="Select origins"
           layout="grid"
         />
       </Expand>
@@ -409,7 +366,6 @@ export default function GemstoneFilters({ filters, onFiltersChange, gemstoneType
           options={GEMSTONE_TREATMENTS}
           selected={filters.treatment}
           onChange={(values) => updateFilter('treatment', values)}
-          placeholder="Select treatments"
           layout="grid"
         />
       </Expand>
@@ -420,7 +376,6 @@ export default function GemstoneFilters({ filters, onFiltersChange, gemstoneType
           options={GEMSTONE_CERTIFICATIONS}
           selected={filters.certification}
           onChange={(values) => updateFilter('certification', values)}
-          placeholder="Select certifications"
           layout="grid"
         />
       </Expand>

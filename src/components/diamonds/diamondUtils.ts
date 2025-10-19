@@ -2,7 +2,7 @@ import { DiamondFilterValues } from './DiamondFilters';
 import { Diamond } from './DiamondResults';
 
 // Interface for API diamond data
-interface ApiDiamondData {
+export interface ApiDiamondData {
   id: string | number;
   shape?: string;
   caratWeight?: string | number;

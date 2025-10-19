@@ -3,7 +3,7 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import DiamondFilters, { DiamondFilterValues } from './DiamondFilters';
 import DiamondResults, { Diamond } from './DiamondResults';
-import { getDefaultDiamondFilters, transformApiDiamond } from './diamondUtils';
+import { getDefaultDiamondFilters, transformApiDiamond, ApiDiamondData } from './diamondUtils';
 import { cartService } from '@/services/cartService';
 import { useAppSelector } from '@/store/hooks';
 
@@ -48,7 +48,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
     })
       .then((res) => {
         // API: { data: [...], meta: { total, currentPage, perPage } }
-        setDiamonds(res.data.data.map((item) => transformApiDiamond(item as any)));
+        setDiamonds(res.data.data.map((item) => transformApiDiamond(item as ApiDiamondData)));
         setTotalCount(res.data.meta?.total || 0);
         setCurrentPage(res.data.meta?.currentPage || 1);
         setPageSize(res.data.meta?.perPage || 20);

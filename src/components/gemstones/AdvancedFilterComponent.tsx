@@ -105,10 +105,16 @@ interface FilterConfig {
   };
 }
 
+// Type for filter values - can be array of strings, single string, or array of numbers
+type FilterValue = string[] | string | [number, number];
+
+// Type for the values object containing all filter values
+type FilterValues = Record<string, FilterValue>;
+
 interface AdvancedFilterComponentProps {
   filters: FilterConfig[];
-  values: any;
-  onChange: (key: string, value: any) => void;
+  values: FilterValues;
+  onChange: (key: string, value: FilterValue) => void;
   onReset: () => void;
 }
 
@@ -438,7 +444,7 @@ const AdvancedFilterComponent: React.FC<AdvancedFilterComponentProps> = ({
             {filter.type === 'checkbox' && filter.options && (
               <CheckboxFilter
                 options={filter.options}
-                value={values[filter.key] || []}
+                value={(values[filter.key] as string[]) || []}
                 onChange={(value) => onChange(filter.key, value)}
                 renderOption={filter.renderOption}
               />
@@ -447,7 +453,7 @@ const AdvancedFilterComponent: React.FC<AdvancedFilterComponentProps> = ({
             {filter.type === 'radio' && filter.options && (
               <RadioFilter
                 options={filter.options as { value: string; label: string }[]}
-                value={values[filter.key] || ''}
+                value={(values[filter.key] as string) || ''}
                 onChange={(value) => onChange(filter.key, value)}
               />
             )}
@@ -455,7 +461,7 @@ const AdvancedFilterComponent: React.FC<AdvancedFilterComponentProps> = ({
             {filter.type === 'slider' && filter.sliderConfig && (
               <SliderFilter
                 config={filter.sliderConfig}
-                value={values[filter.key] || filter.sliderConfig.defaultValue || [filter.sliderConfig.min, filter.sliderConfig.max]}
+                value={(values[filter.key] as [number, number]) || filter.sliderConfig.defaultValue || [filter.sliderConfig.min, filter.sliderConfig.max]}
                 onChange={(value) => onChange(filter.key, value)}
               />
             )}
@@ -468,4 +474,4 @@ const AdvancedFilterComponent: React.FC<AdvancedFilterComponentProps> = ({
 
 export default AdvancedFilterComponent;
 export { gemstoneTypes, gemstoneIcons };
-export type { FilterConfig };
+export type { FilterConfig, FilterValue, FilterValues };

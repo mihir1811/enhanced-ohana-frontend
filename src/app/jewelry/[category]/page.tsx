@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
-  Filter, Grid, List, Search, X, Heart, ShoppingCart,
+  Grid, List, Search, X, ShoppingCart,
   Eye, MapPin, Star, Loader2, ChevronDown, ChevronUp,
   ChevronLeft, ChevronRight
 } from 'lucide-react';
@@ -48,7 +48,17 @@ interface JewelryItem {
   image5?: string | null;
   image6?: string | null;
   sellerId: string;
-  stones?: any[];
+  stones?: Array<{
+    id: number;
+    jewelleryId: number;
+    type: string;
+    shape: string;
+    carat: number;
+    color: string;
+    clarity: string;
+    cut: string;
+    certification: string;
+  }>;
   isOnAuction?: boolean;
 }
 
@@ -684,8 +694,6 @@ const CATEGORY_FILTERS = {
   }
 };
 
-const CERTIFICATION_OPTIONS = ['GIA', 'AGS', 'SSEF', 'Gübelin', 'AGL']
-
 const SORT_OPTIONS = [
   { value: '-createdAt', label: 'Newest First' },
   { value: 'createdAt', label: 'Oldest First' },
@@ -809,13 +817,16 @@ export default function JewelryCategoryPage() {
 
   // Debounced price range update function
   const debouncedPriceRangeUpdate = useCallback(
-    debounce((newPriceRange: { min: number; max: number }) => {
-      setFilters(prev => ({
-        ...prev,
-        priceRange: newPriceRange
-      }))
-      setPagination(prev => ({ ...prev, page: 1 }))
-    }, 500), // 500ms delay
+    (newPriceRange: { min: number; max: number }) => {
+      const debouncedFn = debounce(() => {
+        setFilters(prev => ({
+          ...prev,
+          priceRange: newPriceRange
+        }))
+        setPagination(prev => ({ ...prev, page: 1 }))
+      }, 500);
+      debouncedFn();
+    },
     [setFilters, setPagination]
   )
 
@@ -851,9 +862,6 @@ export default function JewelryCategoryPage() {
       setLoading(false)
     }
   }, [])
-
-  // Helper function to check if current category is watches
-  const isWatchesCategory = () => category === 'watches'
 
   // Build query params from filters
   const buildQueryParams = useCallback((): JewelryQueryParams => {
@@ -1814,9 +1822,11 @@ function ImageCarousel({ images, alt, className = "" }: ImageCarouselProps) {
 
   return (
     <div className={`relative group ${className}`}>
-      <img
+      <Image
         src={validImages[currentImageIndex]}
         alt={alt}
+        width={400}
+        height={400}
         className="w-full h-full object-cover transition-transform duration-300"
         onError={() => {
           // Fallback to next image if current one fails
