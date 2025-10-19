@@ -33,13 +33,13 @@ export type ChatMessageDto = {
   fromId: string
   toId: string
   message: string
-  fileUrl?: string | null
+  fileUrl: string | null
   messageType: 'TEXT' | 'FILE'
   createdAt: string
   deletedBySender: boolean
   deletedByReceiver: boolean
   isRead: boolean
-  readAt?: string | null
+  readAt: string | null
   from: {
     id: string
     name: string
@@ -63,7 +63,7 @@ export type ChatConversation = {
 
 export const chatService = {
   // Get all messages - backend returns paginated messages between users
-  async getAllMessages(params?: { limit?: number; page?: number }, token?: string): Promise<ApiResponse<{ data: ChatMessageDto[], meta?: any }>> {
+  async getAllMessages(params?: { limit?: number; page?: number }, token?: string): Promise<ApiResponse<{ data: ChatMessageDto[], meta?: { total?: number; page?: number; limit?: number; [key: string]: unknown } | null }>> {
     const query = {
       ...(params?.limit ? { limit: params!.limit } : {}),
       ...(params?.page ? { page: params!.page } : {}),
@@ -71,7 +71,7 @@ export const chatService = {
     
     console.log('🔄 [ChatService] getAllMessages - Request params:', { query, token: !!token })
     
-    const response = await apiService.get<any>(API_CONFIG.ENDPOINTS.CHAT.BASE, query, token)
+    const response = await apiService.get<unknown>(API_CONFIG.ENDPOINTS.CHAT.BASE, query, token)
     
     console.log('📡 [ChatService] getAllMessages - Raw API response:', response)
     
@@ -79,19 +79,25 @@ export const chatService = {
     let messagesArray = []
     let metaData = null
     
-    if (response?.data?.data?.data) {
-      // Structure: { success: true, data: { data: [...], meta: {...} } }
-      messagesArray = response.data.data.data
-      metaData = response.data.data.meta
-      console.log('📋 [ChatService] Using nested data.data.data structure')
-    } else if (response?.data?.data) {
-      // Structure: { data: [...], meta: {...} }
-      messagesArray = response.data.data
-      metaData = response.data.meta
-      console.log('📋 [ChatService] Using data.data structure')
-    } else if (Array.isArray(response?.data)) {
+    // Type guard for response data
+    const responseData = response?.data as Record<string, unknown>
+    
+    if (responseData?.data && typeof responseData.data === 'object' && responseData.data !== null) {
+      const nestedData = responseData.data as Record<string, unknown>
+      if (nestedData?.data && Array.isArray(nestedData.data)) {
+        // Structure: { success: true, data: { data: [...], meta: {...} } }
+        messagesArray = nestedData.data
+        metaData = nestedData.meta || null
+        console.log('📋 [ChatService] Using nested data.data.data structure')
+      } else if (Array.isArray(responseData.data)) {
+        // Structure: { data: [...], meta: {...} }
+        messagesArray = responseData.data
+        metaData = responseData.meta || null
+        console.log('📋 [ChatService] Using data.data structure')
+      }
+    } else if (Array.isArray(responseData)) {
       // Structure: [...]
-      messagesArray = response.data
+      messagesArray = responseData
       console.log('📋 [ChatService] Using direct array structure')
     } else {
       console.log('⚠️ [ChatService] No valid data structure found')
@@ -99,56 +105,66 @@ export const chatService = {
     }
     
     if (messagesArray && messagesArray.length > 0) {
-      const messages = messagesArray.map((msg: MessageData) => {
-        // Safety check for from/to objects
-        if (!msg.from || !msg.to) {
-          console.warn('⚠️ [ChatService] Message missing from/to data:', msg)
-          return null
-        }
-        
-        return {
-          id: String(msg.id || ''),
-          fromId: String(msg.fromId || ''),
-          toId: String(msg.toId || ''),
-          message: String(msg.message || ''),
-          fileUrl: msg.fileUrl || null,
-          messageType: msg.messageType || 'TEXT',
-          createdAt: msg.createdAt || new Date().toISOString(),
-          deletedBySender: msg.deletedBySender || false,
-          deletedByReceiver: msg.deletedByReceiver || false,
-          isRead: msg.isRead || false,
-          readAt: msg.readAt || null,
-          from: {
-            id: String(msg.from?.id || ''),
-            name: String(msg.from?.name || 'Unknown User'),
-            role: String(msg.from?.role || 'user')
-          },
-          to: {
-            id: String(msg.to?.id || ''),
-            name: String(msg.to?.name || 'Unknown User'),
-            role: String(msg.to?.role || 'user')
+      const messages: ChatMessageDto[] = messagesArray
+        .map((msg: MessageData) => {
+          // Safety check for from/to objects
+          if (!msg.from || !msg.to) {
+            console.warn('⚠️ [ChatService] Message missing from/to data:', msg)
+            return null
           }
-        }
-      }).filter(Boolean) // Remove null entries
+          
+          return {
+            id: String(msg.id || ''),
+            fromId: String(msg.fromId || ''),
+            toId: String(msg.toId || ''),
+            message: String(msg.message || ''),
+            fileUrl: msg.fileUrl || null,
+            messageType: (msg.messageType as 'TEXT' | 'FILE') || 'TEXT',
+            createdAt: msg.createdAt || new Date().toISOString(),
+            deletedBySender: msg.deletedBySender || false,
+            deletedByReceiver: msg.deletedByReceiver || false,
+            isRead: msg.isRead || false,
+            readAt: msg.readAt || null,
+            from: {
+              id: String(msg.from?.id || ''),
+              name: String(msg.from?.name || 'Unknown User'),
+              role: String(msg.from?.role || 'user')
+            },
+            to: {
+              id: String(msg.to?.id || ''),
+              name: String(msg.to?.name || 'Unknown User'),
+              role: String(msg.to?.role || 'user')
+            }
+          }
+        })
+        .filter((msg): msg is ChatMessageDto => msg !== null) // Remove null entries with proper type guard
+      
+      // Safely type the metadata
+      const typedMetaData = metaData && typeof metaData === 'object' ? 
+        { ...metaData as Record<string, unknown> } : null
       
       console.log('✅ [ChatService] getAllMessages - Parsed messages:', messages)
-      console.log('📊 [ChatService] getAllMessages - Meta data:', metaData)
+      console.log('📊 [ChatService] getAllMessages - Meta data:', typedMetaData)
       
       return {
         ...response,
         data: {
           data: messages,
-          meta: metaData
+          meta: typedMetaData
         }
       }
     }
+    
+    // Safely type the metadata for empty case
+    const typedMetaData = metaData && typeof metaData === 'object' ? 
+      { ...metaData as Record<string, unknown> } : null
     
     console.log('⚠️ [ChatService] getAllMessages - No messages found, returning empty array')
     return { 
       ...response, 
       data: {
         data: [],
-        meta: metaData
+        meta: typedMetaData
       }
     }
   },
@@ -290,7 +306,7 @@ export const chatService = {
         hasSocket: !!socket,
         connected: socket.connected,
         socketId: socket.id,
-        readyState: (socket as any).readyState
+        socketState: socket.connected ? 'connected' : 'disconnected'
       })
       throw new Error('Socket not connected')
     }
