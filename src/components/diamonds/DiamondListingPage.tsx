@@ -8,12 +8,17 @@ import { cartService } from '@/services/cartService';
 import { useAppSelector } from '@/store/hooks';
 
 interface ApiResponse {
+  success: boolean;
+  message: string;
   data: {
     data: unknown[]
     meta?: {
       total?: number
+      lastPage?: number
       currentPage?: number
       perPage?: number
+      prev?: any
+      next?: any
     }
   }
 }

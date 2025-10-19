@@ -4,23 +4,44 @@ import { Diamond } from './DiamondResults';
 // Interface for API diamond data
 export interface ApiDiamondData {
   id: string | number;
-  shape?: string;
-  caratWeight?: string | number;
-  color?: string;
-  clarity?: string;
-  cut?: string;
+  sellerId?: string;
+  stockNumber?: string | number;
+  sellerSKU?: string;
+  name?: string;
+  description?: string;
+  origin?: string;
+  rap?: string | number;
   price?: string | number;
-  certification?: string;
-  certificateNumber?: string | number;
-  fluorescence?: string;
-  polish?: string;
+  discount?: string | number;
+  caratWeight?: string | number;
+  cut?: string;
+  color?: string;
+  shade?: string;
+  fancyColor?: string;
+  fancyIntencity?: string;
+  fancyOvertone?: string;
+  shape?: string;
   symmetry?: string;
+  diameter?: string | number;
+  clarity?: string;
+  fluorescence?: string;
   measurement?: string;
+  ratio?: string;
   table?: string | number;
   depth?: string | number;
   gridleMin?: string | number;
+  gridleMax?: string | number;
+  gridlePercentage?: string | number;
+  crownHeight?: string | number;
+  crownAngle?: string | number;
+  pavilionAngle?: string | number;
+  pavilionDepth?: string | number;
   culetSize?: string | number;
-  origin?: string;
+  polish?: string;
+  treatment?: string;
+  inscription?: string;
+  certification?: string;
+  certificateNumber?: string | number;
   image1?: string;
   image2?: string;
   image3?: string;
@@ -28,18 +49,22 @@ export interface ApiDiamondData {
   image5?: string;
   image6?: string;
   videoURL?: string;
+  stoneType?: string;
+  process?: string;
+  certificateCompanyId?: number;
+  isOnAuction?: boolean;
   isSold?: boolean;
+  isDeleted?: boolean;
   createdAt?: string;
   updatedAt?: string;
+  auctionStartTime?: string | null;
+  auctionEndTime?: string | null;
   seller?: {
     id: string | number;
     sellerType?: string;
     companyName?: string;
     companyLogo?: string;
   };
-  sellerId?: string;
-  sellerSKU?: string;
-  stockNumber?: string | number;
 }
 
 // Default filter values for each diamond type
@@ -78,25 +103,47 @@ export function transformApiDiamond(apiDiamond: ApiDiamondData): Diamond {
     const parts = apiDiamond.measurement.split(/x|X|\*/).map(Number);
     if (parts.length === 3) [length, width, depth] = parts;
   }
+  
   return {
     id: String(apiDiamond.id),
-    shape: apiDiamond.shape,
-    caratWeight: Number(apiDiamond.caratWeight),
-    color: apiDiamond.color,
-    clarity: apiDiamond.clarity,
+    sellerId: apiDiamond.sellerId,
+    stockNumber: apiDiamond.stockNumber,
+    sellerSKU: apiDiamond.sellerSKU,
+    name: apiDiamond.name,
+    description: apiDiamond.description,
+    origin: apiDiamond.origin,
+    rap: apiDiamond.rap,
+    price: Number(apiDiamond.price) || 0,
+    discount: apiDiamond.discount,
+    caratWeight: Number(apiDiamond.caratWeight) || 0,
     cut: apiDiamond.cut,
-    price: Number(apiDiamond.price),
-    certification: apiDiamond.certification,
-    // reportNumber: apiDiamond.certificateNumber,
-    fluorescence: apiDiamond.fluorescence,
-    polish: apiDiamond.polish,
+    color: apiDiamond.color,
+    shade: apiDiamond.shade,
+    fancyColor: apiDiamond.fancyColor,
+    fancyIntencity: apiDiamond.fancyIntencity,
+    fancyOvertone: apiDiamond.fancyOvertone,
+    shape: apiDiamond.shape,
     symmetry: apiDiamond.symmetry,
-    measurement: `${length} x ${width} x ${depth}`,
+    diameter: apiDiamond.diameter,
+    clarity: apiDiamond.clarity,
+    fluorescence: apiDiamond.fluorescence,
+    measurement: apiDiamond.measurement || `${length} x ${width} x ${depth}`,
+    ratio: apiDiamond.ratio,
     table: Number(apiDiamond.table) || 0,
     depth: Number(apiDiamond.depth) || 0,
     gridleMin: apiDiamond.gridleMin,
+    gridleMax: apiDiamond.gridleMax,
+    gridlePercentage: apiDiamond.gridlePercentage,
+    crownHeight: apiDiamond.crownHeight,
+    crownAngle: apiDiamond.crownAngle,
+    pavilionAngle: apiDiamond.pavilionAngle,
+    pavilionDepth: apiDiamond.pavilionDepth,
     culetSize: apiDiamond.culetSize,
-    origin: apiDiamond.origin,
+    polish: apiDiamond.polish,
+    treatment: apiDiamond.treatment,
+    inscription: apiDiamond.inscription,
+    certification: apiDiamond.certification,
+    certificateNumber: apiDiamond.certificateNumber,
     images: [
       apiDiamond.image1,
       apiDiamond.image2,
@@ -106,10 +153,16 @@ export function transformApiDiamond(apiDiamond: ApiDiamondData): Diamond {
       apiDiamond.image6,
     ].filter((img): img is string => Boolean(img)),
     videoURL: apiDiamond.videoURL,
+    stoneType: apiDiamond.stoneType,
+    process: apiDiamond.process,
+    certificateCompanyId: apiDiamond.certificateCompanyId,
+    isOnAuction: apiDiamond.isOnAuction,
     isSold: apiDiamond.isSold,
+    isDeleted: apiDiamond.isDeleted,
     createdAt: apiDiamond.createdAt || new Date().toISOString(),
     updatedAt: apiDiamond.updatedAt || new Date().toISOString(),
-    // Add all seller fields for UI
+    auctionStartTime: apiDiamond.auctionStartTime,
+    auctionEndTime: apiDiamond.auctionEndTime,
     seller: apiDiamond.seller
       ? {
           id: String(apiDiamond.seller.id),
@@ -118,8 +171,5 @@ export function transformApiDiamond(apiDiamond: ApiDiamondData): Diamond {
           companyLogo: apiDiamond.seller.companyLogo,
         }
       : undefined,
-    sellerId: apiDiamond.sellerId,
-    sellerSKU: apiDiamond.sellerSKU,
-    stockNumber: apiDiamond.stockNumber,
   };
 }
