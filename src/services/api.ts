@@ -4,7 +4,7 @@ import { API_CONFIG } from '../lib/constants'
 
 const API_BASE_URL = API_CONFIG.BASE_URL
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean
   message: string
   data: T
@@ -15,7 +15,7 @@ export interface ApiResponse<T = any> {
       total: number
       totalPages: number
     }
-    filters?: Record<string, any>
+    filters?: Record<string, unknown>
   }
 }
 
@@ -105,26 +105,31 @@ class ApiService {
   }
 
   // Generic CRUD operations
-  async get<T>(endpoint: string, params?: Record<string, any>, token?: string): Promise<ApiResponse<T>> {
-    const queryString = params ? '?' + new URLSearchParams(params).toString() : ''
+  async get<T>(endpoint: string, params?: Record<string, string | number | boolean>, token?: string): Promise<ApiResponse<T>> {
+    const queryString = params ? '?' + new URLSearchParams(
+      Object.entries(params).reduce((acc, [key, value]) => {
+        acc[key] = String(value);
+        return acc;
+      }, {} as Record<string, string>)
+    ).toString() : ''
     return this.request<T>(`${endpoint}${queryString}`, {}, token)
   }
 
-  async post<T>(endpoint: string, data?: any, token?: string): Promise<ApiResponse<T>> {
+  async post<T>(endpoint: string, data?: Record<string, unknown> | unknown[], token?: string): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: JSON.stringify(data),
     }, token)
   }
 
-  async put<T>(endpoint: string, data?: any, token?: string): Promise<ApiResponse<T>> {
+  async put<T>(endpoint: string, data?: Record<string, unknown> | unknown[], token?: string): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'PUT',
       body: JSON.stringify(data),
     }, token)
   }
 
-  async patch<T>(endpoint: string, data?: any, token?: string): Promise<ApiResponse<T>> {
+  async patch<T>(endpoint: string, data?: Record<string, unknown> | unknown[], token?: string): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'PATCH',
       body: JSON.stringify(data),
@@ -137,7 +142,7 @@ class ApiService {
     }, token)
   }
 
-  async deleteWithBody<T>(endpoint: string, data: any, token?: string): Promise<ApiResponse<T>> {
+  async deleteWithBody<T>(endpoint: string, data: Record<string, unknown> | unknown[], token?: string): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'DELETE',
       body: JSON.stringify(data),

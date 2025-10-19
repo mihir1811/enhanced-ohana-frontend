@@ -91,7 +91,7 @@ export function useWishlistStats() {
   const getProductType = (item: WishlistItem): string => {
     if (!item.product) return 'jewellery';
     
-    const product: Record<string, any> = item.product as any;
+    const product = item.product as Record<string, unknown>;
     
     // More sophisticated type detection based on product structure
     // Check for diamond-specific fields (use 'in' checks to avoid TS errors)

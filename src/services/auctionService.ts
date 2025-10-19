@@ -5,11 +5,13 @@ export interface AuctionData {
   productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond';
   startTime: string;
   endTime: string;
+  [key: string]: unknown;
 }
 
 export interface BidData {
   auctionId: string;
   bidAmount: number;
+  [key: string]: unknown;
 }
 
 export interface AuctionFilter {
@@ -28,7 +30,7 @@ export const auctionService = {
   },
 
   // Get auctions by seller
-  getAuctionsBySeller: async <T = any>({ sellerId, page = 1, limit = 10, search = '', sort = '-createdAt', status }: { 
+  getAuctionsBySeller: async <T = unknown>({ sellerId, page = 1, limit = 10, search = '', sort = '-createdAt', status }: { 
     sellerId: string, 
     page?: number, 
     limit?: number, 
@@ -55,7 +57,7 @@ export const auctionService = {
   },
 
   // Get all auctions with filters
-  getAllAuctions: async <T = any>(filters: AuctionFilter = {}) => {
+  getAllAuctions: async <T = unknown>(filters: AuctionFilter = {}) => {
     const { page = 1, limit = 10, search = '', sort = '-createdAt', productType, status } = filters;
     
     const params = new URLSearchParams({
@@ -80,7 +82,7 @@ export const auctionService = {
   },
 
   // Get auction by ID
-  getAuctionById: async <T = any>(id: string) => {
+  getAuctionById: async <T = unknown>(id: string) => {
     return api.get<T>(`/auction/${id}`);
   },
 
@@ -105,7 +107,7 @@ export const auctionService = {
   },
 
   // Get bids for an auction
-  getAuctionBids: async <T = any>(auctionId: string, page = 1, limit = 10) => {
+  getAuctionBids: async <T = unknown>(auctionId: string, page = 1, limit = 10) => {
     const params = new URLSearchParams({
       page: String(page),
       limit: String(limit),
@@ -115,7 +117,7 @@ export const auctionService = {
   },
 
   // Get user's bid history
-  getUserBids: async <T = any>(userId: string, page = 1, limit = 10) => {
+  getUserBids: async <T = unknown>(userId: string, page = 1, limit = 10) => {
     const params = new URLSearchParams({
       userId,
       page: String(page),
@@ -126,7 +128,7 @@ export const auctionService = {
   },
 
   // Get active auctions
-  getActiveAuctions: async <T = any>(page = 1, limit = 10) => {
+  getActiveAuctions: async <T = unknown>(page = 1, limit = 10) => {
     const params = new URLSearchParams({
       page: String(page),
       limit: String(limit),
@@ -137,7 +139,7 @@ export const auctionService = {
   },
 
   // Get live auctions
-  getLiveAuctions: async <T = any>({ 
+  getLiveAuctions: async <T = unknown>({ 
     productType, 
     page = 1, 
     limit = 10, 
@@ -165,7 +167,7 @@ export const auctionService = {
   },
 
   // Get ending soon auctions
-  getEndingSoonAuctions: async <T = any>(hours = 24, page = 1, limit = 10) => {
+  getEndingSoonAuctions: async <T = unknown>(hours = 24, page = 1, limit = 10) => {
     const params = new URLSearchParams({
       page: String(page),
       limit: String(limit),
@@ -176,7 +178,7 @@ export const auctionService = {
   },
 
   // Get auction statistics
-  getAuctionStats: async <T = any>(sellerId?: string) => {
+  getAuctionStats: async <T = unknown>(sellerId?: string) => {
     const params = new URLSearchParams();
     
     if (sellerId) {
@@ -187,7 +189,7 @@ export const auctionService = {
   },
 
   // Search auctions
-  searchAuctions: async <T = any>({ 
+  searchAuctions: async <T = unknown>({ 
     query, 
     productType, 
     minPrice, 

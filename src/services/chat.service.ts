@@ -1,5 +1,32 @@
 import apiService, { ApiResponse } from './api'
 import { API_CONFIG } from '../lib/constants'
+import type { Socket } from 'socket.io-client'
+
+// Define interface for message data structure
+interface MessageData {
+  id: string | number;
+  fromId: string;
+  toId: string;
+  message: string;
+  fileUrl?: string | null;
+  messageType?: 'TEXT' | 'FILE';
+  createdAt?: string;
+  deletedBySender?: boolean;
+  deletedByReceiver?: boolean;
+  isRead?: boolean;
+  readAt?: string | null;
+  from?: {
+    id: string;
+    name: string;
+    role: string;
+  };
+  to?: {
+    id: string;
+    name: string;
+    role: string;
+  };
+  [key: string]: unknown;
+}
 
 export type ChatMessageDto = {
   id: string
@@ -72,7 +99,7 @@ export const chatService = {
     }
     
     if (messagesArray && messagesArray.length > 0) {
-      const messages = messagesArray.map((msg: any) => {
+      const messages = messagesArray.map((msg: MessageData) => {
         // Safety check for from/to objects
         if (!msg.from || !msg.to) {
           console.warn('⚠️ [ChatService] Message missing from/to data:', msg)
@@ -243,7 +270,7 @@ export const chatService = {
 
   // Send message via WebSocket (not REST API)
   // This is handled by the WebSocket service, but kept here for consistency
-  sendMessageViaSocket(fromId: string, toId: string, message: string, socket: any): void {
+  sendMessageViaSocket(fromId: string, toId: string, message: string, socket: Socket): void {
     console.log('🔄 [ChatService] sendMessageViaSocket called with:', {
       fromId,
       toId,
@@ -263,7 +290,7 @@ export const chatService = {
         hasSocket: !!socket,
         connected: socket.connected,
         socketId: socket.id,
-        readyState: socket.readyState
+        readyState: (socket as any).readyState
       })
       throw new Error('Socket not connected')
     }
@@ -296,7 +323,7 @@ export const chatService = {
   },
 
   // Enhanced WebSocket message sending (socket-only, no API fallback)
-  async sendMessageWithInit(fromId: string, toId: string, message: string, socket: any): Promise<void> {
+  async sendMessageWithInit(fromId: string, toId: string, message: string, socket: Socket): Promise<void> {
     try {
       console.log('� [ChatService] Sending message via WebSocket:', {
         fromId,
@@ -313,7 +340,7 @@ export const chatService = {
   },
 
   // Register socket connection
-  registerSocket(userId: string, socket: any): void {
+  registerSocket(userId: string, socket: Socket): void {
     if (socket && socket.connected) {
       const payload = JSON.stringify({
         type: 'REGISTER_SOCKET',
