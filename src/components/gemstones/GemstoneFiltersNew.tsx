@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { Search, Filter, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
 export interface GemstoneFilterValues {
   // Basic filters
@@ -57,11 +57,6 @@ const GEMSTONE_CLARITY = [
   'IF', 'VVS', 'VS', 'SI', 'I', 'Translucent', 'Opaque'
 ]
 
-const GEMSTONE_CUTS = [
-  'Excellent', 'Very Good', 'Good', 'Fair', 'Poor', 'Cabochon', 
-  'Step', 'Brilliant', 'Mixed', 'Rose', 'Other'
-]
-
 const CERTIFICATIONS = ['GIA', 'IGI', 'AGL', 'Gübelin', 'SSEF', 'GRS', 'GIT', 'NGTC', 'Other']
 
 const ORIGINS = [
@@ -70,16 +65,6 @@ const ORIGINS = [
 ]
 
 const TREATMENTS = ['Natural', 'Heat Treated', 'Oil Treated', 'Irradiated', 'Diffused', 'Other']
-
-const ENHANCEMENTS = ['None', 'Heat', 'Oil', 'Resin', 'Lead Glass', 'Surface Diffusion', 'Other']
-
-const TRANSPARENCY_OPTIONS = ['Transparent', 'Translucent', 'Opaque']
-
-const LUSTER_OPTIONS = ['Vitreous', 'Resinous', 'Greasy', 'Silky', 'Pearly', 'Adamantine', 'Dull']
-
-const PHENOMENA_OPTIONS = ['Asterism', 'Chatoyancy', 'Color Change', 'Play-of-Color', 'Adularescence', 'Other']
-
-const LOCATION_OPTIONS = ['Bangkok', 'Jaipur', 'New York', 'Hong Kong', 'Mumbai', 'Bangkok', 'Other']
 
 export default function GemstoneFilters({ 
   filters, 
@@ -101,39 +86,40 @@ export default function GemstoneFilters({
     setExpandedSections(newExpanded)
   }
 
-  const updateFilter = (key: keyof GemstoneFilterValues, value: any) => {
+  const updateFilter = (key: keyof GemstoneFilterValues, value: GemstoneFilterValues[keyof GemstoneFilterValues]) => {
     onFiltersChange({
       ...filters,
       [key]: value
     })
   }
 
-  const resetFilters = () => {
-    const defaultFilters: GemstoneFilterValues = {
-      gemstoneType: [],
-      caratWeight: { 
-        min: gemstoneType === 'melee' ? 0.01 : 0.1, 
-        max: gemstoneType === 'melee' ? 5 : 20 
-      },
-      color: [],
-      clarity: [],
-      cut: [],
-      priceRange: { min: 0, max: 100000 },
-      certification: [],
-      origin: [],
-      treatment: [],
-      enhancement: [],
-      transparency: [],
-      luster: [],
-      phenomena: [],
-      location: [],
-      companyName: '',
-      vendorLocation: '',
-      reportNumber: '',
-      searchTerm: ''
-    }
-    onFiltersChange(defaultFilters)
-  }
+  // Commented out unused resetFilters function - uncomment if needed
+  // const resetFilters = () => {
+  //   const defaultFilters: GemstoneFilterValues = {
+  //     gemstoneType: [],
+  //     caratWeight: { 
+  //       min: gemstoneType === 'melee' ? 0.01 : 0.1, 
+  //       max: gemstoneType === 'melee' ? 5 : 20 
+  //     },
+  //     color: [],
+  //     clarity: [],
+  //     cut: [],
+  //     priceRange: { min: 0, max: 100000 },
+  //     certification: [],
+  //     origin: [],
+  //     treatment: [],
+  //     enhancement: [],
+  //     transparency: [],
+  //     luster: [],
+  //     phenomena: [],
+  //     location: [],
+  //     companyName: '',
+  //     vendorLocation: '',
+  //     reportNumber: '',
+  //     searchTerm: ''
+  //   }
+  //   onFiltersChange(defaultFilters)
+  // }
 
   const getCaratRange = () => {
     switch (gemstoneType) {
@@ -206,14 +192,12 @@ export default function GemstoneFilters({
   const MultiSelectFilter = ({ 
     options, 
     selected, 
-    onChange, 
-    placeholder,
+    onChange,
     layout = 'grid'
   }: { 
     options: string[]
     selected: string[]
     onChange: (values: string[]) => void
-    placeholder: string
     layout?: 'grid' | 'list'
   }) => {
     const toggleOption = (option: string) => {
@@ -279,8 +263,7 @@ export default function GemstoneFilters({
     value, 
     onChange, 
     step = 1, 
-    unit = '',
-    showSlider = false
+    unit = ''
   }: { 
     min: number
     max: number
@@ -288,7 +271,6 @@ export default function GemstoneFilters({
     onChange: (range: { min: number; max: number }) => void
     step?: number
     unit?: string
-    showSlider?: boolean
   }) => (
     <div className="space-y-2">
       {/* Current Range Display */}
@@ -410,7 +392,6 @@ export default function GemstoneFilters({
           options={GEMSTONE_TYPES}
           selected={filters.gemstoneType}
           onChange={(values) => updateFilter('gemstoneType', values)}
-          placeholder="Select gemstone types"
           layout="grid"
         />
       </FilterSection>
@@ -457,7 +438,6 @@ export default function GemstoneFilters({
           options={GEMSTONE_COLORS}
           selected={filters.color}
           onChange={(values) => updateFilter('color', values)}
-          placeholder="Select colors"
           layout="grid"
         />
       </FilterSection>
@@ -472,7 +452,6 @@ export default function GemstoneFilters({
           options={GEMSTONE_SHAPES}
           selected={filters.cut}
           onChange={(values) => updateFilter('cut', values)}
-          placeholder="Select shapes"
           layout="grid"
         />
       </FilterSection>
@@ -487,7 +466,6 @@ export default function GemstoneFilters({
           options={GEMSTONE_CLARITY}
           selected={filters.clarity}
           onChange={(values) => updateFilter('clarity', values)}
-          placeholder="Select clarity grades"
           layout="list"
         />
       </FilterSection>
@@ -502,7 +480,6 @@ export default function GemstoneFilters({
           options={ORIGINS}
           selected={filters.origin}
           onChange={(values) => updateFilter('origin', values)}
-          placeholder="Select origins"
           layout="grid"
         />
       </FilterSection>
@@ -517,7 +494,6 @@ export default function GemstoneFilters({
           options={TREATMENTS}
           selected={filters.treatment}
           onChange={(values) => updateFilter('treatment', values)}
-          placeholder="Select treatments"
           layout="list"
         />
       </FilterSection>
@@ -532,7 +508,6 @@ export default function GemstoneFilters({
           options={CERTIFICATIONS}
           selected={filters.certification}
           onChange={(values) => updateFilter('certification', values)}
-          placeholder="Select certificates"
           layout="grid"
         />
       </FilterSection>

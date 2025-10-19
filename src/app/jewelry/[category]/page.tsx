@@ -12,7 +12,6 @@ import Footer from '@/components/Footer';
 import { jewelryService } from '@/services/jewelryService';
 import Image from 'next/image';
 import Slider from 'rc-slider';
-// @ts-ignore - CSS side-effect import has no type declarations
 import 'rc-slider/assets/index.css';
 import debounce from 'lodash.debounce';
 import WishlistButton from '@/components/shared/WishlistButton';
