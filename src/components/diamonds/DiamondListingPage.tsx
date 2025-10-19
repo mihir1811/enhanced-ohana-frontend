@@ -17,8 +17,8 @@ interface ApiResponse {
       lastPage?: number
       currentPage?: number
       perPage?: number
-      prev?: any
-      next?: any
+      prev?: number | null
+      next?: number | null
     }
   }
 }

@@ -7,6 +7,7 @@ import { auctionService } from '@/services/auctionService';
 import { Clock, Search, RefreshCw } from 'lucide-react';
 import NavigationUser from '@/components/Navigation/NavigationUser';
 import Footer from '@/components/Footer';
+import { SECTION_WIDTH } from '@/lib/constants';
 
 // API Response Interfaces
 interface Seller {
@@ -381,7 +382,7 @@ export default function AuctionsPage() {
       setLoading(true);
       setError(null);
 
-      const response = await auctionService.getLiveAuctions({
+      const response = await auctionService.getLiveAuctions<{ data: AuctionItem[], meta?: unknown }>({
         productType: activeFilter === '' ? undefined : activeFilter as 'diamond' | 'gemstone' | 'jewellery',
         page: 1,
         limit: 12
@@ -421,7 +422,7 @@ export default function AuctionsPage() {
       <div className="min-h-screen bg-slate-50">
         {/* Header */}
         <div className="bg-white border-b border-slate-200">
-          <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 py-8`}>
             <h1 className="text-3xl font-light text-slate-900 mb-8">Live Auctions</h1>
             
             {/* Filters */}
@@ -467,7 +468,7 @@ export default function AuctionsPage() {
         </div>
 
         {/* Content */}
-        <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 py-8`}>
           {/* Loading */}
           {loading && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
