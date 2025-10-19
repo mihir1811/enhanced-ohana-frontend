@@ -8,6 +8,50 @@ import { clearFilters, clearCurrentProduct, clearSearchResults } from '@/feature
 import { authService, userService, sellerService } from '@/services/auth'
 import { setCookie, deleteCookie } from '@/lib/cookie-utils'
 
+// Define interfaces for type safety
+interface UpdateProfileData {
+  name?: string;
+  email?: string;
+  phone?: string;
+  profilePicture?: File;
+  [key: string]: unknown;
+}
+
+interface ChangePasswordData {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+interface AddressData {
+  type: 'billing' | 'shipping';
+  street: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode: string;
+  isDefault: boolean;
+}
+
+interface SellerProfileData {
+  companyName?: string;
+  companyLogo?: File;
+  businessType?: string;
+  description?: string;
+  website?: string;
+  phone?: string;
+  email?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  zipCode?: string;
+  panCard?: File;
+  gstNumber?: string;
+  [key: string]: unknown;
+}
+
 export const useAuth = () => {
   const dispatch = useDispatch<AppDispatch>()
   const authState = useSelector((state: RootState) => state.auth)
@@ -90,7 +134,7 @@ export const useAuth = () => {
       }
       
       return { success: false }
-    } catch (error) {
+    } catch {
       // Token refresh failed, logout user
       dispatch(logout())
       deleteCookie('role')
@@ -151,7 +195,7 @@ export const useAuth = () => {
 export const useUserProfile = () => {
   const { user } = useAuth()
 
-  const updateProfile = useCallback(async (data: any) => {
+  const updateProfile = useCallback(async (data: UpdateProfileData) => {
     try {
       const response = await userService.updateProfile(data)
       return { success: response.success, data: response.data }
@@ -163,7 +207,7 @@ export const useUserProfile = () => {
     }
   }, [])
 
-  const changePassword = useCallback(async (passwordData: any) => {
+  const changePassword = useCallback(async (passwordData: ChangePasswordData) => {
     try {
       const response = await userService.changePassword(passwordData)
       return { success: response.success, message: 'Password changed successfully' }
@@ -187,7 +231,7 @@ export const useUserProfile = () => {
     }
   }, [])
 
-  const addAddress = useCallback(async (address: any) => {
+  const addAddress = useCallback(async (address: AddressData) => {
     try {
       const response = await userService.createAddress(address)
       return { success: response.success, data: response.data }
@@ -221,7 +265,7 @@ export const useSellerProfile = () => {
     }
   }, [])
 
-  const updateSellerProfile = useCallback(async (data: any) => {
+  const updateSellerProfile = useCallback(async (data: SellerProfileData) => {
     try {
       const response = await sellerService.updateSellerProfile(data)
       return { success: response.success, data: response.data }

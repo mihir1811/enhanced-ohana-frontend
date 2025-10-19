@@ -12,18 +12,23 @@ import {
 } from '@/features/compare/compareSlice'
 import { Diamond } from '@/components/diamonds/DiamondResults'
 
+// Remove local interfaces since we'll use a flexible type
+// Union type for all product types that can be compared  
+type ComparableProduct = Diamond | Record<string, unknown>;
+
 export const useCompare = () => {
   const dispatch = useDispatch<AppDispatch>()
   const compareState = useSelector((state: RootState) => state.compare)
 
-  const addProduct = useCallback((product: Diamond | any, type: 'diamond' | 'gemstone' | 'jewelry') => {
+  const addProduct = useCallback((product: ComparableProduct, type: 'diamond' | 'gemstone' | 'jewelry') => {
+    const typedProduct = product as Record<string, unknown>;
     const compareProduct: CompareProduct = {
-      id: product.id,
+      id: typedProduct.id as string,
       type,
-      name: product.name || `${product.caratWeight || product.weight || ''}ct ${product.shape || product.cut || type}`,
-      price: product.price,
-      image: product.images?.[0] || product.image || 'https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg',
-      data: product,
+      name: (typedProduct.name as string) || `${typedProduct.caratWeight || typedProduct.weight || ''}ct ${typedProduct.shape || typedProduct.cut || type}`,
+      price: typedProduct.price as number | string,
+      image: (typedProduct.images as string[])?.[0] || (typedProduct.image1 as string) || 'https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg',
+      data: product as unknown as Diamond | { id: string; name: string; [key: string]: unknown },
       addedAt: Date.now()
     }
     

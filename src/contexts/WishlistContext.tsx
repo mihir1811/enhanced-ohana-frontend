@@ -5,10 +5,21 @@ import { useSelector } from 'react-redux';
 import { wishlistService } from '@/services/wishlistService';
 import type { WishlistItem, AddToWishlistData } from '@/services/wishlistService';
 
+// Define Product interface for type safety
+interface Product {
+  id: string | number;
+  category?: string;
+  isMelee?: boolean;
+  [key: string]: unknown;
+}
+
 // Define RootState type for Redux
 interface RootState {
   auth: {
-    user: any;
+    user: {
+      id: string;
+      [key: string]: unknown;
+    } | null;
     token: string | null;
   };
 }
@@ -220,7 +231,8 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         const category = itemToRemove.product.category.toLowerCase();
         if (category.includes('diamond')) {
           // If item is a melee diamond, tag accordingly; otherwise fallback to diamond
-          if ((itemToRemove.product as any)?.isMelee || (itemToRemove.product as any)?.category?.toLowerCase()?.includes('melee')) {
+          const product = itemToRemove.product as Product;
+          if (product?.isMelee || product?.category?.toLowerCase()?.includes('melee')) {
             productType = 'meleeDiamond';
           } else {
             productType = 'diamond';

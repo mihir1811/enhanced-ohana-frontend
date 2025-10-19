@@ -1,9 +1,18 @@
 import React, { useEffect } from "react";
+import Image from 'next/image';
+
+// Product interface for type safety
+interface Product {
+  id: string;
+  name: string;
+  images?: string[];
+  [key: string]: unknown;
+}
 
 interface QuickViewModalProps {
   open: boolean;
   onClose: () => void;
-  product: any; // Replace with your product type
+  product: Product;
 }
 
 const QuickViewModal: React.FC<QuickViewModalProps> = ({ open, onClose, product }) => {
@@ -38,17 +47,19 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({ open, onClose, product 
             {/* Example: */}
             <div className="w-full flex flex-col items-center">
               {/* Replace with your carousel component */}
-              <img
+              <Image
                 src={product.images?.[0] || "/placeholder.jpg"}
                 alt={product.name}
+                width={320}
+                height={320}
                 className="object-cover rounded-xl shadow-lg mb-4"
-                style={{ width: 320, height: 320, background: "#f3f4f6" }}
+                style={{ background: "#f3f4f6" }}
               />
               {/* Thumbnails */}
-              {product.images?.length > 1 && (
+              {product.images && product.images.length > 1 && (
                 <div className="flex gap-2 justify-center mb-4">
                   {product.images.slice(1).map((img: string, idx: number) => (
-                    <img
+                    <Image
                       key={idx}
                       src={img}
                       alt={`Image ${idx + 2}`}

@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { SellerData } from '../auth/authSlice';
-import { userService } from '@/services/user.service';
-import { sellerService, UpdateSellerInfoPayload } from '@/services/sellerService';
+import { sellerService, UpdateSellerInfoPayload, SellerInfo } from '@/services/sellerService';
+
 // Fetch seller info using new API
 export const fetchSellerInfo = createAsyncThunk(
   'seller/fetchSellerInfo',
@@ -13,7 +13,7 @@ export const fetchSellerInfo = createAsyncThunk(
       } else {
         return rejectWithValue(response.message || 'Failed to fetch seller info');
       }
-    } catch (error) {
+    } catch {
       return rejectWithValue('Failed to fetch seller info');
     }
   }
@@ -33,13 +33,13 @@ export const updateSellerInfo = createAsyncThunk(
       } else {
         return rejectWithValue(response.message || 'Failed to update seller info');
       }
-    } catch (error) {
+    } catch {
       return rejectWithValue('Failed to update seller info');
     }
   }
 );
 
-type SellerProfile = Omit<SellerData, 'taxId' | 'businessRegistration'> | SellerData | undefined | null;
+type SellerProfile = SellerData | SellerInfo | null;
 interface SellerState {
   profile: SellerProfile;
   isLoading: boolean;
@@ -61,7 +61,7 @@ const sellerSlice = createSlice({
       state.profile = null;
       state.error = null;
     },
-    setSellerProfile(state, action: PayloadAction<any>) {
+    setSellerProfile(state, action: PayloadAction<SellerData | SellerInfo>) {
       state.profile = action.payload;
       state.error = null;
     },
@@ -72,7 +72,7 @@ const sellerSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(fetchSellerInfo.fulfilled, (state, action: PayloadAction<any>) => {
+      .addCase(fetchSellerInfo.fulfilled, (state, action: PayloadAction<SellerInfo>) => {
         state.profile = action.payload;
         state.isLoading = false;
       })
@@ -84,5 +84,5 @@ const sellerSlice = createSlice({
   },
 });
 
-export const { clearSellerProfile } = sellerSlice.actions;
+export const { clearSellerProfile, setSellerProfile } = sellerSlice.actions;
 export default sellerSlice.reducer;

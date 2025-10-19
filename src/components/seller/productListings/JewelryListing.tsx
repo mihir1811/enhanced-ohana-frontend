@@ -1,11 +1,61 @@
 
 
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import BulkUploadModal from './BulkUploadModal';
-import { toast } from 'react-hot-toast';
 import JewelryProductCard, { JewelryProduct } from './JewelryProductCard';
 import { jewelryService } from '@/services/jewelryService';
 import { useSelector } from 'react-redux';
+
+// Redux state interface
+interface RootState {
+  seller: {
+    profile?: {
+      id: string;
+    };
+  };
+}
+
+// API response interface for jewelry data
+interface JewelryApiData {
+  id: string | number;
+  name: string;
+  skuCode: string;
+  category: string;
+  subcategory: string;
+  collection: string;
+  gender: string;
+  occasion: string;
+  metalType: string;
+  metalPurity: string;
+  metalWeight: number;
+  basePrice: number;
+  makingCharge: number;
+  tax: number;
+  totalPrice: number;
+  attributes: {
+    style?: string;
+    [key: string]: unknown;
+  };
+  description: string;
+  image1: string;
+  image2?: string;
+  image3?: string;
+  image4?: string;
+  image5?: string;
+  image6?: string;
+  videoURL?: string;
+  sellerId: string;
+  isOnAuction: boolean;
+  isSold: boolean;
+  createdAt: string;
+  updatedAt: string;
+  isDeleted: boolean;
+  stones: unknown[];
+  auctionStartTime?: string;
+  auctionEndTime?: string;
+  auctionId?: string;
+}
 
 const JewelryListing = () => {
   const [jewelry, setJewelry] = useState<JewelryProduct[]>([]);
@@ -13,21 +63,21 @@ const JewelryListing = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const limit = 10;
   const [total, setTotal] = useState(0);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const handleBulkFileSelect = (file: File) => {
+  const handleBulkFileSelect = () => {
     setBulkModalOpen(false);
     setRefreshKey((k) => k + 1);
   };
-  const sellerId = useSelector((state: any) => state.seller.profile?.id) || 'default-seller-id'; // Replace with actual sellerId from auth/user context
+  const sellerId = useSelector((state: RootState) => state.seller.profile?.id) || 'default-seller-id'; // Replace with actual sellerId from auth/user context
 
   useEffect(() => {
     setLoading(true);
     jewelryService.getJewelriesBySeller({ sellerId, page, limit })
       .then((res) => {
-        const items: JewelryProduct[] = (res?.data?.data || []).map((j: any) => ({
+        const items: JewelryProduct[] = (res?.data?.data || []).map((j: JewelryApiData) => ({
           id: String(j.id),
           name: j.name,
           skuCode: j.skuCode,
@@ -154,9 +204,11 @@ const JewelryListing = () => {
                   {jewelry.map((item) => (
                     <tr key={item.id} className="border-t">
                       <td className="px-4 py-2">
-                        <img
+                        <Image
                           src={item.image1 || "https://media.istockphoto.com/id/1493089752/vector/box-and-package-icon-concept.jpg"}
                           alt={item.name}
+                          width={64}
+                          height={64}
                           className="w-16 h-16 object-cover rounded"
                         />
                       </td>

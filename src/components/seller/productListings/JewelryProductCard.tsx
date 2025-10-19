@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { jewelryService } from '@/services/jewelryService';
 import { auctionService } from '@/services/auctionService';
 import { toast } from 'react-hot-toast';
@@ -29,7 +30,7 @@ export interface JewelryProduct {
     chain_type?: string;
     clasp_type?: string;
     is_adjustable?: boolean;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   description?: string;
   image1?: string | null;
@@ -45,7 +46,7 @@ export interface JewelryProduct {
   createdAt?: string;
   updatedAt?: string;
   isDeleted?: boolean;
-  stones?: any[];
+  stones?: unknown[];
   auctionStartTime?: string;
   auctionEndTime?: string;
   auctionId?: string;
@@ -252,9 +253,11 @@ export default function JewelryProductCard({ product, onQuickView, onDelete, onU
       </div>
       {/* Image */}
       <div className="relative w-full aspect-[4/3] bg-gray-100 flex items-center justify-center">
-        <img
+        <Image
           src={displayImages[imgIdx]}
           alt={product.name}
+          width={400}
+          height={300}
           className={`object-cover w-full h-full rounded-t-2xl transition-opacity duration-300 ${animating ? 'opacity-0' : 'opacity-100'}`}
           style={{ pointerEvents: 'none' }}
         />
@@ -403,9 +406,11 @@ export default function JewelryProductCard({ product, onQuickView, onDelete, onU
                 </span>
               )}
             </div>
-            <img
+            <Image
               src={displayImages[imgIdx]}
               alt={product.name}
+              width={512}
+              height={256}
               className="w-full h-64 object-cover rounded-lg mb-4"
             />
             <div className="mb-4">
@@ -447,7 +452,7 @@ export default function JewelryProductCard({ product, onQuickView, onDelete, onU
           setShowEndAuction(false);
           try {
             // Get Bearer token
-            let token =  getCookie('token') || '';
+            const token =  getCookie('token') || '';
             if (!token) throw new Error('User not authenticated');
             
             // Call end auction API using auction service
@@ -461,9 +466,10 @@ export default function JewelryProductCard({ product, onQuickView, onDelete, onU
             toast.success('Auction ended successfully!');
             // Update local state to reflect ended auction
             onUpdateProduct?.({ ...product, isOnAuction: false });
-          } catch (error: any) {
+          } catch (error: unknown) {
             console.error('End auction error:', error);
-            toast.error(error.message || 'Failed to end auction');
+            const errorMessage = error instanceof Error ? error.message : 'Failed to end auction';
+            toast.error(errorMessage);
           }
         }}
         onNo={() => setShowEndAuction(false)}
@@ -495,8 +501,9 @@ export default function JewelryProductCard({ product, onQuickView, onDelete, onU
             }
             toast.success('Jewelry deleted successfully!');
             if (onDelete) onDelete(product);
-          } catch (err: any) {
-            toast.error(err.message || 'Failed to delete jewelry');
+          } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to delete jewelry';
+            toast.error(errorMessage);
           }
         }}
         onNo={() => setShowDelete(false)}

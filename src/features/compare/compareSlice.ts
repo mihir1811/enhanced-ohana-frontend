@@ -1,13 +1,30 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Diamond } from '@/components/diamonds/DiamondResults'
 
+// Define interfaces for different product types
+interface Gemstone {
+  id: string;
+  name: string;
+  color?: string;
+  clarity?: string;
+  [key: string]: unknown;
+}
+
+interface Jewelry {
+  id: string;
+  name: string;
+  metalType?: string;
+  metalPurity?: string;
+  [key: string]: unknown;
+}
+
 export interface CompareProduct {
   id: string
   type: 'diamond' | 'gemstone' | 'jewelry'
   name: string
   price: number | string
   image: string
-  data: Diamond | any // Will expand for other product types
+  data: Diamond | Gemstone | Jewelry // Properly typed union instead of any
   addedAt: number
 }
 
@@ -28,7 +45,7 @@ const compareSlice = createSlice({
   initialState,
   reducers: {
     addToCompare: (state, action: PayloadAction<CompareProduct>) => {
-      const { id, type } = action.payload
+      const { id } = action.payload
       
       // Check if product already exists
       const existingIndex = state.products.findIndex(p => p.id === id)

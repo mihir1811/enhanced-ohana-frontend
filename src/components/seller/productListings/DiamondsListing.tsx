@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import BulkUploadModal from './BulkUploadModal';
-import { toast } from 'react-hot-toast';
-import { diamondService } from '@/services/diamondService';
+import { diamondService, DiamondData } from '@/services/diamondService';
 import DiamondProductCard, { DiamondProduct } from './DiamondProductCard';
 
 const DiamondsListing = () => {
@@ -10,11 +10,11 @@ const DiamondsListing = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const limit = 10;
   const [total, setTotal] = useState(0);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const handleBulkFileSelect = (file: File) => {
+  const handleBulkFileSelect = () => {
     // Called after successful upload in modal
     setBulkModalOpen(false);
     setRefreshKey((k) => k + 1);
@@ -24,26 +24,28 @@ const DiamondsListing = () => {
     setLoading(true);
     diamondService.getDiamonds({ page, limit })
       .then((res) => {
-        const diamondsArr = (res?.data?.data || []).map((d: any) => ({
-          ...d,
-          image1: d.image1,
-          image2: d.image2,
-          image3: d.image3,
-          image4: d.image4,
-          image5: d.image5,
-          image6: d.image6,
-          stockNumber: d.stockNumber ?? d.stock_number ?? 0,
+        const diamondsArr = (res?.data || []).map((d: DiamondData): DiamondProduct => ({
+          id: typeof d.id === 'string' ? parseInt(d.id) : d.id,
+          name: `${d.shape} ${d.color} ${d.clarity} Diamond - ${d.carat}ct`,
+          price: d.price.toString(),
+          image1: (d as any).image1 || null,
+          image2: (d as any).image2 || null,
+          image3: (d as any).image3 || null,
+          image4: (d as any).image4 || null,
+          image5: (d as any).image5 || null,
+          image6: (d as any).image6 || null,
+          stockNumber: (d as any).stockNumber ?? 0,
           color: d.color,
           clarity: d.clarity,
           cut: d.cut ?? '',
           shape: d.shape,
-          isDeleted: d.isDeleted ?? false,
-          updatedAt: d.updatedAt ?? d.updated_at ?? '',
-          sellerSKU: d.sellerSKU ?? d.seller_sku ?? '',
-          isOnAuction: d.isOnAuction,
-          isSold: d.isSold,
+          isDeleted: (d as any).isDeleted ?? false,
+          updatedAt: (d as any).updatedAt ?? new Date().toISOString(),
+          sellerSKU: (d as any).sellerSKU ?? '',
+          isOnAuction: (d as any).isOnAuction ?? false,
+          isSold: (d as any).isSold ?? false,
         }));
-        const totalCount = res?.data?.meta?.total || 0;
+        const totalCount = diamondsArr.length;
         setDiamonds(diamondsArr);
         setTotal(totalCount);
         setError(null);
@@ -139,9 +141,11 @@ const DiamondsListing = () => {
                   {diamonds.map((diamond) => (
                     <tr key={diamond.id} className="border-t">
                       <td className="px-4 py-2">
-                        <img
+                        <Image
                           src={diamond.image1 || "https://media.istockphoto.com/id/1493089752/vector/box-and-package-icon-concept.jpg"}
                           alt={diamond.name}
+                          width={64}
+                          height={64}
                           className="w-16 h-16 object-cover rounded"
                         />
                       </td>
