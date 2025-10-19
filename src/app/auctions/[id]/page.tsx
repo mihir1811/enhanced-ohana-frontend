@@ -333,7 +333,7 @@ export default function AuctionDetailsPage() {
         setLoading(true);
         setError(null);
 
-        const response = await auctionService.getAuctionById(auctionId);
+        const response = await auctionService.getAuctionById<AuctionItem>(auctionId);
         
         if (response?.data) {
           setAuction(response.data);
