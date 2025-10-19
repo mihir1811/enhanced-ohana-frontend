@@ -83,6 +83,38 @@ export interface ChangePasswordData {
   confirmPassword: string
 }
 
+export interface WishlistItem {
+  id: string
+  productId: string
+  productType: 'diamond' | 'gemstone' | 'jewelry'
+  name: string
+  price: number
+  image: string
+  seller: string
+  addedAt: string
+  inStock: boolean
+}
+
+export interface RecentOrder {
+  id: string
+  orderNumber: string
+  customerName: string
+  totalAmount: number
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
+  createdAt: string
+  itemCount: number
+}
+
+export interface TopProduct {
+  id: string
+  name: string
+  totalSales: number
+  revenue: number
+  image: string
+  category: string
+  rating: number
+}
+
 class AuthService {
   // Authentication
   async login(credentials: LoginCredentials): Promise<ApiResponse<{
@@ -184,7 +216,7 @@ class UserService {
   }
 
   // Wishlist
-  async getWishlist(): Promise<ApiResponse<any[]>> {
+  async getWishlist(): Promise<ApiResponse<WishlistItem[]>> {
     return apiService.get('/user/wishlist')
   }
 
@@ -212,8 +244,8 @@ class SellerService {
     totalOrders: number
     totalRevenue: number
     averageRating: number
-    recentOrders: any[]
-    topProducts: any[]
+    recentOrders: RecentOrder[]
+    topProducts: TopProduct[]
   }>> {
     return apiService.get('/seller/stats')
   }

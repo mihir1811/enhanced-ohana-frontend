@@ -1,5 +1,21 @@
 import { apiService, ApiResponse } from './api'
 
+// Product specifications interface
+export interface ProductSpecifications {
+  stockNumber?: string
+  sellerSKU?: string
+  caratWeight?: number | string
+  cut?: string
+  color?: string
+  clarity?: string
+  shape?: string
+  origin?: string
+  treatment?: string
+  measurement?: string
+  ratio?: number | string
+  [key: string]: string | number | undefined
+}
+
 // Cart-related interfaces
 export interface CartItem {
   id: string
@@ -14,7 +30,7 @@ export interface CartItem {
   quantity: number
   inStock: boolean
   savings?: number
-  specifications?: Record<string, any>
+  specifications?: ProductSpecifications
   createdAt: string
   updatedAt: string
 }
@@ -33,16 +49,53 @@ export interface Cart {
   updatedAt: string
 }
 
+// Raw API response interfaces
+interface RawProduct {
+  name?: string
+  price?: string | number
+  discount?: string | number
+  image1?: string
+  certificateNumber?: string
+  isSold?: boolean
+  stockNumber?: string
+  sellerSKU?: string
+  caratWeight?: number | string
+  cut?: string
+  color?: string
+  clarity?: string
+  shape?: string
+  origin?: string
+  treatment?: string
+  measurement?: string
+  ratio?: number | string
+}
+
+interface RawUser {
+  name?: string
+}
+
+interface RawCartItem {
+  id: string | number
+  productId: string | number
+  productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond'
+  quantity: string | number
+  createdAt: string
+  updatedAt: string
+  userId?: string | number
+  product?: RawProduct
+  user?: RawUser
+}
+
 export interface AddToCartData {
   productId: number
   productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond'
   quantity: number
-  specifications?: Record<string, any>
+  specifications?: ProductSpecifications
 }
 
 export interface UpdateCartItemData {
   quantity: number
-  specifications?: Record<string, any>
+  specifications?: ProductSpecifications
 }
 
 class CartService {
@@ -59,9 +112,9 @@ class CartService {
         }
 
         // Transform the API response to match our Cart interface
-        const cartItems: CartItem[] = response.data.map((item: any) => {
+        const cartItems: CartItem[] = response.data.map((item: RawCartItem) => {
           const product = item.product || {}
-          const priceNum = parseFloat(product.price ?? '0')
+          const priceNum = parseFloat(String(product.price ?? '0'))
           const discountRaw = product.discount ?? '0'
           const discountNum = typeof discountRaw === 'string' ? parseFloat(discountRaw) : Number(discountRaw) || 0
           const effectivePrice = isNaN(priceNum) ? 0 : Math.max(0, priceNum - (isNaN(discountNum) ? 0 : discountNum))
