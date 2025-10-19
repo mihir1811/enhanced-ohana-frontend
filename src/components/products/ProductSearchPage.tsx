@@ -2,11 +2,24 @@
 
 import React, { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, Gem, Leaf, Sparkles, Filter } from 'lucide-react'
+import { Search, Filter } from 'lucide-react'
 import NavigationUser from '@/components/Navigation/NavigationUser'
 import Footer from '@/components/Footer'
 import { ProductConfig, FilterConfig } from '@/types/products'
 import { SECTION_WIDTH } from '@/lib/constants'
+
+interface PriceRange {
+  min: number;
+  max: number;
+}
+
+interface FormState {
+  category: string;
+  priceRange: PriceRange;
+  certification: string[];
+  location: string[];
+  [key: string]: string | number | boolean | string[] | PriceRange | undefined;
+}
 
 interface ProductSearchPageProps {
   productType: string
@@ -23,9 +36,9 @@ export default function ProductSearchPage({
 }: ProductSearchPageProps) {
   const router = useRouter()
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
-  const [searchForm, setSearchForm] = useState<Record<string, any>>(() => {
+  const [searchForm, setSearchForm] = useState<FormState>(() => {
     // Initialize form with default values
-    const initialForm: Record<string, any> = {
+    const initialForm: FormState = {
       category: config.categories[0],
       priceRange: config.priceRanges[config.categories[0]] || { min: 100, max: 10000 },
       certification: [],
@@ -63,22 +76,34 @@ export default function ProductSearchPage({
   )
 
   const handleMultiSelect = (field: string, value: string) => {
-    setSearchForm(prev => ({
-      ...prev,
-      [field]: prev[field].includes(value)
-        ? prev[field].filter((item: string) => item !== value)
-        : [...prev[field], value]
-    }))
+    setSearchForm(prev => {
+      const currentValue = prev[field]
+      if (Array.isArray(currentValue)) {
+        return {
+          ...prev,
+          [field]: currentValue.includes(value)
+            ? currentValue.filter((item: string) => item !== value)
+            : [...currentValue, value]
+        }
+      }
+      return prev
+    })
   }
 
   const handleRangeChange = (field: string, type: 'min' | 'max', value: number) => {
-    setSearchForm(prev => ({
-      ...prev,
-      [field]: {
-        ...prev[field],
-        [type]: value
+    setSearchForm(prev => {
+      const currentValue = prev[field]
+      if (currentValue && typeof currentValue === 'object' && 'min' in currentValue && 'max' in currentValue) {
+        return {
+          ...prev,
+          [field]: {
+            ...currentValue,
+            [type]: value
+          }
+        }
       }
-    }))
+      return prev
+    })
   }
 
   const handleCategoryChange = (category: string) => {
@@ -115,7 +140,7 @@ export default function ProductSearchPage({
   }
 
   const resetFilters = () => {
-    const resetForm: Record<string, any> = {
+    const resetForm: FormState = {
       category: config.categories[0],
       priceRange: config.priceRanges[config.categories[0]] || { min: 100, max: 10000 },
       certification: [],
@@ -154,14 +179,14 @@ export default function ProductSearchPage({
                   key={option}
                   onClick={() => handleMultiSelect(filter.key, option)}
                   className={`p-3 rounded-lg border text-sm transition-all ${
-                    searchForm[filter.key]?.includes(option)
+                    Array.isArray(searchForm[filter.key]) && (searchForm[filter.key] as string[]).includes(option)
                       ? 'border-blue-500 bg-blue-50 text-blue-700'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                   style={{
-                    backgroundColor: searchForm[filter.key]?.includes(option) ? 'var(--primary)/10' : 'var(--card)',
-                    borderColor: searchForm[filter.key]?.includes(option) ? 'var(--primary)' : 'var(--border)',
-                    color: searchForm[filter.key]?.includes(option) ? 'var(--primary)' : 'var(--foreground)'
+                    backgroundColor: Array.isArray(searchForm[filter.key]) && (searchForm[filter.key] as string[]).includes(option) ? 'var(--primary)/10' : 'var(--card)',
+                    borderColor: Array.isArray(searchForm[filter.key]) && (searchForm[filter.key] as string[]).includes(option) ? 'var(--primary)' : 'var(--border)',
+                    color: Array.isArray(searchForm[filter.key]) && (searchForm[filter.key] as string[]).includes(option) ? 'var(--primary)' : 'var(--foreground)'
                   }}
                 >
                   {option}
@@ -175,7 +200,7 @@ export default function ProductSearchPage({
         return (
           <div key={filter.key}>
             <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
-              {filter.label} ({searchForm[filter.key]?.min} - {searchForm[filter.key]?.max})
+              {filter.label} ({(searchForm[filter.key] as PriceRange)?.min} - {(searchForm[filter.key] as PriceRange)?.max})
             </label>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
@@ -185,7 +210,7 @@ export default function ProductSearchPage({
                   step={filter.step || 1}
                   min={filter.min}
                   max={filter.max}
-                  value={searchForm[filter.key]?.min || filter.min || 0}
+                  value={(searchForm[filter.key] as PriceRange)?.min || filter.min || 0}
                   onChange={(e) => handleRangeChange(filter.key, 'min', parseFloat(e.target.value) || filter.min || 0)}
                   className="w-full p-3 border rounded-lg"
                   style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
@@ -198,7 +223,7 @@ export default function ProductSearchPage({
                   step={filter.step || 1}
                   min={filter.min}
                   max={filter.max}
-                  value={searchForm[filter.key]?.max || filter.max || 100}
+                  value={(searchForm[filter.key] as PriceRange)?.max || filter.max || 100}
                   onChange={(e) => handleRangeChange(filter.key, 'max', parseFloat(e.target.value) || filter.max || 100)}
                   className="w-full p-3 border rounded-lg"
                   style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
@@ -274,7 +299,7 @@ export default function ProductSearchPage({
               Category
             </label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {config.categories.map((category, index) => (
+              {config.categories.map((category) => (
                 <button
                   key={category}
                   onClick={() => handleCategoryChange(category)}
@@ -299,14 +324,14 @@ export default function ProductSearchPage({
           {/* Price Range */}
           <div className="mb-6">
             <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
-              Price Range (${searchForm.priceRange?.min?.toLocaleString()} - ${searchForm.priceRange?.max?.toLocaleString()})
+              Price Range (${(searchForm.priceRange as PriceRange)?.min?.toLocaleString()} - ${(searchForm.priceRange as PriceRange)?.max?.toLocaleString()})
             </label>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Minimum ($)</label>
                 <input
                   type="number"
-                  value={searchForm.priceRange?.min || 0}
+                  value={(searchForm.priceRange as PriceRange)?.min || 0}
                   onChange={(e) => handleRangeChange('priceRange', 'min', parseInt(e.target.value) || 0)}
                   className="w-full p-3 border rounded-lg"
                   style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
@@ -316,7 +341,7 @@ export default function ProductSearchPage({
                 <label className="block text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Maximum ($)</label>
                 <input
                   type="number"
-                  value={searchForm.priceRange?.max || 0}
+                  value={(searchForm.priceRange as PriceRange)?.max || 0}
                   onChange={(e) => handleRangeChange('priceRange', 'max', parseInt(e.target.value) || 0)}
                   className="w-full p-3 border rounded-lg"
                   style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}

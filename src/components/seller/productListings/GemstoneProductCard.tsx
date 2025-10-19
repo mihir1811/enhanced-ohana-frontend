@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Image from 'next/image';
 import { toast } from "react-hot-toast";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { MoreVertical, Eye, Pencil, Trash2, Images, ChevronLeft, ChevronRight, Clock } from "lucide-react";
@@ -256,9 +257,11 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
       </div>
       {/* Image */}
       <div className="relative w-full aspect-[4/3] bg-gray-100 flex items-center justify-center">
-        <img
+        <Image
           src={displayImages[imgIdx]}
           alt={product.name}
+          width={400}
+          height={300}
           className={`object-cover w-full h-full rounded-t-2xl transition-opacity duration-300 ${animating ? 'opacity-0' : 'opacity-100'}`}
           style={{ pointerEvents: 'none' }}
         />
@@ -394,9 +397,11 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
                 {product.shape}
               </span>
             </div>
-            <img
+            <Image
               src={displayImages[imgIdx]}
               alt={product.name}
+              width={400}
+              height={256}
               className="w-full h-64 object-cover rounded-lg mb-4"
             />
             <div className="mb-4">
@@ -438,8 +443,9 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
             }
             toast.success('Product deleted successfully!');
             if (onDelete) onDelete(product);
-          } catch (err: any) {
-            toast.error(err.message || 'Failed to delete product.');
+          } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to delete product.';
+            toast.error(errorMessage);
           }
         }}
         onNo={() => setShowDelete(false)}

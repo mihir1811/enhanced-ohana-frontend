@@ -25,8 +25,27 @@ import { WishlistButton } from '@/components/shared/WishlistButton';
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
 import { cartService } from '@/services/cartService';
-import { JewelryItem } from '@/services/jewelryService';
-import { RawJewelry } from '@/types/unified-product';
+
+interface StoneDetails {
+  stoneType?: string;
+  stoneCaratWeight?: number;
+  stoneColor?: string;
+  stoneClarity?: string;
+  stoneCut?: string;
+  stoneShape?: string;
+  stonePrice?: number;
+  type?: string;
+  carat?: number;
+  color?: string;
+  clarity?: string;
+  cut?: string;
+  shape?: string;
+  [key: string]: unknown;
+}
+
+interface JewelryAttributes {
+  [key: string]: unknown;
+}
 
 // Minimalistic Image Gallery Component
 interface ImageGalleryProps {
@@ -167,20 +186,9 @@ interface JewelryDetailsItem {
     companyName?: string;
     companyLogo?: string;
   };
-  attributes?: {
-    [key: string]: any;
-  };
-  stones?: Array<{
-    stoneType?: string;
-    stoneCaratWeight?: number;
-    stoneColor?: string;
-    stoneClarity?: string;
-    stoneCut?: string;
-    stoneShape?: string;
-    stonePrice?: number;
-    [key: string]: any;
-  }>;
-  [key: string]: any; // Allow additional properties
+  attributes?: JewelryAttributes;
+  stones?: StoneDetails[];
+  [key: string]: unknown; // Allow additional properties
 }
 
 interface JewelryDetailsPageProps {
@@ -282,7 +290,7 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
             <Star className="w-12 h-12 text-gray-300" />
           </div>
           <h2 className="text-2xl font-light text-gray-900 mb-4">Jewelry not found</h2>
-          <p className="text-gray-500 mb-8 leading-relaxed">The jewelry piece you're looking for is not available.</p>
+          <p className="text-gray-500 mb-8 leading-relaxed">The jewelry piece you&apos;re looking for is not available.</p>
           <button
             onClick={() => router.back()}
             className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition-colors font-medium"
@@ -349,7 +357,7 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
               </h1>
 
               <div className="text-sm text-gray-500">
-                Style: <span className="text-gray-900 font-medium">{jewelry.skuCode || 'N/A'}</span>
+                Style: <span className="text-gray-900 font-medium">{String(jewelry.skuCode) || 'N/A'}</span>
               </div>
             </div>
 
@@ -514,8 +522,8 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                     <div className="space-y-2 text-sm text-gray-600">
                       {jewelry.category && <div>Category: {jewelry.category}</div>}
                       {jewelry.collection && <div>Collection: {jewelry.collection}</div>}
-                      {jewelry.gender && <div>Gender: {jewelry.gender}</div>}
-                      {jewelry.occasion && <div>Occasion: {jewelry.occasion}</div>}
+                      {jewelry.gender ? <div>Gender: {String(jewelry.gender)}</div> : null}
+                      {jewelry.occasion ? <div>Occasion: {String(jewelry.occasion)}</div> : null}
                     </div>
                   </div>
                 </div>
@@ -538,7 +546,7 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                       ].filter(item => item.value).map(item => (
                         <div key={item.label} className="flex justify-between items-center py-2">
                           <span className="text-gray-600 font-medium">{item.label}</span>
-                          <span className="text-gray-900 font-semibold">{item.value}</span>
+                          <span className="text-gray-900 font-semibold">{String(item.value)}</span>
                         </div>
                       ))}
                     </div>
@@ -704,7 +712,7 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                       {!collapsedSections.stoneDetails && (
                         <div className="px-4 sm:px-6 pb-4 sm:pb-6 border-t border-gray-100">
                           <div className="space-y-3 sm:space-y-4 mt-4">
-                            {jewelry.stones.map((stone: any, index: number) => (
+                            {jewelry.stones.map((stone: StoneDetails, index: number) => (
                               <div key={index} className="space-y-3">
                                 <h4 className="font-semibold text-gray-900">Stone {index + 1}</h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">

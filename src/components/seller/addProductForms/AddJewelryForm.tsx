@@ -1,7 +1,7 @@
-import { jewelryService } from '@/services/jewelryService';
-// ...existing code will be replaced with a new, full-featured form matching your requirements...
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
+import Image from 'next/image';
+import { jewelryService } from '@/services/jewelryService';
 
 // --- Dropdown options and mappings (label-value format) ---
 const DROPDOWN_OPTIONS = {
@@ -319,14 +319,14 @@ const AddJewelryForm = () => {
     attributes: { style: '', chain_type: '', clasp_type: '', length_cm: '', is_adjustable: false },
     images: []
   });
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
   const [selectedMetalType, setSelectedMetalType] = useState<string | undefined>(undefined);
 
   // --- Handlers ---
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
+    const { name, value } = e.target;
     setForm(f => ({ ...f, [name]: value }));
   };
   const handleDropdownChange = (name: string, value: string) => {
@@ -339,24 +339,16 @@ const AddJewelryForm = () => {
     setForm(f => ({ ...f, stones: [...(f.stones || []), { type: '', shape: '', carat: '', color: '', clarity: '', cut: '', certification: '' }] }));
   };
   const handleRemoveStone = (idx: number) => {
-    setForm(f => ({ ...f, stones: f.stones.filter((_: any, i: number) => i !== idx) }));
+    setForm(f => ({ ...f, stones: f.stones.filter((_, i: number) => i !== idx) }));
   };
   const handleStoneChange = (idx: number, name: string, value: string) => {
-    setForm(f => ({ ...f, stones: f.stones.map((s: any, i: number) => i === idx ? { ...s, [name]: value } : s) }));
+    setForm(f => ({ ...f, stones: f.stones.map((s: Stone, i: number) => i === idx ? { ...s, [name]: value } : s) }));
   };
   // --- Attributes ---
   const handleAttributeChange = (name: string, value: string | boolean) => {
     setForm(f => ({ ...f, attributes: { ...f.attributes, [name]: value } }));
   };
   // --- Images ---
-  const handleImageChange = (idx: number, file: File) => {
-    if (!file) return;
-    setForm(f => {
-      const images = f.images.slice();
-      images[idx] = file;
-      return { ...f, images };
-    });
-  };
   const handleAddImage = (file: File | null) => {
     if (!file) return;
     setForm(f => {
@@ -365,12 +357,12 @@ const AddJewelryForm = () => {
     });
   };
   const handleRemoveImage = (idx: number) => {
-    setForm(f => ({ ...f, images: f.images.filter((_: any, i: number) => i !== idx) }));
+    setForm(f => ({ ...f, images: f.images.filter((_, i: number) => i !== idx) }));
   };
 
   // --- Validation ---
   const validate = () => {
-    const errs: any = {};
+    const errs: Record<string, string> = {};
     if (!form.name) errs.name = 'Name is required';
     if (!form.skuCode) errs.skuCode = 'SKU Code is required';
     if (!form.category) errs.category = 'Category is required';
@@ -416,7 +408,7 @@ const AddJewelryForm = () => {
       // Ensure number fields are sent as numbers, not strings
       const numberFields = ['metalWeight', 'basePrice', 'makingCharge', 'tax', 'totalPrice'];
       Object.keys(fieldMap).forEach(key => {
-        let value = (form as any)[key];
+        const value = (form as Record<string, unknown>)[key];
         if (typeof value !== 'undefined' && value !== null && value !== '') {
           if (numberFields.includes(key)) {
             // Only append if value is a valid number
@@ -435,7 +427,7 @@ const AddJewelryForm = () => {
       }
       // Stones as JSON string (array), ensure carat is number
       if (form.stones && form.stones.length > 0) {
-        const stonesPayload = form.stones.map(stone => ({
+        const stonesPayload = form.stones.map((stone: Stone) => ({
           ...stone,
           carat: stone.carat === '' ? undefined : Number(stone.carat)
         }));
@@ -468,7 +460,8 @@ const AddJewelryForm = () => {
           description: '', videoURL: '', stockNumber: '', stones: [], attributes: { style: '', chain_type: '', clasp_type: '', length_cm: '', is_adjustable: false }, images: []
         }
       });
-    } catch (err: any) {
+    } catch (error) {
+      const err = error as Error;
       toast.error(err.message || 'Failed to add jewelry');
 
     } finally {
@@ -540,9 +533,11 @@ const AddJewelryForm = () => {
                 const url = URL.createObjectURL(img);
                 return (
                   <div key={idx} className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center relative group">
-                    <img
+                    <Image
                       src={url}
                       alt={`Preview ${idx + 1}`}
+                      width={80}
+                      height={80}
                       className="object-cover w-full h-full"
                       onLoad={() => URL.revokeObjectURL(url)}
                     />
@@ -640,7 +635,7 @@ const AddJewelryForm = () => {
           <span className="font-semibold">Gemstones</span>
           <button type="button" className="text-blue-600 font-bold" onClick={handleAddStone}>+ Add Gemstone</button>
         </div>
-        {form.stones && form.stones.length > 0 && form.stones.map((stone: any, idx: number) => (
+        {form.stones && form.stones.length > 0 && form.stones.map((stone: Stone, idx: number) => (
           <div key={idx} className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2 bg-gray-50 p-3 rounded-lg">
             <select value={stone.type} onChange={e => handleStoneChange(idx, 'type', e.target.value)} className="input">
               <option value="" disabled hidden>Select Type</option>

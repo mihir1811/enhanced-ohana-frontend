@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import { gemstoneService } from '@/services/gemstoneService';
 import { auctionService } from '@/services/auctionService';
@@ -121,13 +122,63 @@ const CUTS = [
   { value: 'Other', label: 'Other' },
 ];
 
+interface GemstoneData {
+  id: string;
+  name: string;
+  gemsType: string;
+  subType: string;
+  stockNumber: string;
+  sellerStockNumber: string;
+  quantity: string;
+  description: string;
+  videoURL: string;
+  price: string;
+  carat: string;
+  discount: string;
+  qualityGrade: string;
+  composition: string;
+  shape: string;
+  color: string;
+  clarity: string;
+  hardness: string;
+  origin: string;
+  fluoreScence: string;
+  treatment: string;
+  refrectiveIndex: string;
+  birefringence: string;
+  process: string;
+  cut: string;
+  dimension: string;
+  spacificGravity: string;
+  certificateCompanyId: string;
+  isOnAuction?: boolean;
+  productType: string;
+  startTime: string;
+  endTime: string;
+  enableAuction: boolean;
+  image1?: string;
+  image2?: string;
+  image3?: string;
+  image4?: string;
+  image5?: string;
+  image6?: string;
+  auction?: {
+    id: string;
+    productType: string;
+    startTime: string;
+    endTime: string;
+    isActive: boolean;
+    createdAt: string;
+  };
+}
+
 interface EditGemstoneFormProps {
-  initialData: any;
+  initialData: GemstoneData;
   onCancel?: () => void;
 }
 
 const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCancel }) => {
-  const [form, setForm] = useState<any>({
+  const [form, setForm] = useState<GemstoneData & { images: File[] }>({
     ...initialData,
     isOnAuction: Boolean(initialData?.isOnAuction),
     images: [],
@@ -140,11 +191,12 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
   const [loading, setLoading] = useState(false);
   const [selectedGemsType, setSelectedGemsType] = useState<string | undefined>(initialData?.gemsType);
   // Extract initial image URLs from initialData (image1-image6)
-  const extractInitialImageUrls = (data: any) => {
+  const extractInitialImageUrls = (data: GemstoneData): string[] => {
     const urls: string[] = [];
     for (let i = 1; i <= 6; i++) {
-      const key = `image${i}`;
-      if (data[key]) urls.push(data[key]);
+      const key = `image${i}` as keyof GemstoneData;
+      const imageUrl = data[key];
+      if (imageUrl && typeof imageUrl === 'string') urls.push(imageUrl);
     }
     return urls;
   };
@@ -265,7 +317,8 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
 
       toast.success('Gemstone updated successfully!' + (form.enableAuction ? ' Auction created!' : ''));
       if (onCancel) onCancel();
-    } catch (err: any) {
+    } catch (error) {
+      const err = error as Error;
       toast.error(err.message || 'Failed to update gemstone');
     } finally {
       setLoading(false);
@@ -345,9 +398,11 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
               <div className="flex flex-wrap gap-3 mt-3">
                 {imagePreviews.map((preview, idx) => (
                   <div key={idx} className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center relative group">
-                    <img
+                    <Image
                       src={preview}
                       alt={`Preview ${idx + 1}`}
+                      width={80}
+                      height={80}
                       className="object-cover w-full h-full"
                     />
                     <button
@@ -600,7 +655,7 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
           <h3 className="text-lg font-semibold mb-2">Existing Auction Details (Legacy)</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <div className="col-span-3 text-sm text-yellow-700 mb-2">
-              ⚠️ This section shows existing auction data. Use "Auction Settings" above to create new auctions.
+              ⚠️ This section shows existing auction data. Use &quot;Auction Settings&quot; above to create new auctions.
             </div>
             <div>
               <label className="block font-medium mb-1">On Auction (Legacy)</label>

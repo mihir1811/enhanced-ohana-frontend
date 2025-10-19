@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
+import Image from 'next/image';
 import { getCookie } from '@/lib/cookie-utils';
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SearchableDropdown from '@/components/shared/SearchableDropdown';
-import type { Option } from '@/components/shared/SearchableDropdown';
 import {
   diamondColors, fancyColors, fancyIntensities, fancyOvertones, cutGrades, clarities, shades, shapes, fluorescences, processes, treatments
 } from '@/constants/diamondDropdowns';
@@ -15,8 +15,71 @@ import toast from 'react-hot-toast';
 
 
 
+interface DiamondData {
+  id: string;
+  name: string;
+  stoneType: string;
+  description: string;
+  videoURL: string;
+  stockNumber: string;
+  sellerSKU: string;
+  origin: string;
+  rap: string;
+  price: string;
+  discount: string;
+  color: string;
+  fancyColor: string;
+  fancyIntencity: string;
+  fancyOvertone: string;
+  caratWeight: string;
+  cut: string;
+  clarity: string;
+  shade: string;
+  shape: string;
+  polish: string;
+  symmetry: string;
+  fluorescence: string;
+  treatment: string;
+  process: string;
+  measurement: string;
+  diameter: string;
+  ratio: string;
+  table: string;
+  depth: string;
+  gridleMin: string;
+  gridleMax: string;
+  gridlePercentage: string;
+  crownHeight: string;
+  crownAngle: string;
+  pavilionAngle: string;
+  pavilionDepth: string;
+  culetSize: string;
+  certificateCompanyId: string;
+  certificateNumber: string;
+  inscription: string;
+  productType: string;
+  startTime: string;
+  endTime: string;
+  enableAuction: boolean;
+  image1?: string;
+  image2?: string;
+  image3?: string;
+  image4?: string;
+  image5?: string;
+  image6?: string;
+  auction?: {
+    id: string;
+    productType: string;
+    startTime: string;
+    endTime: string;
+    isActive: boolean;
+    isSold: boolean;
+    bids?: unknown[];
+  };
+}
+
 type EditDiamondFormProps = {
-  initialData?: any;
+  initialData?: DiamondData;
 };
 
 const initialState = {
@@ -26,14 +89,14 @@ const initialState = {
 };
 
 
-const normalizeImages = (data: any) => {
+const normalizeImages = (data: DiamondData): string[] => {
   // Collect image1–image6 into an array, filter null/empty
-  return [data.image1, data.image2, data.image3, data.image4, data.image5, data.image6].filter(Boolean);
+  return [data.image1, data.image2, data.image3, data.image4, data.image5, data.image6].filter((img): img is string => Boolean(img));
 };
 
 const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
   // Use dynamic certificate companies
-  const { options: certificateCompanies, loading: companiesLoading, getCompanyNameById } = useCertificateCompanies();
+  const { options: certificateCompanies } = useCertificateCompanies();
 
   // Helper to map API string to dropdown value (case-insensitive, handle camelCase, spaces, etc)
   function normalizeApiValue(val: string | undefined) {
@@ -78,18 +141,17 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
 
   const [form, setForm] = useState<typeof initialState>(() => {
     if (initialData) {
-      const { images, ...rest } = initialData;
       return {
         ...initialState,
-        ...rest,
-        fancyColor: getDropdownValue(fancyColors, rest.fancyColor),
-        fancyIntencity: getDropdownValue(fancyIntensities, rest.fancyIntencity),
-        fancyOvertone: getDropdownValue(fancyOvertones, rest.fancyOvertone),
-        shade: getDropdownValue(shades, rest.shade),
-        fluorescence: getDropdownValue(fluorescences, rest.fluorescence),
-        treatment: getDropdownValue(treatments, rest.treatment),
-        process: getDropdownValue(processes, rest.process, 'process'),
-        certificateCompanyId: rest.certificateCompanyId ? String(rest.certificateCompanyId) : '',
+        ...initialData,
+        fancyColor: getDropdownValue(fancyColors, initialData.fancyColor),
+        fancyIntencity: getDropdownValue(fancyIntensities, initialData.fancyIntencity),
+        fancyOvertone: getDropdownValue(fancyOvertones, initialData.fancyOvertone),
+        shade: getDropdownValue(shades, initialData.shade),
+        fluorescence: getDropdownValue(fluorescences, initialData.fluorescence),
+        treatment: getDropdownValue(treatments, initialData.treatment),
+        process: getDropdownValue(processes, initialData.process, 'process'),
+        certificateCompanyId: initialData.certificateCompanyId ? String(initialData.certificateCompanyId) : '',
         images: [],
         certification: null
       };
@@ -103,18 +165,17 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
 
   useEffect(() => {
     if (initialData) {
-      const { images, ...rest } = initialData;
       setForm({
         ...initialState,
-        ...rest,
-        fancyColor: getDropdownValue(fancyColors, rest.fancyColor),
-        fancyIntencity: getDropdownValue(fancyIntensities, rest.fancyIntencity),
-        fancyOvertone: getDropdownValue(fancyOvertones, rest.fancyOvertone),
-        shade: getDropdownValue(shades, rest.shade),
-        fluorescence: getDropdownValue(fluorescences, rest.fluorescence),
-        treatment: getDropdownValue(treatments, rest.treatment),
-        process: getDropdownValue(processes, rest.process, 'process'),
-        certificateCompanyId: rest.certificateCompanyId ? String(rest.certificateCompanyId) : '',
+        ...initialData,
+        fancyColor: getDropdownValue(fancyColors, initialData.fancyColor),
+        fancyIntencity: getDropdownValue(fancyIntensities, initialData.fancyIntencity),
+        fancyOvertone: getDropdownValue(fancyOvertones, initialData.fancyOvertone),
+        shade: getDropdownValue(shades, initialData.shade),
+        fluorescence: getDropdownValue(fluorescences, initialData.fluorescence),
+        treatment: getDropdownValue(treatments, initialData.treatment),
+        process: getDropdownValue(processes, initialData.process, 'process'),
+        certificateCompanyId: initialData.certificateCompanyId ? String(initialData.certificateCompanyId) : '',
         images: []
       });
       setExistingImages(normalizeImages(initialData));
@@ -138,14 +199,15 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
     if (!files) return;
 
     if (name === 'images') {
-      let fileArr = Array.from(files);
+      const fileArr = Array.from(files);
       if (form.images.length + fileArr.length > 6) {
-        fileArr = fileArr.slice(0, 6 - form.images.length);
+        const limitedFiles = fileArr.slice(0, 6 - form.images.length);
         setError('You can upload a maximum of 6 images.');
+        setForm((prev: typeof form) => ({ ...prev, images: [...prev.images, ...limitedFiles].slice(0, 6) }));
       } else {
         setError('');
+        setForm((prev: typeof form) => ({ ...prev, images: [...prev.images, ...fileArr].slice(0, 6) }));
       }
-      setForm((prev: typeof form) => ({ ...prev, images: [...prev.images, ...fileArr].slice(0, 6) }));
       if (fileInputRef.current) fileInputRef.current.value = '';
     } else if (name === 'certification') {
       const file = files[0];
@@ -156,10 +218,10 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
   };
 
   const handleRemoveImage = (idx: number) => {
-    setForm((prev: typeof form) => ({ ...prev, images: prev.images.filter((_: File, i: number) => i !== idx) }));
+    setForm((prev: typeof form) => ({ ...prev, images: prev.images.filter((_, i: number) => i !== idx) }));
   };
   const handleRemoveExistingImage = (idx: number) => {
-    setExistingImages((prev: string[]) => prev.filter((_: string, i: number) => i !== idx));
+    setExistingImages((prev: string[]) => prev.filter((_, i: number) => i !== idx));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -205,13 +267,15 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
 
       const token = getCookie('token');
       if (!token) throw new Error('User not authenticated');
+      if (!initialData?.id) throw new Error('Invalid diamond data');
+      
       const response = await import('@/services/diamondService').then(m => m.diamondService.updateDiamond(initialData.id, formDataToSend, token));
       if (!response || !response.success) {
         throw new Error(response?.message || 'Failed to update diamond');
       }
 
       // If auction is enabled, create auction
-      if (form.enableAuction && form.productType && form.startTime && form.endTime) {
+      if (form.enableAuction && form.productType && form.startTime && form.endTime && initialData?.id) {
         const auctionData = {
           productId: initialData.id,
           productType: form.productType as 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond',
@@ -228,7 +292,8 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
       toast.success('Diamond updated successfully!' + (form.enableAuction ? ' Auction created!' : ''));
 
       // alert('Diamond updated successfully!' + (form.enableAuction ? ' Auction created!' : ''));
-    } catch (err: any) {
+    } catch (error) {
+      const err = error as Error;
       setError(err.message || 'Failed to submit');
     } finally {
       setLoading(false);
@@ -353,9 +418,11 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
                         )}
                         {existingImages.map((img, idx) => (
                           <div key={idx} className="relative group aspect-square">
-                            <img
+                            <Image
                               src={img}
                               alt={`Product image ${idx + 1}`}
+                              width={200}
+                              height={200}
                               className="w-full h-full object-cover rounded-md"
                             />
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-md">
@@ -378,9 +445,11 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
                           const url = URL.createObjectURL(img);
                           return (
                             <div key={idx} className="relative group aspect-square">
-                              <img
+                              <Image
                                 src={url}
                                 alt={`Product image ${idx + 1}`}
+                                width={200}
+                                height={200}
                                 className="w-full h-full object-cover rounded-md"
                                 onLoad={() => URL.revokeObjectURL(url)}
                               />

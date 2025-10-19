@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Heart, ShoppingCart, Eye, Grid, List, ArrowUpDown, Filter as FilterIcon } from 'lucide-react'
+import { ShoppingCart, Eye, Grid, List, ArrowUpDown, Filter as FilterIcon } from 'lucide-react'
+import Image from 'next/image'
 import CompareButton from '@/components/compare/CompareButton'
 import Pagination from '@/components/ui/Pagination'
 import WishlistButton from '@/components/shared/WishlistButton'
@@ -14,7 +15,8 @@ export interface GenericProduct {
   image?: string
   category?: string
   type?: string
-  [key: string]: any
+  seller?: string
+  [key: string]: string | number | boolean | string[] | undefined
 }
 
 interface GenericProductResultsProps {
@@ -88,9 +90,11 @@ export default function GenericProductResults({
         </div>
 
         {/* Product Image */}
-        <img
+        <Image
           src={getProductImage(product)}
           alt={product.name}
+          width={300}
+          height={300}
           className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
           onError={(e) => {
@@ -158,9 +162,11 @@ export default function GenericProductResults({
     >
       {/* Left: Image */}
       <div className="relative w-full sm:w-40 h-40 bg-gray-50 overflow-hidden flex items-center">
-        <img
+        <Image
           src={getProductImage(product)}
           alt={product.name}
+          width={160}
+          height={160}
           className="w-full h-full object-cover"
           loading="lazy"
           onError={(e) => {

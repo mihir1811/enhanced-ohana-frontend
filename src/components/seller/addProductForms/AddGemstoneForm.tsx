@@ -1,6 +1,7 @@
 // ...existing imports...
 import React, { useState, useRef } from 'react';
 import { toast } from 'react-hot-toast';
+import Image from 'next/image';
 import { gemstoneService } from '@/services/gemstoneService';
 import { getCookie } from '@/lib/cookie-utils';
 
@@ -123,7 +124,38 @@ const CUTS = [
   { value: 'Other', label: 'Other' },
 ];
 
-const initialForm = {
+interface GemstoneFormState {
+  name: string;
+  gemsType: string;
+  subType: string;
+  composition: string;
+  qualityGrade: string;
+  quantity: string;
+  videoURL: string;
+  stockNumber: string;
+  sellerStockNumber: string;
+  description: string;
+  discount: string;
+  price: string;
+  carat: string;
+  shape: string;
+  color: string;
+  clarity: string;
+  hardness: string;
+  origin: string;
+  fluoreScence: string;
+  process: string;
+  cut: string;
+  dimension: string;
+  refrectiveIndex: string;
+  birefringence: string;
+  spacificGravity: string;
+  treatment: string;
+  certificateCompanyId: string;
+  images: File[];
+}
+
+const initialForm: GemstoneFormState = {
   name: '',
   gemsType: '',
   subType: '',
@@ -155,10 +187,9 @@ const initialForm = {
 };
 
 function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
-  const [form, setForm] = useState<any>(initialForm);
+  const [form, setForm] = useState<GemstoneFormState>(initialForm);
   const [loading, setLoading] = useState(false);
   const [selectedGemsType, setSelectedGemsType] = useState<string | undefined>(undefined);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -168,7 +199,7 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
     setForm({ ...form, [e.target.name]: e.target.value });
     if (e.target.name === 'gemsType') {
       setSelectedGemsType(e.target.value);
-  setForm((f: typeof form) => ({ ...f, subType: '' }));
+      setForm((f: GemstoneFormState) => ({ ...f, subType: '' }));
     }
   };
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -180,14 +211,12 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
       toast.error('You can upload a maximum of 6 images.');
     }
     setForm({ ...form, images: [...form.images, ...arr].slice(0, 6) });
-    setImagePreviews([...form.images, ...arr].slice(0, 6).map((file: File) => URL.createObjectURL(file)));
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
   const removeImage = (idx: number) => {
     const newImages = [...form.images];
     newImages.splice(idx, 1);
     setForm({ ...form, images: newImages });
-    setImagePreviews(newImages.map((file: File) => URL.createObjectURL(file)));
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -210,10 +239,10 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
       }
       toast.success('Gemstone added successfully!');
       setForm(initialForm);
-      setImagePreviews([]);
       if (onCancel) onCancel();
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to add gemstone');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to add gemstone';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -293,9 +322,11 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
                   const url = URL.createObjectURL(img);
                   return (
                     <div key={idx} className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center relative group">
-                      <img
+                      <Image
                         src={url}
                         alt={`Preview ${idx + 1}`}
+                        width={80}
+                        height={80}
                         className="object-cover w-full h-full"
                         onLoad={() => URL.revokeObjectURL(url)}
                       />

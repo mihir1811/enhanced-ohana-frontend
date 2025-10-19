@@ -1,14 +1,32 @@
 "use client";
 
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { Filter as FilterIcon } from 'lucide-react';
 import GemstoneResults from './GemstoneResults';
 import { GemstonItem } from '@/services/gemstoneService';
 import GemstoneFilters, { type GemstoneFilterValues } from './GemstoneFilters';
+import { ApiResponse } from '@/services/api';
+
+interface GemstoneSearchParams {
+  [key: string]: string | number | boolean | string[] | { min: number; max: number } | undefined;
+}
+
+interface GemstoneApiMeta {
+  total: number;
+  lastPage: number;
+  currentPage: number;
+  perPage: number;
+  prev: number | null;
+  next: number | null;
+}
+
+interface GemstoneApiResponse extends ApiResponse<{
+  data: GemstonItem[];
+  meta: GemstoneApiMeta;
+}> {}
 
 interface GemstoneListingPageProps {
   gemstoneType: 'single' | 'melee';
-  fetchGemstones: (params: any) => Promise<any>; // expects API response with data & meta
+  fetchGemstones: (params: GemstoneSearchParams) => Promise<GemstoneApiResponse>;
   title?: string;
 }
 
@@ -80,10 +98,11 @@ const GemstoneListingPage: React.FC<GemstoneListingPageProps> = ({
     setCurrentPage(1); // Reset to first page on filter change
   };
 
-  const handleResetFilters = () => {
-    setFilters(getDefaultFilterValues(gemstoneType));
-    setCurrentPage(1);
-  };
+  // Commented out unused handleResetFilters function - uncomment if needed
+  // const handleResetFilters = () => {
+  //   setFilters(getDefaultFilterValues(gemstoneType));
+  //   setCurrentPage(1);
+  // };
 
   // Mobile filter sidebar state with animation
   const [showFilters, setShowFilters] = useState(false);

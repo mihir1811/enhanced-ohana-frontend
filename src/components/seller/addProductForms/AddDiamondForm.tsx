@@ -1,6 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import Image from 'next/image';
 import { diamondService } from '@/services/diamondService';
 import { getCookie } from '@/lib/cookie-utils';
 import { Input } from "@/components/ui/input";
@@ -19,7 +20,6 @@ interface SearchableDropdownProps {
   name: string;
   placeholder?: string;
   required?: boolean;
-  icon?: React.ReactNode;
 }
 
 const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
@@ -28,8 +28,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   onChange,
   name,
   placeholder = "Select an option",
-  required = false,
-  icon
+  required = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -257,7 +256,7 @@ const initialState: DiamondFormState = {
 
 function AddDiamondForm() {
   // Use dynamic certificate companies
-  const { options: certificateCompanies, loading: companiesLoading, getCompanyNameById } = useCertificateCompanies();
+  const { options: certificateCompanies, getCompanyNameById } = useCertificateCompanies();
   
   const [form, setForm] = useState<DiamondFormState>(initialState);
   const [loading, setLoading] = useState(false);
@@ -304,7 +303,7 @@ function AddDiamondForm() {
         'stockNumber', 'name', 'description', 'origin', 'rap', 'price', 'discount', 'caratWeight', 'cut', 'color', 'shade', 'fancyColor', 'fancyIntencity', 'fancyOvertone', 'shape', 'symmetry', 'diameter', 'clarity', 'fluorescence', 'measurement', 'ratio', 'table', 'depth', 'gridleMin', 'gridleMax', 'gridlePercentage', 'crownHeight', 'crownAngle', 'pavilionAngle', 'pavilionDepth', 'culetSize', 'polish', 'treatment', 'inscription', 'certificateNumber', 'stoneType', 'process', 'certificateCompanyId', 'videoURL', 'sellerSKU'
       ];
       fields.forEach((key) => {
-        const value = (form as any)[key];
+        const value = form[key as keyof DiamondFormState];
         if (typeof value !== 'undefined' && value !== null && value !== '') {
           formData.append(key, String(value));
         }
@@ -337,9 +336,10 @@ function AddDiamondForm() {
       }
       toast.success('Diamond added successfully!');
       setForm(initialState);
-    } catch (err: any) {
-      setError(err.message || 'Failed to submit');
-      toast.error(err.message || 'Failed to add diamond');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to submit';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -447,9 +447,11 @@ function AddDiamondForm() {
                           const url = URL.createObjectURL(image);
                           return (
                             <div key={idx} className="relative group aspect-square">
-                              <img
+                              <Image
                                 src={url}
                                 alt={`Product image ${idx + 1}`}
+                                width={200}
+                                height={200}
                                 className="w-full h-full object-cover rounded-md"
                                 onLoad={() => URL.revokeObjectURL(url)}
                               />
@@ -656,12 +658,6 @@ function AddDiamondForm() {
               options={diamondColors}
               placeholder="Search color grade..."
               required
-              icon={
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                    d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                </svg>
-              }
             />
           </div>
           <div className="space-y-2">
@@ -676,12 +672,6 @@ function AddDiamondForm() {
               options={fancyColors}
               placeholder="Search fancy color..."
               required
-              icon={
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                    d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                </svg>
-              }
             />
           </div>
           <div className="space-y-2">
@@ -696,12 +686,6 @@ function AddDiamondForm() {
               options={fancyIntensities}
               placeholder="Search intensity..."
               required
-              icon={
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>
-              }
             />
           </div>
           <div className="space-y-2">
@@ -716,12 +700,6 @@ function AddDiamondForm() {
               options={fancyOvertones}
               placeholder="Search overtone..."
               required
-              icon={
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                    d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                </svg>
-              }
             />
           </div>
           <div className="space-y-2">
@@ -751,12 +729,6 @@ function AddDiamondForm() {
               options={cutGrades}
               placeholder="Search cut grade..."
               required
-              icon={
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                    d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              }
             />
           </div>
           <div className="space-y-2">
@@ -771,12 +743,6 @@ function AddDiamondForm() {
               options={clarities}
               placeholder="Search clarity grade..."
               required
-              icon={
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                    d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              }
             />
           </div>
           <div className="space-y-2">
@@ -791,12 +757,6 @@ function AddDiamondForm() {
               options={shades}
               placeholder="Search diamond shade..."
               required
-              icon={
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                    d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                </svg>
-              }
             />
           </div>
           <div className="space-y-2">
@@ -811,12 +771,6 @@ function AddDiamondForm() {
               options={shapes}
               placeholder="Search diamond shape..."
               required
-              icon={
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                    d="M4 5a2 2 0 012-2h4a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V5z M14 5a2 2 0 012-2h4a2 2 0 012 2v4a2 2 0 01-2 2h-4a2 2 0 01-2-2V5z M4 15a2 2 0 012-2h4a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4z M14 15a2 2 0 012-2h4a2 2 0 012 2v4a2 2 0 01-2 2h-4a2 2 0 01-2-2v-4z" />
-                </svg>
-              }
             />
           </div>
           <div className="space-y-2">
@@ -831,12 +785,6 @@ function AddDiamondForm() {
               options={cutGrades}
               placeholder="Search polish grade..."
               required
-              icon={
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                    d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z" />
-                </svg>
-              }
             />
           </div>
           <div className="space-y-2">
@@ -851,12 +799,6 @@ function AddDiamondForm() {
               options={cutGrades}
               placeholder="Search symmetry grade..."
               required
-              icon={
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-              }
             />
           </div>
           <div className="space-y-2">
@@ -871,12 +813,6 @@ function AddDiamondForm() {
               options={fluorescences}
               placeholder="Search fluorescence..."
               required
-              icon={
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>
-              }
             />
           </div>
           <div className="space-y-2">
@@ -891,12 +827,6 @@ function AddDiamondForm() {
               options={treatments}
               placeholder="Search treatment type..."
               required
-              icon={
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                </svg>
-              }
             />
           </div>
           <div className="space-y-2">
@@ -911,12 +841,6 @@ function AddDiamondForm() {
               options={processes}
               placeholder="Search process type..."
               required
-              icon={
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                </svg>
-              }
             />
           </div>
         </div>
@@ -1142,12 +1066,6 @@ function AddDiamondForm() {
               options={certificateCompanies}
               placeholder="Search certificate company..."
               required
-              icon={
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              }
             />
           </div>
           <div className="space-y-2">
@@ -1225,9 +1143,11 @@ function AddDiamondForm() {
                         </p>
                         {form.certification.type.startsWith('image/') && (
                           <div className="relative w-32 h-32 mx-auto mt-2 rounded-md overflow-hidden border border-border">
-                            <img 
+                            <Image 
                               src={URL.createObjectURL(form.certification)} 
                               alt="Preview" 
+                              width={128}
+                              height={128}
                               className="w-full h-full object-cover"
                             />
                           </div>
@@ -1300,3 +1220,4 @@ function AddDiamondForm() {
 }
 
 export default AddDiamondForm;
+

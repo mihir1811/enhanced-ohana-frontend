@@ -1,9 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Clock } from 'lucide-react';
+import React from 'react';
+import Image from 'next/image';
 
 // Accepts any product type (diamond, gemstone, jewelry, etc.)
 export interface ProductDetailsProps {
-  product: any; // Replace 'any' with a union type for stricter typing
+  product: {
+    id?: string | number;
+    name?: string;
+    title?: string;
+    subtitle?: string;
+    price?: number;
+    image?: string;
+    images?: string[];
+    [key: string]: string | number | boolean | string[] | undefined;
+  };
 }
 
 const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
@@ -16,7 +25,13 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
         <div className="flex-shrink-0 w-full md:w-1/3">
           <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
             {product.image ? (
-              <img src={product.image} alt={product.name || product.title} className="w-full h-full object-cover" />
+              <Image 
+                src={product.image} 
+                alt={product.name || product.title || 'Product'} 
+                width={300}
+                height={300}
+                className="w-full h-full object-cover" 
+              />
             ) : (
               <span className="text-5xl">💎</span>
             )}

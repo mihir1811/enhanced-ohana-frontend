@@ -1,80 +1,26 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
+import Image from 'next/image';
 import { toast } from 'react-hot-toast';
-import { jewelryService } from '@/services/jewelryService';
+import { jewelryService, JewelryItem } from '@/services/jewelryService';
 import { auctionService } from '@/services/auctionService';
 import { getCookie } from '@/lib/cookie-utils';
 import { auctionProductTypes } from '@/config/sellerConfigData';
 
-// CountdownTimer Component
-const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
-  const [timeLeft, setTimeLeft] = useState<{
-    days: number;
-    hours: number;
-    minutes: number;
-    seconds: number;
-  } | null>(null);
+interface DropdownOption {
+  label: string;
+  value: string;
+}
 
-  useEffect(() => {
-    const calculateTimeLeft = () => {
-      const difference = +new Date(endTime) - +new Date();
-
-      if (difference > 0) {
-        return {
-          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((difference / 1000 / 60) % 60),
-          seconds: Math.floor((difference / 1000) % 60)
-        };
-      }
-      return null;
-    };
-
-    const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
-    }, 1000);
-
-    setTimeLeft(calculateTimeLeft());
-
-    return () => clearInterval(timer);
-  }, [endTime]);
-
-  if (!timeLeft) {
-    return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-        <div className="flex items-center gap-2">
-          <span className="text-red-600 font-semibold">🔥 Auction Ended</span>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-blue-600 font-semibold">🔥 Live Auction</span>
-      </div>
-      <div className="grid grid-cols-4 gap-2 text-center">
-        <div className="bg-white rounded p-2">
-          <div className="text-lg font-bold text-blue-600">{timeLeft.days}</div>
-          <div className="text-xs text-gray-500">Days</div>
-        </div>
-        <div className="bg-white rounded p-2">
-          <div className="text-lg font-bold text-blue-600">{timeLeft.hours}</div>
-          <div className="text-xs text-gray-500">Hours</div>
-        </div>
-        <div className="bg-white rounded p-2">
-          <div className="text-lg font-bold text-blue-600">{timeLeft.minutes}</div>
-          <div className="text-xs text-gray-500">Minutes</div>
-        </div>
-        <div className="bg-white rounded p-2">
-          <div className="text-lg font-bold text-blue-600">{timeLeft.seconds}</div>
-          <div className="text-xs text-gray-500">Seconds</div>
-        </div>
-      </div>
-    </div>
-  );
-};
+interface JewelryItemWithAuction extends JewelryItem {
+  auction?: {
+    id: string;
+    productType: string;
+    startTime: string;
+    endTime: string;
+    isActive: boolean;
+  };
+}
 
 // --- Dropdown options (label-value format, same as AddJewelryForm) ---
 const DROPDOWN_OPTIONS = {
@@ -386,11 +332,11 @@ type JewelryFormState = {
 };
 
 type EditJewelryFormProps = {
-  initialData?: any;
+  initialData?: JewelryItemWithAuction;
 };
 
 // Helper to normalize API data to form state
-function normalizeInitialData(data: any): JewelryFormState {
+function normalizeInitialData(data: JewelryItemWithAuction): JewelryFormState {
   return {
     name: data?.name || '',
     skuCode: data?.skuCode || '',
@@ -408,7 +354,7 @@ function normalizeInitialData(data: any): JewelryFormState {
     totalPrice: data?.totalPrice ? String(data.totalPrice) : '',
     description: data?.description || '',
     videoURL: data?.videoURL || '',
-    stones: Array.isArray(data?.stones) && data.stones.length > 0 ? data.stones.map((s: any) => ({
+    stones: Array.isArray(data?.stones) && data.stones.length > 0 ? data.stones.map(s => ({
       type: s.type || '',
       shape: s.shape || '',
       carat: s.carat ? String(s.carat) : '',
@@ -448,19 +394,19 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
     startTime: '',
     endTime: ''
   });
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(initialData?.category);
   const [selectedMetalType, setSelectedMetalType] = useState<string | undefined>(initialData?.metalType);
   const [existingImages, setExistingImages] = useState<string[]>(() => {
     // Collect image1–image6 from initialData
     if (!initialData) return [];
-    return [initialData.image1, initialData.image2, initialData.image3, initialData.image4, initialData.image5, initialData.image6].filter(Boolean);
+    return [initialData.image1, initialData.image2, initialData.image3, initialData.image4, initialData.image5, initialData.image6].filter((img): img is string => Boolean(img));
   });
 
   // --- Handlers (same as AddJewelryForm, but with edit logic) ---
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
+    const { name, value } = e.target;
     setForm(f => ({ ...f, [name]: value }));
   };
   const handleDropdownChange = (name: string, value: string) => {
@@ -473,10 +419,10 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
     setForm(f => ({ ...f, stones: [...(f.stones || []), { type: '', shape: '', carat: '', color: '', clarity: '', cut: '', certification: '' }] }));
   };
   const handleRemoveStone = (idx: number) => {
-    setForm(f => ({ ...f, stones: f.stones.filter((_: any, i: number) => i !== idx) }));
+    setForm(f => ({ ...f, stones: f.stones.filter((_, i: number) => i !== idx) }));
   };
   const handleStoneChange = (idx: number, name: string, value: string) => {
-    setForm(f => ({ ...f, stones: f.stones.map((s: any, i: number) => i === idx ? { ...s, [name]: value } : s) }));
+    setForm(f => ({ ...f, stones: f.stones.map((s, i: number) => i === idx ? { ...s, [name]: value } : s) }));
   };
   // --- Attributes ---
   const handleAttributeChange = (name: string, value: string | boolean) => {
@@ -491,7 +437,7 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
     });
   };
   const handleRemoveImage = (idx: number) => {
-    setForm(f => ({ ...f, images: f.images.filter((_: any, i: number) => i !== idx) }));
+    setForm(f => ({ ...f, images: f.images.filter((_, i: number) => i !== idx) }));
   };
   const handleRemoveExistingImage = (idx: number) => {
     setExistingImages(imgs => imgs.filter((_, i) => i !== idx));
@@ -499,7 +445,7 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
 
   // --- Validation ---
   const validate = () => {
-    const errs: any = {};
+    const errs: Record<string, string> = {};
     if (!form.name) errs.name = 'Name is required';
     if (!form.skuCode) errs.skuCode = 'SKU Code is required';
     if (!form.category) errs.category = 'Category is required';
@@ -553,13 +499,13 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
           } else if (Array.isArray(value)) {
             // For stones array, serialize as JSON to preserve data types
             if (key === 'stones') {
-              const processedStones = value
-                .filter((stone: any) => stone && typeof stone === 'object' && !stone.lastModified) // Filter out File objects
-                .map((stone: any) => ({
+              const processedStones = (value as Stone[])
+                .filter((stone: Stone) => stone && typeof stone === 'object' && !('lastModified' in stone)) // Filter out File objects
+                .map((stone: Stone) => ({
                   ...stone,
-                  carat: stone.carat ? parseFloat(stone.carat) : null
+                  carat: stone.carat ? parseFloat(String(stone.carat)) : null
                 }))
-                .filter((stone: any) => stone.type || stone.shape || stone.carat || stone.color || stone.clarity || stone.cut || stone.certification);
+                .filter((stone) => Boolean(stone.type || stone.shape || stone.carat || stone.color || stone.clarity || stone.cut || stone.certification));
               
               if (processedStones.length > 0) {
                 formData.append('stones', JSON.stringify(processedStones));
@@ -568,12 +514,13 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
           } else if (typeof value === 'object') {
             // For attributes object, serialize as JSON to preserve data types
             if (key === 'attributes') {
-              const processedAttributes: any = { ...value };
-              // Convert length_cm to number if it exists
-              if (processedAttributes.length_cm) {
-                processedAttributes.length_cm = parseFloat(processedAttributes.length_cm);
-              }
-              formData.append('attributes', JSON.stringify(processedAttributes));
+              const processedAttributes = { ...value as Attribute };
+              // Convert length_cm to number if it exists, for the API
+              const attributesForAPI = {
+                ...processedAttributes,
+                length_cm: processedAttributes.length_cm ? parseFloat(processedAttributes.length_cm) : ''
+              };
+              formData.append('attributes', JSON.stringify(attributesForAPI));
             }
           } else {
             formData.append(key, String(value));
@@ -582,12 +529,12 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
       });
 
       // Get Bearer token
-      let token = getCookie('token');
+      const token = getCookie('token');
       if (!token) throw new Error('User not authenticated');
-
+      if (!initialData) throw new Error('No initial data provided');
 
       // API call (PATCH, FormData)
-      const response = await jewelryService.updateJewelry(initialData.id, formData, token);
+      const response = await jewelryService.updateJewelry(String(initialData.id), formData, token);
       if (!response || response.success === false) {
         throw new Error(response?.message || 'Failed to update jewelry');
       }
@@ -595,7 +542,7 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
       // If auction is enabled, create auction
       if (form.enableAuction && form.productType && form.startTime && form.endTime) {
         const auctionData = {
-          productId: initialData.id,
+          productId: String(initialData.id),
           productType: form.productType as 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond',
           startTime: new Date(form.startTime).toISOString(),
           endTime: new Date(form.endTime).toISOString()
@@ -608,8 +555,9 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
         }
       }
       toast.success('Jewelry product updated successfully!' + (form.enableAuction ? ' Auction created!' : ''));
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to update jewelry');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update jewelry';
+      toast.error(errorMessage);
     } finally {
       setSubmitting(false);
     }
@@ -637,7 +585,7 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
             <label className="block font-medium mb-1">Category *</label>
             <select name="category" value={form.category} onChange={e => { handleDropdownChange('category', e.target.value); }} required className="input">
               <option value="" disabled hidden>Select Category</option>
-              {DROPDOWN_OPTIONS.category.map((opt: any) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+              {DROPDOWN_OPTIONS.category.map((opt: DropdownOption) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
             {errors.category && <div className="text-red-500 text-xs">{errors.category}</div>}
           </div>
@@ -645,7 +593,7 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
             <label className="block font-medium mb-1">Subcategory *</label>
             <select name="subcategory" value={form.subcategory} onChange={handleChange} required className="input" disabled={!selectedCategory}>
               <option value="" disabled hidden>Select Subcategory</option>
-              {selectedCategory && DROPDOWN_OPTIONS.subcategory[selectedCategory as keyof typeof DROPDOWN_OPTIONS.subcategory]?.map((opt: any) => (
+              {selectedCategory && DROPDOWN_OPTIONS.subcategory[selectedCategory as keyof typeof DROPDOWN_OPTIONS.subcategory]?.map((opt: DropdownOption) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
@@ -659,7 +607,7 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
             <label className="block font-medium mb-1">Gender *</label>
             <select name="gender" value={form.gender} onChange={handleChange} required className="input">
               <option value="" disabled hidden>Select Gender</option>
-              {DROPDOWN_OPTIONS.gender.map((opt: any) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+              {DROPDOWN_OPTIONS.gender.map((opt: DropdownOption) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
           </div>
           <div>
@@ -677,7 +625,7 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
             <div className="flex flex-wrap gap-3 mt-2">
               {existingImages && existingImages.length > 0 && existingImages.map((img, idx) => (
                 <div key={img} className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center relative group">
-                  <img src={img} alt={`Preview ${idx + 1}`} className="object-cover w-full h-full" />
+                  <Image src={img} alt={`Preview ${idx + 1}`} width={80} height={80} className="object-cover w-full h-full" />
                   <button type="button" onClick={() => handleRemoveExistingImage(idx)} className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 shadow text-gray-700 hover:bg-red-500 hover:text-white transition" title="Remove image">&times;</button>
                 </div>
               ))}
@@ -685,7 +633,7 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
                 const url = URL.createObjectURL(img);
                 return (
                   <div key={idx} className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center relative group">
-                    <img src={url} alt={`Preview ${idx + 1}`} className="object-cover w-full h-full" onLoad={() => URL.revokeObjectURL(url)} />
+                    <Image src={url} alt={`Preview ${idx + 1}`} width={80} height={80} className="object-cover w-full h-full" onLoad={() => URL.revokeObjectURL(url)} />
                     <button type="button" onClick={() => handleRemoveImage(idx)} className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 shadow text-gray-700 hover:bg-red-500 hover:text-white transition" title="Remove image">&times;</button>
                   </div>
                 );
@@ -730,7 +678,7 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
             <label className="block font-medium mb-1">Metal Type *</label>
             <select name="metalType" value={form.metalType} onChange={e => { handleDropdownChange('metalType', e.target.value); }} required className="input">
               <option value="" disabled hidden>Select Metal Type</option>
-              {DROPDOWN_OPTIONS.metalType.map((opt: any) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+              {DROPDOWN_OPTIONS.metalType.map((opt: DropdownOption) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
             {errors.metalType && <div className="text-red-500 text-xs">{errors.metalType}</div>}
           </div>
@@ -738,7 +686,7 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
             <label className="block font-medium mb-1">Metal Purity *</label>
             <select name="metalPurity" value={form.metalPurity} onChange={handleChange} required className="input" disabled={!selectedMetalType}>
               <option value="" disabled hidden>Select Metal Purity</option>
-              {selectedMetalType && DROPDOWN_OPTIONS.metalPurity[selectedMetalType as keyof typeof DROPDOWN_OPTIONS.metalPurity]?.map((opt: any) => (
+              {selectedMetalType && DROPDOWN_OPTIONS.metalPurity[selectedMetalType as keyof typeof DROPDOWN_OPTIONS.metalPurity]?.map((opt: DropdownOption) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
@@ -769,32 +717,32 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
           <span className="font-semibold">Gemstones</span>
           <button type="button" className="text-blue-600 font-bold" onClick={handleAddStone}>+ Add Gemstone</button>
         </div>
-        {form.stones && form.stones.length > 0 && form.stones.map((stone: any, idx: number) => (
+        {form.stones && form.stones.length > 0 && form.stones.map((stone: Stone, idx: number) => (
           <div key={idx} className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2 bg-gray-50 p-3 rounded-lg">
             <select value={stone.type} onChange={e => handleStoneChange(idx, 'type', e.target.value)} className="input">
               <option value="" disabled hidden>Select Type</option>
-              {DROPDOWN_OPTIONS.gemstoneType.map((opt: any) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+              {DROPDOWN_OPTIONS.gemstoneType.map((opt: DropdownOption) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
             <select value={stone.shape} onChange={e => handleStoneChange(idx, 'shape', e.target.value)} className="input">
               <option value="" disabled hidden>Select Shape</option>
-              {DROPDOWN_OPTIONS.gemstoneShape.map((opt: any) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+              {DROPDOWN_OPTIONS.gemstoneShape.map((opt: DropdownOption) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
             <input type="number" min="0" step="0.01" value={stone.carat} onChange={e => handleStoneChange(idx, 'carat', e.target.value)} className="input" placeholder="Carat" />
             <select value={stone.color} onChange={e => handleStoneChange(idx, 'color', e.target.value)} className="input">
               <option value="" disabled hidden>Select Color</option>
-              {DROPDOWN_OPTIONS.gemstoneColor.map((opt: any) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+              {DROPDOWN_OPTIONS.gemstoneColor.map((opt: DropdownOption) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
             <select value={stone.clarity} onChange={e => handleStoneChange(idx, 'clarity', e.target.value)} className="input">
               <option value="" disabled hidden>Select Clarity</option>
-              {DROPDOWN_OPTIONS.gemstoneClarity.map((opt: any) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+              {DROPDOWN_OPTIONS.gemstoneClarity.map((opt: DropdownOption) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
             <select value={stone.cut} onChange={e => handleStoneChange(idx, 'cut', e.target.value)} className="input">
               <option value="" disabled hidden>Select Cut</option>
-              {DROPDOWN_OPTIONS.gemstoneCut.map((opt: any) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+              {DROPDOWN_OPTIONS.gemstoneCut.map((opt: DropdownOption) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
             <select value={stone.certification} onChange={e => handleStoneChange(idx, 'certification', e.target.value)} className="input">
               <option value="" disabled hidden>Select Certification</option>
-              {DROPDOWN_OPTIONS.gemstoneCertification.map((opt: any) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+              {DROPDOWN_OPTIONS.gemstoneCertification.map((opt: DropdownOption) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
             <button type="button" className="text-red-500 font-bold" onClick={() => handleRemoveStone(idx)}>Remove</button>
           </div>
@@ -806,15 +754,15 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2 bg-gray-50 p-3 rounded-lg">
           <select value={form.attributes.style} onChange={e => handleAttributeChange('style', e.target.value)} className="input">
             <option value="" disabled hidden>Select Style</option>
-            {DROPDOWN_OPTIONS.style.map((opt: any) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+            {DROPDOWN_OPTIONS.style.map((opt: DropdownOption) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
           </select>
           <select value={form.attributes.chain_type} onChange={e => handleAttributeChange('chain_type', e.target.value)} className="input">
             <option value="" disabled hidden>Select Chain Type</option>
-            {DROPDOWN_OPTIONS.chain_type.map((opt: any) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+            {DROPDOWN_OPTIONS.chain_type.map((opt: DropdownOption) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
           </select>
           <select value={form.attributes.clasp_type} onChange={e => handleAttributeChange('clasp_type', e.target.value)} className="input">
             <option value="" disabled hidden>Select Clasp Type</option>
-            {DROPDOWN_OPTIONS.clasp_type.map((opt: any) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+            {DROPDOWN_OPTIONS.clasp_type.map((opt: DropdownOption) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
           </select>
           <input type="number" min="0" value={form.attributes.length_cm} onChange={e => handleAttributeChange('length_cm', e.target.value)} className="input" placeholder="Length (cm)" />
           <div className="flex items-center gap-2">
