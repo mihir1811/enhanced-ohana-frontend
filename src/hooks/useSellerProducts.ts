@@ -1,6 +1,40 @@
 import { useState, useCallback } from 'react';
 import { diamondService } from '@/services/diamondService';
 
+// Define product interfaces
+interface Diamond {
+  id: string | number;
+  name?: string;
+  price: number | string;
+  shape?: string;
+  color?: string;
+  clarity?: string;
+  carat?: number;
+  cut?: string;
+  [key: string]: unknown;
+}
+
+interface Jewelry {
+  id: string | number;
+  name?: string;
+  price?: number | string;
+  category?: string;
+  metalType?: string;
+  totalPrice?: number;
+  [key: string]: unknown;
+}
+
+interface Gemstone {
+  id: string | number;
+  name?: string;
+  price?: number | string;
+  weight?: number;
+  color?: string;
+  clarity?: string;
+  origin?: string;
+  [key: string]: unknown;
+}
+
 export const SellerType = {
   naturalDiamond: 'naturalDiamond',
   labGrownDiamond: 'labGrownDiamond',
@@ -11,10 +45,10 @@ export const SellerType = {
 type SellerTypeValue = typeof SellerType[keyof typeof SellerType];
 
 interface SellerProducts {
-  diamonds: any[];
-  jewelry: any[];
-  gemstones: any[];
-  all: any[];
+  diamonds: Diamond[];
+  jewelry: Jewelry[];
+  gemstones: Gemstone[];
+  all: (Diamond | Jewelry | Gemstone)[];
 }
 
 interface UseSellerProductsReturn {
@@ -46,9 +80,9 @@ export const useSellerProducts = (sellerId?: string): UseSellerProductsReturn =>
     setCurrentSellerType(sellerType);
     
     try {
-      let diamonds: any[] = [];
-      let jewelry: any[] = [];
-      let gemstones: any[] = [];
+      let diamonds: Diamond[] = [];
+      let jewelry: Jewelry[] = [];
+      let gemstones: Gemstone[] = [];
 
       if (sellerType) {
         // Make only ONE API call based on seller type
@@ -64,8 +98,8 @@ export const useSellerProducts = (sellerId?: string): UseSellerProductsReturn =>
           case SellerType.jewellery:
             // For jewelry sellers, only call jewelry API
             const jewelryRes = await diamondService.getJewelryBySeller(sellerIdToFetch);
-            // Handle nested data structure: response.data.data
-            jewelry = jewelryRes?.data?.data || [];
+            // API returns an array directly (JewelryData[]), so use response.data or default to empty array
+            jewelry = jewelryRes?.data || [];
             console.log(`Fetched ${jewelry.length} jewelry items for jewelry seller`);
             break;
             

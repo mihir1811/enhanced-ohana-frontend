@@ -19,10 +19,11 @@ interface GemstoneApiMeta {
   next: number | null;
 }
 
-interface GemstoneApiResponse extends ApiResponse<{
+// Use type alias instead of empty interface
+type GemstoneApiResponse = ApiResponse<{
   data: GemstonItem[];
   meta: GemstoneApiMeta;
-}> {}
+}>;
 
 interface GemstoneListingPageProps {
   gemstoneType: 'single' | 'melee';

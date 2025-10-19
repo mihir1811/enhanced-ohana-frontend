@@ -2,10 +2,11 @@
 
 import { useCallback } from 'react';
 import { useWishlist } from '@/contexts/WishlistContext';
+import type { WishlistItem } from '@/services/wishlistService';
 
 export interface UseWishlistReturn {
   // State
-  items: Array<any>;
+  items: Array<WishlistItem>;
   loading: boolean;
   error: string | null;
   count: number;
@@ -81,35 +82,35 @@ export function useWishlistButton(productId: number, productType: 'diamond' | 'g
  * Hook for getting wishlist statistics
  */
 export function useWishlistStats() {
-  const { items, count, loading } = useWishlistActions();
+  const { items, loading } = useWishlistActions();
 
   // Ensure items is always an array
   const itemsArray = Array.isArray(items) ? items : [];
 
   // Helper function to determine product type from product data
-  const getProductType = (item: any): string => {
+  const getProductType = (item: WishlistItem): string => {
     if (!item.product) return 'jewellery';
     
-    const product = item.product;
+    const product: Record<string, any> = item.product as any;
     
     // More sophisticated type detection based on product structure
-    // Check for diamond-specific fields
-    if (product.caratWeight && product.cut && product.clarity && !product.gemType && !product.metalType) {
+    // Check for diamond-specific fields (use 'in' checks to avoid TS errors)
+    if ('caratWeight' in product && 'cut' in product && 'clarity' in product && !('gemType' in product) && !('metalType' in product)) {
       return 'diamond';
     }
     
     // Check for gemstone-specific fields
-    if (product.gemType || (product.caratWeight && product.origin && !product.cut && !product.metalType)) {
+    if ('gemType' in product || (('caratWeight' in product) && 'origin' in product && !('cut' in product) && !('metalType' in product))) {
       return 'gemstone';
     }
     
     // Check for jewelry-specific fields
-    if (product.metalType || product.category || product.subcategory) {
+    if ('metalType' in product || 'category' in product || 'subcategory' in product) {
       return 'jewellery';
     }
     
     // Fallback to category-based detection
-    if (product.category) {
+    if ('category' in product && typeof product.category === 'string') {
       const category = product.category.toLowerCase();
       if (category.includes('diamond')) return 'diamond';
       if (category.includes('gem')) return 'gemstone';

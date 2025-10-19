@@ -4,6 +4,22 @@ import BulkUploadModal from './BulkUploadModal';
 import { diamondService, DiamondData } from '@/services/diamondService';
 import DiamondProductCard, { DiamondProduct } from './DiamondProductCard';
 
+// Extended interface for DiamondData with additional optional properties
+interface ExtendedDiamondData extends DiamondData {
+  image1?: string | null;
+  image2?: string | null;
+  image3?: string | null;
+  image4?: string | null;
+  image5?: string | null;
+  image6?: string | null;
+  stockNumber?: number;
+  isDeleted?: boolean;
+  updatedAt?: string;
+  sellerSKU?: string;
+  isOnAuction?: boolean;
+  isSold?: boolean;
+}
+
 const DiamondsListing = () => {
   const [diamonds, setDiamonds] = useState<DiamondProduct[]>([]);
   const [view, setView] = useState<'list' | 'grid'>('grid');
@@ -24,26 +40,26 @@ const DiamondsListing = () => {
     setLoading(true);
     diamondService.getDiamonds({ page, limit })
       .then((res) => {
-        const diamondsArr = (res?.data || []).map((d: DiamondData): DiamondProduct => ({
+        const diamondsArr = (res?.data || []).map((d: ExtendedDiamondData): DiamondProduct => ({
           id: typeof d.id === 'string' ? parseInt(d.id) : d.id,
           name: `${d.shape} ${d.color} ${d.clarity} Diamond - ${d.carat}ct`,
           price: d.price.toString(),
-          image1: (d as any).image1 || null,
-          image2: (d as any).image2 || null,
-          image3: (d as any).image3 || null,
-          image4: (d as any).image4 || null,
-          image5: (d as any).image5 || null,
-          image6: (d as any).image6 || null,
-          stockNumber: (d as any).stockNumber ?? 0,
+          image1: d.image1 || null,
+          image2: d.image2 || null,
+          image3: d.image3 || null,
+          image4: d.image4 || null,
+          image5: d.image5 || null,
+          image6: d.image6 || null,
+          stockNumber: d.stockNumber ?? 0,
           color: d.color,
           clarity: d.clarity,
           cut: d.cut ?? '',
           shape: d.shape,
-          isDeleted: (d as any).isDeleted ?? false,
-          updatedAt: (d as any).updatedAt ?? new Date().toISOString(),
-          sellerSKU: (d as any).sellerSKU ?? '',
-          isOnAuction: (d as any).isOnAuction ?? false,
-          isSold: (d as any).isSold ?? false,
+          isDeleted: d.isDeleted ?? false,
+          updatedAt: d.updatedAt ?? new Date().toISOString(),
+          sellerSKU: d.sellerSKU ?? '',
+          isOnAuction: d.isOnAuction ?? false,
+          isSold: d.isSold ?? false,
         }));
         const totalCount = diamondsArr.length;
         setDiamonds(diamondsArr);
