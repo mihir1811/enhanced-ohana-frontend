@@ -25,7 +25,7 @@ interface ApiResponse {
 
 interface DiamondListingPageProps {
   diamondType: 'lab-grown-single' | 'lab-grown-melee' | 'natural-single' | 'natural-melee';
-  fetchDiamonds: (params: Record<string, unknown>) => Promise<ApiResponse>;
+  fetchDiamonds: (params?: Record<string, unknown>) => Promise<ApiResponse>;
   title?: string;
 }
 
@@ -45,12 +45,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
   // Fetch diamonds when filters/page changes
   useEffect(() => {
     setLoading(true);
-    fetchDiamonds({
-      // ...filters,
-      // page: currentPage,
-      // perPage: pageSize,
-      // diamondType,
-    })
+    fetchDiamonds()
       .then((res) => {
         // API: { data: [...], meta: { total, currentPage, perPage } }
         setDiamonds(res.data.data.map((item) => transformApiDiamond(item as ApiDiamondData)));
@@ -60,7 +55,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
       })
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(filters), currentPage, pageSize, diamondType]);
+  }, [diamondType]);
 
   const handleFiltersChange = (newFilters: DiamondFilterValues) => {
     setFilters(newFilters);
