@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import React, { useState } from 'react'
 import { useCompare } from '@/hooks/useCompare'
@@ -7,14 +7,6 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Navigation from '@/components/Navigation'
 import Footer from '@/components/Footer'
-
-interface CompareProduct {
-  id: string
-  name: string
-  price: number | string
-  image: string
-  data: Record<string, unknown>
-}
 
 interface AttributeConfig {
   key: string
@@ -96,7 +88,7 @@ const ModernJewelryComparePage = () => {
   }
 
   const getBestValue = (attribute: AttributeConfig): number | null => {
-    const values = jewelry.map(p => p.data[attribute.key]).filter(v => v != null && v !== '')
+    const values = jewelry.map(p => (p.data as Record<string, unknown>)[attribute.key]).filter(v => v != null && v !== '')
     if (values.length === 0) return null
     
     if (attribute.type === 'currency') {
@@ -222,24 +214,36 @@ const ModernJewelryComparePage = () => {
 
                     {/* Key Details */}
                     <div className="space-y-2 text-sm">
-                      {product.data.category && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Type:</span>
-                          <span className="font-medium">{product.data.category}</span>
-                        </div>
-                      )}
-                      {product.data.material && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Material:</span>
-                          <span className="font-medium">{product.data.material}</span>
-                        </div>
-                      )}
-                      {product.data.metalType && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Metal:</span>
-                          <span className="font-medium">{product.data.metalType}</span>
-                        </div>
-                      )}
+                      {(() => {
+                        const val = (product.data as Record<string, unknown>).category
+                        if (val === null || val === undefined || val === '') return null
+                        return (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Type:</span>
+                            <span className="font-medium">{String(val)}</span>
+                          </div>
+                        )
+                      })()}
+                      {(() => {
+                        const val = (product.data as Record<string, unknown>).material
+                        if (val === null || val === undefined || val === '') return null
+                        return (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Material:</span>
+                            <span className="font-medium">{String(val)}</span>
+                          </div>
+                        )
+                      })()}
+                      {(() => {
+                        const val = (product.data as Record<string, unknown>).metalType
+                        if (val === null || val === undefined || val === '') return null
+                        return (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Metal:</span>
+                            <span className="font-medium">{String(val)}</span>
+                          </div>
+                        )
+                      })()}
                     </div>
 
                     {/* Actions */}
@@ -313,7 +317,7 @@ const ModernJewelryComparePage = () => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 divide-x divide-border">
                       {jewelry.map((product) => {
-                        const value = product.data[attribute.key]
+                        const value = (product.data as Record<string, unknown>)[attribute.key]
                         const isHighlighted = isBestValue(value, attribute)
                         
                         return (
