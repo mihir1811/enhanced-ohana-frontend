@@ -36,8 +36,8 @@ const WATCH_BRAND_LOGOS = {
 // Types
 interface JewelryItem {
   id: string | number;
-  name: string;
-  skuCode: string;
+  name?: string;
+  skuCode?: string;
   totalPrice?: number;
   metalType?: string;
   image1?: string | null;
@@ -46,17 +46,17 @@ interface JewelryItem {
   image4?: string | null;
   image5?: string | null;
   image6?: string | null;
-  sellerId: string;
+  sellerId?: string;
   stones?: Array<{
-    id: number;
-    jewelleryId: number;
-    type: string;
-    shape: string;
-    carat: number;
-    color: string;
-    clarity: string;
-    cut: string;
-    certification: string;
+    id?: number;
+    jewelleryId?: number;
+    type?: string;
+    shape?: string;
+    carat?: number;
+    color?: string;
+    clarity?: string;
+    cut?: string;
+    certification?: string;
   }>;
   isOnAuction?: boolean;
 }
