@@ -7,25 +7,22 @@ import { getDefaultDiamondFilters, transformApiDiamond, ApiDiamondData } from '.
 import { cartService } from '@/services/cartService';
 import { useAppSelector } from '@/store/hooks';
 
-interface ApiResponse {
-  success: boolean;
-  message: string;
-  data: {
-    data: unknown[]
-    meta?: {
-      total?: number
-      lastPage?: number
-      currentPage?: number
-      perPage?: number
-      prev?: number | null
-      next?: number | null
-    }
-  }
-}
-
 interface DiamondListingPageProps {
   diamondType: 'lab-grown-single' | 'lab-grown-melee' | 'natural-single' | 'natural-melee';
-  fetchDiamonds: (params?: Record<string, unknown>) => Promise<ApiResponse>;
+  fetchDiamonds: (params?: Record<string, unknown>) => Promise<{
+    success: boolean;
+    message: string;
+    data: unknown[];
+    meta?: {
+      pagination?: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+      };
+      filters?: Record<string, unknown>;
+    };
+  }>;
   title?: string;
 }
 
@@ -47,11 +44,11 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
     setLoading(true);
     fetchDiamonds()
       .then((res) => {
-        // API: { data: [...], meta: { total, currentPage, perPage } }
-        setDiamonds(res.data.data.map((item) => transformApiDiamond(item as ApiDiamondData)));
-        setTotalCount(res.data.meta?.total || 0);
-        setCurrentPage(res.data.meta?.currentPage || 1);
-        setPageSize(res.data.meta?.perPage || 20);
+        // API: { data: [...], meta: { pagination: { total, page, limit, totalPages } } }
+        setDiamonds(res.data.map((item) => transformApiDiamond(item as ApiDiamondData)));
+        setTotalCount(res.meta?.pagination?.total || 0);
+        setCurrentPage(res.meta?.pagination?.page || 1);
+        setPageSize(res.meta?.pagination?.limit || 20);
       })
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
