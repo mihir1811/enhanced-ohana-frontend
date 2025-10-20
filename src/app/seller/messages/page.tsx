@@ -326,11 +326,13 @@ export default function SellerMessagesPage() {
           fromId: currentUserId,
           toId: selectedConversation.participantId,
           message: messageText.trim(),
+          fileUrl: null,
           messageType: 'TEXT',
           createdAt: new Date().toISOString(),
           deletedBySender: false,
           deletedByReceiver: false,
           isRead: false,
+          readAt: null,
           from: {
             id: currentUserId,
             name: user.name || 'You',
@@ -427,9 +429,10 @@ export default function SellerMessagesPage() {
         )
         
         // Use API meta data for pagination info
-        if (meta) {
-          setTotalMessages(meta.total || sortedMessages.length)
-          setHasMoreMessages(meta.currentPage < meta.lastPage)
+        if (meta && typeof meta === 'object') {
+          const metaObj = meta as { total?: number; currentPage?: number; lastPage?: number }
+          setTotalMessages(metaObj.total || sortedMessages.length)
+          setHasMoreMessages((metaObj.currentPage || 0) < (metaObj.lastPage || 0))
         } else {
           // Fallback to local pagination
           setTotalMessages(sortedMessages.length)
@@ -446,10 +449,10 @@ export default function SellerMessagesPage() {
         }
         
         console.log(`✅ [SellerMessages] Loaded ${sortedMessages.length} messages for conversation`, {
-          totalFromMeta: meta?.total,
-          currentPage: meta?.currentPage,
-          lastPage: meta?.lastPage,
-          hasMore: meta ? meta.currentPage < meta.lastPage : false
+          totalFromMeta: meta && typeof meta === 'object' ? (meta as { total?: number }).total : undefined,
+          currentPage: meta && typeof meta === 'object' ? (meta as { currentPage?: number }).currentPage : undefined,
+          lastPage: meta && typeof meta === 'object' ? (meta as { lastPage?: number }).lastPage : undefined,
+          hasMore: meta && typeof meta === 'object' ? ((meta as { currentPage?: number; lastPage?: number }).currentPage || 0) < ((meta as { lastPage?: number }).lastPage || 0) : false
         })
       }
     } catch (error) {

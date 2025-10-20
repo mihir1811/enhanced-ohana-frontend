@@ -1911,7 +1911,7 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
           <div className="w-32 h-32 bg-slate-100 rounded-lg flex-shrink-0 overflow-hidden">
             <ImageCarousel
               images={[item.image1, item.image2, item.image3, item.image4, item.image5, item.image6]}
-              alt={item.name}
+              alt={item.name || 'Jewelry item'}
               className="w-full h-full"
             />
           </div>
@@ -1946,7 +1946,7 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-slate-600">
                 <MapPin className="w-4 h-4" />
-                <span className="text-sm">Seller ID: {item.sellerId.slice(-8)}</span>
+                <span className="text-sm">Seller ID: {item.sellerId?.slice(-8) || 'N/A'}</span>
               </div>
 
               <div className="flex items-center gap-2">
@@ -1979,7 +1979,7 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
       <div className="relative aspect-square bg-slate-100">
         <ImageCarousel
           images={[item.image1, item.image2, item.image3, item.image4, item.image5, item.image6]}
-          alt={item.name}
+          alt={item.name || 'Jewelry item'}
           className="w-full h-full"
         />
 
@@ -2018,7 +2018,7 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
         <div className="flex items-center justify-between text-sm text-slate-600 mb-3">
           <div className="flex items-center gap-1">
             <MapPin className="w-3 h-3" />
-            <span>ID: {item.sellerId.slice(-8)}</span>
+            <span>ID: {item.sellerId?.slice(-8) || 'N/A'}</span>
           </div>
 
           {item.stones && item.stones.length > 0 && (

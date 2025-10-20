@@ -124,7 +124,7 @@ const ModernDiamondComparePage = () => {
   ]
 
   const renderAttributeValue = (diamond: CompareProduct, attribute: AttributeConfig) => {
-    const value = diamond.data[attribute.key]
+    const value = (diamond.data as any)[attribute.key]
     
     if (!value) {
       return <span className="text-gray-400">N/A</span>
@@ -154,10 +154,10 @@ const ModernDiamondComparePage = () => {
   // Find best value for highlighting
   const getBestValue = (attribute: AttributeConfig) => {
     if (attribute.key === 'price') {
-      return Math.min(...diamonds.map(d => parseFloat(String(d.data[attribute.key]) || 'Infinity')))
+      return Math.min(...diamonds.map(d => parseFloat(String((d.data as any)[attribute.key]) || 'Infinity')))
     }
     if (attribute.key === 'caratWeight') {
-      return Math.max(...diamonds.map(d => parseFloat(String(d.data[attribute.key]) || '0')))
+      return Math.max(...diamonds.map(d => parseFloat(String((d.data as any)[attribute.key]) || '0')))
     }
     return null
   }
@@ -166,7 +166,7 @@ const ModernDiamondComparePage = () => {
     const bestValue = getBestValue(attribute)
     if (bestValue === null) return false
     
-    const currentValue = parseFloat(String(diamond.data[attribute.key]) || '0')
+    const currentValue = parseFloat(String((diamond.data as any)[attribute.key]) || '0')
     return currentValue === bestValue
   }
 
@@ -325,19 +325,19 @@ const ModernDiamondComparePage = () => {
                         <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-xs">
                           <span className="text-gray-500 dark:text-gray-400">Carat:</span>
                           <span className="font-semibold text-gray-900 dark:text-white">
-                            {diamond.data.caratWeight}ct
+                            {String((diamond.data as any).caratWeight)}ct
                           </span>
                           <span className="text-gray-500 dark:text-gray-400">Shape:</span>
                           <span className="font-semibold text-gray-900 dark:text-white">
-                            {diamond.data.shape}
+                            {String((diamond.data as any).shape)}
                           </span>
                           <span className="text-gray-500 dark:text-gray-400">Cut:</span>
                           <span className="font-semibold text-gray-900 dark:text-white">
-                            {diamond.data.cut || 'N/A'}
+                            {String((diamond.data as any).cut) || 'N/A'}
                           </span>
                           <span className="text-gray-500 dark:text-gray-400">Color:</span>
                           <span className="font-semibold text-gray-900 dark:text-white">
-                            {diamond.data.color || 'N/A'}
+                            {String((diamond.data as any).color) || 'N/A'}
                           </span>
                         </div>
                       </div>

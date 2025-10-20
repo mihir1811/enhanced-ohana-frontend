@@ -120,6 +120,7 @@ export default function SellerChatTestPage() {
         fromId: user.id,
         toId: testUserId,
         message: testMessage,
+        fileUrl: null,
         messageType: 'TEXT',
         createdAt: new Date().toISOString(),
         deletedBySender: false,

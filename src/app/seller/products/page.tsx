@@ -29,7 +29,9 @@ export default function SellerProductsPage() {
 
 
   // Get sellerType from redux state
-  const sellerType = useSelector((state: RootState) => state.seller.profile?.sellerType)
+  const profile = useSelector((state: RootState) => state.seller.profile)
+  // Type guard to check if profile is SellerData with sellerType
+  const sellerType = profile && 'sellerType' in profile ? profile.sellerType : undefined
 
   const handleAddProduct = () => {
     router.push('/seller/add-product')

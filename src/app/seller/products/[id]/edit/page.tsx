@@ -18,9 +18,10 @@ export default function EditProductPage() {
   const [product, setProduct] = useState<unknown>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-    const sellerType = useSelector(
-    (state: RootState) => state.seller.profile?.sellerType
-  );
+  
+  const profile = useSelector((state: RootState) => state.seller.profile);
+  // Type guard to check if profile is SellerData with sellerType
+  const sellerType = profile && 'sellerType' in profile ? profile.sellerType : undefined;
 
   useEffect(() => {
     if (!id) return;
@@ -47,11 +48,11 @@ export default function EditProductPage() {
     switch (sellerType) {
       case 'naturalDiamond':
       case 'labGrownDiamond':
-        return <EditDiamondForm initialData={product} />;
+        return <EditDiamondForm initialData={product as Parameters<typeof EditDiamondForm>[0]['initialData']} />;
       case 'gemstone':
-        return <EditGemstoneForm initialData={product} />;
+        return <EditGemstoneForm initialData={product as Parameters<typeof EditGemstoneForm>[0]['initialData']} />;
       case 'jewellery':
-        return <EditJewelryForm initialData={product} />;
+        return <EditJewelryForm initialData={product as Parameters<typeof EditJewelryForm>[0]['initialData']} />;
       default:
         return <div className="text-red-500 font-medium">Please complete your seller profile to edit products.</div>;
     }

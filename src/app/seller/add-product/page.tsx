@@ -32,9 +32,10 @@ function renderAddProductForm(sellerType?: string) {
 }
 
 export default function Page() {
-  const sellerType = useSelector(
-    (state: RootState) => state.seller.profile?.sellerType
-  );
+  const profile = useSelector((state: RootState) => state.seller.profile);
+  
+  // Type guard to check if profile is SellerData with sellerType
+  const sellerType = profile && 'sellerType' in profile ? profile.sellerType : undefined;
 
   return (
     <div>
