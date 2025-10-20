@@ -155,7 +155,7 @@ function ImageGallery({ images, alt }: ImageGalleryProps) {
 }
 
 // Extended jewelry type for this component that includes all possible properties
-interface JewelryDetailsItem {
+export interface JewelryDetailsItem {
   id: number | string;
   name?: string;
   description?: string;
