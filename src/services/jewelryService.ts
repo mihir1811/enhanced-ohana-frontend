@@ -17,55 +17,73 @@ export interface JewelryQueryParams {
 
 export interface JewelryItem {
   id: number;
-  name: string;
-  skuCode: string;
-  category: string;
-  subcategory: string;
-  collection: string;
-  gender: string;
-  occasion: string;
-  metalType: string;
-  metalPurity: string;
-  metalWeight: number;
-  basePrice: number;
-  makingCharge: number;
-  tax: number;
-  totalPrice: number;
-  attributes: {
-    style: string;
-    length_cm: number | string;
-    chain_type: string;
-    clasp_type: string;
-    is_adjustable: boolean;
-    [key: string]: string | number | boolean;
+  name?: string;
+  skuCode?: string;
+  category?: string;
+  subcategory?: string;
+  collection?: string;
+  gender?: string;
+  occasion?: string;
+  metalType?: string;
+  metalPurity?: string;
+  metalWeight?: number;
+  basePrice?: number;
+  makingCharge?: number;
+  tax?: number;
+  totalPrice?: number;
+  stonePrice?: number;
+  grossWeight?: number;
+  totalWeight?: number;
+  size?: string;
+  attributes?: {
+    style?: string;
+    length_cm?: number | string;
+    chain_type?: string;
+    clasp_type?: string;
+    is_adjustable?: boolean;
+    [key: string]: string | number | boolean | undefined;
   };
-  description: string;
-  image1: string | null;
-  image2: string | null;
-  image3: string | null;
-  image4: string | null;
-  image5: string | null;
-  image6: string | null;
-  videoURL: string | null;
-  sellerId: string;
-  isOnAuction: boolean;
-  isSold: boolean;
-  createdAt: string;
-  updatedAt: string;
-  isDeleted: boolean;
-  stones: Array<{
-    id: number;
-    jewelleryId: number;
-    type: string;
-    shape: string;
-    carat: number;
-    color: string;
-    clarity: string;
-    cut: string;
-    certification: string;
+  description?: string;
+  image1?: string | null;
+  image2?: string | null;
+  image3?: string | null;
+  image4?: string | null;
+  image5?: string | null;
+  image6?: string | null;
+  videoURL?: string | null;
+  sellerId?: string;
+  user_id?: string;
+  seller?: {
+    id: string;
+    companyName?: string;
+    companyLogo?: string;
+  };
+  isOnAuction?: boolean;
+  isSold?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  isDeleted?: boolean;
+  stones?: Array<{
+    id?: number;
+    jewelleryId?: number;
+    type?: string;
+    shape?: string;
+    carat?: number;
+    color?: string;
+    clarity?: string;
+    cut?: string;
+    certification?: string;
+    stoneType?: string;
+    stoneCaratWeight?: number;
+    stoneColor?: string;
+    stoneClarity?: string;
+    stoneCut?: string;
+    stoneShape?: string;
+    stonePrice?: number;
   }>;
-  auctionStartTime: string | null;
-  auctionEndTime: string | null;
+  auctionStartTime?: string | null;
+  auctionEndTime?: string | null;
+  [key: string]: unknown; // Allow additional properties for compatibility
 }
 
 export interface JewelryApiResponse {

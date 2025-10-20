@@ -36,7 +36,7 @@ export default function JewelryDetailPage() {
         {loading ? (
           <div className="py-20 text-center text-gray-500 text-lg">Loading jewelry details...</div>
         ) : (
-          <JewelryDetailsPage jewelry={jewelry} />
+          <JewelryDetailsPage jewelry={jewelry as any} />
         )}
       </div>
       <Footer />
