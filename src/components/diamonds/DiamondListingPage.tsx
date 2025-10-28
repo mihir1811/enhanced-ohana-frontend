@@ -12,15 +12,16 @@ interface DiamondListingPageProps {
   fetchDiamonds: (params?: Record<string, unknown>) => Promise<{
     success: boolean;
     message: string;
-    data: unknown[];
-    meta?: {
-      pagination?: {
-        page: number;
-        limit: number;
-        total: number;
-        totalPages: number;
+    data: {
+      data: ApiDiamondData[];
+      meta?: {
+        total?: number;
+        lastPage?: number;
+        currentPage?: number;
+        perPage?: number;
+        prev?: number | null;
+        next?: number | null;
       };
-      filters?: Record<string, unknown>;
     };
   }>;
   title?: string;
@@ -44,11 +45,12 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
     setLoading(true);
     fetchDiamonds()
       .then((res) => {
-        // API: { data: [...], meta: { pagination: { total, page, limit, totalPages } } }
-        setDiamonds(res.data.map((item) => transformApiDiamond(item as ApiDiamondData)));
-        setTotalCount(res.meta?.pagination?.total || 0);
-        setCurrentPage(res.meta?.pagination?.page || 1);
-        setPageSize(res.meta?.pagination?.limit || 20);
+        // API: { data: { data: [...], meta: {...} } }
+        const diamondsRaw = res.data?.data ?? [];
+        setDiamonds(Array.isArray(diamondsRaw) ? diamondsRaw.map((item: ApiDiamondData) => transformApiDiamond(item)) : []);
+        setTotalCount(res.data?.meta?.total || 0);
+        setCurrentPage(res.data?.meta?.currentPage || 1);
+        setPageSize(res.data?.meta?.perPage || 20);
       })
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps

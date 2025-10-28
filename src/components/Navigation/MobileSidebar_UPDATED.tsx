@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import ThemeSwitcher from '../ThemeSwitcher'
 
 interface MobileSidebarProps {
@@ -30,6 +30,28 @@ export default function MobileSidebar({
 }: MobileSidebarProps) {
   const [activeSection, setActiveSection] = useState<string | null>(null)
   const router = useRouter()
+  const pathname = usePathname()
+
+  // Normalize paths for comparison (strip trailing slash)
+  const normalizePath = (p: string) => p.replace(/\/+$/, '') || '/'
+
+  const handleNavLinkClick = (e: React.MouseEvent, href: string) => {
+    try {
+      const current = normalizePath(pathname || '/')
+      const dest = normalizePath(href)
+      // If destination equals current path, prevent navigation and just close sidebar
+      if (current === dest) {
+        e.preventDefault()
+        onClose()
+        return
+      }
+      // Otherwise, allow navigation but close sidebar immediately for faster UX
+      onClose()
+    } catch (err) {
+      // fallback: close sidebar
+      onClose()
+    }
+  }
 
   // Handle escape key
   useEffect(() => {
@@ -57,27 +79,41 @@ export default function MobileSidebar({
   const navigationSections = useMemo(() => [
     {
       id: 'shop',
-      title: 'Diamond & Jewelry Categories',
+      title: 'Marketplace',
       items: [
-        { href: '/products/diamonds', label: 'Diamonds', icon: '💎' },
-        { href: '/products/gemstones', label: 'Gemstones', icon: '💍' },
-        { href: '/products/jewelry', label: 'Jewelry', icon: '📿' },
-        { href: '/auction', label: 'Auction', icon: '🔨' },
-        { href: '/products/lab-grown', label: 'Lab Grown Diamonds', icon: '⚗️' },
+        { href: '/diamonds', label: 'Diamonds', icon: '💎' },
+        { href: '/gemstones', label: 'Gemstones', icon: '💍' },
+        { href: '/jewelry', label: 'Jewelry', icon: '📿' },
         { href: '/products/bullions', label: 'Bullions', icon: '🥇' },
-        { href: '/experience', label: 'Experience', icon: '✨' }
+        { href: '/experience', label: 'Experience', icon: '✨' },
+        { href: '/auction', label: 'Auction', icon: '🔨' },
+        { href: '/diamond-certification', label: 'Certificate Verification', icon: '📄' },
+        { href: '/expert-consultation', label: 'Expert Consultation', icon: '🧑‍💼' },
+        { href: '/contact', label: 'Support', icon: '🛠️' }
       ]
     },
     {
       id: 'account',
       title: 'My Account',
       items: [
-        { href: '/profile', label: 'My Profile', icon: '👤' },
-        { href: '/orders', label: 'Order History', icon: '📦' },
-        { href: '/wishlist', label: 'My Wishlist', icon: '❤️' },
-        { href: '/addresses', label: 'Saved Addresses', icon: '📍' }
+        { href: '/user', label: 'Dashboard', icon: '🏠' },
+        { href: '/user/profile', label: 'My Profile', icon: '👤' },
+        { href: '/user/orders', label: 'Order History', icon: '📦' },
+        { href: '/user/wishlist', label: 'My Wishlist', icon: '❤️' },
+        { href: '/user/addresses', label: 'Saved Addresses', icon: '📍' },
+        { href: '/user/cart', label: 'My Cart', icon: '🛒' },
+        { href: '/user/settings', label: 'Settings', icon: '⚙️' },
+        { href: '/become-seller', label: 'Become Seller', icon: '💼' },
+        { href: '/login', label: 'Login', icon: '🔑' }
       ]
-    }
+    },
+    {
+      id: 'other',
+      title: 'Quick Access',
+      items: [
+        { href: '/notifications', label: 'Notifications', icon: '🔔' }
+      ]
+  }
   ], [])
 
   if (!isOpen) return null
@@ -85,206 +121,194 @@ export default function MobileSidebar({
   return (
     <>
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998] lg:hidden animate-fadeIn"
+      <div
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998] lg:hidden animate-fadeIn"
         onClick={onClose}
-        style={{ 
-          animation: 'fadeIn 0.3s ease-out'
-        }}
+        style={{ animation: 'fadeIn 0.3s ease-out' }}
+        aria-label="Close sidebar"
       />
-      
-      {/* Mobile Sidebar - Slide in from right */}
-      <div 
-        className="fixed top-0 right-0 h-full w-80 bg-white dark:bg-slate-900 shadow-2xl z-[9999] transform transition-transform duration-300 lg:hidden"
-        style={{ 
-          backgroundColor: 'var(--sidebar)',
-          animation: 'slideInRight 0.3s ease-out',
-          borderLeft: '1px solid var(--sidebar-border)'
-        }}
+
+      {/* Sidebar */}
+      <aside
+        className="fixed top-0 right-0 h-full w-80 max-w-[90vw] bg-white dark:bg-slate-900 shadow-2xl z-[9999] flex flex-col transform transition-transform duration-300 lg:hidden"
+        style={{ backgroundColor: 'var(--sidebar)', animation: 'slideInRight 0.3s ease-out', borderLeft: '1px solid var(--sidebar-border)' }}
+        aria-label="Mobile navigation sidebar"
       >
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: 'var(--sidebar-border)', backgroundColor: 'var(--sidebar-primary)', color: 'var(--sidebar-primary-foreground)' }}>
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center shadow-lg backdrop-blur-sm" style={{ borderRadius: 'var(--radius-lg)' }}>
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2L3.09 8.26L12 14L20.91 8.26L12 2Z"/>
-                </svg>
-              </div>
-              <div className="flex items-center space-x-3">
-                <h2 className="font-bold text-lg">Ohana Diamonds</h2>
-                <p className="text-xs opacity-75">Diamond & Jewelry Marketplace</p>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-xl hover:bg-white/10 transition-colors group" 
-              style={{ borderRadius: 'var(--radius-lg)' }}
-            >
-              <svg className="w-5 h-5 group-hover:rotate-90 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        {/* Header */}
+        <header className="flex items-center justify-between p-5 border-b" style={{ borderColor: 'var(--sidebar-border)', backgroundColor: 'var(--sidebar-primary)', color: 'var(--sidebar-primary-foreground)' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center shadow-lg backdrop-blur-sm" style={{ borderRadius: 'var(--radius-lg)' }}>
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2L3.09 8.26L12 14L20.91 8.26L12 2Z" />
               </svg>
-            </button>
+            </div>
+            <div>
+              <h2 className="font-bold text-lg leading-tight">Ohana Diamonds</h2>
+              <p className="text-xs opacity-75">Diamond & Jewelry Marketplace</p>
+            </div>
           </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-xl hover:bg-white/10 transition-colors group"
+            style={{ borderRadius: 'var(--radius-lg)' }}
+            aria-label="Close sidebar"
+          >
+            <svg className="w-5 h-5 group-hover:rotate-90 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </header>
 
-          {/* Search */}
-          <div className="p-4" style={{ backgroundColor: 'var(--sidebar-accent)' }}>
-            <form onSubmit={handleSearch}>
-              <div className="relative group mb-4">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search diamonds, gemstones, jewelry..."
-                  className="w-full px-4 py-3 pl-11 border rounded-xl focus:ring-2 focus:border-transparent transition-all duration-300 shadow-sm text-sm"
-                  style={{ 
-                    backgroundColor: 'var(--sidebar)', 
-                    borderColor: 'var(--sidebar-border)', 
-                    color: 'var(--sidebar-foreground)',
-                    borderRadius: 'var(--radius-xl)'
-                  } as React.CSSProperties}
-                />
-                <svg className="absolute left-3.5 top-3.5 w-4 h-4 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--sidebar-primary)' }}>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={clearSearch}
-                    className="absolute right-3 top-3.5 w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-
-              {/* Recent Searches */}
-              {recentSearches.length > 0 && (
-                <div className="mb-4">
-                  <h4 className="text-xs font-semibold uppercase tracking-wider mb-2 px-1" style={{ color: 'var(--sidebar-foreground)' }}>Recent Searches</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {recentSearches.slice(0, 3).map((search, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleSearchSuggestion(search)}
-                        className="px-3 py-1 text-xs rounded-full border transition-all duration-200 hover:scale-105"
-                        style={{ 
-                          backgroundColor: 'var(--sidebar)',
-                          borderColor: 'var(--sidebar-border)',
-                          color: 'var(--sidebar-foreground)',
-                          borderRadius: 'var(--radius-full)'
-                        }}
-                      >
-                        {search}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </form>
-          </div>
-
-          {/* Navigation Links */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-6" style={{ backgroundColor: 'var(--sidebar)' }}>
-            {navigationSections.map((section) => (
-              <div key={section.id}>
+        {/* Search */}
+        <section className="p-4 border-b" style={{ backgroundColor: 'var(--sidebar-accent)', borderColor: 'var(--sidebar-border)' }}>
+          <form onSubmit={handleSearch} className="space-y-2">
+            <div className="relative group">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search diamonds, gemstones, jewelry..."
+                className="w-full px-4 py-3 pl-11 border rounded-xl focus:ring-2 focus:border-transparent transition-all duration-300 shadow-sm text-sm"
+                style={{ backgroundColor: 'var(--sidebar)', borderColor: 'var(--sidebar-border)', color: 'var(--sidebar-foreground)', borderRadius: 'var(--radius-xl)' } as React.CSSProperties}
+                aria-label="Search"
+              />
+              <svg className="absolute left-3.5 top-3.5 w-4 h-4 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--sidebar-primary)' }}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              {searchQuery && (
                 <button
-                  onClick={() => setActiveSection(activeSection === section.id ? null : section.id)}
-                  className="flex items-center justify-between w-full text-left mb-3 px-3 py-2 rounded-lg transition-all duration-200"
-                  style={{ color: 'var(--sidebar-foreground)', backgroundColor: activeSection === section.id ? 'var(--sidebar-accent)' : 'transparent' }}
+                  type="button"
+                  onClick={clearSearch}
+                  className="absolute right-3 top-3.5 w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label="Clear search"
                 >
-                  <h3 className="text-xs font-semibold uppercase tracking-wider opacity-60">
-                    {section.title}
-                  </h3>
-                  <svg 
-                    className={`w-4 h-4 transition-transform duration-200 ${activeSection === section.id ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
-                
-                <div className={`space-y-1 transition-all duration-300 overflow-hidden ${activeSection === section.id ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-                  {section.items.map((item) => (
-                    <Link 
-                      key={item.href}
-                      href={item.href} 
-                      onClick={handleLinkClick} 
-                      className="group flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] hover:bg-opacity-50" 
-                      style={{ color: 'var(--sidebar-foreground)', borderRadius: 'var(--radius-xl)', backgroundColor: 'transparent' }}
+              )}
+            </div>
+
+            {/* Recent Searches */}
+            {recentSearches.length > 0 && (
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-wider mb-2 px-1" style={{ color: 'var(--sidebar-foreground)' }}>Recent Searches</h4>
+                <div className="flex flex-wrap gap-2">
+                  {recentSearches.slice(0, 3).map((search, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleSearchSuggestion(search)}
+                      className="px-3 py-1 text-xs rounded-full border transition-all duration-200 hover:scale-105"
+                      style={{ backgroundColor: 'var(--sidebar)', borderColor: 'var(--sidebar-border)', color: 'var(--sidebar-foreground)', borderRadius: 'var(--radius-full)' }}
+                      aria-label={`Search for ${search}`}
                     >
-                      <span className="text-lg">{item.icon}</span>
-                      <span className="font-medium flex-1">{item.label}</span>
-                      <svg className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </Link>
+                      {search}
+                    </button>
                   ))}
                 </div>
               </div>
-            ))}
-          </div>
+            )}
+          </form>
+        </section>
 
-          {/* Footer */}
-          <div className="p-4 border-t" style={{ backgroundColor: 'var(--sidebar)', borderColor: 'var(--sidebar-border)' }}>
-            {/* Theme Switcher Section */}
-            <div className="mb-4 p-4 rounded-xl" style={{ backgroundColor: 'var(--sidebar-accent)', borderRadius: 'var(--radius-xl)' }}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div>
-                    <p className="text-sm font-medium" style={{ color: 'var(--sidebar-foreground)' }}>Theme</p>
-                    <p className="text-xs opacity-60" style={{ color: 'var(--sidebar-foreground)' }}>Switch appearance</p>
-                  </div>
-                </div>
-                <ThemeSwitcher />
+        {/* Navigation Links */}
+        <nav className="flex-1 overflow-y-auto p-4 space-y-8" style={{ backgroundColor: 'var(--sidebar)' }} aria-label="Sidebar navigation">
+          {navigationSections.map((section) => (
+            <div key={section.id} className="mb-2">
+              <button
+                onClick={() => setActiveSection(activeSection === section.id ? null : section.id)}
+                className="flex items-center justify-between w-full text-left mb-2 px-3 py-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary"
+                style={{ color: 'var(--sidebar-foreground)', backgroundColor: activeSection === section.id ? 'var(--sidebar-accent)' : 'transparent' }}
+                aria-expanded={activeSection === section.id}
+                aria-controls={`section-${section.id}`}
+              >
+                <h3 className="text-xs font-semibold uppercase tracking-wider opacity-70">
+                  {section.title}
+                </h3>
+                <svg
+                  className={`w-4 h-4 transition-transform duration-200 ${activeSection === section.id ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div
+                id={`section-${section.id}`}
+                className={`space-y-1 transition-all duration-300 overflow-hidden ${activeSection === section.id ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
+                aria-hidden={activeSection !== section.id}
+              >
+                {section.items.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={(e) => handleNavLinkClick(e, item.href)}
+                    className="group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-[1.03] hover:bg-sidebar-accent focus:outline-none focus:ring-2 focus:ring-primary"
+                    style={{ color: 'var(--sidebar-foreground)', borderRadius: 'var(--radius-xl)', backgroundColor: 'transparent' }}
+                  >
+                    <span className="text-lg" aria-hidden="true">{item.icon}</span>
+                    <span className="font-medium flex-1 text-base">{item.label}</span>
+                    <svg className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                ))}
               </div>
             </div>
+          ))}
+        </nav>
 
-            {/* Settings Link */}
-            <Link href="/settings" onClick={handleLinkClick} className="group flex items-center space-x-3 px-4 py-3 mb-3 rounded-xl transition-all duration-200 hover:scale-[1.02] hover:bg-opacity-50" style={{ color: 'var(--sidebar-foreground)', borderRadius: 'var(--radius-xl)' }}>
-              <span className="font-medium">Settings</span>
-              <svg className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-
-            {/* Logout Button */}
-            <button
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className="group w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] text-left border disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100" 
-              style={{ 
-                color: 'var(--destructive-foreground)', 
-                backgroundColor: 'var(--destructive)',
-                borderRadius: 'var(--radius-xl)',
-                borderColor: 'var(--destructive)'
-              }}
-            >
-              <span className="font-medium">
-                {isLoggingOut ? 'Signing Out...' : 'Sign Out'}
-              </span>
-              {isLoggingOut ? (
-                <div className="ml-auto animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent" />
-              ) : (
-                <svg className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1" />
-                </svg>
-              )}
-            </button>
-
-            {/* App Version */}
-            <div className="pt-4 text-center">
-              <p className="text-xs opacity-60" style={{ color: 'var(--sidebar-foreground)' }}>
-                Ohana Diamonds v1.0.0
-              </p>
+        {/* Footer */}
+        <footer className="p-4 border-t" style={{ backgroundColor: 'var(--sidebar)', borderColor: 'var(--sidebar-border)' }}>
+          <div className="mb-4 p-4 rounded-xl" style={{ backgroundColor: 'var(--sidebar-accent)', borderRadius: 'var(--radius-xl)' }}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium" style={{ color: 'var(--sidebar-foreground)' }}>Theme</p>
+                <p className="text-xs opacity-60" style={{ color: 'var(--sidebar-foreground)' }}>Switch appearance</p>
+              </div>
+              <ThemeSwitcher />
             </div>
           </div>
-        </div>
-      </div>
+
+          <Link
+            href="/settings"
+            onClick={(e) => handleNavLinkClick(e, '/settings')}
+            className="group flex items-center gap-3 px-4 py-3 mb-3 rounded-xl transition-all duration-200 hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-primary"
+            style={{ color: 'var(--sidebar-foreground)', borderRadius: 'var(--radius-xl)' }}
+          >
+            <span className="font-medium">Settings</span>
+            <svg className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+
+          <button
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="group w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-[1.03] text-left border disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 focus:outline-none focus:ring-2 focus:ring-destructive"
+            style={{ color: 'var(--destructive-foreground)', backgroundColor: 'var(--destructive)', borderRadius: 'var(--radius-xl)', borderColor: 'var(--destructive)' }}
+            aria-label="Sign out"
+          >
+            <span className="font-medium">
+              {isLoggingOut ? 'Signing Out...' : 'Sign Out'}
+            </span>
+            {isLoggingOut ? (
+              <div className="ml-auto animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent" />
+            ) : (
+              <svg className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1" />
+              </svg>
+            )}
+          </button>
+
+          <div className="pt-4 text-center">
+            <p className="text-xs opacity-60" style={{ color: 'var(--sidebar-foreground)' }}>
+              Ohana Diamonds v1.0.0
+            </p>
+          </div>
+        </footer>
+      </aside>
     </>
   )
 }

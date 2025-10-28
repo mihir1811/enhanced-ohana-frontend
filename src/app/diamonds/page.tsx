@@ -868,7 +868,7 @@ export default function DiamondsSearchPage() {
           </div>
 
           {/* Diamond Type & Category Selection */}
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {/* <div className="grid md:grid-cols-2 gap-6 mb-8">
             <div>
               <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
                 Diamond Type
@@ -904,7 +904,7 @@ export default function DiamondsSearchPage() {
                 />
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Growth Method - Only for Lab-Grown */}
           {searchForm.diamondType === 'lab-grown' && (
