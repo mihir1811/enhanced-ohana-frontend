@@ -59,12 +59,12 @@ export default function MobileSidebar({
       id: 'shop',
       title: 'Diamond & Jewelry Categories',
       items: [
-        { href: '/products/diamonds', label: 'Diamonds', icon: '💎' },
-        { href: '/products/gemstones', label: 'Gemstones', icon: '💍' },
-        { href: '/products/jewelry', label: 'Jewelry', icon: '📿' },
-        { href: '/auction', label: 'Auction', icon: '🔨' },
-        { href: '/products/lab-grown', label: 'Lab Grown Diamonds', icon: '⚗️' },
-        { href: '/products/bullions', label: 'Bullions', icon: '🥇' },
+        { href: '/diamonds', label: 'Diamonds', icon: '💎' },
+        { href: '/gemstones', label: 'Gemstones', icon: '💍' },
+        { href: '/jewelry', label: 'Jewelry', icon: '📿' },
+        { href: '/auctions', label: 'Auctions', icon: '🔨' },
+        { href: '/lab-grown-diamonds', label: 'Lab Grown Diamonds', icon: '⚗️' },
+        { href: '/bullions', label: 'Bullions', icon: '🥇' },
         { href: '/experience', label: 'Experience', icon: '✨' }
       ]
     },
@@ -72,10 +72,10 @@ export default function MobileSidebar({
       id: 'account',
       title: 'My Account',
       items: [
-        { href: '/profile', label: 'My Profile', icon: '👤' },
-        { href: '/orders', label: 'Order History', icon: '📦' },
-        { href: '/wishlist', label: 'My Wishlist', icon: '❤️' },
-        { href: '/addresses', label: 'Saved Addresses', icon: '📍' }
+        { href: '/user/profile', label: 'My Profile', icon: '👤' },
+        { href: '/user/orders', label: 'Order History', icon: '📦' },
+        { href: '/user/wishlist', label: 'My Wishlist', icon: '❤️' },
+        { href: '/user/addresses', label: 'Saved Addresses', icon: '📍' }
       ]
     }
   ], [])
@@ -86,7 +86,7 @@ export default function MobileSidebar({
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998] lg:hidden animate-fadeIn"
+        className="fixed h-screen inset-0 bg-black/50 backdrop-blur-sm z-[9998] lg:hidden animate-fadeIn"
         onClick={onClose}
         style={{ 
           animation: 'fadeIn 0.3s ease-out'

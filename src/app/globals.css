@@ -365,3 +365,38 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Diamond Carousel Dark Theme Support */
+.diamond-carousel-card {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+.diamond-carousel-card:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 
+              0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.dark .diamond-carousel-card:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 
+              0 8px 10px -6px rgba(0, 0, 0, 0.4);
+}
+
+.diamond-carousel-card.selected {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+.dark .diamond-carousel-card.selected {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.4);
+}
+
+.diamond-carousel-bg {
+  background: linear-gradient(to right, #eff6ff, #faf5ff);
+}
+
+.dark .diamond-carousel-bg {
+  background: linear-gradient(to right, #0f172a, #1e293b);
+}

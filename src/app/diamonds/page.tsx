@@ -1,14 +1,39 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Search, Gem, Leaf, Sparkles, Filter, ChevronDown } from 'lucide-react'
+import { Search, Gem, Leaf, Sparkles, Filter, ChevronDown, MoveLeft, MoveRight } from 'lucide-react'
 import NavigationUser from '@/components/Navigation/NavigationUser'
 import Footer from '@/components/Footer'
 import { filterOptions } from '@/constants/filterOptions'
+import Image from 'next/image'
 
 // Constants
 const SECTION_WIDTH = 1400
+
+// Diamond shapes for carousel
+const DIAMOND_SHAPES = [
+  { name: 'Round', image: '/images/round.png', alt: 'Round diamond shape' },
+  { name: 'Pear', image: '/images/Pear.png', alt: 'Pear diamond shape' },
+  { name: 'Emerald', image: '/images/Emerald.png', alt: 'Emerald diamond shape' },
+  { name: 'Oval', image: '/images/Oval.png', alt: 'Oval diamond shape' },
+  { name: 'Heart', image: '/images/Heart.png', alt: 'Heart diamond shape' },
+  { name: 'Marquise', image: '/images/Marquise.png', alt: 'Marquise diamond shape' },
+  { name: 'Princess', image: '/images/princess.png', alt: 'Princess diamond shape' },
+  { name: 'Asscher', image: '/images/Asscher.png', alt: 'Asscher diamond shape' },
+  { name: 'Cushion', image: '/images/Cushion.png', alt: 'Cushion diamond shape' },
+  { name: 'Radiant', image: '/images/Radiant.png', alt: 'Radiant diamond shape' },
+  { name: 'Trilliant', image: '/images/trilliant.png', alt: 'Trilliant diamond shape' },
+  { name: 'Baguette', image: '/images/baguatte.png', alt: 'Baguette diamond shape' },
+  { name: 'Tapered baguette', image: '/images/tapered-baguette.png', alt: 'Tapered baguette diamond shape' },
+  { name: 'Rose cut', image: '/images/rose-cut.png', alt: 'Rose cut diamond shape' },
+  { name: 'Shield', image: '/images/Shield.png', alt: 'Shield cut diamond shape' },
+  { name: 'Lozenge', image: '/images/lozenge.png', alt: 'Lozenge diamond shape' },
+  { name: 'Half-moon', image: '/images/half-moon.png', alt: 'Half moon diamond shape' },
+  { name: 'Flanders', image: '/images/flanders.png', alt: 'Flanders diamond shape' },
+  { name: 'Trapezoid', image: '/images/trapezoid.png', alt: 'Trapezoid diamond shape' },
+  { name: 'Bullet', image: '/images/bullet.png', alt: 'Bullet diamond shape' }
+]
 
 // Type Definitions
 interface DiamondSearchForm {
@@ -510,6 +535,268 @@ const CategoryCard = React.memo(({ category, currentCategory, onCategoryChange }
 
 CategoryCard.displayName = 'CategoryCard'
 
+// Diamond Shapes Carousel Component
+const DiamondShapesCarousel = ({ title }: { title: string }) => {
+  const carouselRef = useRef<HTMLDivElement>(null)
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [touchStart, setTouchStart] = useState(0)
+  const [touchEnd, setTouchEnd] = useState(0)
+  const [selectedShapes, setSelectedShapes] = useState<string[]>([])
+
+  const visibleItems = useMemo(() => {
+    // Responsive number of items based on screen size
+    if (typeof window !== 'undefined') {
+      if (window.innerWidth < 640) return 2
+      if (window.innerWidth < 768) return 3
+      if (window.innerWidth < 1024) return 4
+      return 6
+    }
+    return 6
+  }, [])
+
+  const maxIndex = DIAMOND_SHAPES.length - visibleItems
+
+  // Update current index based on scroll position
+  const updateCurrentIndexFromScroll = useCallback(() => {
+    if (!carouselRef.current) return
+
+    const scrollLeft = carouselRef.current.scrollLeft
+    const itemWidth = carouselRef.current.scrollWidth / DIAMOND_SHAPES.length
+    const newIndex = Math.round(scrollLeft / itemWidth)
+
+    // Only update if changed to avoid unnecessary re-renders
+    if (newIndex !== currentIndex) {
+      setCurrentIndex(Math.max(0, Math.min(newIndex, maxIndex)))
+    }
+  }, [currentIndex, maxIndex])
+
+  // Scroll to a specific index
+  const scrollToIndex = useCallback((index: number) => {
+    if (!carouselRef.current) return
+
+    const newIndex = Math.max(0, Math.min(index, maxIndex))
+    setCurrentIndex(newIndex)
+
+    const itemWidth = carouselRef.current.scrollWidth / DIAMOND_SHAPES.length
+    carouselRef.current.scrollTo({
+      left: newIndex * itemWidth,
+      behavior: 'smooth'
+    })
+  }, [maxIndex])
+
+  const handlePrev = useCallback(() => {
+    if (currentIndex === 0) {
+      // Wrap around to the end when at the beginning
+      scrollToIndex(maxIndex)
+    } else {
+      scrollToIndex(currentIndex - 1)
+    }
+  }, [currentIndex, maxIndex, scrollToIndex])
+
+  const handleNext = useCallback(() => {
+    if (currentIndex >= maxIndex) {
+      // Wrap around to the beginning when at the end
+      scrollToIndex(0)
+    } else {
+      scrollToIndex(currentIndex + 1)
+    }
+  }, [currentIndex, maxIndex, scrollToIndex])
+
+  // Touch handlers for mobile swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const handleTouchEnd = () => {
+    if (touchStart - touchEnd > 50) {
+      // Swipe left
+      handleNext()
+    }
+
+    if (touchStart - touchEnd < -50) {
+      // Swipe right
+      handlePrev()
+    }
+  }
+
+  // Add scroll event listener
+  useEffect(() => {
+    const carousel = carouselRef.current
+    if (!carousel) return
+
+    // Debounce function to limit how often the scroll event fires
+    let scrollTimeout: NodeJS.Timeout
+    const handleScroll = () => {
+      clearTimeout(scrollTimeout)
+      scrollTimeout = setTimeout(() => {
+        updateCurrentIndexFromScroll()
+      }, 50)
+    }
+
+    carousel.addEventListener('scroll', handleScroll)
+
+    return () => {
+      if (carousel) {
+        carousel.removeEventListener('scroll', handleScroll)
+      }
+      clearTimeout(scrollTimeout)
+    }
+  }, [updateCurrentIndexFromScroll])
+
+  // Autoplay functionality
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
+  const autoplayIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  const startAutoplay = useCallback(() => {
+    if (autoplayIntervalRef.current) {
+      clearInterval(autoplayIntervalRef.current)
+    }
+
+    autoplayIntervalRef.current = setInterval(() => {
+      if (currentIndex >= maxIndex) {
+        // Reset to first slide when reaching the end for infinite scrolling
+        scrollToIndex(0)
+      } else {
+        handleNext()
+      }
+    }, 3000) // 3 seconds interval
+  }, [currentIndex, maxIndex, handleNext, scrollToIndex])
+
+  const stopAutoplay = useCallback(() => {
+    if (autoplayIntervalRef.current) {
+      clearInterval(autoplayIntervalRef.current)
+      autoplayIntervalRef.current = null
+    }
+  }, [])
+
+  const toggleAutoplay = useCallback(() => {
+    setIsAutoPlaying(prev => !prev)
+  }, [])
+
+  // Start/stop autoplay based on isAutoPlaying state
+  useEffect(() => {
+    if (isAutoPlaying) {
+      startAutoplay()
+    } else {
+      stopAutoplay()
+    }
+
+    return () => {
+      stopAutoplay()
+    }
+  }, [isAutoPlaying, startAutoplay, stopAutoplay])
+
+  return (
+    <div className="relative">
+      <div className='flex justify-between items-center'>
+        <h2 className="text-3xl font-bold text-left mb-8" style={{ color: 'var(--foreground)' }}>
+          {title}
+        </h2>
+        <div className="flex gap-2">
+          <button
+            onClick={handlePrev}
+            className="bg-white dark:bg-slate-700 p-2 rounded-full shadow-lg hover:bg-blue-50 dark:hover:bg-slate-600 transition-all border border-gray-200 dark:border-slate-600"
+            style={{ transform: 'translate(-50%, -50%)' }}
+            aria-label="Previous slide"
+          >
+            <MoveLeft className="w-6 h-6 text-gray-700 dark:text-gray-200" />
+          </button>
+
+          <button
+            onClick={handleNext}
+            className="bg-white dark:bg-slate-700 p-2 rounded-full shadow-lg hover:bg-blue-50 dark:hover:bg-slate-600 transition-all border border-gray-200 dark:border-slate-600"
+            style={{ transform: 'translate(50%, -50%)' }}
+            aria-label="Next slide"
+          >
+            <MoveRight className="w-6 h-6 text-gray-700 dark:text-gray-200" />
+          </button>
+        </div>
+      </div>
+
+      <button
+        onClick={toggleAutoplay}
+        className="absolute right-0 bottom-0 z-10 bg-white dark:bg-slate-700 p-2 rounded-full shadow-lg hover:bg-blue-50 dark:hover:bg-slate-600 transition-all mb-2 mr-2 border border-gray-200 dark:border-slate-600"
+        aria-label={isAutoPlaying ? "Pause autoplay" : "Start autoplay"}
+      >
+        {isAutoPlaying ? (
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-700 dark:text-gray-200">
+            <rect x="6" y="4" width="4" height="16"></rect>
+            <rect x="14" y="4" width="4" height="16"></rect>
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-700 dark:text-gray-200">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+        )}
+      </button>
+
+      {/* Carousel Container */}
+      <div
+        ref={carouselRef}
+        className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {DIAMOND_SHAPES.map((shape, index) => (
+          <div
+            key={shape.name}
+            className="flex-none p-2 w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/6 px-2 snap-start"
+          >
+            <div
+              className={`diamond-carousel-card rounded-full h-[300px] p-3 flex flex-col items-center justify-center cursor-pointer overflow-hidden ${selectedShapes.includes(shape.name) ? 'selected ring-2 ring-blue-500 dark:ring-blue-400' : ''
+                }`}
+              onClick={(e) => {
+                e.preventDefault();
+                // Toggle selection of this shape
+                setSelectedShapes(prev =>
+                  prev.includes(shape.name)
+                    ? prev.filter(s => s !== shape.name)
+                    : [...prev, shape.name]
+                );
+              }}
+            >
+              <div className="relative w-25 h-25 mb-1 flex items-center justify-center hover:scale-105 transition-transform">
+                <Image
+                  src={shape.image}
+                  alt={shape.alt}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  style={{ objectFit: 'contain', objectPosition: 'center' }}
+                  priority={index < 6}
+                />
+              </div>
+              <h3 className="text-xs font-medium pt-5 text-foreground">{shape.name}</h3>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Pagination Dots */}
+      <div className="flex justify-center mt-6 gap-2">
+        {Array.from({ length: maxIndex + 1 }).map((_, index) => (
+          <button
+            key={index}
+            onClick={() => scrollToIndex(index)}
+            className={`w-2 h-2 rounded-full transition-all ${index === currentIndex
+                ? 'bg-blue-500 dark:bg-blue-400 w-4 shadow-md'
+                : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
+              }`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+DiamondShapesCarousel.displayName = 'DiamondShapesCarousel'
+
 // Multi-Select Filter Component
 const MultiSelectFilter = React.memo(({
   options,
@@ -556,13 +843,14 @@ const MultiSelectFilter = React.memo(({
         <button
           key={option}
           onClick={() => onChange(fieldMap[label.toLowerCase()] || label.toLowerCase() as keyof DiamondSearchForm, option)}
-          className={`p-3 rounded-lg border text-sm font-medium transition-all ${isSelected ? colorConfig[colorVariant] : 'border-gray-200 hover:border-gray-300'
-            }`}
-          style={{
-            backgroundColor: isSelected ? `var(--${colorVariant})/10` : 'var(--card)',
-            borderColor: isSelected ? `var(--${colorVariant})` : 'var(--border)',
-            color: isSelected ? `var(--${colorVariant})` : 'var(--foreground)'
-          }}
+          className={`group w-full px-4 py-2 rounded-3xl text-sm font-medium transition-all duration-200
+            ${isSelected
+              ? "bg-gradient-to-r from-yellow-600 to-yellow-700 text-white shadow-md"
+              : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300"
+            }
+            hover:bg-yellow-50 dark:hover:bg-yellow-900/30
+            hover:border-yellow-500/30 dark:hover:border-yellow-500/30
+          `}
         >
           {option}
         </button>
@@ -717,6 +1005,7 @@ export default function DiamondsSearchPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
+  const [showAllShapes, setShowAllShapes] = useState(false)
 
   // Read URL parameters
   const urlDiamondType = searchParams.get('diamondType') as 'natural' | 'lab-grown' || 'natural'
@@ -761,7 +1050,82 @@ export default function DiamondsSearchPage() {
     }))
   }, [searchForm.diamondType])
 
+  // Corresponding grades for finish quick select
+  const correspondingGrades = useMemo<Record<string, { cutGrade: string[]; polish: string[]; symmetry: string[] }>>(() => ({
+    "3X": {
+      cutGrade: ["Excellent", "Ideal"],
+      polish: ["Excellent", "Ideal"],
+      symmetry: ["Excellent", "Ideal"],
+    },
+    "EX-": {
+      cutGrade: ["Excellent", "Very Good"],
+      polish: ["Excellent", "Very Good"],
+      symmetry: ["Excellent", "Very Good"],
+    },
+    "VG+": {
+      cutGrade: ["Very Good"],
+      polish: ["Very Good"],
+      symmetry: ["Very Good"],
+    },
+    "VG-": {
+      cutGrade: ["Very Good", "Good"],
+      polish: ["Very Good", "Good"],
+      symmetry: ["Very Good", "Good"],
+    },
+  }), [])
+
   const handleMultiSelect = useCallback((field: keyof DiamondSearchForm, value: string) => {
+    // Special handling for finish field
+    if (field === 'finish') {
+      const isAlreadySelected = searchForm.finish?.includes(value)
+      const currentFinishes = searchForm.finish || []
+
+      if (isAlreadySelected) {
+        // Remove from finish
+        const updatedFinishes = currentFinishes.filter(f => f !== value)
+        
+        setSearchForm(prev => ({
+          ...prev,
+          finish: updatedFinishes
+        }))
+
+        // If no finish grades selected, clear cut/polish/symmetry
+        if (updatedFinishes.every(f => !correspondingGrades[f])) {
+          setSearchForm(prev => ({
+            ...prev,
+            cutGrade: [],
+            polish: [],
+            symmetry: []
+          }))
+        }
+      } else if (correspondingGrades[value]) {
+        // Add to finish and update corresponding grades
+        const grades = correspondingGrades[value]
+        const updatedFinishes = [...currentFinishes, value]
+
+        setSearchForm(prev => ({
+          ...prev,
+          finish: updatedFinishes,
+          cutGrade: grades.cutGrade,
+          polish: grades.polish,
+          symmetry: grades.symmetry
+        }))
+      } else {
+        // Regular finish selection (non-quick select)
+        setSearchForm(prev => {
+          const currentArray = (prev.finish as string[]) || []
+          return {
+            ...prev,
+            finish: currentArray.includes(value)
+              ? currentArray.filter(item => item !== value)
+              : [...currentArray, value]
+          }
+        })
+      }
+      return
+    }
+
+    // Regular multi-select for other fields
     setSearchForm(prev => {
       const currentArray = (prev[field] as string[]) || []
       return {
@@ -771,7 +1135,7 @@ export default function DiamondsSearchPage() {
           : [...currentArray, value]
       }
     })
-  }, [])
+  }, [searchForm.finish, correspondingGrades])
 
   const handleArrayChange = useCallback((field: keyof DiamondSearchForm, values: string[]) => {
     setSearchForm(prev => ({
@@ -831,34 +1195,12 @@ export default function DiamondsSearchPage() {
         <NavigationUser />
       </div>
 
-      {/* Hero Section */}
-      <div className="relative">
-        <div className="h-96 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center">
-          <div className="text-center text-white max-w-4xl mx-auto px-4">
-            <div className="flex items-center justify-center mb-6">
-              <Gem className="w-16 h-16 mr-4" />
-              <h1 className="text-5xl md:text-6xl font-bold drop-shadow-lg">Find Your Perfect Diamond</h1>
-            </div>
-            <p className="text-xl md:text-2xl opacity-90 mb-8">
-              Search from thousands of certified diamonds with advanced filtering tools
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              {[
-                { value: '10,000+', label: 'Certified Diamonds' },
-                { value: '50+', label: 'Trusted Suppliers' },
-                { value: '24/7', label: 'Expert Support' },
-                { value: '100%', label: 'Certified Authentic' }
-              ].map((stat, index) => (
-                <div key={index} className="backdrop-blur-xl bg-white/20 rounded-xl p-4 shadow-lg border border-white/30">
-                  <div className="text-3xl font-bold">{stat.value}</div>
-                  <div className="text-sm opacity-80">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+      <div className="w-full py-12 ">
+        <div className="max-w-7xl mx-auto px-4">
+
+          <DiamondShapesCarousel title="Select Diamond Shapes" />
         </div>
       </div>
-
       {/* Search Form */}
       <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 py-12`}>
         <div className="bg-white/80 dark:bg-slate-900/80 rounded-2xl shadow-sm border p-8 backdrop-blur-xl relative" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
@@ -930,48 +1272,91 @@ export default function DiamondsSearchPage() {
             {/* Shape Selection */}
             <div>
               <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
-                Shape
+                Shape ({DIAMOND_CONSTANTS.SHAPES.length} shapes available)
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-                {DIAMOND_CONSTANTS.SHAPES.slice(0, 12).map((shape) => {
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2">
+                {DIAMOND_CONSTANTS.SHAPES.slice(0, showAllShapes ? DIAMOND_CONSTANTS.SHAPES.length : 16).map((shape) => {
                   const isSelected = (searchForm.shape || []).includes(shape)
                   return (
                     <button
                       key={shape}
                       onClick={() => handleMultiSelect('shape', shape)}
-                      className={`p-4 rounded-lg border text-sm font-medium transition-all ${isSelected
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-gray-200 hover:border-gray-300'
+                      className={`p-3 rounded-lg border text-xs font-medium transition-all ${isSelected
+                        ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
+                        : 'border-gray-200 hover:border-gray-300'
                         }`}
                       style={{
                         backgroundColor: isSelected ? 'var(--blue)/10' : 'var(--card)',
                         borderColor: isSelected ? 'var(--blue)' : 'var(--border)',
                         color: isSelected ? 'var(--blue)' : 'var(--foreground)'
                       }}
+                      title={shape}
                     >
                       {shape}
                     </button>
                   )
                 })}
               </div>
-              {DIAMOND_CONSTANTS.SHAPES.length > 12 && (
+
+              {/* Show More/Less Button */}
+              {DIAMOND_CONSTANTS.SHAPES.length > 16 && (
                 <div className="mt-4 flex justify-center">
-                  <button className="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-all duration-200">
-                    Show More Shapes
+                  <button
+                    onClick={() => setShowAllShapes(!showAllShapes)}
+                    className="px-6 py-2 text-sm font-medium text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-all duration-200 flex items-center gap-2"
+                  >
+                    {showAllShapes ? (
+                      <>
+                        <span>Show Less Shapes</span>
+                        <ChevronDown className="w-4 h-4 rotate-180 transition-transform" />
+                      </>
+                    ) : (
+                      <>
+                        <span>Show More Shapes ({DIAMOND_CONSTANTS.SHAPES.length - 16} more)</span>
+                        <ChevronDown className="w-4 h-4 transition-transform" />
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {(searchForm.shape || []).length > 0 && (
+                <div className="mt-3 flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200">
+                  <span className="text-sm font-medium text-blue-800">
+                    {searchForm.shape.length} shape{searchForm.shape.length > 1 ? 's' : ''} selected: <strong>{searchForm.shape.join(', ')}</strong>
+                  </span>
+                  <button
+                    onClick={() => setSearchForm(prev => ({ ...prev, shape: [] }))}
+                    className="text-xs underline hover:no-underline transition-all text-blue-600 font-medium"
+                  >
+                    Clear all
                   </button>
                 </div>
               )}
             </div>
-            {/* Carat Weight */}
-            <RangeInput
-              label="Carat Weight"
-              min={searchForm.caratWeight.min}
-              max={searchForm.caratWeight.max}
-              onMinChange={(value) => handleRangeChange('caratWeight', 'min', value)}
-              onMaxChange={(value) => handleRangeChange('caratWeight', 'max', value)}
-              unit=" ct"
-              step={0.01}
-            />
+
+            {/* Carat and Price Range */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <RangeInput
+                label="Carat Range"
+                min={searchForm.caratWeight.min}
+                max={searchForm.caratWeight.max}
+                onMinChange={(value) => handleRangeChange('caratWeight', 'min', value)}
+                onMaxChange={(value) => handleRangeChange('caratWeight', 'max', value)}
+                unit=" ct"
+                step={0.01}
+              />
+
+              <RangeInput
+                label="Price Range"
+                min={searchForm.priceRange.min}
+                max={searchForm.priceRange.max}
+                onMinChange={(value) => handleRangeChange('priceRange', 'min', value)}
+                onMaxChange={(value) => handleRangeChange('priceRange', 'max', value)}
+                unit="$"
+                step={1000}
+              />
+            </div>
 
             {/* Color */}
             <div>
@@ -1021,24 +1406,60 @@ export default function DiamondsSearchPage() {
 
               {searchForm.isFancyColor ? (
                 <div className="space-y-4">
-                  <MultiSelectFilter
-                    options={DIAMOND_CONSTANTS.FANCY_COLORS.map(c => c.name)}
-                    selected={searchForm.fancyColors}
-                    onChange={handleMultiSelect}
-                    label="Fancy Colors"
-                    gridCols="grid-cols-2 sm:grid-cols-5"
-                  />
+                  {/* Fancy Colors with Color Circles */}
+                  <div>
+                    <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
+                      Fancy Colors
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-10 gap-3">
+                      {DIAMOND_CONSTANTS.FANCY_COLORS.map((color) => {
+                        const isSelected = searchForm.fancyColors.includes(color.name)
+                        return (
+                          <button
+                            key={color.name}
+                            onClick={() => handleMultiSelect('fancyColors', color.name)}
+                            className={`relative p-3 rounded-xl transition-all duration-200 border-2
+                              ${isSelected
+                                ? "bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/30 border-yellow-500 dark:border-yellow-600 shadow-md"
+                                : "bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 hover:border-yellow-300 dark:hover:border-yellow-700 hover:shadow-sm"
+                              }
+                            `}
+                          >
+                            <div className="flex flex-col items-center gap-2">
+                              <div
+                                className="w-6 h-6 rounded-full shadow-sm ring-2 ring-white dark:ring-slate-700"
+                                style={{ background: color.color }}
+                              />
+                              <span
+                                className={`text-xs font-medium ${isSelected
+                                  ? "text-yellow-800 dark:text-yellow-300"
+                                  : "text-gray-700 dark:text-gray-300"
+                                  }`}
+                              >
+                                {color.name}
+                              </span>
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
                   <MultiSelectFilter
                     options={DIAMOND_CONSTANTS.OVERTONE_OPTIONS}
                     selected={searchForm.overtone}
                     onChange={handleMultiSelect}
                     label="Overtone"
+                    gridCols="grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
+                    colorVariant="purple"
                   />
                   <MultiSelectFilter
                     options={DIAMOND_CONSTANTS.INTENSITY_OPTIONS}
                     selected={searchForm.intensity}
                     onChange={handleMultiSelect}
                     label="Intensity"
+                    gridCols="grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
+                    colorVariant="orange"
                   />
                 </div>
               ) : (
@@ -1087,6 +1508,27 @@ export default function DiamondsSearchPage() {
               colorVariant="purple"
             />
 
+            {/* Polish and Symmetry - Auto-selected by Finish */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <MultiSelectFilter
+                options={DIAMOND_CONSTANTS.POLISH_SYMMETRY_OPTIONS}
+                selected={searchForm.polish}
+                onChange={handleMultiSelect}
+                label="Polish"
+                gridCols="grid-cols-2 md:grid-cols-3"
+                colorVariant="blue"
+              />
+
+              <MultiSelectFilter
+                options={DIAMOND_CONSTANTS.POLISH_SYMMETRY_OPTIONS}
+                selected={searchForm.symmetry}
+                onChange={handleMultiSelect}
+                label="Symmetry"
+                gridCols="grid-cols-2 md:grid-cols-3"
+                colorVariant="green"
+              />
+            </div>
+
             <MultiSelectFilter
               options={DIAMOND_CONSTANTS.CERTIFICATIONS}
               selected={searchForm.certification}
@@ -1103,16 +1545,6 @@ export default function DiamondsSearchPage() {
               label="Fluorescence"
               gridCols="grid-cols-3 md:grid-cols-5"
               colorVariant="purple"
-            />
-
-            {/* Price Range */}
-            <RangeInput
-              label="Price Range"
-              min={searchForm.priceRange.min}
-              max={searchForm.priceRange.max}
-              onMinChange={(value) => handleRangeChange('priceRange', 'min', value)}
-              onMaxChange={(value) => handleRangeChange('priceRange', 'max', value)}
-              unit="$"
             />
           </div>
 
@@ -1136,22 +1568,6 @@ export default function DiamondsSearchPage() {
             {/* Advanced Filters Content */}
             {showAdvancedFilters && (
               <div className="mt-8 space-y-6 p-6 rounded-xl border" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--muted)/5' }}>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <MultiSelectFilter
-                    options={DIAMOND_CONSTANTS.POLISH_SYMMETRY_OPTIONS}
-                    selected={searchForm.polish}
-                    onChange={handleMultiSelect}
-                    label="Polish"
-                  />
-
-                  <MultiSelectFilter
-                    options={DIAMOND_CONSTANTS.POLISH_SYMMETRY_OPTIONS}
-                    selected={searchForm.symmetry}
-                    onChange={handleMultiSelect}
-                    label="Symmetry"
-                  />
-                </div>
-
                 <div className="grid md:grid-cols-2 gap-6">
                   <RangeInput
                     label="Table Percent"
@@ -1182,203 +1598,203 @@ export default function DiamondsSearchPage() {
                 {/* Additional Extended Filters */}
 
 
-                  {/* Culet Size */}
-                  <MultiSelectFilter
-                    options={DIAMOND_CONSTANTS.CULET_SIZE_OPTIONS}
-                    selected={searchForm.culetSize}
-                    onChange={handleMultiSelect}
-                    label="Culet Size"
-                    gridCols="grid-cols-2 md:grid-cols-3"
+                {/* Culet Size */}
+                <MultiSelectFilter
+                  options={DIAMOND_CONSTANTS.CULET_SIZE_OPTIONS}
+                  selected={searchForm.culetSize}
+                  onChange={handleMultiSelect}
+                  label="Culet Size"
+                  gridCols="grid-cols-2 md:grid-cols-3"
+                />
+
+                {/* Company, Location, Origin Search */}
+                <div className="grid md:grid-cols-3 gap-6">
+                  <SearchInput
+                    label="Company Name"
+                    placeholder="Search by company name"
+                    selected={searchForm.company}
+                    onAdd={(value) => handleAddToArray('company', value)}
+                    onRemove={(value) => handleRemoveFromArray('company', value)}
                   />
 
-                  {/* Company, Location, Origin Search */}
-                  <div className="grid md:grid-cols-3 gap-6">
-                    <SearchInput
-                      label="Company Name"
-                      placeholder="Search by company name"
-                      selected={searchForm.company}
-                      onAdd={(value) => handleAddToArray('company', value)}
-                      onRemove={(value) => handleRemoveFromArray('company', value)}
-                    />
+                  <SearchInput
+                    label="Vendor's Location"
+                    placeholder="Search by location"
+                    selected={searchForm.location}
+                    onAdd={(value) => handleAddToArray('location', value)}
+                    onRemove={(value) => handleRemoveFromArray('location', value)}
+                  />
 
-                    <SearchInput
-                      label="Vendor's Location"
-                      placeholder="Search by location"
-                      selected={searchForm.location}
-                      onAdd={(value) => handleAddToArray('location', value)}
-                      onRemove={(value) => handleRemoveFromArray('location', value)}
-                    />
-
-                    <SearchInput
-                      label="Origin"
-                      placeholder="Search by origin"
-                      selected={searchForm.origin}
-                      onAdd={(value) => handleAddToArray('origin', value)}
-                      onRemove={(value) => handleRemoveFromArray('origin', value)}
-                    />
-                  </div>
-
-                  {/* Additional Measurements */}
-                  <div className="grid md:grid-cols-3 gap-6">
-                    <RangeInput
-                      label="Length Range"
-                      min={searchForm.lengthRange.min}
-                      max={searchForm.lengthRange.max}
-                      onMinChange={(value) => handleRangeChange('lengthRange', 'min', value)}
-                      onMaxChange={(value) => handleRangeChange('lengthRange', 'max', value)}
-                      unit="mm"
-                      step={0.1}
-                    />
-
-                    <RangeInput
-                      label="Width Range"
-                      min={searchForm.widthRange.min}
-                      max={searchForm.widthRange.max}
-                      onMinChange={(value) => handleRangeChange('widthRange', 'min', value)}
-                      onMaxChange={(value) => handleRangeChange('widthRange', 'max', value)}
-                      unit="mm"
-                      step={0.1}
-                    />
-
-                    <RangeInput
-                      label="Height Range"
-                      min={searchForm.heightRange.min}
-                      max={searchForm.heightRange.max}
-                      onMinChange={(value) => handleRangeChange('heightRange', 'min', value)}
-                      onMaxChange={(value) => handleRangeChange('heightRange', 'max', value)}
-                      unit="mm"
-                      step={0.1}
-                    />
-                  </div>
-
-                  {/* Ratio Range */}
-                  <div className="grid md:grid-cols-3 gap-6">
-                    <RangeInput
-                      label="Length to Width Ratio Range"
-                      min={searchForm.ratioRange.min}
-                      max={searchForm.ratioRange.max}
-                      onMinChange={(value) => handleRangeChange('ratioRange', 'min', value)}
-                      onMaxChange={(value) => handleRangeChange('ratioRange', 'max', value)}
-                      step={0.01}
-                    />
-                  </div>
-
-                  {/* Additional Percentage Ranges */}
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <RangeInput
-                      label="Depth Percentage Range"
-                      min={searchForm.depthPercentage.min}
-                      max={searchForm.depthPercentage.max}
-                      onMinChange={(value) => handleRangeChange('depthPercentage', 'min', value)}
-                      onMaxChange={(value) => handleRangeChange('depthPercentage', 'max', value)}
-                      unit="%"
-                      step={0.1}
-                    />
-
-                    <RangeInput
-                      label="Table Percentage Range"
-                      min={searchForm.tablePercentage.min}
-                      max={searchForm.tablePercentage.max}
-                      onMinChange={(value) => handleRangeChange('tablePercentage', 'min', value)}
-                      onMaxChange={(value) => handleRangeChange('tablePercentage', 'max', value)}
-                      unit="%"
-                      step={0.1}
-                    />
-                  </div>
-
-                  {/* Advanced Crown/Pavilion Ranges */}
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <RangeInput
-                      label="Crown Angle Range"
-                      min={searchForm.crownAngleRange.min}
-                      max={searchForm.crownAngleRange.max}
-                      onMinChange={(value) => handleRangeChange('crownAngleRange', 'min', value)}
-                      onMaxChange={(value) => handleRangeChange('crownAngleRange', 'max', value)}
-                      unit="°"
-                      step={0.1}
-                    />
-
-                    <RangeInput
-                      label="Crown Height Range"
-                      min={searchForm.crownHeightRange.min}
-                      max={searchForm.crownHeightRange.max}
-                      onMinChange={(value) => handleRangeChange('crownHeightRange', 'min', value)}
-                      onMaxChange={(value) => handleRangeChange('crownHeightRange', 'max', value)}
-                      unit="%"
-                      step={0.1}
-                    />
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <RangeInput
-                      label="Pavilion Angle Range"
-                      min={searchForm.pavilionAngleRange.min}
-                      max={searchForm.pavilionAngleRange.max}
-                      onMinChange={(value) => handleRangeChange('pavilionAngleRange', 'min', value)}
-                      onMaxChange={(value) => handleRangeChange('pavilionAngleRange', 'max', value)}
-                      unit="°"
-                      step={0.1}
-                    />
-
-                    <RangeInput
-                      label="Pavilion Depth Range"
-                      min={searchForm.pavilionDepthRange.min}
-                      max={searchForm.pavilionDepthRange.max}
-                      onMinChange={(value) => handleRangeChange('pavilionDepthRange', 'min', value)}
-                      onMaxChange={(value) => handleRangeChange('pavilionDepthRange', 'max', value)}
-                      unit="%"
-                      step={0.1}
-                    />
-                  </div>
-
-                  {/* Girdle Range Selector */}
-                  <div>
-                    <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
-                      Girdle Thickness Range
-                    </label>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Minimum</label>
-                        <select
-                          value={searchForm.gridleRange.min}
-                          onChange={(e) => handleStringRangeChange('gridleRange', 'min', e.target.value)}
-                          className="w-full p-3 border rounded-lg"
-                          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
-                        >
-                          <option value="">Select minimum</option>
-                          {DIAMOND_CONSTANTS.GIRDLE_ORDER.map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Maximum</label>
-                        <select
-                          value={searchForm.gridleRange.max}
-                          onChange={(e) => handleStringRangeChange('gridleRange', 'max', e.target.value)}
-                          className="w-full p-3 border rounded-lg"
-                          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
-                        >
-                          <option value="">Select maximum</option>
-                          {DIAMOND_CONSTANTS.GIRDLE_ORDER.map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    {searchForm.gridleRange.min && searchForm.gridleRange.max && (
-                      <div className="mt-2">
-                        <span className="text-sm text-blue-600">
-                          Selected range: {searchForm.gridleRange.min} to {searchForm.gridleRange.max}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                  <SearchInput
+                    label="Origin"
+                    placeholder="Search by origin"
+                    selected={searchForm.origin}
+                    onAdd={(value) => handleAddToArray('origin', value)}
+                    onRemove={(value) => handleRemoveFromArray('origin', value)}
+                  />
                 </div>
+
+                {/* Additional Measurements */}
+                <div className="grid md:grid-cols-3 gap-6">
+                  <RangeInput
+                    label="Length Range"
+                    min={searchForm.lengthRange.min}
+                    max={searchForm.lengthRange.max}
+                    onMinChange={(value) => handleRangeChange('lengthRange', 'min', value)}
+                    onMaxChange={(value) => handleRangeChange('lengthRange', 'max', value)}
+                    unit="mm"
+                    step={0.1}
+                  />
+
+                  <RangeInput
+                    label="Width Range"
+                    min={searchForm.widthRange.min}
+                    max={searchForm.widthRange.max}
+                    onMinChange={(value) => handleRangeChange('widthRange', 'min', value)}
+                    onMaxChange={(value) => handleRangeChange('widthRange', 'max', value)}
+                    unit="mm"
+                    step={0.1}
+                  />
+
+                  <RangeInput
+                    label="Height Range"
+                    min={searchForm.heightRange.min}
+                    max={searchForm.heightRange.max}
+                    onMinChange={(value) => handleRangeChange('heightRange', 'min', value)}
+                    onMaxChange={(value) => handleRangeChange('heightRange', 'max', value)}
+                    unit="mm"
+                    step={0.1}
+                  />
+                </div>
+
+                {/* Ratio Range */}
+                <div className="grid md:grid-cols-3 gap-6">
+                  <RangeInput
+                    label="Length to Width Ratio Range"
+                    min={searchForm.ratioRange.min}
+                    max={searchForm.ratioRange.max}
+                    onMinChange={(value) => handleRangeChange('ratioRange', 'min', value)}
+                    onMaxChange={(value) => handleRangeChange('ratioRange', 'max', value)}
+                    step={0.01}
+                  />
+                </div>
+
+                {/* Additional Percentage Ranges */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <RangeInput
+                    label="Depth Percentage Range"
+                    min={searchForm.depthPercentage.min}
+                    max={searchForm.depthPercentage.max}
+                    onMinChange={(value) => handleRangeChange('depthPercentage', 'min', value)}
+                    onMaxChange={(value) => handleRangeChange('depthPercentage', 'max', value)}
+                    unit="%"
+                    step={0.1}
+                  />
+
+                  <RangeInput
+                    label="Table Percentage Range"
+                    min={searchForm.tablePercentage.min}
+                    max={searchForm.tablePercentage.max}
+                    onMinChange={(value) => handleRangeChange('tablePercentage', 'min', value)}
+                    onMaxChange={(value) => handleRangeChange('tablePercentage', 'max', value)}
+                    unit="%"
+                    step={0.1}
+                  />
+                </div>
+
+                {/* Advanced Crown/Pavilion Ranges */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <RangeInput
+                    label="Crown Angle Range"
+                    min={searchForm.crownAngleRange.min}
+                    max={searchForm.crownAngleRange.max}
+                    onMinChange={(value) => handleRangeChange('crownAngleRange', 'min', value)}
+                    onMaxChange={(value) => handleRangeChange('crownAngleRange', 'max', value)}
+                    unit="°"
+                    step={0.1}
+                  />
+
+                  <RangeInput
+                    label="Crown Height Range"
+                    min={searchForm.crownHeightRange.min}
+                    max={searchForm.crownHeightRange.max}
+                    onMinChange={(value) => handleRangeChange('crownHeightRange', 'min', value)}
+                    onMaxChange={(value) => handleRangeChange('crownHeightRange', 'max', value)}
+                    unit="%"
+                    step={0.1}
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <RangeInput
+                    label="Pavilion Angle Range"
+                    min={searchForm.pavilionAngleRange.min}
+                    max={searchForm.pavilionAngleRange.max}
+                    onMinChange={(value) => handleRangeChange('pavilionAngleRange', 'min', value)}
+                    onMaxChange={(value) => handleRangeChange('pavilionAngleRange', 'max', value)}
+                    unit="°"
+                    step={0.1}
+                  />
+
+                  <RangeInput
+                    label="Pavilion Depth Range"
+                    min={searchForm.pavilionDepthRange.min}
+                    max={searchForm.pavilionDepthRange.max}
+                    onMinChange={(value) => handleRangeChange('pavilionDepthRange', 'min', value)}
+                    onMaxChange={(value) => handleRangeChange('pavilionDepthRange', 'max', value)}
+                    unit="%"
+                    step={0.1}
+                  />
+                </div>
+
+                {/* Girdle Range Selector */}
+                <div>
+                  <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
+                    Girdle Thickness Range
+                  </label>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Minimum</label>
+                      <select
+                        value={searchForm.gridleRange.min}
+                        onChange={(e) => handleStringRangeChange('gridleRange', 'min', e.target.value)}
+                        className="w-full p-3 border rounded-lg"
+                        style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                      >
+                        <option value="">Select minimum</option>
+                        {DIAMOND_CONSTANTS.GIRDLE_ORDER.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Maximum</label>
+                      <select
+                        value={searchForm.gridleRange.max}
+                        onChange={(e) => handleStringRangeChange('gridleRange', 'max', e.target.value)}
+                        className="w-full p-3 border rounded-lg"
+                        style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                      >
+                        <option value="">Select maximum</option>
+                        {DIAMOND_CONSTANTS.GIRDLE_ORDER.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  {searchForm.gridleRange.min && searchForm.gridleRange.max && (
+                    <div className="mt-2">
+                      <span className="text-sm text-blue-600">
+                        Selected range: {searchForm.gridleRange.min} to {searchForm.gridleRange.max}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
 
             )}
           </div>
@@ -1439,6 +1855,9 @@ export default function DiamondsSearchPage() {
           </div>
         </div>
       </div>
+
+      {/* Diamond Shapes Carousel */}
+
 
       {/* Footer */}
       <Footer />
