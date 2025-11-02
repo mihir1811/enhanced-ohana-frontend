@@ -246,7 +246,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                                 <button
                                   key={shape}
                                   type="button"
-                                  className={`flex flex-col items-center justify-center border rounded-lg p-2 transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white border-yellow-600' : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-yellow-300'}`}
+                                  className={`flex flex-col items-center justify-center border rounded-full p-2 transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white border-yellow-600' : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-yellow-300'}`}
                                   onClick={() => {
                                     const next = isSelected
                                       ? filters.shape.filter(s => s !== shape)
@@ -361,7 +361,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                                 <button
                                   key={color}
                                   type="button"
-                                  className={`px-2 py-1.5 rounded text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-yellow-300'}`}
+                                  className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-yellow-300'}`}
                                   onClick={() => {
                                     const currentColors = filters.color || [];
                                     const next = isSelected
@@ -404,7 +404,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                                     <button
                                       key={name}
                                       type="button"
-                                      className={`px-2 py-2 rounded text-sm font-medium transition-all flex items-center gap-2 ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-yellow-300'}`}
+                                      className={`px-2 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-yellow-300'}`}
                                       onClick={() => {
                                         const currentFancyColors = filters.fancyColor || [];
                                         const next = isSelected
@@ -437,7 +437,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                                     <button
                                       key={intensity}
                                       type="button"
-                                      className={`px-2 py-1.5 rounded text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-yellow-300'}`}
+                                      className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-yellow-300'}`}
                                       onClick={() => {
                                         const currentIntensity = filters.fancyIntensity || [];
                                         const next = isSelected
@@ -463,7 +463,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                                     <button
                                       key={overtone}
                                       type="button"
-                                      className={`px-2 py-1.5 rounded text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-yellow-300'}`}
+                                      className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-yellow-300'}`}
                                       onClick={() => {
                                         const currentOvertone = filters.fancyOvertone || [];
                                         const next = isSelected
@@ -504,7 +504,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                               <button
                                 key={clarity}
                                 type="button"
-                                className={`px-2 py-1.5 rounded text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-yellow-300'}`}
+                                className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-yellow-300'}`}
                                 onClick={() => {
                                   const next = isSelected
                                     ? filters.clarity.filter(c => c !== clarity)
@@ -541,7 +541,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                               <button
                                 key={cut}
                                 type="button"
-                                className={`px-2 py-1.5 rounded text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-yellow-300'}`}
+                                className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-yellow-300'}`}
                                 onClick={() => {
                                   const next = isSelected
                                     ? filters.cut.filter(c => c !== cut)
@@ -578,7 +578,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                               <button
                                 key={polish}
                                 type="button"
-                                className={`px-2 py-1.5 rounded text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-yellow-300'}`}
+                                className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-yellow-300'}`}
                                 onClick={() => {
                                   const currentPolish = filters.polish || [];
                                   const next = isSelected
@@ -616,7 +616,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                               <button
                                 key={symmetry}
                                 type="button"
-                                className={`px-2 py-1.5 rounded text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-yellow-300'}`}
+                                className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-yellow-300'}`}
                                 onClick={() => {
                                   const currentSymmetry = filters.symmetry || [];
                                   const next = isSelected
@@ -654,7 +654,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                               <button
                                 key={cert}
                                 type="button"
-                                className={`px-2 py-1.5 rounded text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-yellow-300'}`}
+                                className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-yellow-300'}`}
                                 onClick={() => {
                                   const currentCert = filters.certification || [];
                                   const next = isSelected
@@ -692,7 +692,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                               <button
                                 key={fluor}
                                 type="button"
-                                className={`px-2 py-1.5 rounded text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-yellow-300'}`}
+                                className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-yellow-300'}`}
                                 onClick={() => {
                                   const currentFluor = filters.fluorescence || [];
                                   const next = isSelected

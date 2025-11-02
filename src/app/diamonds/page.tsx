@@ -7,9 +7,80 @@ import NavigationUser from '@/components/Navigation/NavigationUser'
 import Footer from '@/components/Footer'
 import { filterOptions } from '@/constants/filterOptions'
 import Image from 'next/image'
+import {
+  RoundIcon,
+  PearIcon,
+  EmeraldIcon,
+  OvalIcon,
+  HeartIcon,
+  MarquiseIcon,
+  AsscherIcon,
+  CushionIcon,
+  PrincessIcon,
+  CushionModifiedIcon,
+  CushionBrilliantIcon,
+  RadiantIcon,
+  FrenchIcon,
+  TrilliantIcon,
+  BriolletteIcon,
+  RosecutIcon,
+  LozengeIcon,
+  BaguetteIcon,
+  TaperedBaguetteIcon,
+  HalfmoonIcon,
+  FlandersIcon,
+  TrapezoidIcon,
+  BulletIcon,
+  KiteIcon,
+  ShieldIcon,
+  StarcutIcon,
+  PentagonalIcon,
+  HexagonalIcon,
+  OctagonalIcon,
+  EurocutIcon,
+  OldMinerIcon,
+  PortugeeseIcon,
+  DefaultIcon
+} from '../../../public/icons'
 
 // Constants
 const SECTION_WIDTH = 1400
+
+// Sieve size data for melee diamonds
+const SIEVE_DATA = [
+  { sieve: "-000", mm: "0.80", cts: "0.003" },
+  { sieve: "+000 -00", mm: "0.90", cts: "0.004" },
+  { sieve: "+00 -0", mm: "1.00", cts: "0.005" },
+  { sieve: "+0 -1", mm: "1.10", cts: "0.006" },
+  { sieve: "+1 -1.5", mm: "1.15", cts: "0.007" },
+  { sieve: "+1.5 -2", mm: "1.20", cts: "0.008" },
+  { sieve: "+2 -2.5", mm: "1.25", cts: "0.009" },
+  { sieve: "+2.5 -3", mm: "1.30", cts: "0.010" },
+  { sieve: "+3 -3.5", mm: "1.35", cts: "0.011" },
+  { sieve: "+3.5 -4", mm: "1.40", cts: "0.012" },
+  { sieve: "+4 -4.5", mm: "1.45", cts: "0.013" },
+  { sieve: "+4.5 -5", mm: "1.50", cts: "0.014" },
+  { sieve: "+5 -5.5", mm: "1.55", cts: "0.015" },
+  { sieve: "+5.5 -6", mm: "1.60", cts: "0.018" },
+  { sieve: "+6 -6.5", mm: "1.70", cts: "0.021" },
+  { sieve: "+6.5 -7", mm: "1.80", cts: "0.025" },
+  { sieve: "+7 -7.5", mm: "1.90", cts: "0.029" },
+  { sieve: "+7.5 -8", mm: "2.00", cts: "0.035" },
+  { sieve: "+8 -8.5", mm: "2.10", cts: "0.038" },
+  { sieve: "+8.5 -9", mm: "2.20", cts: "0.045" },
+  { sieve: "+9 -9.5", mm: "2.30", cts: "0.050" },
+  { sieve: "+9.5 -10", mm: "2.40", cts: "0.058" },
+  { sieve: "+10 -10.5", mm: "2.50", cts: "0.066" },
+  { sieve: "+10.5 -11", mm: "2.60", cts: "0.070" },
+  { sieve: "+11 -11.5", mm: "2.70", cts: "0.077" },
+  { sieve: "+11.5 -12", mm: "2.80", cts: "0.086" },
+  { sieve: "+12 -12.5", mm: "2.90", cts: "0.094" },
+  { sieve: "+12.5 -13", mm: "3.00", cts: "0.103" },
+  { sieve: "+13 -13.5", mm: "3.10", cts: "0.119" },
+  { sieve: "+13.5 -14", mm: "3.20", cts: "0.131" },
+  { sieve: "+14 -14.5", mm: "3.30", cts: "0.144" },
+  { sieve: "+14.5 -15", mm: "3.40", cts: "0.158" },
+];
 
 // Diamond shapes for carousel
 const DIAMOND_SHAPES = [
@@ -91,6 +162,7 @@ interface DiamondSearchForm {
   pavilionAngleRange: { min: number; max: number }
   pavilionDepthRange: { min: number; max: number }
   gridleRange: { min: string; max: string }
+  sieveSizes: string[]
 }
 
 interface RangeSelectFilterProps {
@@ -121,6 +193,42 @@ interface MultiSelectFilterProps {
   label: string
   gridCols?: string
   colorVariant?: 'blue' | 'green' | 'purple' | 'yellow' | 'orange'
+}
+
+// Shape Icon Mapping
+const SHAPE_ICONS: Record<string, React.ComponentType<any>> = {
+  'Round': RoundIcon,
+  'Pear': PearIcon,
+  'Emerald': EmeraldIcon,
+  'Oval': OvalIcon,
+  'Heart': HeartIcon,
+  'Marquise': MarquiseIcon,
+  'Asscher': AsscherIcon,
+  'Cushion': CushionIcon,
+  'Cushion modified': CushionModifiedIcon,
+  'Cushion brilliant': CushionBrilliantIcon,
+  'Radiant': RadiantIcon,
+  'Princess': PrincessIcon,
+  'French': FrenchIcon,
+  'Trilliant': TrilliantIcon,
+  'Euro cut': EurocutIcon,
+  'Old Miner': OldMinerIcon,
+  'Briollette': BriolletteIcon,
+  'Rose cut': RosecutIcon,
+  'Lozenge': LozengeIcon,
+  'Baguette': BaguetteIcon,
+  'Tapered baguette': TaperedBaguetteIcon,
+  'Half-moon': HalfmoonIcon,
+  'Flanders': FlandersIcon,
+  'Trapezoid': TrapezoidIcon,
+  'Bullet': BulletIcon,
+  'Kite': KiteIcon,
+  'Shield': ShieldIcon,
+  'Star cut': StarcutIcon,
+  'Pentagonal cut': PentagonalIcon,
+  'Hexagonal cut': HexagonalIcon,
+  'Octagonal cut': OctagonalIcon,
+  'Portugeese cut': PortugeeseIcon,
 }
 
 // Constants
@@ -240,7 +348,8 @@ class DiamondSearchHelpers {
       crownHeightRange: { min: 10, max: 16 },
       pavilionAngleRange: { min: 40, max: 42 },
       pavilionDepthRange: { min: 42, max: 44 },
-      gridleRange: { min: '', max: '' }
+      gridleRange: { min: '', max: '' },
+      sieveSizes: []
     }
   }
 
@@ -252,7 +361,7 @@ class DiamondSearchHelpers {
       'shape', 'color', 'clarity', 'cut', 'certification', 'fluorescence', 'grownMethod',
       'fancyColors', 'overtone', 'intensity', 'company', 'origin', 'location',
       'polish', 'symmetry', 'finish', 'cutGrade', 'girdle', 'culet',
-      'diamondTypeAdvanced', 'productType', 'process', 'culetSize'
+      'diamondTypeAdvanced', 'productType', 'process', 'culetSize', 'sieveSizes'
     ]
 
     multiSelectFields.forEach(field => {
@@ -382,7 +491,7 @@ const RangeSelectFilter = React.memo(({
               p-3 rounded-lg border-2 text-sm font-medium transition-all duration-150
               ${isSelected
               ? 'border-blue-500 bg-blue-100 text-blue-800 shadow-md transform scale-105'
-              : 'border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:bg-blue-50'
+              : 'border-gray-300 bg-white  hover:border-blue-400 hover:bg-blue-50'
             }
               ${isLastClicked ? 'ring-2 ring-yellow-400 ring-opacity-60' : ''}
             `}
@@ -536,12 +645,19 @@ const CategoryCard = React.memo(({ category, currentCategory, onCategoryChange }
 CategoryCard.displayName = 'CategoryCard'
 
 // Diamond Shapes Carousel Component
-const DiamondShapesCarousel = ({ title }: { title: string }) => {
+const DiamondShapesCarousel = ({ 
+  title, 
+  selectedShapes, 
+  onShapeToggle 
+}: { 
+  title: string
+  selectedShapes: string[]
+  onShapeToggle: (shape: string) => void
+}) => {
   const carouselRef = useRef<HTMLDivElement>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [touchStart, setTouchStart] = useState(0)
   const [touchEnd, setTouchEnd] = useState(0)
-  const [selectedShapes, setSelectedShapes] = useState<string[]>([])
 
   const visibleItems = useMemo(() => {
     // Responsive number of items based on screen size
@@ -703,7 +819,7 @@ const DiamondShapesCarousel = ({ title }: { title: string }) => {
             style={{ transform: 'translate(-50%, -50%)' }}
             aria-label="Previous slide"
           >
-            <MoveLeft className="w-6 h-6 text-gray-700 dark:text-gray-200" />
+            <MoveLeft className="w-6 h-6  dark:text-gray-200" />
           </button>
 
           <button
@@ -712,7 +828,7 @@ const DiamondShapesCarousel = ({ title }: { title: string }) => {
             style={{ transform: 'translate(50%, -50%)' }}
             aria-label="Next slide"
           >
-            <MoveRight className="w-6 h-6 text-gray-700 dark:text-gray-200" />
+            <MoveRight className="w-6 h-6  dark:text-gray-200" />
           </button>
         </div>
       </div>
@@ -723,12 +839,12 @@ const DiamondShapesCarousel = ({ title }: { title: string }) => {
         aria-label={isAutoPlaying ? "Pause autoplay" : "Start autoplay"}
       >
         {isAutoPlaying ? (
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-700 dark:text-gray-200">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=" dark:text-gray-200">
             <rect x="6" y="4" width="4" height="16"></rect>
             <rect x="14" y="4" width="4" height="16"></rect>
           </svg>
         ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-700 dark:text-gray-200">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=" dark:text-gray-200">
             <polygon points="5 3 19 12 5 21 5 3"></polygon>
           </svg>
         )}
@@ -749,16 +865,12 @@ const DiamondShapesCarousel = ({ title }: { title: string }) => {
             className="flex-none p-2 w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/6 px-2 snap-start"
           >
             <div
-              className={`diamond-carousel-card rounded-full h-[300px] p-3 flex flex-col items-center justify-center cursor-pointer overflow-hidden ${selectedShapes.includes(shape.name) ? 'selected ring-2 ring-blue-500 dark:ring-blue-400' : ''
+              className={`diamond-carousel-card rounded-full h-[300px] p-3 flex flex-col items-center justify-center cursor-pointer overflow-hidden ${selectedShapes.includes(shape.name) ? 'selected ring-2 ring-yellow-500 dark:ring-yellow-400' : ''
                 }`}
               onClick={(e) => {
                 e.preventDefault();
                 // Toggle selection of this shape
-                setSelectedShapes(prev =>
-                  prev.includes(shape.name)
-                    ? prev.filter(s => s !== shape.name)
-                    : [...prev, shape.name]
-                );
+                onShapeToggle(shape.name);
               }}
             >
               <div className="relative w-25 h-25 mb-1 flex items-center justify-center hover:scale-105 transition-transform">
@@ -845,8 +957,8 @@ const MultiSelectFilter = React.memo(({
           onClick={() => onChange(fieldMap[label.toLowerCase()] || label.toLowerCase() as keyof DiamondSearchForm, option)}
           className={`group w-full px-4 py-2 rounded-3xl text-sm font-medium transition-all duration-200
             ${isSelected
-              ? "bg-gradient-to-r from-yellow-600 to-yellow-700 text-white shadow-md"
-              : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300"
+              ? "bg-yellow-50 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100 border border-yellow-500 dark:border-yellow-500"
+              : "bg-transparent border border-gray-200 dark:border-slate-700  dark:text-gray-300"
             }
             hover:bg-yellow-50 dark:hover:bg-yellow-900/30
             hover:border-yellow-500/30 dark:hover:border-yellow-500/30
@@ -890,32 +1002,113 @@ const RangeInput = React.memo(({
   unit?: string
   step?: number
 }) => {
+  // Determine appropriate min/max bounds based on label
+  const getDefaultBounds = () => {
+    if (label.toLowerCase().includes('carat')) {
+      return { minBound: 0, maxBound: 10 }
+    } else if (label.toLowerCase().includes('price')) {
+      return { minBound: 0, maxBound: 200000 }
+    } else if (label.toLowerCase().includes('table') || label.toLowerCase().includes('depth')) {
+      return { minBound: 0, maxBound: 100 }
+    } else if (label.toLowerCase().includes('length') || label.toLowerCase().includes('width') || label.toLowerCase().includes('height')) {
+      return { minBound: 0, maxBound: 20 }
+    } else if (label.toLowerCase().includes('ratio')) {
+      return { minBound: 0, maxBound: 3 }
+    } else if (label.toLowerCase().includes('angle')) {
+      return { minBound: 0, maxBound: 50 }
+    }
+    return { minBound: 0, maxBound: 100 }
+  }
+
+  const { minBound, maxBound } = getDefaultBounds()
+
   return (
-    <div>
-      <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
-        {label} ({min}{unit} - {max.toLocaleString()}{unit})
+    <div className="space-y-3">
+      <label className="block text-sm font-medium text-gray-900 dark:text-white">
+        {label}
       </label>
-      <div className="grid md:grid-cols-2 gap-4">
+      
+      {/* Range Display */}
+      <div className="flex items-center justify-between px-2">
+        <span className="text-sm font-semibold  dark:text-gray-300">
+          {min.toLocaleString()}{unit}
+        </span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">to</span>
+        <span className="text-sm font-semibold  dark:text-gray-300">
+          {max.toLocaleString()}{unit}
+        </span>
+      </div>
+
+      {/* Dual Range Sliders */}
+      <div className="relative pt-2 pb-3">
+        <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+          {/* Active Range Bar */}
+          <div 
+            className="absolute h-2 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-full"
+            style={{
+              left: `${((min - minBound) / (maxBound - minBound)) * 100}%`,
+              right: `${100 - ((max - minBound) / (maxBound - minBound)) * 100}%`
+            }}
+          />
+        </div>
+        
+        {/* Min Slider */}
+        <input
+          type="range"
+          min={minBound}
+          max={maxBound}
+          step={step}
+          value={min}
+          onChange={(e) => {
+            const value = parseFloat(e.target.value)
+            if (value <= max) {
+              onMinChange(value)
+            }
+          }}
+          className="absolute w-full h-2 top-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-yellow-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-yellow-500 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg"
+        />
+        
+        {/* Max Slider */}
+        <input
+          type="range"
+          min={minBound}
+          max={maxBound}
+          step={step}
+          value={max}
+          onChange={(e) => {
+            const value = parseFloat(e.target.value)
+            if (value >= min) {
+              onMaxChange(value)
+            }
+          }}
+          className="absolute w-full h-2 top-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-yellow-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-yellow-500 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg"
+        />
+      </div>
+
+      {/* Number Inputs */}
+      <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Minimum{unit && ` (${unit})`}</label>
+          <label className="block text-xs mb-1.5 text-gray-600 dark:text-gray-400">
+            Minimum{unit && ` (${unit})`}
+          </label>
           <input
             type="number"
             step={step}
             value={min}
-            onChange={(e) => onMinChange(parseFloat(e.target.value) || 0)}
-            className="w-full p-3 border rounded-lg"
-            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+            onChange={(e) => onMinChange(parseFloat(e.target.value) || minBound)}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
           />
         </div>
         <div>
-          <label className="block text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Maximum{unit && ` (${unit})`}</label>
+          <label className="block text-xs mb-1.5 text-gray-600 dark:text-gray-400">
+            Maximum{unit && ` (${unit})`}
+          </label>
           <input
             type="number"
             step={step}
             value={max}
-            onChange={(e) => onMaxChange(parseFloat(e.target.value) || 0)}
-            className="w-full p-3 border rounded-lg"
-            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+            onChange={(e) => onMaxChange(parseFloat(e.target.value) || maxBound)}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
           />
         </div>
       </div>
@@ -1000,6 +1193,159 @@ const SearchInput = React.memo(({
 
 SearchInput.displayName = 'SearchInput'
 
+// Sieve Size Table Component for Melee Diamonds
+const SieveSizeTable = React.memo(({
+  selectedSizes,
+  onSizeToggle,
+  rangeMode,
+  rangeStart,
+  onRangeModeToggle,
+  onSelectAll
+}: {
+  selectedSizes: string[]
+  onSizeToggle: (mm: string) => void
+  rangeMode: boolean
+  rangeStart: string | null
+  onRangeModeToggle: () => void
+  onSelectAll: () => void
+}) => {
+  const mmToPx = (mm: string): number => {
+    // Convert mm to pixels with better scaling for visual representation
+    // Using 10px per mm for more realistic proportions
+    // Range: 0.80mm (8px) to 3.40mm (34px)
+    const mmValue = parseFloat(mm);
+    const pxValue = mmValue * 10;
+    // Ensure minimum visibility and reasonable maximum
+    return Math.max(8, Math.min(40, pxValue));
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between mb-3">
+        <label className="block text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+          Sieve Size
+        </label>
+        <div className="flex gap-2">
+          <button
+            onClick={onRangeModeToggle}
+            className={`text-xs px-3 py-1 rounded-full transition-all ${
+              rangeMode
+                ? 'bg-blue-500 text-white'
+                : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50'
+            }`}
+          >
+            {rangeMode ? 'Cancel Range' : 'Select Range'}
+          </button>
+          <button
+            onClick={onSelectAll}
+            className="text-xs px-3 py-1 rounded-full bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition-all"
+          >
+            Select All
+          </button>
+        </div>
+      </div>
+      
+      {/* Table Header */}
+      <div className="flex font-medium bg-gray-50 dark:bg-gray-800 rounded-t-md border border-gray-200 dark:border-gray-700">
+        <div className="flex-1 p-2.5 text-sm text-gray-600 dark:text-gray-300 border-r dark:border-gray-700">Sieve</div>
+        <div className="flex-1 p-2.5 text-sm text-gray-600 dark:text-gray-300 border-r dark:border-gray-700">MM</div>
+        <div className="flex-1 p-2.5 text-sm text-gray-600 dark:text-gray-300 border-r dark:border-gray-700">Carat</div>
+        <div className="w-[25%] p-2.5 text-sm text-gray-600 dark:text-gray-300">Visual Size</div>
+      </div>
+
+      {/* Scrollable Table Body */}
+      <div className="border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-md overflow-hidden">
+        <div className="max-h-[300px] overflow-y-auto">
+          {SIEVE_DATA.map((item, index) => {
+            const isSelected = selectedSizes.includes(item.mm);
+            const isRangeStart = rangeMode && rangeStart === item.mm;
+            const pxValue = mmToPx(item.mm);
+
+            return (
+              <div
+                key={item.mm}
+                className={`flex items-center cursor-pointer transition-all duration-200 ${
+                  isRangeStart
+                    ? 'bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 shadow-sm ring-2 ring-blue-300 dark:ring-blue-700'
+                    : isSelected
+                    ? 'bg-yellow-500 dark:bg-yellow-600 hover:bg-yellow-600 dark:hover:bg-yellow-700 shadow-sm'
+                    : index % 2 === 0 
+                      ? 'bg-white dark:bg-slate-900 hover:bg-yellow-50 dark:hover:bg-yellow-900/20' 
+                      : 'bg-gray-50/50 dark:bg-slate-800 hover:bg-yellow-50 dark:hover:bg-yellow-900/20'
+                }`}
+                onClick={() => onSizeToggle(item.mm)}
+              >
+                <div className={`flex-1 px-3 py-2 text-sm transition-colors ${
+                  isRangeStart || isSelected
+                    ? 'text-white dark:text-white font-semibold'
+                    : 'text-gray-700 dark:text-gray-300'
+                }`}>
+                  {item.sieve}
+                </div>
+                <div className={`flex-1 px-3 py-2 text-sm transition-colors ${
+                  isRangeStart || isSelected
+                    ? 'text-white dark:text-white font-semibold'
+                    : 'text-gray-700 dark:text-gray-300'
+                }`}>
+                  {item.mm}
+                </div>
+                <div className={`flex-1 px-3 py-2 text-sm transition-colors ${
+                  isRangeStart || isSelected
+                    ? 'text-white dark:text-white font-semibold'
+                    : 'text-gray-700 dark:text-gray-300'
+                }`}>
+                  {item.cts}
+                </div>
+                <div className={`flex justify-center items-center w-[25%] py-3 transition-colors ${
+                  isRangeStart ? 'bg-blue-500 dark:bg-blue-600' : isSelected ? 'bg-yellow-500 dark:bg-yellow-600' : ''
+                }`}>
+                  <div
+                    className={`rounded-full transition-all duration-200 ${
+                      isRangeStart
+                        ? 'border-2 border-white dark:border-white bg-blue-50 dark:bg-blue-100 shadow-md'
+                        : isSelected
+                        ? 'border-2 border-white dark:border-white bg-yellow-50 dark:bg-yellow-100 shadow-md'
+                        : 'border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'
+                    }`}
+                    style={{
+                      height: `${pxValue}px`,
+                      width: `${pxValue}px`,
+                      minHeight: '8px',
+                      minWidth: '8px'
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Selected sizes display */}
+      {selectedSizes.length > 0 && (
+        <div className="mt-3 flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+          <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
+            {selectedSizes.length} sieve size{selectedSizes.length > 1 ? 's' : ''} selected: <strong>{selectedSizes.join(', ')}mm</strong>
+          </span>
+          <button
+            onClick={() => selectedSizes.forEach(size => onSizeToggle(size))}
+            className="text-xs underline hover:no-underline transition-all text-blue-600 dark:text-blue-400 font-medium"
+          >
+            Clear all
+          </button>
+        </div>
+      )}
+
+      {/* Help text */}
+      <div className="text-xs text-gray-500 dark:text-gray-400">
+        Click on sizes to select or deselect them. Visual circles show relative size.
+      </div>
+    </div>
+  );
+});
+
+SieveSizeTable.displayName = 'SieveSizeTable';
+
 // Main Component
 export default function DiamondsSearchPage() {
   const router = useRouter()
@@ -1014,6 +1360,12 @@ export default function DiamondsSearchPage() {
   const [searchForm, setSearchForm] = useState<DiamondSearchForm>(
     () => DiamondSearchHelpers.getDefaultSearchForm(urlDiamondType, urlCategory)
   )
+  const [colorRangeMode, setColorRangeMode] = useState(false);
+  const [colorRangeStart, setColorRangeStart] = useState<string | null>(null);
+  const [clarityRangeMode, setClarityRangeMode] = useState(false);
+  const [clarityRangeStart, setClarityRangeStart] = useState<string | null>(null);
+  const [sieveRangeMode, setSieveRangeMode] = useState(false);
+  const [sieveRangeStart, setSieveRangeStart] = useState<string | null>(null);
 
   // Update state when URL parameters change
   useEffect(() => {
@@ -1137,6 +1489,135 @@ export default function DiamondsSearchPage() {
     })
   }, [searchForm.finish, correspondingGrades])
 
+  // Handle color range selection
+  const handleColorClick = useCallback((clickedColor: string) => {
+    if (colorRangeMode) {
+      // Range selection mode
+      if (!colorRangeStart) {
+        // First click - set start
+        setColorRangeStart(clickedColor)
+        handleMultiSelect('color', clickedColor)
+      } else {
+        // Second click - select range and exit mode
+        const colorValues = DIAMOND_CONSTANTS.COLORS
+        const startIndex = colorValues.indexOf(colorRangeStart)
+        const endIndex = colorValues.indexOf(clickedColor)
+
+        const [minIndex, maxIndex] = startIndex < endIndex 
+          ? [startIndex, endIndex] 
+          : [endIndex, startIndex]
+
+        const rangeItems = colorValues.slice(minIndex, maxIndex + 1)
+        const currentColors = (searchForm.color || []) as string[]
+        const newColors = [...new Set([...currentColors, ...rangeItems])]
+        
+        setSearchForm(prev => ({
+          ...prev,
+          color: newColors
+        }))
+        
+        setColorRangeMode(false)
+        setColorRangeStart(null)
+      }
+    } else {
+      // Regular toggle
+      handleMultiSelect('color', clickedColor)
+    }
+  }, [colorRangeMode, colorRangeStart, searchForm.color, handleMultiSelect])
+
+  // Handle clarity range selection
+  const handleClarityClick = useCallback((clickedClarity: string) => {
+    if (clarityRangeMode) {
+      // Range selection mode
+      if (!clarityRangeStart) {
+        // First click - set start
+        setClarityRangeStart(clickedClarity)
+        handleMultiSelect('clarity', clickedClarity)
+      } else {
+        // Second click - select range and exit mode
+        const clarityValues = DIAMOND_CONSTANTS.CLARITIES
+        const startIndex = clarityValues.indexOf(clarityRangeStart)
+        const endIndex = clarityValues.indexOf(clickedClarity)
+
+        const [minIndex, maxIndex] = startIndex < endIndex 
+          ? [startIndex, endIndex] 
+          : [endIndex, startIndex]
+
+        const rangeItems = clarityValues.slice(minIndex, maxIndex + 1)
+        const currentClarities = (searchForm.clarity || []) as string[]
+        const newClarities = [...new Set([...currentClarities, ...rangeItems])]
+        
+        setSearchForm(prev => ({
+          ...prev,
+          clarity: newClarities
+        }))
+        
+        setClarityRangeMode(false)
+        setClarityRangeStart(null)
+      }
+    } else {
+      // Regular toggle
+      handleMultiSelect('clarity', clickedClarity)
+    }
+  }, [clarityRangeMode, clarityRangeStart, searchForm.clarity, handleMultiSelect])
+
+  // Handle sieve size toggle with range support
+  const handleSieveSizeToggle = useCallback((mm: string) => {
+    if (sieveRangeMode) {
+      // Range selection mode
+      if (!sieveRangeStart) {
+        // First click - set start
+        setSieveRangeStart(mm)
+        // Add to selection if not already selected
+        const currentSizes = searchForm.sieveSizes || []
+        if (!currentSizes.includes(mm)) {
+          setSearchForm(prev => ({
+            ...prev,
+            sieveSizes: [...currentSizes, mm]
+          }))
+        }
+      } else {
+        // Second click - select range and exit mode
+        const sieveValues = SIEVE_DATA.map(item => item.mm)
+        const startIndex = sieveValues.indexOf(sieveRangeStart)
+        const endIndex = sieveValues.indexOf(mm)
+
+        if (startIndex === -1 || endIndex === -1) {
+          console.error('Invalid sieve range selection')
+          return
+        }
+
+        const [minIndex, maxIndex] = startIndex < endIndex 
+          ? [startIndex, endIndex] 
+          : [endIndex, startIndex]
+
+        const rangeItems = sieveValues.slice(minIndex, maxIndex + 1)
+        const currentSizes = (searchForm.sieveSizes || []) as string[]
+        const newSizes = [...new Set([...currentSizes, ...rangeItems])]
+        
+        setSearchForm(prev => ({
+          ...prev,
+          sieveSizes: newSizes
+        }))
+        
+        setSieveRangeMode(false)
+        setSieveRangeStart(null)
+      }
+    } else {
+      // Regular toggle
+      setSearchForm(prev => {
+        const currentSizes = prev.sieveSizes || []
+        const newSizes = currentSizes.includes(mm)
+          ? currentSizes.filter(size => size !== mm)
+          : [...currentSizes, mm]
+        return {
+          ...prev,
+          sieveSizes: newSizes
+        }
+      })
+    }
+  }, [sieveRangeMode, sieveRangeStart, searchForm.sieveSizes])
+
   const handleArrayChange = useCallback((field: keyof DiamondSearchForm, values: string[]) => {
     setSearchForm(prev => ({
       ...prev,
@@ -1196,9 +1677,13 @@ export default function DiamondsSearchPage() {
       </div>
 
       <div className="w-full py-12 ">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-[1400px] mx-auto px-4">
 
-          <DiamondShapesCarousel title="Select Diamond Shapes" />
+          <DiamondShapesCarousel 
+            title="Select Diamond Shapes" 
+            selectedShapes={searchForm.shape || []}
+            onShapeToggle={(shape) => handleMultiSelect('shape', shape)}
+          />
         </div>
       </div>
       {/* Search Form */}
@@ -1277,22 +1762,21 @@ export default function DiamondsSearchPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2">
                 {DIAMOND_CONSTANTS.SHAPES.slice(0, showAllShapes ? DIAMOND_CONSTANTS.SHAPES.length : 16).map((shape) => {
                   const isSelected = (searchForm.shape || []).includes(shape)
+                  const IconComponent = SHAPE_ICONS[shape] || DefaultIcon
                   return (
                     <button
                       key={shape}
                       onClick={() => handleMultiSelect('shape', shape)}
-                      className={`p-3 rounded-lg border text-xs font-medium transition-all ${isSelected
-                        ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
-                        : 'border-gray-200 hover:border-gray-300'
+                      className={`flex flex-col items-center gap-2 px-3 py-3 rounded-lg text-xs font-medium transition-all duration-200 ${isSelected
+                        ? 'bg-white dark:bg-white text-gray-900 shadow-md border border-white'
+                        : 'bg-transparent border border-gray-200 dark:border-slate-700  dark:text-gray-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 hover:border-yellow-500/30 dark:hover:border-yellow-500/30'
                         }`}
-                      style={{
-                        backgroundColor: isSelected ? 'var(--blue)/10' : 'var(--card)',
-                        borderColor: isSelected ? 'var(--blue)' : 'var(--border)',
-                        color: isSelected ? 'var(--blue)' : 'var(--foreground)'
-                      }}
                       title={shape}
                     >
-                      {shape}
+                      <IconComponent 
+                        className={`w-8 h-8 ${isSelected ? 'text-gray-900' : 'text-gray-600 dark:text-gray-400'}`}
+                      />
+                      <span className="text-center leading-tight">{shape}</span>
                     </button>
                   )
                 })}
@@ -1336,7 +1820,7 @@ export default function DiamondsSearchPage() {
             </div>
 
             {/* Carat and Price Range */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <RangeInput
                 label="Carat Range"
                 min={searchForm.caratWeight.min}
@@ -1360,9 +1844,40 @@ export default function DiamondsSearchPage() {
 
             {/* Color */}
             <div>
-              <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
-                Color
-              </label>
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+                  Color
+                </label>
+                {!searchForm.isFancyColor && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setColorRangeMode(!colorRangeMode)
+                        setColorRangeStart(null)
+                      }}
+                      className={`text-xs px-3 py-1 rounded-full transition-all ${
+                        colorRangeMode
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50'
+                      }`}
+                    >
+                      {colorRangeMode ? 'Cancel Range' : 'Select Range'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        const allColors = DIAMOND_CONSTANTS.COLORS
+                        setSearchForm(prev => ({
+                          ...prev,
+                          color: allColors
+                        }))
+                      }}
+                      className="text-xs px-3 py-1 rounded-full bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition-all"
+                    >
+                      Select All
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {/* Color Type Toggle */}
               <div className="mb-4">
@@ -1433,7 +1948,7 @@ export default function DiamondsSearchPage() {
                               <span
                                 className={`text-xs font-medium ${isSelected
                                   ? "text-yellow-800 dark:text-yellow-300"
-                                  : "text-gray-700 dark:text-gray-300"
+                                  : " dark:text-gray-300"
                                   }`}
                               >
                                 {color.name}
@@ -1463,30 +1978,101 @@ export default function DiamondsSearchPage() {
                   />
                 </div>
               ) : (
-                <RangeSelectFilter
-                  options={DIAMOND_CONSTANTS.COLORS}
-                  selected={searchForm.color}
-                  onChange={(values) => handleArrayChange('color', values)}
-                  layout="grid"
-                  gridCols="grid-cols-5 md:grid-cols-10"
-                  label="Colors"
-                />
+                <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
+                  {DIAMOND_CONSTANTS.COLORS.map((color) => {
+                    const isSelected = (searchForm.color || []).includes(color)
+                    const isRangeStart = colorRangeMode && colorRangeStart === color
+                    return (
+                      <button
+                        key={color}
+                        onClick={() => handleColorClick(color)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                          isRangeStart
+                            ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-900 dark:text-blue-100 border border-blue-500 ring-2 ring-blue-300'
+                            :
+                          isSelected
+                            ? 'bg-yellow-50 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100 border border-yellow-500 dark:border-yellow-500'
+                            : 'bg-transparent border border-gray-200 dark:border-slate-700  dark:text-gray-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 hover:border-yellow-500/30 dark:hover:border-yellow-500/30'
+                        }`}
+                      >
+                        {color}
+                      </button>
+                    )
+                  })}
+                </div>
               )}
             </div>
 
             {/* Clarity */}
             <div>
-              <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
-                Clarity
-              </label>
-              <RangeSelectFilter
-                options={DIAMOND_CONSTANTS.CLARITIES}
-                selected={searchForm.clarity}
-                onChange={(values) => handleArrayChange('clarity', values)}
-                layout="grid"
-                gridCols="grid-cols-4 md:grid-cols-8"
-                label="Clarity"
-              />
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+                  Clarity
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setClarityRangeMode(!clarityRangeMode)
+                      setClarityRangeStart(null)
+                    }}
+                    className={`text-xs px-3 py-1 rounded-full transition-all ${
+                      clarityRangeMode
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50'
+                    }`}
+                  >
+                    {clarityRangeMode ? 'Cancel Range' : 'Select Range'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      const allClarities = DIAMOND_CONSTANTS.CLARITIES
+                      setSearchForm(prev => ({
+                        ...prev,
+                        clarity: allClarities
+                      }))
+                    }}
+                    className="text-xs px-3 py-1 rounded-full bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition-all"
+                  >
+                    Select All
+                  </button>
+                </div>
+              </div>
+              <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+                {DIAMOND_CONSTANTS.CLARITIES.map((clarity) => {
+                  const isSelected = (searchForm.clarity || []).includes(clarity)
+                  const isRangeStart = clarityRangeMode && clarityRangeStart === clarity
+                  return (
+                    <button
+                      key={clarity}
+                      onClick={() => handleClarityClick(clarity)}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                        isRangeStart
+                          ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-900 dark:text-blue-100 border border-blue-500 ring-2 ring-blue-300'
+                          :
+                        isSelected
+                          ? 'bg-yellow-50 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100 border border-yellow-500 dark:border-yellow-500'
+                          : 'bg-transparent border border-gray-200 dark:border-slate-700  dark:text-gray-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 hover:border-yellow-500/30 dark:hover:border-yellow-500/30'
+                      }`}
+                    >
+                      {clarity}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {(searchForm.clarity || []).length > 0 && (
+                <div className="mt-3 flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                  <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                    {searchForm.clarity.length} clarity option{searchForm.clarity.length > 1 ? 's' : ''} selected: <strong>{searchForm.clarity.join(', ')}</strong>
+                  </span>
+                  <button
+                    onClick={() => setSearchForm(prev => ({ ...prev, clarity: [] }))}
+                    className="text-xs underline hover:no-underline transition-all text-blue-600 dark:text-bl ue-400 font-medium"
+                  >
+                    Clear all
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Cut Grade, Finish, Certification, Fluorescence */}
@@ -1498,6 +2084,20 @@ export default function DiamondsSearchPage() {
               gridCols="grid-cols-3 md:grid-cols-5"
               colorVariant="green"
             />
+
+            {(searchForm.cutGrade || []).length > 0 && (
+              <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                  {searchForm.cutGrade.length} cut grade{searchForm.cutGrade.length > 1 ? 's' : ''} selected: <strong>{searchForm.cutGrade.join(', ')}</strong>
+                </span>
+                <button
+                  onClick={() => setSearchForm(prev => ({ ...prev, cutGrade: [] }))}
+                  className="text-xs underline hover:no-underline transition-all text-blue-600 dark:text-blue-400 font-medium"
+                >
+                  Clear all
+                </button>
+              </div>
+            )}
 
             <MultiSelectFilter
               options={DIAMOND_CONSTANTS.FINISH_OPTIONS}
@@ -1546,6 +2146,30 @@ export default function DiamondsSearchPage() {
               gridCols="grid-cols-3 md:grid-cols-5"
               colorVariant="purple"
             />
+
+            {/* Sieve Size Table - Only for Melee Diamonds */}
+                        <div className="grid md:grid-cols-2 gap-6">
+
+            {searchForm.category === 'melee' && (
+              <SieveSizeTable
+                selectedSizes={searchForm.sieveSizes}
+                onSizeToggle={handleSieveSizeToggle}
+                rangeMode={sieveRangeMode}
+                rangeStart={sieveRangeStart}
+                onRangeModeToggle={() => {
+                  setSieveRangeMode(!sieveRangeMode)
+                  setSieveRangeStart(null)
+                }}
+                onSelectAll={() => {
+                  const allSizes = SIEVE_DATA.map(item => item.mm)
+                  setSearchForm(prev => ({
+                    ...prev,
+                    sieveSizes: allSizes
+                  }))
+                }}
+              />
+            )}
+            </div>
           </div>
 
           {/* Advanced Filters Toggle */}
@@ -1593,7 +2217,7 @@ export default function DiamondsSearchPage() {
                   selected={searchForm.girdle}
                   onChange={handleMultiSelect}
                   label="Girdle"
-                  gridCols="grid-cols-2 md:grid-cols-3"
+                  gridCols="grid-cols-2 md:grid-cols-5"
                 />
                 {/* Additional Extended Filters */}
 
@@ -1604,7 +2228,7 @@ export default function DiamondsSearchPage() {
                   selected={searchForm.culetSize}
                   onChange={handleMultiSelect}
                   label="Culet Size"
-                  gridCols="grid-cols-2 md:grid-cols-3"
+                  gridCols="grid-cols-2 md:grid-cols-5"
                 />
 
                 {/* Company, Location, Origin Search */}
@@ -1668,7 +2292,7 @@ export default function DiamondsSearchPage() {
                 </div>
 
                 {/* Ratio Range */}
-                <div className="grid md:grid-cols-3 gap-6">
+                <div className='grid md:grid-cols-3 gap-6'>
                   <RangeInput
                     label="Length to Width Ratio Range"
                     min={searchForm.ratioRange.min}
