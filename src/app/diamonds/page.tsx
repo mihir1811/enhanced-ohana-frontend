@@ -865,7 +865,7 @@ const DiamondShapesCarousel = ({
             className="flex-none p-2 w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/6 px-2 snap-start"
           >
             <div
-              className={`diamond-carousel-card rounded-full h-[300px] p-3 flex flex-col items-center justify-center cursor-pointer overflow-hidden ${selectedShapes.includes(shape.name) ? 'selected ring-2 ring-yellow-500 dark:ring-yellow-400' : ''
+              className={`group diamond-carousel-card rounded-full h-[300px] p-3 flex flex-col items-center justify-center cursor-pointer overflow-hidden ${selectedShapes.includes(shape.name) ? 'selected ring-2 ring-yellow-500 dark:ring-yellow-400' : ''
                 }`}
               onClick={(e) => {
                 e.preventDefault();
@@ -873,7 +873,7 @@ const DiamondShapesCarousel = ({
                 onShapeToggle(shape.name);
               }}
             >
-              <div className="relative w-25 h-25 mb-1 flex items-center justify-center hover:scale-105 transition-transform">
+              <div className="relative w-25 h-25 mb-1 flex items-center justify-center ">
                 <Image
                   src={shape.image}
                   alt={shape.alt}
@@ -883,7 +883,7 @@ const DiamondShapesCarousel = ({
                   priority={index < 6}
                 />
               </div>
-              <h3 className="text-xs font-medium pt-5 text-foreground">{shape.name}</h3>
+              <h3 className="text-xs font-medium pt-5 text-foreground group-hover:dark:text-black transition-colors">{shape.name}</h3>
             </div>
           </div>
         ))}
@@ -960,7 +960,7 @@ const MultiSelectFilter = React.memo(({
               ? "bg-yellow-50 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100 border border-yellow-500 dark:border-yellow-500"
               : "bg-transparent border border-gray-200 dark:border-slate-700  dark:text-gray-300"
             }
-            hover:bg-yellow-50 dark:hover:bg-yellow-900/30
+            hover:bg-yellow-50 dark:hover:bg-yellow-900/30 hover:text-black
             hover:border-yellow-500/30 dark:hover:border-yellow-500/30
           `}
         >
@@ -1915,10 +1915,10 @@ export default function DiamondsSearchPage() {
               </div>
 
               {searchForm.isFancyColor ? (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {/* Fancy Colors with Color Circles */}
                   <div>
-                    <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
+                    <label className="block text-sm font-medium mb-4" style={{ color: 'var(--foreground)' }}>
                       Fancy Colors
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-10 gap-3">
@@ -1928,22 +1928,27 @@ export default function DiamondsSearchPage() {
                           <button
                             key={color.name}
                             onClick={() => handleMultiSelect('fancyColors', color.name)}
-                            className={`relative p-3 rounded-xl transition-all duration-200 border-2
+                            className={`group relative p-4 rounded-2xl transition-all duration-200 border
                               ${isSelected
-                                ? "bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/30 border-yellow-500 dark:border-yellow-600 shadow-md"
-                                : "bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 hover:border-yellow-300 dark:hover:border-yellow-700 hover:shadow-sm"
+                                ? "bg-yellow-50 dark:bg-yellow-900/30 border-yellow-500 dark:border-yellow-500 shadow-lg"
+                                : "bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 hover:border-yellow-400 dark:hover:border-yellow-600 hover:shadow-md hover:bg-yellow-50/50 dark:hover:bg-yellow-900/10"
                               }
                             `}
                           >
-                            <div className="flex flex-col items-center gap-2">
+                            <div className="flex flex-col items-center gap-2.5">
                               <div
-                                className="w-6 h-6 rounded-full shadow-sm ring-2 ring-white dark:ring-slate-700"
+                                className={`w-10 h-10 rounded-full shadow-lg ring-2 transition-all duration-200
+                                  ${isSelected 
+                                    ? "ring-yellow-400 dark:ring-yellow-500 ring-offset-2 dark:ring-offset-slate-800 scale-105" 
+                                    : "ring-gray-200 dark:ring-slate-600 ring-offset-1 dark:ring-offset-slate-800 group-hover:scale-110 group-hover:ring-yellow-300"
+                                  }
+                                `}
                                 style={{ background: color.color }}
                               />
                               <span
-                                className={`text-xs font-medium ${isSelected
-                                  ? "text-yellow-800 dark:text-yellow-300"
-                                  : " dark:text-gray-300"
+                                className={`text-[11px] font-semibold text-center leading-tight transition-colors ${isSelected
+                                  ? "text-yellow-700 dark:text-yellow-400"
+                                  : "text-gray-600 dark:text-gray-400 group-hover:text-yellow-600 dark:group-hover:text-yellow-500"
                                   }`}
                               >
                                 {color.name}
@@ -1973,7 +1978,7 @@ export default function DiamondsSearchPage() {
                   />
                 </div>
               ) : (
-                <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
+                <div className="grid grid-cols-5 md:grid-cols-10 gap-3">
                   {DIAMOND_CONSTANTS.COLORS.map((color) => {
                     const isSelected = (searchForm.color || []).includes(color)
                     const isRangeStart = colorRangeMode && colorRangeStart === color
@@ -1981,13 +1986,13 @@ export default function DiamondsSearchPage() {
                       <button
                         key={color}
                         onClick={() => handleColorClick(color)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                        className={`px-4 py-2.5 rounded-3xl text-sm font-medium transition-all duration-200 border ${
                           isRangeStart
-                            ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-900 dark:text-blue-100 border border-blue-500 ring-2 ring-blue-300'
+                            ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-900 dark:text-blue-100 border-blue-500 ring-2 ring-blue-300 shadow-md'
                             :
                           isSelected
-                            ? 'bg-yellow-50 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100 border border-yellow-500 dark:border-yellow-500'
-                            : 'bg-transparent border border-gray-200 dark:border-slate-700  dark:text-gray-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 hover:border-yellow-500/30 dark:hover:border-yellow-500/30'
+                            ? 'bg-yellow-50 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100 border-yellow-500 dark:border-yellow-500 shadow-sm'
+                            : 'bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:border-yellow-400 dark:hover:border-yellow-600 hover:shadow-sm'
                         }`}
                       >
                         {color}
@@ -2032,7 +2037,7 @@ export default function DiamondsSearchPage() {
                   </button>
                 </div>
               </div>
-              <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+              <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
                 {DIAMOND_CONSTANTS.CLARITIES.map((clarity) => {
                   const isSelected = (searchForm.clarity || []).includes(clarity)
                   const isRangeStart = clarityRangeMode && clarityRangeStart === clarity
@@ -2040,13 +2045,13 @@ export default function DiamondsSearchPage() {
                     <button
                       key={clarity}
                       onClick={() => handleClarityClick(clarity)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                      className={`px-4 py-2.5 rounded-3xl text-sm font-medium transition-all duration-200 border ${
                         isRangeStart
-                          ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-900 dark:text-blue-100 border border-blue-500 ring-2 ring-blue-300'
+                          ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-900 dark:text-blue-100 border-blue-500 ring-2 ring-blue-300 shadow-md'
                           :
                         isSelected
-                          ? 'bg-yellow-50 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100 border border-yellow-500 dark:border-yellow-500'
-                          : 'bg-transparent border border-gray-200 dark:border-slate-700  dark:text-gray-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 hover:border-yellow-500/30 dark:hover:border-yellow-500/30'
+                          ? 'bg-yellow-50 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100 border-yellow-500 dark:border-yellow-500 shadow-sm'
+                          : 'bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:border-yellow-400 dark:hover:border-yellow-600 hover:shadow-sm'
                       }`}
                     >
                       {clarity}
