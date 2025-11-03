@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useLayoutEffect, useState, useMemo } from 'react';
-import DiamondFilters, { DiamondFilterValues } from './DiamondFilters';
+import { DiamondFilterValues } from './DiamondFilters';
 import DiamondResults, { Diamond } from './DiamondResults';
 import { getDefaultDiamondFilters, transformApiDiamond, ApiDiamondData } from './diamondUtils';
 import { cartService } from '@/services/cartService';
@@ -32,7 +32,6 @@ interface DiamondListingPageProps {
 const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
   diamondType,
   fetchDiamonds,
-  title = 'Diamonds',
 }) => {
   const token = useAppSelector((state) => state.auth.token);
   const [filters, setFilters] = useState<DiamondFilterValues>(() => getDefaultDiamondFilters(diamondType));
@@ -127,7 +126,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
   }, []);
 
   // Shape name to icon mapping
-  const shapeIconMap: Record<string, React.ComponentType<any>> = {
+  const shapeIconMap: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
     Round: ShapeIcons.RoundIcon,
     Pear: ShapeIcons.PearIcon,
     Emerald: ShapeIcons.EmeraldIcon,

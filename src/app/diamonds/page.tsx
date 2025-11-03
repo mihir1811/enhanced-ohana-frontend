@@ -196,7 +196,7 @@ interface MultiSelectFilterProps {
 }
 
 // Shape Icon Mapping
-const SHAPE_ICONS: Record<string, React.ComponentType<any>> = {
+const SHAPE_ICONS: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
   'Round': RoundIcon,
   'Pear': PearIcon,
   'Emerald': EmeraldIcon,
@@ -967,7 +967,7 @@ const MultiSelectFilter = React.memo(({
           {option}
         </button>
       )
-    }), [options, selected, onChange, label, colorConfig, colorVariant, fieldMap]
+    }), [options, selected, onChange, label, fieldMap]
   )
 
   return (
@@ -1378,6 +1378,7 @@ export default function DiamondsSearchPage() {
   }, [searchParams, searchForm.diamondType, searchForm.category])
 
   // Handlers
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleDiamondTypeChange = useCallback((type: 'natural' | 'lab-grown') => {
     const newCaratRange = DiamondSearchHelpers.getCaratRange(searchForm.category)
     const newPriceRange = DiamondSearchHelpers.getPriceRange(type, searchForm.category)
@@ -1390,6 +1391,7 @@ export default function DiamondsSearchPage() {
     }))
   }, [searchForm.category])
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleCategoryChange = useCallback((category: 'single' | 'melee') => {
     const newCaratRange = DiamondSearchHelpers.getCaratRange(category)
     const newPriceRange = DiamondSearchHelpers.getPriceRange(searchForm.diamondType, category)
@@ -1617,13 +1619,6 @@ export default function DiamondsSearchPage() {
       })
     }
   }, [sieveRangeMode, sieveRangeStart, searchForm.sieveSizes])
-
-  const handleArrayChange = useCallback((field: keyof DiamondSearchForm, values: string[]) => {
-    setSearchForm(prev => ({
-      ...prev,
-      [field]: values
-    }))
-  }, [])
 
   const handleRangeChange = useCallback((field: keyof DiamondSearchForm, type: 'min' | 'max', value: number) => {
     setSearchForm(prev => ({
