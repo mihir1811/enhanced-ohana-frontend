@@ -1767,16 +1767,16 @@ export default function DiamondsSearchPage() {
                     <button
                       key={shape}
                       onClick={() => handleMultiSelect('shape', shape)}
-                      className={`flex flex-col items-center gap-2 px-3 py-3 rounded-lg text-xs font-medium transition-all duration-200 ${isSelected
-                        ? 'bg-white dark:bg-white text-gray-900 shadow-md border border-white'
-                        : 'bg-transparent border border-gray-200 dark:border-slate-700  dark:text-gray-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 hover:border-yellow-500/30 dark:hover:border-yellow-500/30'
+                      className={`flex flex-col items-center gap-2 px-3 py-3 rounded-lg text-xs font-medium transition-all ${isSelected
+                        ? 'bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-500 shadow-sm text-yellow-700 dark:text-yellow-400'
+                        : 'bg-transparent border border-gray-200 dark:border-slate-700 hover:border-yellow-400'
                         }`}
                       title={shape}
                     >
-                      <IconComponent 
-                        className={`w-8 h-8 ${isSelected ? 'text-gray-900' : 'text-gray-600 dark:text-gray-400'}`}
-                      />
-                      <span className="text-center leading-tight">{shape}</span>
+                      <div className={`w-10 h-10 ${!isSelected ? 'dark:invert' : ''}`}>
+                        <IconComponent className="w-full h-full" />
+                      </div>
+                      <span className={`text-center leading-tight`}>{shape}</span>
                     </button>
                   )
                 })}
@@ -1805,13 +1805,13 @@ export default function DiamondsSearchPage() {
               )}
 
               {(searchForm.shape || []).length > 0 && (
-                <div className="mt-3 flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200">
-                  <span className="text-sm font-medium text-blue-800">
+                <div className="mt-3 flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                  <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
                     {searchForm.shape.length} shape{searchForm.shape.length > 1 ? 's' : ''} selected: <strong>{searchForm.shape.join(', ')}</strong>
                   </span>
                   <button
                     onClick={() => setSearchForm(prev => ({ ...prev, shape: [] }))}
-                    className="text-xs underline hover:no-underline transition-all text-blue-600 font-medium"
+                    className="text-xs underline hover:no-underline transition-all text-blue-600 dark:text-blue-400 font-medium"
                   >
                     Clear all
                   </button>
