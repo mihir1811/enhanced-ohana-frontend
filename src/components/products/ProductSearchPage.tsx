@@ -7,6 +7,8 @@ import NavigationUser from '@/components/Navigation/NavigationUser'
 import Footer from '@/components/Footer'
 import { ProductConfig, FilterConfig } from '@/types/products'
 import { SECTION_WIDTH } from '@/lib/constants'
+import { GemstoneCarousel } from '../gemstones/GemstoneCarousel'
+import GemstoneFilters, { GemstoneFilterValues } from '../gemstones/GemstoneFilters'
 
 interface PriceRange {
   min: number;
@@ -36,6 +38,36 @@ export default function ProductSearchPage({
 }: ProductSearchPageProps) {
   const router = useRouter()
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
+  const [selectedGemstones, setSelectedGemstones] = useState<string[]>([])
+  
+  // Gemstone filters state
+  const [gemstoneFilters, setGemstoneFilters] = useState<GemstoneFilterValues>({
+    gemstoneType: [],
+    shape: [],
+    caratWeight: { min: 0, max: 50 },
+    color: [],
+    clarity: [],
+    cut: [],
+    priceRange: { min: 0, max: 1000000 },
+    certification: [],
+    origin: [],
+    treatment: [],
+    enhancement: [],
+    transparency: [],
+    luster: [],
+    phenomena: [],
+    minerals: [],
+    birthstones: [],
+    length: { min: 0, max: 100 },
+    width: { min: 0, max: 100 },
+    height: { min: 0, max: 100 },
+    location: [],
+    companyName: '',
+    vendorLocation: '',
+    reportNumber: '',
+    searchTerm: ''
+  })
+  
   const [searchForm, setSearchForm] = useState<FormState>(() => {
     // Initialize form with default values
     const initialForm: FormState = {
@@ -238,62 +270,84 @@ export default function ProductSearchPage({
     }
   }
 
+  // Gemstone types data - only including gemstones with available images
+  const gemstoneTypes = [
+    { title: "Alexandrite", img: "/images/gemstones/Alexandrite.png", alt: "Alexandrite gemstone" },
+    { title: "Amber", img: "/images/gemstones/Amber.png", alt: "Amber gemstone" },
+    { title: "Amethyst", img: "/images/gemstones/Amethyst.png", alt: "Amethyst gemstone" },
+    { title: "Aquamarine", img: "/images/gemstones/Aquamarine.png", alt: "Aquamarine gemstone" },
+    { title: "Citrine", img: "/images/gemstones/Citrine.png", alt: "Citrine gemstone" },
+    { title: "Emerald", img: "/images/gemstones/Emerald.png", alt: "Emerald gemstone" },
+    { title: "Garnet", img: "/images/gemstones/Garnet.png", alt: "Garnet gemstone" },
+    { title: "Jade", img: "/images/gemstones/Jade.png", alt: "Jade gemstone" },
+    { title: "Jasper", img: "/images/gemstones/Jasper.png", alt: "Jasper gemstone" },
+    { title: "Lapis Lazuli", img: "/images/gemstones/Lapis Lazuli.png", alt: "Lapis Lazuli gemstone" },
+    { title: "Moonstone", img: "/images/gemstones/Moonstone.png", alt: "Moonstone gemstone" },
+    { title: "Onyx", img: "/images/gemstones/Onyx.png", alt: "Onyx gemstone" },
+    { title: "Pearl", img: "/images/gemstones/Pearl.png", alt: "Pearl gemstone" },
+    { title: "Rose Quartz", img: "/images/gemstones/Rose Quartz.png", alt: "Rose Quartz gemstone" },
+    { title: "Sunstone", img: "/images/gemstones/Sunstone.png", alt: "Sunstone gemstone" },
+    { title: "Tiger Eye", img: "/images/gemstones/Tiger Eye.png", alt: "Tiger Eye gemstone" },
+    { title: "Zircon", img: "/images/gemstones/Zircon.png", alt: "Zircon gemstone" }
+  ]
+
+  const handleGemstoneSelect = (gemstone: string) => {
+    setSelectedGemstones(prev => {
+      const newSelection = prev.includes(gemstone)
+        ? prev.filter(g => g !== gemstone)
+        : [...prev, gemstone]
+      
+      // Sync with gemstoneFilters
+      setGemstoneFilters(prevFilters => ({
+        ...prevFilters,
+        gemstoneType: newSelection
+      }))
+      
+      return newSelection
+    })
+  }
+
+  const handleGemstoneFiltersChange = (filters: GemstoneFilterValues) => {
+    setGemstoneFilters(filters)
+    // Sync gemstoneType with selectedGemstones
+    setSelectedGemstones(filters.gemstoneType)
+  }
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       {/* Navigation */}
       <NavigationUser />
-      
-      {/* Hero Section */}
-      <div className="relative">
-        <div 
-          className="h-96 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center"
-          style={{ 
-            background: 'linear-gradient(135deg, var(--chart-1), var(--chart-3), var(--chart-5))'
-          }}
-        >
-          <div className="text-center text-white max-w-4xl mx-auto px-4">
-            <div className="flex items-center justify-center mb-6">
-              <span className="text-6xl mr-4">{config.icon}</span>
-              <h1 className="text-5xl md:text-6xl font-bold">
-                {heroTitle || `Find Your Perfect ${config.name}`}
-              </h1>
-            </div>
-            <p className="text-xl md:text-2xl opacity-90 mb-8">
-              {heroSubtitle || `Search from thousands of certified ${config.name.toLowerCase()} with advanced filtering tools`}
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div>
-                <div className="text-3xl font-bold">10,000+</div>
-                <div className="text-sm opacity-80">Certified Products</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold">50+</div>
-                <div className="text-sm opacity-80">Trusted Suppliers</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold">24/7</div>
-                <div className="text-sm opacity-80">Expert Support</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold">100%</div>
-                <div className="text-sm opacity-80">Certified Authentic</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
+      {/* Gemstone Carousel Section - Only for gemstones */}
+      {productType === 'gemstones' && (
+        <div className="py-6 pb-0">
+          <GemstoneCarousel 
+            shapes={gemstoneTypes}
+            selectedShapes={selectedGemstones}
+            onShapeSelect={handleGemstoneSelect}
+          />
+        </div>
+      )}
+      
       {/* Search Form */}
       <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 py-12`}>
-        <div className="bg-white rounded-2xl shadow-2xl border p-8" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-          <div className="flex items-center mb-8">
-            <Search className="w-8 h-8 mr-3" style={{ color: 'var(--primary)' }} />
-            <h2 className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>
-              {config.name} Search
-            </h2>
-          </div>
+        {/* Conditional rendering: GemstoneFilters for gemstones, generic form for others */}
+        {productType === 'gemstones' ? (
+          <GemstoneFilters 
+            filters={gemstoneFilters}
+            onFiltersChange={handleGemstoneFiltersChange}
+            gemstoneType="single"
+          />
+        ) : (
+          <div className="bg-white rounded-2xl shadow-2xl border p-8" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+            <div className="flex items-center mb-8">
+              <Search className="w-8 h-8 mr-3" style={{ color: 'var(--primary)' }} />
+              <h2 className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>
+                {config.name} Search
+              </h2>
+            </div>
 
-          {/* Category Selection */}
+            {/* Category Selection */}
           <div className="mb-8">
             <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
               Category
@@ -410,6 +464,7 @@ export default function ProductSearchPage({
             </button>
           </div>
         </div>
+        )}
       </div>
 
       {/* Footer */}

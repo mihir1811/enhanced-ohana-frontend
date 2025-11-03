@@ -81,6 +81,9 @@ export function getDefaultDiamondFilters(diamondType: 'natural-single' | 'natura
     polish: [],
     symmetry: [],
     location: [],
+    fancyColor: [],
+    fancyIntensity: [],
+    fancyOvertone: [],
     measurements: {
       length: { min: 0, max: 20 },
       width: { min: 0, max: 20 },

@@ -40,6 +40,11 @@ export interface DiamondFilterValues {
   symmetry: string[]
   location: string[]
 
+  // Fancy Color filters
+  fancyColor: string[]
+  fancyIntensity: string[]
+  fancyOvertone: string[]
+
   // Measurements
   measurements: {
     length: { min: number; max: number }
