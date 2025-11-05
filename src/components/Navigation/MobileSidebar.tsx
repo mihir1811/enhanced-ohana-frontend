@@ -102,7 +102,7 @@ export default function MobileSidebar({
           borderLeft: '1px solid var(--sidebar-border)'
         }}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-screen">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: 'var(--sidebar-border)', backgroundColor: 'var(--sidebar-primary)', color: 'var(--sidebar-primary-foreground)' }}>
             <div className="flex items-center space-x-3">
