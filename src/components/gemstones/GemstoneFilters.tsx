@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ChevronDown } from 'lucide-react'
 
 function FilterSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -22,25 +23,18 @@ export interface GemstoneFilterValues {
   certification: string[]
   origin: string[]
   treatment: string[]
-  enhancement: string[]
-  transparency: string[]
-  luster: string[]
-  phenomena: string[]
   minerals: string[]
   birthstones: string[]
   length: { min: number; max: number }
   width: { min: number; max: number }
   height: { min: number; max: number }
-  location: string[]
-  companyName: string
-  vendorLocation: string
-  reportNumber: string
   searchTerm: string
 }
 
 interface GemstoneFiltersProps {
   filters: GemstoneFilterValues
   onFiltersChange: (filters: GemstoneFilterValues) => void
+  onSearch?: () => void
   gemstoneType: 'single' | 'melee'
   className?: string
 }
@@ -200,9 +194,14 @@ const BIRTHSTONE_MONTHS = [
 export default function GemstoneFilters({
   filters,
   onFiltersChange,
+  onSearch,
   gemstoneType,
   className = ''
 }: GemstoneFiltersProps) {
+  const [showAllGemstoneTypes, setShowAllGemstoneTypes] = useState(false)
+  const [showAllShapes, setShowAllShapes] = useState(false)
+  const [showAllMineralClassifications, setShowAllMineralClassifications] = useState(false)
+  const [showAllOrigins, setShowAllOrigins] = useState(false)
 
   const handleArrayFilterChange = (key: keyof GemstoneFilterValues, value: string) => {
     const currentValues = filters[key] as string[]
@@ -243,54 +242,56 @@ export default function GemstoneFilters({
       certification: [],
       origin: [],
       treatment: [],
-      enhancement: [],
-      transparency: [],
-      luster: [],
-      phenomena: [],
       minerals: [],
       birthstones: [],
       length: { min: 0, max: 100 },
       width: { min: 0, max: 100 },
       height: { min: 0, max: 100 },
-      location: [],
-      companyName: '',
-      vendorLocation: '',
-      reportNumber: '',
       searchTerm: ''
     })
   }
 
   const ButtonFilterGroup = ({
     options,
-    category
+    category,
+    showAll = true,
+    itemsPerRow = 6,
+    defaultRows = 2
   }: {
     options: string[],
-    category: keyof GemstoneFilterValues
-  }) => (
-    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
-      {options.map((option) => {
-        const values = filters[category] as string[]
-        const isSelected = values.includes(option)
+    category: keyof GemstoneFilterValues,
+    showAll?: boolean,
+    itemsPerRow?: number,
+    defaultRows?: number
+  }) => {
+    const itemsToShow = showAll ? options : options.slice(0, itemsPerRow * defaultRows)
+    
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+        {itemsToShow.map((option) => {
+          const values = filters[category] as string[]
+          const isSelected = values.includes(option)
 
-        return (
-          <button
-            key={option}
-            onClick={() => handleArrayFilterChange(category, option)}
-            className={`group w-full px-4 py-2 rounded-3xl text-sm font-medium transition-all duration-200
-              ${isSelected
-                ? "bg-yellow-50 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100 border border-yellow-500 dark:border-yellow-500"
-                : "bg-transparent border hover:text-black border-gray-200 dark:border-slate-700 dark:text-gray-300"
-              }
-              hover:bg-yellow-50 dark:hover:bg-yellow-900/30 dark:hover:text-black 
-              hover:border-yellow-500/30 dark:hover:border-yellow-500/30
-            `}
-          >
-            {option}
-          </button>
-        )
-      })}
-    </div>
-  )
+          return (
+            <button
+              key={option}
+              onClick={() => handleArrayFilterChange(category, option)}
+              className={`group w-full px-4 py-2 rounded-3xl text-sm font-medium transition-all duration-200
+                ${isSelected
+                  ? "bg-yellow-50 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100 border border-yellow-500 dark:border-yellow-500"
+                  : "bg-transparent border hover:text-black border-gray-200 dark:border-slate-700 dark:text-gray-300"
+                }
+                hover:bg-yellow-50 dark:hover:bg-yellow-900/30 dark:hover:text-black 
+                hover:border-yellow-500/30 dark:hover:border-yellow-500/30
+              `}
+            >
+              {option}
+            </button>
+          )
+        })}
+      </div>
+    )
+  }
 
   const ColorButtonGroup = () => (
     <div className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-11 gap-3">
@@ -435,11 +436,58 @@ export default function GemstoneFilters({
     </div>
   )
 
+  const ShowMoreButton = ({ 
+    isExpanded, 
+    onClick, 
+    totalItems, 
+    visibleItems 
+  }: { 
+    isExpanded: boolean; 
+    onClick: () => void; 
+    totalItems: number; 
+    visibleItems: number;
+  }) => {
+    if (totalItems <= visibleItems) return null;
+    
+    return (
+      <div className="mt-4 flex justify-center">
+        <button
+          onClick={onClick}
+          className="px-6 py-2 text-sm font-medium text-yellow-600 dark:text-yellow-500 border border-yellow-300 dark:border-yellow-700 rounded-full hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-all duration-200 flex items-center gap-2"
+        >
+          {isExpanded ? (
+            <>
+              <span>Show Less</span>
+              <ChevronDown className="w-4 h-4 rotate-180 transition-transform" />
+            </>
+          ) : (
+            <>
+              <span>Show More ({totalItems - visibleItems} more)</span>
+              <ChevronDown className="w-4 h-4 transition-transform" />
+            </>
+          )}
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div className={`bg-white/80 dark:bg-slate-900/80 rounded-2xl shadow-sm border p-8 backdrop-blur-xl ${className}`} style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
       <div className="space-y-6">
         <FilterSection title="Gemstone Type">
-          <ButtonFilterGroup options={GEMSTONE_TYPES} category="gemstoneType" />
+          <ButtonFilterGroup 
+            options={GEMSTONE_TYPES} 
+            category="gemstoneType" 
+            showAll={showAllGemstoneTypes}
+            itemsPerRow={6}
+            defaultRows={2}
+          />
+          <ShowMoreButton
+            isExpanded={showAllGemstoneTypes}
+            onClick={() => setShowAllGemstoneTypes(!showAllGemstoneTypes)}
+            totalItems={GEMSTONE_TYPES.length}
+            visibleItems={12}
+          />
         </FilterSection>
 
         <FilterSection title="Birthstones">
@@ -472,7 +520,19 @@ export default function GemstoneFilters({
         </FilterSection>
 
         <FilterSection title="Shape">
-          <ButtonFilterGroup options={SHAPES} category="shape" />
+          <ButtonFilterGroup 
+            options={SHAPES} 
+            category="shape" 
+            showAll={showAllShapes}
+            itemsPerRow={6}
+            defaultRows={2}
+          />
+          <ShowMoreButton
+            isExpanded={showAllShapes}
+            onClick={() => setShowAllShapes(!showAllShapes)}
+            totalItems={SHAPES.length}
+            visibleItems={12}
+          />
         </FilterSection>
 
         <div className="grid md:grid-cols-3 gap-6">
@@ -509,7 +569,19 @@ export default function GemstoneFilters({
         </FilterSection>
 
         <FilterSection title="Mineral Classification">
-          <ButtonFilterGroup options={MINERAL_CLASSIFICATIONS} category="minerals" />
+          <ButtonFilterGroup 
+            options={MINERAL_CLASSIFICATIONS} 
+            category="minerals" 
+            showAll={showAllMineralClassifications}
+            itemsPerRow={6}
+            defaultRows={2}
+          />
+          <ShowMoreButton
+            isExpanded={showAllMineralClassifications}
+            onClick={() => setShowAllMineralClassifications(!showAllMineralClassifications)}
+            totalItems={MINERAL_CLASSIFICATIONS.length}
+            visibleItems={12}
+          />
         </FilterSection>
 
         <FilterSection title="Treatments">
@@ -521,31 +593,26 @@ export default function GemstoneFilters({
         </FilterSection>
 
         <FilterSection title="Origin">
-          <ButtonFilterGroup options={ORIGINS} category="origin" />
+          <ButtonFilterGroup 
+            options={ORIGINS} 
+            category="origin" 
+            showAll={showAllOrigins}
+            itemsPerRow={6}
+            defaultRows={2}
+          />
+          <ShowMoreButton
+            isExpanded={showAllOrigins}
+            onClick={() => setShowAllOrigins(!showAllOrigins)}
+            totalItems={ORIGINS.length}
+            visibleItems={12}
+          />
         </FilterSection>
 
         <FilterSection title="Cut Grade">
           <ButtonFilterGroup options={CUT_GRADES} category="cut" />
         </FilterSection>
 
-        <FilterSection title="Enhancement">
-          <ButtonFilterGroup options={ENHANCEMENTS} category="enhancement" />
-        </FilterSection>
-
-        <FilterSection title="Transparency">
-          <ButtonFilterGroup options={TRANSPARENCY_OPTIONS} category="transparency" />
-        </FilterSection>
-
-        <FilterSection title="Luster">
-          <ButtonFilterGroup options={LUSTER_OPTIONS} category="luster" />
-        </FilterSection>
-
-        <FilterSection title="Optical Phenomena">
-          <ButtonFilterGroup options={PHENOMENA} category="phenomena" />
-        </FilterSection>
-
         <div className="grid md:grid-cols-3 gap-6">
-
           <FilterSection title="Length (mm)">
             <RangeFilter
               min={0}
@@ -581,15 +648,16 @@ export default function GemstoneFilters({
         </div>
       </div>
 
-      <div className="flex gap-3 pt-6 mt-6 border-t" style={{ borderColor: 'var(--border)' }}>
+      <div className="flex gap-3 pt-6 mt-6 border-t justify-center" style={{ borderColor: 'var(--border)' }}>
         <button
           onClick={clearFilters}
-          className="flex-1 px-6 py-3 rounded-3xl border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
+          className="px-6 py-3 rounded-3xl border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
         >
           Clear Filters
         </button>
         <button
-          className="flex-1 px-6 py-3 rounded-3xl bg-gradient-to-r from-yellow-600 to-yellow-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+          onClick={onSearch}
+          className="px-6 py-3 rounded-3xl bg-gradient-to-r from-yellow-600 to-yellow-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
         >
           Search Gemstones
         </button>

@@ -162,8 +162,30 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
   };
 
   return (
-    <div className="w-full py-5  min-h-screen">
-      <div className="flex flex-col md:flex-row gap-6 relative max-w-7xl mx-auto">
+    <>
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #d1d5db;
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #9ca3af;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #4b5563;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #6b7280;
+        }
+      `}</style>
+      <div className="w-full py-5  min-h-screen">
+        <div className="flex flex-col md:flex-row gap-6 relative max-w-7xl mx-auto">
         {/* Drawer for mobile filters with animation */}
         {drawerVisible && (
           <>
@@ -175,56 +197,71 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
             />
             {/* Drawer */}
             <div
-              className={`fixed top-0 right-0 w-full max-w-md h-full bg-gradient-to-br from-white via-blue-50 to-blue-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 z-[110] shadow-2xl p-0 flex flex-col transition-all duration-500 ease-in-out ${drawerOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}
-              style={{ minHeight: '100vh', borderRadius: '16px 0 0 16px' }}
+              className={`fixed top-0 right-0 w-full max-w-md h-full bg-white dark:bg-gray-900 z-[110] shadow-2xl p-0 flex flex-col transition-transform duration-300 ease-out ${drawerOpen ? 'translate-x-0' : 'translate-x-full'}`}
+              style={{ minHeight: '100vh' }}
               onTransitionEnd={() => {
                 if (!drawerOpen) setDrawerVisible(false);
               }}
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-8 pt-8 pb-4 mb-2 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 sticky top-0 z-10 shadow-sm">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Filters</h2>
-                  {totalAppliedFilters > 0 && (
-                    <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-600 text-white">
-                      {totalAppliedFilters}
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  {totalAppliedFilters > 0 && (
-                    <button
-                      onClick={() => handleFiltersChange(getDefaultDiamondFilters(diamondType))}
-                      className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-                    >
-                      Clear All
-                    </button>
-                  )}
+              <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-5 sticky top-0 z-10">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    Filters
+                  </h2>
                   <button
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 rounded-lg transition"
+                    className="p-1.5 rounded-full hover:bg-white dark:hover:bg-gray-800 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
                     onClick={() => setShowFilters(false)}
                     aria-label="Close filters"
                   >
-                    <X className="w-6 h-6" />
+                    <X className="w-5 h-5" />
                   </button>
+                </div>
+                
+                {/* Applied Filters Count and Clear Button */}
+                <div className="flex items-center justify-between">
+                  {totalAppliedFilters > 0 ? (
+                    <>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {totalAppliedFilters} {totalAppliedFilters === 1 ? 'filter' : 'filters'} applied
+                      </span>
+                      <button
+                        onClick={() => handleFiltersChange(getDefaultDiamondFilters(diamondType))}
+                        className="text-sm font-medium text-amber-600 hover:text-amber-700 dark:text-amber-500 dark:hover:text-amber-400 transition-colors"
+                      >
+                        Clear all
+                      </button>
+                    </>
+                  ) : (
+                    <span className="text-sm text-gray-500 dark:text-gray-500">
+                      No filters applied
+                    </span>
+                  )}
                 </div>
               </div>
               {/* Content */}
-              <div className="flex-1 overflow-y-auto pr-1">
-                <div className="grid grid-cols-1 gap-4 px-8 pb-32 pt-2">
+              <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
+                <div className="divide-y divide-gray-100 dark:divide-gray-800">
                   {/* Shape Section */}
-                  <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div>
                     <button
                       onClick={() => toggleSection('shape')}
-                      className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
                     >
-                      <h3 className="font-semibold text-base text-gray-900 dark:text-white">Shape</h3>
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
+                        Shape
+                        {filters.shape.length > 0 && (
+                          <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+                            {filters.shape.length}
+                          </span>
+                        )}
+                      </h3>
                       <ChevronDown 
-                        className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${expandedSections.includes('shape') ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-all ${expandedSections.includes('shape') ? 'rotate-180' : ''}`}
                       />
                     </button>
                     {expandedSections.includes('shape') && (
-                      <div className="p-4 pt-0 border-t border-gray-100 dark:border-gray-700">
+                      <div className="px-6 pb-5 pt-3 bg-gray-50/50 dark:bg-gray-800/20">
                         <div className="grid grid-cols-3 gap-2 mt-2">
                           {(() => {
                             const allShapes = [
@@ -276,63 +313,83 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                   </div>
 
                   {/* Carat & Price Range */}
-                  <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div>
                     <button
                       onClick={() => toggleSection('caratWeight')}
-                      className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
                     >
-                      <h3 className="font-semibold text-base text-gray-900 dark:text-white">Carat Range</h3>
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
+                        Carat Weight
+                        {(filters.caratWeight.min > 0 || filters.caratWeight.max > 0) && (
+                          <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+                            {filters.caratWeight.min}-{filters.caratWeight.max}ct
+                          </span>
+                        )}
+                      </h3>
                       <ChevronDown 
-                        className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${expandedSections.includes('caratWeight') ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-all ${expandedSections.includes('caratWeight') ? 'rotate-180' : ''}`}
                       />
                     </button>
                     {expandedSections.includes('caratWeight') && (
-                      <div className="p-4 pt-0 border-t border-gray-100 dark:border-gray-700">
-                        <div className="flex gap-2 mt-2">
-                          <input
-                            type="number"
-                            className="w-1/2 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-                            placeholder="Min"
-                            min={0}
-                            step={0.01}
-                            value={filters.caratWeight.min ?? ''}
-                            onChange={e => handleFiltersChange({ ...filters, caratWeight: { ...filters.caratWeight, min: e.target.value ? Number(e.target.value) : 0 } })}
-                          />
-                          <input
-                            type="number"
-                            className="w-1/2 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-                            placeholder="Max"
-                            min={0}
-                            step={0.01}
-                            value={filters.caratWeight.max ?? ''}
-                            onChange={e => handleFiltersChange({ ...filters, caratWeight: { ...filters.caratWeight, max: e.target.value ? Number(e.target.value) : 0 } })}
-                          />
+                      <div className="px-6 pb-5 pt-3 bg-gray-50/50 dark:bg-gray-800/20">
+                        <div className="flex gap-3">
+                          <div className="flex-1">
+                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Min Carat</label>
+                            <input
+                              type="number"
+                              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                              placeholder="0.00"
+                              min={0}
+                              step={0.01}
+                              value={filters.caratWeight.min || ''}
+                              onChange={e => handleFiltersChange({ ...filters, caratWeight: { ...filters.caratWeight, min: e.target.value ? Number(e.target.value) : 0 } })}
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Max Carat</label>
+                            <input
+                              type="number"
+                              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                              placeholder="No limit"
+                              min={0}
+                              step={0.01}
+                              value={filters.caratWeight.max || ''}
+                              onChange={e => handleFiltersChange({ ...filters, caratWeight: { ...filters.caratWeight, max: e.target.value ? Number(e.target.value) : 0 } })}
+                            />
+                          </div>
                         </div>
                       </div>
                     )}
                   </div>
 
                   {/* Color Type & Filters Section */}
-                  <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div>
                     <button
                       onClick={() => toggleSection('color')}
-                      className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
                     >
-                      <h3 className="font-semibold text-base text-gray-900 dark:text-white">Color</h3>
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
+                        Color
+                        {((filters.color && filters.color.length > 0) || (filters.fancyColor && filters.fancyColor.length > 0)) && (
+                          <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+                            {(filters.color?.length || 0) + (filters.fancyColor?.length || 0)}
+                          </span>
+                        )}
+                      </h3>
                       <ChevronDown 
-                        className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${expandedSections.includes('color') ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-all ${expandedSections.includes('color') ? 'rotate-180' : ''}`}
                       />
                     </button>
                     {expandedSections.includes('color') && (
-                      <div className="p-4 pt-0 border-t border-gray-100 dark:border-gray-700">
+                      <div className="px-6 pb-5 pt-3 bg-gray-50/50 dark:bg-gray-800/20">
                         {/* Color Type Toggle */}
-                        <div className="flex gap-2 mt-2 mb-4">
+                        <div className="flex gap-2 mb-4">
                           <button
                             type="button"
-                            className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                            className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                               colorType === 'standard'
-                                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md'
-                                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                ? 'bg-amber-600 text-white'
+                                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                             }`}
                             onClick={() => setColorType('standard')}
                           >
@@ -340,10 +397,10 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                           </button>
                           <button
                             type="button"
-                            className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                            className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                               colorType === 'fancy'
-                                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                ? 'bg-amber-600 text-white'
+                                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                             }`}
                             onClick={() => setColorType('fancy')}
                           >
@@ -484,18 +541,25 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                   </div>
 
                   {/* Clarity Section */}
-                  <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div>
                     <button
                       onClick={() => toggleSection('clarity')}
-                      className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
                     >
-                      <h3 className="font-semibold text-base text-gray-900 dark:text-white">Clarity</h3>
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
+                        Clarity
+                        {filters.clarity.length > 0 && (
+                          <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+                            {filters.clarity.length}
+                          </span>
+                        )}
+                      </h3>
                       <ChevronDown 
-                        className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${expandedSections.includes('clarity') ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-all ${expandedSections.includes('clarity') ? 'rotate-180' : ''}`}
                       />
                     </button>
                     {expandedSections.includes('clarity') && (
-                      <div className="p-4 pt-0 border-t border-gray-100 dark:border-gray-700">
+                      <div className="px-6 pb-5 pt-3 bg-gray-50/50 dark:bg-gray-800/20">
                         <div className="grid grid-cols-3 gap-2 mt-2">
                           {['FL','IF','VVS1','VVS2','VS1','VS2','SI1','SI2','SI3','I1','I2','I3'].map(clarity => {
                             const isSelected = filters.clarity.includes(clarity);
@@ -521,18 +585,25 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                   </div>
 
                   {/* Cut Grade Section */}
-                  <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div>
                     <button
                       onClick={() => toggleSection('cut')}
-                      className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
                     >
-                      <h3 className="font-semibold text-base text-gray-900 dark:text-white">Cut</h3>
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
+                        Cut
+                        {filters.cut.length > 0 && (
+                          <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+                            {filters.cut.length}
+                          </span>
+                        )}
+                      </h3>
                       <ChevronDown 
-                        className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${expandedSections.includes('cut') ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-all ${expandedSections.includes('cut') ? 'rotate-180' : ''}`}
                       />
                     </button>
                     {expandedSections.includes('cut') && (
-                      <div className="p-4 pt-0 border-t border-gray-100 dark:border-gray-700">
+                      <div className="px-6 pb-5 pt-3 bg-gray-50/50 dark:bg-gray-800/20">
                         <div className="grid grid-cols-2 gap-2 mt-2">
                           {['ID','EX','VG','GD','FR','PR'].map(cut => {
                             const isSelected = filters.cut.includes(cut);
@@ -558,18 +629,25 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                   </div>
 
                   {/* Polish Section */}
-                  <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div>
                     <button
                       onClick={() => toggleSection('polish')}
-                      className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
                     >
-                      <h3 className="font-semibold text-base text-gray-900 dark:text-white">Polish</h3>
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
+                        Polish
+                        {filters.polish && filters.polish.length > 0 && (
+                          <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+                            {filters.polish.length}
+                          </span>
+                        )}
+                      </h3>
                       <ChevronDown 
-                        className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${expandedSections.includes('polish') ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-all ${expandedSections.includes('polish') ? 'rotate-180' : ''}`}
                       />
                     </button>
                     {expandedSections.includes('polish') && (
-                      <div className="p-4 pt-0 border-t border-gray-100 dark:border-gray-700">
+                      <div className="px-6 pb-5 pt-3 bg-gray-50/50 dark:bg-gray-800/20">
                         <div className="grid grid-cols-3 gap-2 mt-2">
                           {['EX','VG','GD','FR','PR'].map(polish => {
                             const isSelected = filters.polish?.includes(polish);
@@ -596,18 +674,25 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                   </div>
 
                   {/* Symmetry Section */}
-                  <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div>
                     <button
                       onClick={() => toggleSection('symmetry')}
-                      className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
                     >
-                      <h3 className="font-semibold text-base text-gray-900 dark:text-white">Symmetry</h3>
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
+                        Symmetry
+                        {filters.symmetry && filters.symmetry.length > 0 && (
+                          <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+                            {filters.symmetry.length}
+                          </span>
+                        )}
+                      </h3>
                       <ChevronDown 
-                        className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${expandedSections.includes('symmetry') ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-all ${expandedSections.includes('symmetry') ? 'rotate-180' : ''}`}
                       />
                     </button>
                     {expandedSections.includes('symmetry') && (
-                      <div className="p-4 pt-0 border-t border-gray-100 dark:border-gray-700">
+                      <div className="px-6 pb-5 pt-3 bg-gray-50/50 dark:bg-gray-800/20">
                         <div className="grid grid-cols-3 gap-2 mt-2">
                           {['EX','VG','GD','FR','PR'].map(symmetry => {
                             const isSelected = filters.symmetry?.includes(symmetry);
@@ -634,18 +719,25 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                   </div>
 
                   {/* Certification (Lab) Section */}
-                  <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div>
                     <button
                       onClick={() => toggleSection('lab')}
-                      className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
                     >
-                      <h3 className="font-semibold text-base text-gray-900 dark:text-white">Lab</h3>
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
+                        Lab
+                        {filters.certification && filters.certification.length > 0 && (
+                          <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+                            {filters.certification.length}
+                          </span>
+                        )}
+                      </h3>
                       <ChevronDown 
-                        className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${expandedSections.includes('lab') ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-all ${expandedSections.includes('lab') ? 'rotate-180' : ''}`}
                       />
                     </button>
                     {expandedSections.includes('lab') && (
-                      <div className="p-4 pt-0 border-t border-gray-100 dark:border-gray-700">
+                      <div className="px-6 pb-5 pt-3 bg-gray-50/50 dark:bg-gray-800/20">
                         <div className="grid grid-cols-3 gap-2 mt-2">
                           {['GIA','IGI','HRD','GCAL','AGS'].map(cert => {
                             const isSelected = filters.certification?.includes(cert);
@@ -672,18 +764,25 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                   </div>
 
                   {/* Fluorescence Section */}
-                  <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div>
                     <button
                       onClick={() => toggleSection('fluorescence')}
-                      className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
                     >
-                      <h3 className="font-semibold text-base text-gray-900 dark:text-white">Fluorescence</h3>
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
+                        Fluorescence
+                        {filters.fluorescence && filters.fluorescence.length > 0 && (
+                          <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+                            {filters.fluorescence.length}
+                          </span>
+                        )}
+                      </h3>
                       <ChevronDown 
-                        className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${expandedSections.includes('fluorescence') ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-all ${expandedSections.includes('fluorescence') ? 'rotate-180' : ''}`}
                       />
                     </button>
                     {expandedSections.includes('fluorescence') && (
-                      <div className="p-4 pt-0 border-t border-gray-100 dark:border-gray-700">
+                      <div className="px-6 pb-5 pt-3 bg-gray-50/50 dark:bg-gray-800/20">
                         <div className="grid grid-cols-2 gap-2 mt-2">
                           {['None','Faint','Medium','Slight','Strong','V. Str'].map(fluor => {
                             const isSelected = filters.fluorescence?.includes(fluor);
@@ -713,12 +812,12 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                 </div>
               </div>
               {/* Sticky Footer */}
-              <div className="sticky bottom-0 left-0 w-full bg-gradient-to-t from-blue-100 via-white to-transparent px-8 py-6 border-t border-gray-200 shadow-lg z-20">
+              <div className="sticky bottom-0 left-0 w-full bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 px-6 py-4 z-20">
                 <button
-                  className="w-full py-3 rounded-xl bg-blue-600 text-white font-bold text-lg shadow hover:bg-blue-700 transition"
+                  className="w-full py-3 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold transition-colors"
                   onClick={() => setShowFilters(false)}
                 >
-                  Apply Filters
+                  Show Results
                 </button>
               </div>
             </div>
@@ -742,6 +841,10 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
               }
             } }
             diamondType={diamondType}
+            selectedShapes={filters.shape}
+            onShapeChange={(shapes) => {
+              handleFiltersChange({ ...filters, shape: shapes });
+            }}
             onAddToCart={async (diamondId: string) => {
               if (!token) {
                 // Silently ignore if not authenticated; could prompt login in future
@@ -759,8 +862,9 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
             }}
           />
         </main>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

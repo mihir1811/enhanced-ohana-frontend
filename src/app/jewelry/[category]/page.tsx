@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useLayoutEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   Grid, List, Search, X, ShoppingCart,
   Eye, MapPin, Star, Loader2, ChevronDown, ChevronUp,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, Filter, ArrowUpDown
 } from 'lucide-react';
 import NavigationUser from '@/components/Navigation/NavigationUser';
 import Footer from '@/components/Footer';
@@ -720,6 +720,7 @@ export default function JewelryCategoryPage() {
   const params = useParams()
 
   const category = params?.category as string
+  const categoryTitle = category ? JEWELRY_CATEGORIES[category as keyof typeof JEWELRY_CATEGORIES] || category : 'Jewelry'
 
   // State
   const [jewelry, setJewelry] = useState<JewelryItem[]>([])
@@ -727,6 +728,11 @@ export default function JewelryCategoryPage() {
   const [error, setError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
+  
+  // Drawer state for filters
+  const [showFilters, setShowFilters] = useState(false)
+  const [drawerVisible, setDrawerVisible] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(false)
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 12,
@@ -767,6 +773,22 @@ export default function JewelryCategoryPage() {
 
   // Local price range for immediate UI updates (no debouncing)
   const [localPriceRange, setLocalPriceRange] = useState({ min: 0, max: 50000 })
+
+  // Mount the drawer immediately when opening
+  useEffect(() => {
+    if (showFilters) {
+      setDrawerVisible(true)
+    }
+  }, [showFilters])
+
+  // Instantly trigger the open animation after mount
+  useLayoutEffect(() => {
+    if (drawerVisible && showFilters) {
+      setDrawerOpen(true)
+    } else if (!showFilters) {
+      setDrawerOpen(false)
+    }
+  }, [drawerVisible, showFilters])
 
   // Get category-specific filter options with proper typing
   const getCategoryFilters = (): Record<string, unknown> => {
@@ -900,20 +922,52 @@ export default function JewelryCategoryPage() {
     setPagination(prev => ({ ...prev, page: 1 }))
   }
 
+  // Count applied filters
+  const getTotalAppliedFilters = () => {
+    let count = 0
+    if (filters.priceRange.min > 0 || filters.priceRange.max < 50000) count++
+    count += filters.metalType.length
+    count += filters.style.length
+    count += filters.purity.length
+    count += filters.stones.length
+    count += filters.certification.length
+    count += filters.ringTypes?.length || 0
+    count += filters.ringSettings?.length || 0
+    count += filters.sizes?.length || 0
+    count += filters.lengths?.length || 0
+    count += filters.brands?.length || 0
+    count += filters.models?.length || 0
+    count += filters.dialColors?.length || 0
+    count += filters.caseShapes?.length || 0
+    count += filters.caseSizes?.length || 0
+    count += filters.caseMaterials?.length || 0
+    count += filters.strapMaterials?.length || 0
+    count += filters.strapColors?.length || 0
+    count += filters.movements?.length || 0
+    count += filters.waterResistance?.length || 0
+    count += filters.features?.length || 0
+    count += filters.dialStones?.length || 0
+    count += filters.accessoryTypes?.length || 0
+    count += filters.chainTypes?.length || 0
+    count += filters.settings?.length || 0
+    count += filters.diamondShapes?.length || 0
+    count += filters.gemstones?.length || 0
+    return count
+  }
+
   // Handle pagination
   const handlePageChange = (page: number) => {
     setPagination(prev => ({ ...prev, page }))
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const categoryTitle = JEWELRY_CATEGORIES[category as keyof typeof JEWELRY_CATEGORIES] || category
-
   return (
-    <div className="min-h-screen bg-slate-50">
-      <NavigationUser />
+    <>
+      <div className="min-h-screen bg-slate-50">
+        <NavigationUser />
 
-      <div className="container mx-auto px-6 pb-8 pt-4">
-        {/* Search and Controls */}
+        <div className="container mx-auto px-6 pb-8 pt-4">
+          {/* Search and Controls */}
         <div className="bg-white rounded-lg p-3 mb-2 shadow-sm">
           <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
             {/* Search */}
@@ -929,31 +983,43 @@ export default function JewelryCategoryPage() {
             </div>
 
             {/* Controls */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               {/* Sort */}
-              <select
-                value={filters.sort}
-                onChange={(e) => handleFilterChange('sort', e.target.value)}
-                className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              <button
+                className="w-8 h-8 flex items-center justify-center rounded-lg bg-white shadow border border-gray-200 hover:bg-gray-50 active:scale-95 transition"
+                aria-label="Sort"
               >
-                {SORT_OPTIONS.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                <ArrowUpDown className="w-4 h-4 text-gray-700" />
+              </button>
+
+              {/* Filter Button */}
+              <button
+                className="px-3 py-2 flex items-center gap-2 rounded-lg bg-white shadow border border-gray-200 hover:bg-gray-50 active:scale-95 transition"
+                onClick={() => setShowFilters(true)}
+                aria-label="Open filters"
+              >
+                <Filter className="w-4 h-4 text-gray-700" />
+                <span className="text-sm font-medium text-gray-700">Filters</span>
+                {getTotalAppliedFilters() > 0 && (
+                  <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">
+                    {getTotalAppliedFilters()}
+                  </span>
+                )}
+              </button>
 
               {/* View Mode */}
-              <div className="flex border border-slate-300 rounded-lg overflow-hidden">
+              <div className="flex items-center bg-white shadow border border-gray-200 rounded-lg">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 ${viewMode === 'grid' ? 'bg-blue-500 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${viewMode === 'grid' ? 'bg-gray-900 text-white' : 'text-gray-700'}`}
+                  aria-label="Grid view"
                 >
                   <Grid className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 ${viewMode === 'list' ? 'bg-blue-500 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${viewMode === 'list' ? 'bg-gray-900 text-white' : 'text-gray-700'}`}
+                  aria-label="List view"
                 >
                   <List className="w-4 h-4" />
                 </button>
@@ -1113,12 +1179,27 @@ export default function JewelryCategoryPage() {
         )}
 
         {/* Ring Types Filter Bar - For rings category */}
-        {category === 'rings' && Array.isArray(categoryFilters.ringTypes) && (
-          <div className="bg-white rounded-lg p-6 mb-8 shadow-sm">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Ring Types</h3>
-            <div className="relative">
-              <div className="flex overflow-x-auto scrollbar-hide gap-3 pb-2">
-                {(categoryFilters.ringTypes as Array<{ value: string; label: string; image?: string }> | undefined)?.map(ringType => {
+        {category === 'rings' && Array.isArray(categoryFilters.ringTypes) && categoryFilters.ringTypes.length > 0 && (
+          <div className="mb-2 bg-white rounded-lg shadow-sm p-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex items-center">
+                <span className="text-sm font-medium mr-3 whitespace-nowrap">Filter by Ring Type:</span>
+              </div>
+              <div className="flex flex-nowrap gap-3 overflow-x-auto w-full scrollbar-hide">
+                {/* All Ring Types Button */}
+                <button
+                  onClick={() => handleFilterChange('ringTypes', [])}
+                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200 ${
+                    (!filters.ringTypes || filters.ringTypes.length === 0)
+                      ? 'bg-gray-700 border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-800' 
+                      : 'border border-slate-300 text-slate-700 hover:border-gray-500 hover:text-gray-700 bg-white'
+                  }`}
+                >
+                  All Types
+                </button>
+                
+                {/* Ring Type Buttons */}
+                {(categoryFilters.ringTypes as Array<{ value: string; label: string }> | undefined)?.map(ringType => {
                   const isSelected = filters.ringTypes?.includes(ringType.value) || false
 
                   return (
@@ -1131,424 +1212,31 @@ export default function JewelryCategoryPage() {
                           : [...currentRingTypes, ringType.value]
                         handleFilterChange('ringTypes', newRingTypes)
                       }}
-                      className={`flex-shrink-0 flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all duration-200 min-w-[120px] hover:shadow-md ${
+                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap ${
                         isSelected
-                          ? 'border-blue-500 bg-blue-50 shadow-lg'
-                          : 'border-gray-200 bg-white hover:border-gray-300'
+                          ? 'bg-amber-600 border-amber-600 text-white hover:bg-amber-700'
+                          : 'bg-white border-slate-300 text-slate-700 hover:border-amber-400 hover:text-amber-600'
                       }`}
                     >
                       {/* Ring Type Icon */}
-                      <div className="w-12 h-12 mb-2 flex items-center justify-center">
-                        <div className={`w-10 h-10 rounded-full border-4 flex items-center justify-center ${
-                          isSelected ? 'border-blue-500 bg-blue-100' : 'border-gray-300 bg-gray-50'
-                        }`}>
-                          {getRingTypeIcon(ringType.value)}
-                        </div>
-                      </div>
-
+                      <span className="text-lg" role="img" aria-label={ringType.label}>
+                        {getRingTypeIcon(ringType.value)}
+                      </span>
                       {/* Ring Type Name */}
-                      <span className={`text-sm font-medium text-center leading-tight ${
-                        isSelected ? 'text-blue-700' : 'text-slate-700'
-                      }`}>
+                      <span className="text-sm font-medium">
                         {ringType.label}
                       </span>
                     </button>
                   )
                 })}
               </div>
-
-              {/* Scroll indicators */}
-              <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent pointer-events-none opacity-50" />
-              <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none opacity-50" />
             </div>
           </div>
         )}
 
-        <div className="flex gap-8">
-          {/* Filters Sidebar */}
-          {true && (
-            <div className="w-80 bg-white rounded-lg p-6 shadow-sm h-fit">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-slate-900">Filters</h3>
-                <button
-                  onClick={clearFilters}
-                  className="text-sm text-blue-600 hover:text-blue-800"
-                >
-                  Clear All
-                </button>
-              </div>
-
-              {/* Price Range */}
-              <FilterSection title="Price Range" isOpen={true}>
-                <div className="space-y-4">
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <label className="block text-xs font-medium text-slate-600 mb-1">Min Price</label>
-                      <input
-                        type="number"
-                        placeholder="0"
-                        value={localPriceRange.min || ''}
-                        onChange={(e) => {
-                          const value = Number(e.target.value) || 0
-                          handlePriceRangeChange({
-                            min: value,
-                            max: localPriceRange.max
-                          })
-                        }}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <label className="block text-xs font-medium text-slate-600 mb-1">Max Price</label>
-                      <input
-                        type="number"
-                        placeholder="50000"
-                        value={localPriceRange.max === 50000 ? '' : localPriceRange.max}
-                        onChange={(e) => {
-                          const value = Number(e.target.value) || 50000
-                          handlePriceRangeChange({
-                            min: localPriceRange.min,
-                            max: value
-                          })
-                        }}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Dual Range Slider */}
-                  <div className="px-1 py-4">
-                    <Slider
-                      range
-                      min={0}
-                      max={50000}
-                      step={100}
-                      value={[localPriceRange.min, localPriceRange.max]}
-                      onChange={(values) => {
-                        if (Array.isArray(values)) {
-                          handlePriceRangeChange({
-                            min: values[0],
-                            max: values[1]
-                          })
-                        }
-                      }}
-                      trackStyle={[{ backgroundColor: '#3b82f6', height: 4 }]}
-                      handleStyle={[
-                        {
-                          borderColor: '#3b82f6',
-                          height: 20,
-                          width: 20,
-                          marginTop: -8,
-                          backgroundColor: '#3b82f6',
-                          boxShadow: '0 2px 6px rgba(0, 0, 0, 0.15)'
-                        },
-                        {
-                          borderColor: '#3b82f6',
-                          height: 20,
-                          width: 20,
-                          marginTop: -8,
-                          backgroundColor: '#3b82f6',
-                          boxShadow: '0 2px 6px rgba(0, 0, 0, 0.15)'
-                        }
-                      ]}
-                      railStyle={{ backgroundColor: '#e2e8f0', height: 4 }}
-                    />
-                    <div className="flex justify-between text-xs text-slate-500 mt-2">
-                      <span>${localPriceRange.min.toLocaleString()}</span>
-                      <span>${localPriceRange.max.toLocaleString()}</span>
-                    </div>
-                  </div>
-
-                  {/* Quick preset buttons */}
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { label: 'Under $1K', min: 0, max: 1000 },
-                      { label: '$1K-$5K', min: 1000, max: 5000 },
-                      { label: '$5K-$10K', min: 5000, max: 10000 },
-                      { label: '$10K+', min: 10000, max: 50000 }
-                    ].map((preset) => (
-                      <button
-                        key={preset.label}
-                        onClick={() => handlePriceRangeChange({ min: preset.min, max: preset.max })}
-                        className={`px-3 py-1 text-xs rounded-full border transition-colors ${localPriceRange.min === preset.min && localPriceRange.max === preset.max
-                            ? 'bg-blue-500 text-white border-blue-500'
-                            : 'bg-white text-slate-600 border-slate-300 hover:border-blue-300 hover:text-blue-600'
-                          }`}
-                      >
-                        {preset.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </FilterSection>
-
-              {/* Category-specific filters */}
-              {/* Ring Types for Rings */}
-              {category === 'rings' && Array.isArray(categoryFilters.ringTypes) && (
-                <FilterSection title="Ring Types">
-                  <CheckboxGroup
-                    options={categoryFilters.ringTypes as Array<{ value: string; label: string }>}
-                    selectedValues={filters.ringTypes || []}
-                    onChange={(values) => handleFilterChange('ringTypes', values)}
-                  />
-                </FilterSection>
-              )}
-
-              {/* Ring Settings for Rings */}
-              {category === 'rings' && Array.isArray(categoryFilters.ringSettings) && (
-                <FilterSection title="Ring Settings">
-                  <CheckboxGroup
-                    options={categoryFilters.ringSettings as Array<{ value: string; label: string }>}
-                    selectedValues={filters.ringSettings || []}
-                    onChange={(values) => handleFilterChange('ringSettings', values)}
-                  />
-                </FilterSection>
-              )}
-
-              {/* Watch Brands for Watches */}
-              {category === 'watches' && Array.isArray(categoryFilters.brands) && (
-                <FilterSection title="Watch Brands">
-                  <CheckboxGroup
-                    options={categoryFilters.brands as Array<{ value: string; label: string }>}
-                    selectedValues={filters.brands || []}
-                    onChange={(values) => handleFilterChange('brands', values)}
-                  />
-                </FilterSection>
-              )}
-
-              {/* Watch Models for Watches */}
-              {category === 'watches' && Array.isArray(categoryFilters.models) && (
-                <FilterSection title="Watch Models">
-                  <CheckboxGroup
-                    options={categoryFilters.models as Array<{ value: string; label: string }>}
-                    selectedValues={filters.models || []}
-                    onChange={(values) => handleFilterChange('models', values)}
-                  />
-                </FilterSection>
-              )}
-
-              {/* Chain Types for Necklaces/Bracelets/Chains */}
-              {(category === 'necklaces' || category === 'bracelets' || category === 'chains') && Array.isArray(categoryFilters.chainTypes) && (
-                <FilterSection title="Chain Types">
-                  <CheckboxGroup
-                    options={categoryFilters.chainTypes as Array<{ value: string; label: string }>}
-                    selectedValues={filters.chainTypes || []}
-                    onChange={(values) => handleFilterChange('chainTypes', values)}
-                  />
-                </FilterSection>
-              )}
-
-              {/* Styles - Common for most categories */}
-              {Array.isArray(categoryFilters.styles) && (
-                <FilterSection title={`${categoryTitle} Styles`}>
-                  <CheckboxGroup
-                    options={categoryFilters.styles as Array<{ value: string; label: string }>}
-                    selectedValues={filters.style}
-                    onChange={(values) => handleFilterChange('style', values)}
-                  />
-                </FilterSection>
-              )}
-
-              {/* Earring Settings for Earrings */}
-              {category === 'earrings' && Array.isArray(categoryFilters.settings) && (
-                <FilterSection title="Earring Settings">
-                  <CheckboxGroup
-                    options={categoryFilters.settings as Array<{ value: string; label: string }>}
-                    selectedValues={filters.settings || []}
-                    onChange={(values) => handleFilterChange('settings', values)}
-                  />
-                </FilterSection>
-              )}
-
-              {/* Accessory Types for Accessories */}
-              {category === 'accessories' && Array.isArray(categoryFilters.accessoryTypes) && (
-                <FilterSection title="Accessory Types">
-                  <CheckboxGroup
-                    options={categoryFilters.accessoryTypes as Array<{ value: string; label: string }>}
-                    selectedValues={filters.accessoryTypes || []}
-                    onChange={(values) => handleFilterChange('accessoryTypes', values)}
-                  />
-                </FilterSection>
-              )}
-
-              {/* Metal Type - Common for most categories */}
-              {Array.isArray(categoryFilters.metalTypes) && (
-                <FilterSection title="Metal Type">
-                  <CheckboxGroup
-                    options={categoryFilters.metalTypes as Array<{ value: string; label: string }>}
-                    selectedValues={filters.metalType}
-                    onChange={(values) => handleFilterChange('metalType', values)}
-                  />
-                </FilterSection>
-              )}
-
-              {/* Metal Purity - Common for jewelry categories */}
-              {Array.isArray(categoryFilters.metalPurity) && (
-                <FilterSection title="Metal Purity">
-                  <CheckboxGroup
-                    options={categoryFilters.metalPurity as Array<{ value: string; label: string }>}
-                    selectedValues={filters.purity}
-                    onChange={(values) => handleFilterChange('purity', values)}
-                  />
-                </FilterSection>
-              )}
-
-              {/* Diamond Shapes - Common for jewelry categories */}
-              {Array.isArray(categoryFilters.diamondShapes) && (
-                <FilterSection title="Diamond Shapes">
-                  <CheckboxGroup
-                    options={categoryFilters.diamondShapes as Array<{ value: string; label: string }>}
-                    selectedValues={filters.diamondShapes || []}
-                    onChange={(values) => handleFilterChange('diamondShapes', values)}
-                  />
-                </FilterSection>
-              )}
-
-              {/* Gemstones - Common for jewelry categories */}
-              {Array.isArray(categoryFilters.gemstones) && (
-                <FilterSection title="Gemstones">
-                  <CheckboxGroup
-                    options={categoryFilters.gemstones as Array<{ value: string; label: string }>}
-                    selectedValues={filters.gemstones || []}
-                    onChange={(values) => handleFilterChange('gemstones', values)}
-                  />
-                </FilterSection>
-              )}
-
-              {/* Watch-specific filters */}
-              {category === 'watches' && (
-                <>
-                  {Array.isArray(categoryFilters.dialColors) && (
-                    <FilterSection title="Dial Color">
-                      <CheckboxGroup
-                        options={categoryFilters.dialColors as Array<{ value: string; label: string }>}
-                        selectedValues={filters.dialColors || []}
-                        onChange={(values) => handleFilterChange('dialColors', values)}
-                      />
-                    </FilterSection>
-                  )}
-
-                  {Array.isArray(categoryFilters.caseShapes) && (
-                    <FilterSection title="Case Shape">
-                      <CheckboxGroup
-                        options={categoryFilters.caseShapes as Array<{ value: string; label: string }>}
-                        selectedValues={filters.caseShapes || []}
-                        onChange={(values) => handleFilterChange('caseShapes', values)}
-                      />
-                    </FilterSection>
-                  )}
-
-                  {Array.isArray(categoryFilters.caseSizes) && (
-                    <FilterSection title="Case Size">
-                      <CheckboxGroup
-                        options={categoryFilters.caseSizes as Array<{ value: string; label: string }>}
-                        selectedValues={filters.caseSizes || []}
-                        onChange={(values) => handleFilterChange('caseSizes', values)}
-                      />
-                    </FilterSection>
-                  )}
-
-                  {Array.isArray(categoryFilters.caseMaterials) && (
-                    <FilterSection title="Case Material">
-                      <CheckboxGroup
-                        options={categoryFilters.caseMaterials as Array<{ value: string; label: string }>}
-                        selectedValues={filters.caseMaterials || []}
-                        onChange={(values) => handleFilterChange('caseMaterials', values)}
-                      />
-                    </FilterSection>
-                  )}
-
-                  {Array.isArray(categoryFilters.strapMaterials) && (
-                    <FilterSection title="Strap Material">
-                      <CheckboxGroup
-                        options={categoryFilters.strapMaterials as Array<{ value: string; label: string }>}
-                        selectedValues={filters.strapMaterials || []}
-                        onChange={(values) => handleFilterChange('strapMaterials', values)}
-                      />
-                    </FilterSection>
-                  )}
-
-                  {Array.isArray(categoryFilters.strapColors) && (
-                    <FilterSection title="Strap Color">
-                      <CheckboxGroup
-                        options={categoryFilters.strapColors as Array<{ value: string; label: string }>}
-                        selectedValues={filters.strapColors || []}
-                        onChange={(values) => handleFilterChange('strapColors', values)}
-                      />
-                    </FilterSection>
-                  )}
-
-                  {Array.isArray(categoryFilters.movements) && (
-                    <FilterSection title="Movement">
-                      <CheckboxGroup
-                        options={categoryFilters.movements as Array<{ value: string; label: string }>}
-                        selectedValues={filters.movements || []}
-                        onChange={(values) => handleFilterChange('movements', values)}
-                      />
-                    </FilterSection>
-                  )}
-
-                  {Array.isArray(categoryFilters.waterResistance) && (
-                    <FilterSection title="Water Resistance">
-                      <CheckboxGroup
-                        options={categoryFilters.waterResistance as Array<{ value: string; label: string }>}
-                        selectedValues={filters.waterResistance || []}
-                        onChange={(values) => handleFilterChange('waterResistance', values)}
-                      />
-                    </FilterSection>
-                  )}
-
-                  {Array.isArray(categoryFilters.features) && (
-                    <FilterSection title="Features">
-                      <CheckboxGroup
-                        options={categoryFilters.features as Array<{ value: string; label: string }>}
-                        selectedValues={filters.features || []}
-                        onChange={(values) => handleFilterChange('features', values)}
-                      />
-                    </FilterSection>
-                  )}
-
-                  {Array.isArray(categoryFilters.dialStones) && (
-                    <FilterSection title="Dial Stones">
-                      <CheckboxGroup
-                        options={categoryFilters.dialStones as Array<{ value: string; label: string }>}
-                        selectedValues={filters.dialStones || []}
-                        onChange={(values) => handleFilterChange('dialStones', values)}
-                      />
-                    </FilterSection>
-                  )}
-                </>
-              )}
-
-              {/* Size/Length filters for applicable categories */}
-              {category === 'rings' && Array.isArray(categoryFilters.sizes) && (
-                <FilterSection title="Ring Size">
-                  <CheckboxGroup
-                    options={categoryFilters.sizes as Array<{ value: string; label: string }>}
-                    selectedValues={filters.sizes || []}
-                    onChange={(values) => handleFilterChange('sizes', values)}
-                  />
-                </FilterSection>
-              )}
-
-              {((category === 'necklaces' || category === 'bracelets') && Array.isArray(categoryFilters.lengths)) && (
-                <FilterSection title="Length">
-                  <CheckboxGroup
-                    options={categoryFilters.lengths as Array<{ value: string; label: string }>}
-                    selectedValues={filters.lengths || []}
-                    onChange={(values) => handleFilterChange('lengths', values)}
-                  />
-                </FilterSection>
-              )}
-
-              {/* General Certification Filter - applies to all jewelry */}
-              {/* Removed from here since it's not category-specific */}
-            </div>
-          )}
-
-          {/* Results */}
-          <div className="flex-1">
-            {/* Results Header */}
+        {/* Results */}
+        <div className="w-full">
+          {/* Results Header */}
             <div className="flex items-center justify-between mb-6">
               <p className="text-slate-600">
                 {loading ? (
@@ -1596,7 +1284,7 @@ export default function JewelryCategoryPage() {
               <>
                 <div className={
                   viewMode === 'grid'
-                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
+                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6'
                     : 'space-y-4'
                 }>
                   {jewelry.map(item => (
@@ -1651,7 +1339,471 @@ export default function JewelryCategoryPage() {
       </div>
 
       <Footer />
-    </div>
+
+    {/* Drawer for filters - positioned outside main content */}
+    {drawerVisible && (
+      <>
+        {/* Overlay */}
+        <div
+          className={`fixed inset-0 bg-black/50 z-[100] transition-opacity duration-300 ${drawerOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          onClick={() => setShowFilters(false)}
+          aria-label="Close filters overlay"
+        />
+        {/* Drawer */}
+        <div
+          className={`fixed top-0 right-0 w-full max-w-md h-full bg-white dark:bg-gray-900 z-[110] shadow-2xl p-0 flex flex-col transition-transform duration-300 ease-out ${drawerOpen ? 'translate-x-0' : 'translate-x-full'}`}
+          style={{ minHeight: '100vh' }}
+          onTransitionEnd={() => {
+            if (!drawerOpen) setDrawerVisible(false);
+          }}
+        >
+          {/* Header */}
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-5 sticky top-0 z-10">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Filters</h2>
+              <button
+                className="p-1.5 rounded-full hover:bg-white dark:hover:bg-gray-800 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
+                onClick={() => setShowFilters(false)}
+                aria-label="Close filters"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex items-center justify-between">
+              {getTotalAppliedFilters() > 0 ? (
+                <>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    {getTotalAppliedFilters()} {getTotalAppliedFilters() === 1 ? 'filter' : 'filters'} applied
+                  </span>
+                  <button
+                    onClick={clearFilters}
+                    className="text-sm font-medium text-amber-600 hover:text-amber-700 dark:text-amber-500 dark:hover:text-amber-400 transition-colors"
+                  >
+                    Clear all
+                  </button>
+                </>
+              ) : (
+                <span className="text-sm text-gray-500 dark:text-gray-500">No filters applied</span>
+              )}
+            </div>
+          </div>
+
+          {/* Custom Scrollbar Styles */}
+          <style jsx>{`
+            .filter-scroll::-webkit-scrollbar {
+              width: 6px;
+            }
+            .filter-scroll::-webkit-scrollbar-track {
+              background: transparent;
+            }
+            .filter-scroll::-webkit-scrollbar-thumb {
+              background: #d1d5db;
+              border-radius: 3px;
+            }
+            .filter-scroll::-webkit-scrollbar-thumb:hover {
+              background: #9ca3af;
+            }
+            .dark .filter-scroll::-webkit-scrollbar-thumb {
+              background: #4b5563;
+            }
+            .dark .filter-scroll::-webkit-scrollbar-thumb:hover {
+              background: #6b7280;
+            }
+          `}</style>
+
+          {/* Filter Sections Container */}
+          <div className="filter-scroll flex-1 overflow-y-auto">
+            <div className="space-y-6 py-4">
+              {/* Price Range Filter */}
+              <FilterSection 
+                title="Price Range" 
+                count={filters.priceRange.min > 0 || filters.priceRange.max < 50000 ? 1 : 0}
+              >
+                <div className="px-6 py-4">
+                  <div className="mb-4 flex justify-between text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span>${filters.priceRange.min.toLocaleString()}</span>
+                    <span>${filters.priceRange.max.toLocaleString()}</span>
+                  </div>
+                  <Slider
+                    range
+                    min={0}
+                    max={50000}
+                    step={100}
+                    value={[filters.priceRange.min, filters.priceRange.max]}
+                    onChange={(value) => {
+                      if (Array.isArray(value)) {
+                        handleFilterChange('priceRange', {
+                          min: value[0],
+                          max: value[1]
+                        })
+                      }
+                    }}
+                    trackStyle={[{ backgroundColor: '#f59e0b', height: '4px' }]}
+                    handleStyle={[
+                      { backgroundColor: '#f59e0b', borderColor: '#f59e0b', width: '16px', height: '16px', marginTop: '-6px' },
+                      { backgroundColor: '#f59e0b', borderColor: '#f59e0b', width: '16px', height: '16px', marginTop: '-6px' }
+                    ]}
+                    railStyle={{ backgroundColor: '#e5e7eb', height: '4px' }}
+                  />
+                </div>
+              </FilterSection>
+
+              {/* Ring Types - Show only for rings category */}
+              {category === 'rings' && Array.isArray(categoryFilters.ringTypes) && categoryFilters.ringTypes.length > 0 && (
+                <FilterSection 
+                  title="Ring Type" 
+                  count={filters.ringTypes?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.ringTypes}
+                    selectedValues={filters.ringTypes || []}
+                    onChange={(value) => handleFilterChange('ringTypes', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Ring Settings - Show only for rings category */}
+              {category === 'rings' && Array.isArray(categoryFilters.ringSettings) && categoryFilters.ringSettings.length > 0 && (
+                <FilterSection 
+                  title="Ring Setting" 
+                  count={filters.ringSettings?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.ringSettings}
+                    selectedValues={filters.ringSettings || []}
+                    onChange={(value) => handleFilterChange('ringSettings', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Watch Brands - Show only for watches category */}
+              {category === 'watches' && Array.isArray(categoryFilters.brands) && categoryFilters.brands.length > 0 && (
+                <FilterSection 
+                  title="Brand" 
+                  count={filters.brands?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.brands}
+                    selectedValues={filters.brands || []}
+                    onChange={(value) => handleFilterChange('brands', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Watch Models - Show only for watches category */}
+              {category === 'watches' && Array.isArray(categoryFilters.models) && categoryFilters.models.length > 0 && (
+                <FilterSection 
+                  title="Model" 
+                  count={filters.models?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.models}
+                    selectedValues={filters.models || []}
+                    onChange={(value) => handleFilterChange('models', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Metal Type */}
+              {Array.isArray(categoryFilters.metalTypes) && categoryFilters.metalTypes.length > 0 && (
+                <FilterSection 
+                  title="Metal Type" 
+                  count={filters.metalType.length}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.metalTypes}
+                    selectedValues={filters.metalType}
+                    onChange={(value) => handleFilterChange('metalType', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Metal Purity */}
+              {Array.isArray(categoryFilters.metalPurity) && categoryFilters.metalPurity.length > 0 && (
+                <FilterSection 
+                  title="Purity" 
+                  count={filters.purity.length}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.metalPurity}
+                    selectedValues={filters.purity}
+                    onChange={(value) => handleFilterChange('purity', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Diamond Shapes */}
+              {Array.isArray(categoryFilters.diamondShapes) && categoryFilters.diamondShapes.length > 0 && (
+                <FilterSection 
+                  title="Diamond Shape" 
+                  count={filters.diamondShapes?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.diamondShapes}
+                    selectedValues={filters.diamondShapes || []}
+                    onChange={(value) => handleFilterChange('diamondShapes', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Gemstone Types */}
+              {Array.isArray(categoryFilters.gemstones) && categoryFilters.gemstones.length > 0 && (
+                <FilterSection 
+                  title="Gemstone" 
+                  count={filters.gemstones?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.gemstones}
+                    selectedValues={filters.gemstones || []}
+                    onChange={(value) => handleFilterChange('gemstones', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Styles */}
+              {Array.isArray(categoryFilters.styles) && categoryFilters.styles.length > 0 && (
+                <FilterSection 
+                  title="Style" 
+                  count={filters.style.length}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.styles}
+                    selectedValues={filters.style}
+                    onChange={(value) => handleFilterChange('style', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Watch-specific filters */}
+              {category === 'watches' && (
+                <>
+                  {/* Dial Color */}
+                  {Array.isArray(categoryFilters.dialColors) && categoryFilters.dialColors.length > 0 && (
+                    <FilterSection 
+                      title="Dial Color" 
+                      count={filters.dialColors?.length || 0}
+                    >
+                      <CheckboxGroup
+                        options={categoryFilters.dialColors}
+                        selectedValues={filters.dialColors || []}
+                        onChange={(value) => handleFilterChange('dialColors', value)}
+                      />
+                    </FilterSection>
+                  )}
+
+                  {/* Case Shape */}
+                  {Array.isArray(categoryFilters.caseShapes) && categoryFilters.caseShapes.length > 0 && (
+                    <FilterSection 
+                      title="Case Shape" 
+                      count={filters.caseShapes?.length || 0}
+                    >
+                      <CheckboxGroup
+                        options={categoryFilters.caseShapes}
+                        selectedValues={filters.caseShapes || []}
+                        onChange={(value) => handleFilterChange('caseShapes', value)}
+                      />
+                    </FilterSection>
+                  )}
+
+                  {/* Movement */}
+                  {Array.isArray(categoryFilters.movements) && categoryFilters.movements.length > 0 && (
+                    <FilterSection 
+                      title="Movement" 
+                      count={filters.movements?.length || 0}
+                    >
+                      <CheckboxGroup
+                        options={categoryFilters.movements}
+                        selectedValues={filters.movements || []}
+                        onChange={(value) => handleFilterChange('movements', value)}
+                      />
+                    </FilterSection>
+                  )}
+
+                  {/* Water Resistance */}
+                  {Array.isArray(categoryFilters.waterResistance) && categoryFilters.waterResistance.length > 0 && (
+                    <FilterSection 
+                      title="Water Resistance" 
+                      count={filters.waterResistance?.length || 0}
+                    >
+                      <CheckboxGroup
+                        options={categoryFilters.waterResistance}
+                        selectedValues={filters.waterResistance || []}
+                        onChange={(value) => handleFilterChange('waterResistance', value)}
+                      />
+                    </FilterSection>
+                  )}
+
+                  {/* Case Size */}
+                  {Array.isArray(categoryFilters.caseSizes) && categoryFilters.caseSizes.length > 0 && (
+                    <FilterSection 
+                      title="Case Size" 
+                      count={filters.caseSizes?.length || 0}
+                    >
+                      <CheckboxGroup
+                        options={categoryFilters.caseSizes}
+                        selectedValues={filters.caseSizes || []}
+                        onChange={(value) => handleFilterChange('caseSizes', value)}
+                      />
+                    </FilterSection>
+                  )}
+
+                  {/* Case Material */}
+                  {Array.isArray(categoryFilters.caseMaterials) && categoryFilters.caseMaterials.length > 0 && (
+                    <FilterSection 
+                      title="Case Material" 
+                      count={filters.caseMaterials?.length || 0}
+                    >
+                      <CheckboxGroup
+                        options={categoryFilters.caseMaterials}
+                        selectedValues={filters.caseMaterials || []}
+                        onChange={(value) => handleFilterChange('caseMaterials', value)}
+                      />
+                    </FilterSection>
+                  )}
+
+                  {/* Strap Material */}
+                  {Array.isArray(categoryFilters.strapMaterials) && categoryFilters.strapMaterials.length > 0 && (
+                    <FilterSection 
+                      title="Strap Material" 
+                      count={filters.strapMaterials?.length || 0}
+                    >
+                      <CheckboxGroup
+                        options={categoryFilters.strapMaterials}
+                        selectedValues={filters.strapMaterials || []}
+                        onChange={(value) => handleFilterChange('strapMaterials', value)}
+                      />
+                    </FilterSection>
+                  )}
+
+                  {/* Strap Color */}
+                  {Array.isArray(categoryFilters.strapColors) && categoryFilters.strapColors.length > 0 && (
+                    <FilterSection 
+                      title="Strap Color" 
+                      count={filters.strapColors?.length || 0}
+                    >
+                      <CheckboxGroup
+                        options={categoryFilters.strapColors}
+                        selectedValues={filters.strapColors || []}
+                        onChange={(value) => handleFilterChange('strapColors', value)}
+                      />
+                    </FilterSection>
+                  )}
+
+                  {/* Features */}
+                  {Array.isArray(categoryFilters.features) && categoryFilters.features.length > 0 && (
+                    <FilterSection 
+                      title="Features" 
+                      count={filters.features?.length || 0}
+                    >
+                      <CheckboxGroup
+                        options={categoryFilters.features}
+                        selectedValues={filters.features || []}
+                        onChange={(value) => handleFilterChange('features', value)}
+                      />
+                    </FilterSection>
+                  )}
+
+                  {/* Dial Stones */}
+                  {Array.isArray(categoryFilters.dialStones) && categoryFilters.dialStones.length > 0 && (
+                    <FilterSection 
+                      title="Dial Stones" 
+                      count={filters.dialStones?.length || 0}
+                    >
+                      <CheckboxGroup
+                        options={categoryFilters.dialStones}
+                        selectedValues={filters.dialStones || []}
+                        onChange={(value) => handleFilterChange('dialStones', value)}
+                      />
+                    </FilterSection>
+                  )}
+                </>
+              )}
+
+              {/* Chain Types - For necklaces and bracelets only */}
+              {(category === 'necklaces' || category === 'bracelets') && Array.isArray(categoryFilters.chainTypes) && categoryFilters.chainTypes.length > 0 && (
+                <FilterSection 
+                  title="Chain Type" 
+                  count={filters.chainTypes?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.chainTypes}
+                    selectedValues={filters.chainTypes || []}
+                    onChange={(value) => handleFilterChange('chainTypes', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Length - For chains, necklaces, and bracelets */}
+              {(category === 'chains' || category === 'necklaces' || category === 'bracelets') && Array.isArray(categoryFilters.lengths) && categoryFilters.lengths.length > 0 && (
+                <FilterSection 
+                  title={category === 'bracelets' ? 'Bracelet Length' : 'Chain Length'}
+                  count={filters.lengths?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.lengths}
+                    selectedValues={filters.lengths || []}
+                    onChange={(value) => handleFilterChange('lengths', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Ring Size - For rings */}
+              {category === 'rings' && Array.isArray(categoryFilters.sizes) && categoryFilters.sizes.length > 0 && (
+                <FilterSection 
+                  title="Ring Size" 
+                  count={filters.sizes?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.sizes}
+                    selectedValues={filters.sizes || []}
+                    onChange={(value) => handleFilterChange('sizes', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Earring Settings - For earrings category */}
+              {category === 'earrings' && Array.isArray(categoryFilters.settings) && categoryFilters.settings.length > 0 && (
+                <FilterSection 
+                  title="Earring Settings" 
+                  count={filters.settings?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.settings}
+                    selectedValues={filters.settings || []}
+                    onChange={(value) => handleFilterChange('settings', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Accessory Types - For accessories category */}
+              {category === 'accessories' && Array.isArray(categoryFilters.accessoryTypes) && categoryFilters.accessoryTypes.length > 0 && (
+                <FilterSection 
+                  title="Accessory Type" 
+                  count={filters.accessoryTypes?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.accessoryTypes}
+                    selectedValues={filters.accessoryTypes || []}
+                    onChange={(value) => handleFilterChange('accessoryTypes', value)}
+                  />
+                </FilterSection>
+              )}
+            </div>
+          </div>
+
+          {/* Footer - Show Results Button */}
+          <div className="sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-4">
+            <button
+              onClick={() => setShowFilters(false)}
+              className="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg transition-colors"
+            >
+              Show Results
+            </button>
+          </div>
+        </div>
+      </>
+    )}
+  </>
   )
 }
 
@@ -1660,23 +1812,35 @@ interface FilterSectionProps {
   title: string;
   children: React.ReactNode;
   isOpen?: boolean;
+  count?: number;
 }
 
-const FilterSection: React.FC<FilterSectionProps> = ({ title, isOpen = false, children }) => {
+const FilterSection: React.FC<FilterSectionProps> = ({ title, isOpen = false, children, count }) => {
   const [isExpanded, setIsExpanded] = useState(isOpen);
 
   return (
-    <div className="border-b border-slate-200 pb-4 mb-4 last:border-b-0 last:pb-0 last:mb-0">
+    <div>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center justify-between w-full text-left py-2"
+        className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
       >
-        <span className="font-medium text-slate-900">{title}</span>
-        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
+          {title}
+          {count !== undefined && count > 0 && (
+            <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+              {count}
+            </span>
+          )}
+        </h3>
+        <ChevronDown
+          className={`w-4 h-4 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-all ${
+            isExpanded ? 'rotate-180' : ''
+          }`}
+        />
       </button>
 
       {isExpanded && (
-        <div className="mt-3">
+        <div className="px-6 pb-5 pt-3 bg-gray-50/50 dark:bg-gray-800/20">
           {children}
         </div>
       )}
@@ -1720,35 +1884,37 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
     <div className="space-y-3">
       {/* Search Input */}
       {searchable && options.length > 5 && (
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-          <input
-            type="text"
-            placeholder={`Search ${options.length} options...`}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+        <div className="mb-3">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-3 py-2 pl-9 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+            />
+            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
         </div>
       )}
 
       {/* Options Container */}
       <div
-        className="space-y-2 overflow-y-auto pr-1"
+        className="space-y-1 max-h-64 overflow-y-auto"
         style={{ maxHeight: showAll ? maxHeight : 'auto' }}
       >
         {displayOptions.map((option) => (
           <label
             key={option.value}
-            className="flex items-center space-x-3 cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition-colors"
+            className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50 cursor-pointer transition-colors group"
           >
             <input
               type="checkbox"
               checked={selectedValues.includes(option.value)}
               onChange={() => handleToggle(option.value)}
-              className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 focus:ring-2"
+              className="w-4 h-4 text-amber-600 bg-gray-100 border-gray-300 rounded focus:ring-amber-500 dark:focus:ring-amber-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
             />
-            <span className="text-sm text-slate-700 flex-1">{option.label}</span>
+            <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors flex-1">{option.label}</span>
             {selectedValues.includes(option.value) && (
               <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
                 ✓
@@ -1904,21 +2070,33 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
   if (viewMode === 'list') {
     return (
       <div 
-        className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+        className="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-100 hover:border-amber-200 group"
         onClick={handleCardClick}
       >
         <div className="flex gap-6">
-          <div className="w-32 h-32 bg-slate-100 rounded-lg flex-shrink-0 overflow-hidden">
+          {/* Image Section */}
+          <div className="w-40 h-40 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl flex-shrink-0 overflow-hidden relative group">
             <ImageCarousel
               images={[item.image1, item.image2, item.image3, item.image4, item.image5, item.image6]}
               alt={item.name || 'Jewelry item'}
-              className="w-full h-full"
+              className="w-full h-full group-hover:scale-105 transition-transform duration-500"
             />
+            {item.isOnAuction && (
+              <div className="absolute top-2 left-2 px-2 py-1 bg-red-500 text-white text-xs font-semibold rounded-full shadow-lg">
+                🔥 Auction
+              </div>
+            )}
           </div>
 
-          <div className="flex-1">
-            <div className="flex items-start justify-between mb-2">
-              <h3 className="text-lg font-medium text-slate-900">{item.name}</h3>
+          {/* Content Section */}
+          <div className="flex-1 flex flex-col">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex-1">
+                <h3 className="text-xl font-semibold text-gray-900 mb-1 group-hover:text-amber-600 transition-colors">
+                  {item.name}
+                </h3>
+                <p className="text-sm text-gray-500 font-mono">{item.skuCode}</p>
+              </div>
               <div onClick={(e) => e.stopPropagation()}>
                 <WishlistButton
                   productId={Number(item.id)}
@@ -1929,36 +2107,50 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
               </div>
             </div>
 
-            <p className="text-slate-600 text-sm mb-2">{item.skuCode}</p>
-
-            <div className="flex items-center gap-4 mb-3">
-              <span className="text-2xl font-bold text-slate-900">
-                ${item.totalPrice?.toLocaleString() || 'Price on request'}
+            {/* Details Row */}
+            <div className="flex items-center gap-3 mb-4 flex-wrap">
+              <span className="text-3xl font-bold text-gray-900">
+                ${item.totalPrice?.toLocaleString() || 'POA'}
               </span>
 
               {item.metalType && (
-                <span className="px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded">
+                <span className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 text-amber-700 text-sm font-medium rounded-full">
                   {item.metalType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </span>
+              )}
+
+              {item.stones && item.stones.length > 0 && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-full">
+                  <div className="w-2 h-2 rounded-full bg-amber-400"></div>
+                  {item.stones.length} {item.stones.length === 1 ? 'Stone' : 'Stones'}
                 </span>
               )}
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-slate-600">
+            {/* Footer - Actions */}
+            <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
+              <div className="flex items-center gap-2 text-gray-600">
                 <MapPin className="w-4 h-4" />
-                <span className="text-sm">Seller ID: {item.sellerId?.slice(-8) || 'N/A'}</span>
+                <span className="text-sm font-mono">Seller: {item.sellerId?.slice(-8) || 'N/A'}</span>
               </div>
 
               <div className="flex items-center gap-2">
                 <button 
-                  onClick={(e) => e.stopPropagation()}
-                  className="p-2 border border-slate-300 rounded-lg hover:bg-slate-50"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    // Quick view logic
+                  }}
+                  className="p-2.5 border-2 border-gray-200 rounded-lg hover:border-amber-400 hover:bg-amber-50 transition-all duration-200 group/icon"
+                  title="Quick View"
                 >
-                  <Eye className="w-4 h-4" />
+                  <Eye className="w-4 h-4 text-gray-600 group-hover/icon:text-amber-600" />
                 </button>
                 <button 
-                  onClick={(e) => e.stopPropagation()}
-                  className="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 flex items-center gap-2"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    // Add to cart logic
+                  }}
+                  className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium rounded-lg transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg active:scale-95"
                 >
                   <ShoppingCart className="w-4 h-4" />
                   Add to Cart
@@ -1973,75 +2165,103 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
 
   return (
     <div 
-      className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group cursor-pointer"
+      className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer border border-gray-100 hover:border-amber-200"
       onClick={handleCardClick}
     >
-      <div className="relative aspect-square bg-slate-100">
+      {/* Image Section */}
+      <div className="relative aspect-square bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden">
         <ImageCarousel
           images={[item.image1, item.image2, item.image3, item.image4, item.image5, item.image6]}
           alt={item.name || 'Jewelry item'}
-          className="w-full h-full"
+          className="w-full h-full group-hover:scale-105 transition-transform duration-500"
         />
 
-        <div onClick={(e) => e.stopPropagation()}>
+        {/* Wishlist Button - Top Right */}
+        <div onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 z-10">
           <WishlistButton
             productId={Number(item.id)}
             productType="jewellery"
             size="md"
-            className="absolute top-3 right-3"
+            className="bg-white/90 backdrop-blur-sm shadow-md hover:bg-white"
           />
         </div>
 
+        {/* Auction Badge - Top Left */}
         {item.isOnAuction && (
-          <div className="absolute top-3 left-3 px-2 py-1 bg-red-500 text-white text-xs rounded">
-            Auction
+          <div className="absolute top-3 left-3 px-3 py-1.5 bg-red-500 text-white text-xs font-semibold rounded-full shadow-lg animate-pulse">
+            🔥 Live Auction
           </div>
         )}
+
+        {/* Quick View Overlay */}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
       </div>
 
-      <div className="p-4">
-        <h3 className="font-medium text-slate-900 mb-1 line-clamp-1">{item.name}</h3>
-        <p className="text-sm text-slate-600 mb-2">{item.skuCode}</p>
+      {/* Content Section */}
+      <div className="p-4 space-y-3">
+        {/* Title & SKU */}
+        <div>
+          <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 text-base group-hover:text-amber-600 transition-colors">
+            {item.name}
+          </h3>
+          <p className="text-xs text-gray-500 font-mono">{item.skuCode}</p>
+        </div>
 
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-lg font-bold text-slate-900">
-            ${item.totalPrice?.toLocaleString() || 'POA'}
-          </span>
-
-          {item.metalType && (
-            <span className="px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded">
+        {/* Metal Type Badge */}
+        {item.metalType && (
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center px-2.5 py-1 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 text-amber-700 text-xs font-medium rounded-full">
               {item.metalType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </span>
-          )}
-        </div>
+          </div>
+        )}
 
-        <div className="flex items-center justify-between text-sm text-slate-600 mb-3">
-          <div className="flex items-center gap-1">
-            <MapPin className="w-3 h-3" />
-            <span>ID: {item.sellerId?.slice(-8) || 'N/A'}</span>
+        {/* Stones Info */}
+        {item.stones && item.stones.length > 0 && (
+          <div className="flex items-center gap-1.5 text-xs text-gray-600">
+            <div className="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
+            <span>{item.stones.length} {item.stones.length === 1 ? 'Stone' : 'Stones'}</span>
+          </div>
+        )}
+
+        {/* Price Section */}
+        <div className="pt-2 border-t border-gray-100">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <div className="text-xs text-gray-500 mb-0.5">Price</div>
+              <span className="text-xl font-bold text-gray-900">
+                ${item.totalPrice?.toLocaleString() || 'POA'}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-xs text-gray-500">
+              <MapPin className="w-3 h-3" />
+              <span className="font-mono">{item.sellerId?.slice(-6) || 'N/A'}</span>
+            </div>
           </div>
 
-          {item.stones && item.stones.length > 0 && (
-            <div className="text-xs text-slate-500">
-              {item.stones.length} stone{item.stones.length > 1 ? 's' : ''}
-            </div>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={(e) => e.stopPropagation()}
-            className="flex-1 px-3 py-2 bg-slate-900 text-white text-sm rounded hover:bg-slate-800 flex items-center justify-center gap-2"
-          >
-            <ShoppingCart className="w-4 h-4" />
-            Add to Cart
-          </button>
-          <button 
-            onClick={(e) => e.stopPropagation()}
-            className="p-2 border border-slate-300 rounded hover:bg-slate-50"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={(e) => {
+                e.stopPropagation()
+                // Add to cart logic
+              }}
+              className="flex-1 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-95"
+            >
+              <ShoppingCart className="w-4 h-4" />
+              Add to Cart
+            </button>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation()
+                // Quick view logic
+              }}
+              className="p-2.5 border-2 border-gray-200 rounded-lg hover:border-amber-400 hover:bg-amber-50 transition-all duration-200 group/icon active:scale-95"
+              title="Quick View"
+            >
+              <Eye className="w-4 h-4 text-gray-600 group-hover/icon:text-amber-600" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
