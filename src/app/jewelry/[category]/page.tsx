@@ -1284,7 +1284,7 @@ export default function JewelryCategoryPage() {
               <>
                 <div className={
                   viewMode === 'grid'
-                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
+                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6'
                     : 'space-y-4'
                 }>
                   {jewelry.map(item => (
@@ -2070,21 +2070,33 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
   if (viewMode === 'list') {
     return (
       <div 
-        className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+        className="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-100 hover:border-amber-200 group"
         onClick={handleCardClick}
       >
         <div className="flex gap-6">
-          <div className="w-32 h-32 bg-slate-100 rounded-lg flex-shrink-0 overflow-hidden">
+          {/* Image Section */}
+          <div className="w-40 h-40 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl flex-shrink-0 overflow-hidden relative group">
             <ImageCarousel
               images={[item.image1, item.image2, item.image3, item.image4, item.image5, item.image6]}
               alt={item.name || 'Jewelry item'}
-              className="w-full h-full"
+              className="w-full h-full group-hover:scale-105 transition-transform duration-500"
             />
+            {item.isOnAuction && (
+              <div className="absolute top-2 left-2 px-2 py-1 bg-red-500 text-white text-xs font-semibold rounded-full shadow-lg">
+                🔥 Auction
+              </div>
+            )}
           </div>
 
-          <div className="flex-1">
-            <div className="flex items-start justify-between mb-2">
-              <h3 className="text-lg font-medium text-slate-900">{item.name}</h3>
+          {/* Content Section */}
+          <div className="flex-1 flex flex-col">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex-1">
+                <h3 className="text-xl font-semibold text-gray-900 mb-1 group-hover:text-amber-600 transition-colors">
+                  {item.name}
+                </h3>
+                <p className="text-sm text-gray-500 font-mono">{item.skuCode}</p>
+              </div>
               <div onClick={(e) => e.stopPropagation()}>
                 <WishlistButton
                   productId={Number(item.id)}
@@ -2095,36 +2107,50 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
               </div>
             </div>
 
-            <p className="text-slate-600 text-sm mb-2">{item.skuCode}</p>
-
-            <div className="flex items-center gap-4 mb-3">
-              <span className="text-2xl font-bold text-slate-900">
-                ${item.totalPrice?.toLocaleString() || 'Price on request'}
+            {/* Details Row */}
+            <div className="flex items-center gap-3 mb-4 flex-wrap">
+              <span className="text-3xl font-bold text-gray-900">
+                ${item.totalPrice?.toLocaleString() || 'POA'}
               </span>
 
               {item.metalType && (
-                <span className="px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded">
+                <span className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 text-amber-700 text-sm font-medium rounded-full">
                   {item.metalType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </span>
+              )}
+
+              {item.stones && item.stones.length > 0 && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-full">
+                  <div className="w-2 h-2 rounded-full bg-amber-400"></div>
+                  {item.stones.length} {item.stones.length === 1 ? 'Stone' : 'Stones'}
                 </span>
               )}
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-slate-600">
+            {/* Footer - Actions */}
+            <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
+              <div className="flex items-center gap-2 text-gray-600">
                 <MapPin className="w-4 h-4" />
-                <span className="text-sm">Seller ID: {item.sellerId?.slice(-8) || 'N/A'}</span>
+                <span className="text-sm font-mono">Seller: {item.sellerId?.slice(-8) || 'N/A'}</span>
               </div>
 
               <div className="flex items-center gap-2">
                 <button 
-                  onClick={(e) => e.stopPropagation()}
-                  className="p-2 border border-slate-300 rounded-lg hover:bg-slate-50"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    // Quick view logic
+                  }}
+                  className="p-2.5 border-2 border-gray-200 rounded-lg hover:border-amber-400 hover:bg-amber-50 transition-all duration-200 group/icon"
+                  title="Quick View"
                 >
-                  <Eye className="w-4 h-4" />
+                  <Eye className="w-4 h-4 text-gray-600 group-hover/icon:text-amber-600" />
                 </button>
                 <button 
-                  onClick={(e) => e.stopPropagation()}
-                  className="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 flex items-center gap-2"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    // Add to cart logic
+                  }}
+                  className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium rounded-lg transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg active:scale-95"
                 >
                   <ShoppingCart className="w-4 h-4" />
                   Add to Cart
@@ -2139,75 +2165,103 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
 
   return (
     <div 
-      className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group cursor-pointer"
+      className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer border border-gray-100 hover:border-amber-200"
       onClick={handleCardClick}
     >
-      <div className="relative aspect-square bg-slate-100">
+      {/* Image Section */}
+      <div className="relative aspect-square bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden">
         <ImageCarousel
           images={[item.image1, item.image2, item.image3, item.image4, item.image5, item.image6]}
           alt={item.name || 'Jewelry item'}
-          className="w-full h-full"
+          className="w-full h-full group-hover:scale-105 transition-transform duration-500"
         />
 
-        <div onClick={(e) => e.stopPropagation()}>
+        {/* Wishlist Button - Top Right */}
+        <div onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 z-10">
           <WishlistButton
             productId={Number(item.id)}
             productType="jewellery"
             size="md"
-            className="absolute top-3 right-3"
+            className="bg-white/90 backdrop-blur-sm shadow-md hover:bg-white"
           />
         </div>
 
+        {/* Auction Badge - Top Left */}
         {item.isOnAuction && (
-          <div className="absolute top-3 left-3 px-2 py-1 bg-red-500 text-white text-xs rounded">
-            Auction
+          <div className="absolute top-3 left-3 px-3 py-1.5 bg-red-500 text-white text-xs font-semibold rounded-full shadow-lg animate-pulse">
+            🔥 Live Auction
           </div>
         )}
+
+        {/* Quick View Overlay */}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
       </div>
 
-      <div className="p-4">
-        <h3 className="font-medium text-slate-900 mb-1 line-clamp-1">{item.name}</h3>
-        <p className="text-sm text-slate-600 mb-2">{item.skuCode}</p>
+      {/* Content Section */}
+      <div className="p-4 space-y-3">
+        {/* Title & SKU */}
+        <div>
+          <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 text-base group-hover:text-amber-600 transition-colors">
+            {item.name}
+          </h3>
+          <p className="text-xs text-gray-500 font-mono">{item.skuCode}</p>
+        </div>
 
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-lg font-bold text-slate-900">
-            ${item.totalPrice?.toLocaleString() || 'POA'}
-          </span>
-
-          {item.metalType && (
-            <span className="px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded">
+        {/* Metal Type Badge */}
+        {item.metalType && (
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center px-2.5 py-1 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 text-amber-700 text-xs font-medium rounded-full">
               {item.metalType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </span>
-          )}
-        </div>
+          </div>
+        )}
 
-        <div className="flex items-center justify-between text-sm text-slate-600 mb-3">
-          <div className="flex items-center gap-1">
-            <MapPin className="w-3 h-3" />
-            <span>ID: {item.sellerId?.slice(-8) || 'N/A'}</span>
+        {/* Stones Info */}
+        {item.stones && item.stones.length > 0 && (
+          <div className="flex items-center gap-1.5 text-xs text-gray-600">
+            <div className="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
+            <span>{item.stones.length} {item.stones.length === 1 ? 'Stone' : 'Stones'}</span>
+          </div>
+        )}
+
+        {/* Price Section */}
+        <div className="pt-2 border-t border-gray-100">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <div className="text-xs text-gray-500 mb-0.5">Price</div>
+              <span className="text-xl font-bold text-gray-900">
+                ${item.totalPrice?.toLocaleString() || 'POA'}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-xs text-gray-500">
+              <MapPin className="w-3 h-3" />
+              <span className="font-mono">{item.sellerId?.slice(-6) || 'N/A'}</span>
+            </div>
           </div>
 
-          {item.stones && item.stones.length > 0 && (
-            <div className="text-xs text-slate-500">
-              {item.stones.length} stone{item.stones.length > 1 ? 's' : ''}
-            </div>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={(e) => e.stopPropagation()}
-            className="flex-1 px-3 py-2 bg-slate-900 text-white text-sm rounded hover:bg-slate-800 flex items-center justify-center gap-2"
-          >
-            <ShoppingCart className="w-4 h-4" />
-            Add to Cart
-          </button>
-          <button 
-            onClick={(e) => e.stopPropagation()}
-            className="p-2 border border-slate-300 rounded hover:bg-slate-50"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={(e) => {
+                e.stopPropagation()
+                // Add to cart logic
+              }}
+              className="flex-1 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-95"
+            >
+              <ShoppingCart className="w-4 h-4" />
+              Add to Cart
+            </button>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation()
+                // Quick view logic
+              }}
+              className="p-2.5 border-2 border-gray-200 rounded-lg hover:border-amber-400 hover:bg-amber-50 transition-all duration-200 group/icon active:scale-95"
+              title="Quick View"
+            >
+              <Eye className="w-4 h-4 text-gray-600 group-hover/icon:text-amber-600" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
