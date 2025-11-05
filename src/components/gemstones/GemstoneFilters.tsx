@@ -23,25 +23,18 @@ export interface GemstoneFilterValues {
   certification: string[]
   origin: string[]
   treatment: string[]
-  enhancement: string[]
-  transparency: string[]
-  luster: string[]
-  phenomena: string[]
   minerals: string[]
   birthstones: string[]
   length: { min: number; max: number }
   width: { min: number; max: number }
   height: { min: number; max: number }
-  location: string[]
-  companyName: string
-  vendorLocation: string
-  reportNumber: string
   searchTerm: string
 }
 
 interface GemstoneFiltersProps {
   filters: GemstoneFilterValues
   onFiltersChange: (filters: GemstoneFilterValues) => void
+  onSearch?: () => void
   gemstoneType: 'single' | 'melee'
   className?: string
 }
@@ -201,6 +194,7 @@ const BIRTHSTONE_MONTHS = [
 export default function GemstoneFilters({
   filters,
   onFiltersChange,
+  onSearch,
   gemstoneType,
   className = ''
 }: GemstoneFiltersProps) {
@@ -248,19 +242,11 @@ export default function GemstoneFilters({
       certification: [],
       origin: [],
       treatment: [],
-      enhancement: [],
-      transparency: [],
-      luster: [],
-      phenomena: [],
       minerals: [],
       birthstones: [],
       length: { min: 0, max: 100 },
       width: { min: 0, max: 100 },
       height: { min: 0, max: 100 },
-      location: [],
-      companyName: '',
-      vendorLocation: '',
-      reportNumber: '',
       searchTerm: ''
     })
   }
@@ -626,22 +612,6 @@ export default function GemstoneFilters({
           <ButtonFilterGroup options={CUT_GRADES} category="cut" />
         </FilterSection>
 
-        <FilterSection title="Enhancement">
-          <ButtonFilterGroup options={ENHANCEMENTS} category="enhancement" />
-        </FilterSection>
-
-        <FilterSection title="Transparency">
-          <ButtonFilterGroup options={TRANSPARENCY_OPTIONS} category="transparency" />
-        </FilterSection>
-
-        <FilterSection title="Luster">
-          <ButtonFilterGroup options={LUSTER_OPTIONS} category="luster" />
-        </FilterSection>
-
-        <FilterSection title="Optical Phenomena">
-          <ButtonFilterGroup options={PHENOMENA} category="phenomena" />
-        </FilterSection>
-
         <div className="grid md:grid-cols-3 gap-6">
           <FilterSection title="Length (mm)">
             <RangeFilter
@@ -686,6 +656,7 @@ export default function GemstoneFilters({
           Clear Filters
         </button>
         <button
+          onClick={onSearch}
           className="px-6 py-3 rounded-3xl bg-gradient-to-r from-yellow-600 to-yellow-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
         >
           Search Gemstones

@@ -35,6 +35,7 @@ interface GemstoneListingPageProps {
 const getDefaultFilterValues = (gemstoneType: 'single' | 'melee'): GemstoneFilterValues => {
   return {
     gemstoneType: [],
+    shape: [],
     caratWeight: { 
       min: gemstoneType === 'melee' ? 0.01 : 0.1, 
       max: gemstoneType === 'melee' ? 5 : 20 
@@ -50,6 +51,11 @@ const getDefaultFilterValues = (gemstoneType: 'single' | 'melee'): GemstoneFilte
     transparency: [],
     luster: [],
     phenomena: [],
+    minerals: [],
+    birthstones: [],
+    length: { min: 0, max: 100 },
+    width: { min: 0, max: 100 },
+    height: { min: 0, max: 100 },
     location: [],
     companyName: '',
     vendorLocation: '',

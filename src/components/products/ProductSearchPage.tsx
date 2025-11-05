@@ -336,6 +336,7 @@ export default function ProductSearchPage({
           <GemstoneFilters 
             filters={gemstoneFilters}
             onFiltersChange={handleGemstoneFiltersChange}
+            onSearch={() => router.push('/gemstones/products')}
             gemstoneType="single"
           />
         ) : (

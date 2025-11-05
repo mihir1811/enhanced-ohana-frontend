@@ -522,6 +522,8 @@ interface DiamondResultsProps {
   onDiamondSelect: (diamond: Diamond) => void
   onAddToCart: (diamondId: string) => void
   diamondType: 'natural-single' | 'natural-melee' | 'lab-grown-single' | 'lab-grown-melee'
+  selectedShapes?: string[]
+  onShapeChange?: (shapes: string[]) => void
   className?: string
 }
 
@@ -536,12 +538,19 @@ export default function DiamondResults({
   onPageChange,
   onDiamondSelect,
   onAddToCart,
+  selectedShapes: externalSelectedShapes,
+  onShapeChange,
   className = ''
 }: DiamondResultsProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [showSortDropdown, setShowSortDropdown] = useState(false)
-  const [selectedShapes, setSelectedShapes] = useState<string[]>(['All'])
+  const [internalSelectedShapes, setInternalSelectedShapes] = useState<string[]>(['All'])
   const [quickViewDiamond, setQuickViewDiamond] = useState<Diamond | null>(null);
+
+  // Use external shapes if provided (from sidebar filters), otherwise use internal state
+  const selectedShapes = externalSelectedShapes && externalSelectedShapes.length > 0 
+    ? externalSelectedShapes 
+    : internalSelectedShapes;
 
 
   // Map shape names to icon components (default fallback if not found)
@@ -990,18 +999,25 @@ export default function DiamondResults({
             <button
               key={opt.value}
               onClick={() => {
+                let newShapes: string[];
                 if (opt.value === 'All') {
-                  setSelectedShapes(['All']);
+                  newShapes = ['All'];
                 } else {
-                  setSelectedShapes(prev => {
-                    let next;
-                    if (prev.includes(opt.value)) {
-                      next = prev.filter(s => s !== opt.value);
-                    } else {
-                      next = prev.filter(s => s !== 'All').concat(opt.value);
-                    }
-                    return next.length === 0 ? ['All'] : next;
-                  });
+                  const current = selectedShapes;
+                  let next: string[];
+                  if (current.includes(opt.value)) {
+                    next = current.filter((s: string) => s !== opt.value);
+                  } else {
+                    next = current.filter((s: string) => s !== 'All').concat(opt.value);
+                  }
+                  newShapes = next.length === 0 ? ['All'] : next;
+                }
+                
+                // If external handler exists, use it (for sidebar sync), otherwise use internal state
+                if (onShapeChange) {
+                  onShapeChange(newShapes);
+                } else {
+                  setInternalSelectedShapes(newShapes);
                 }
               }}
               className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-colors ${isSelected ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border hover:bg-muted'}`}
