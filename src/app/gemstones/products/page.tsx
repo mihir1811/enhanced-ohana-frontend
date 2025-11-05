@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback, useLayoutEffect, useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Search, Filter, Grid, List, Loader2, Eye, ShoppingCart, MapPin, Star, X, ChevronDown, Sparkles, Gem, Award, Palette, Scissors, Globe, Shield, Droplet, TrendingUp, Ruler } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { Search, Filter, Grid, List, Loader2, Eye, ShoppingCart, MapPin, Star, X, ChevronDown } from 'lucide-react';
 import NavigationUser from '@/components/Navigation/NavigationUser';
 import Footer from '@/components/Footer';
 import { gemstoneService, GemstonItem } from '@/services/gemstoneService';
@@ -21,7 +21,6 @@ const SORT_OPTIONS = [
 ];
 
 export default function GemstoneProductsPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const category = searchParams?.get('category') || 'all';
 
@@ -150,7 +149,6 @@ export default function GemstoneProductsPage() {
   // Mobile filter sidebar state with animation
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [filterSearchQuery, setFilterSearchQuery] = useState('');
   
   // Collapsible filter sections
   const [expandedSections, setExpandedSections] = useState<string[]>(['gemstoneType', 'shape', 'caratWeight']);
@@ -459,9 +457,11 @@ export default function GemstoneProductsPage() {
                                 onChange={(e) => {
                                   const searchValue = e.target.value.toLowerCase();
                                   const options = document.querySelectorAll(`[data-filter-section="gemstoneType"] label`);
-                                  options.forEach((option: any) => {
+                                  options.forEach((option: Element) => {
                                     const text = option.textContent?.toLowerCase() || '';
-                                    option.style.display = text.includes(searchValue) ? 'flex' : 'none';
+                                    if (option instanceof HTMLElement) {
+                                      option.style.display = text.includes(searchValue) ? 'flex' : 'none';
+                                    }
                                   });
                                 }}
                               />
@@ -536,9 +536,11 @@ export default function GemstoneProductsPage() {
                                 onChange={(e) => {
                                   const searchValue = e.target.value.toLowerCase();
                                   const options = document.querySelectorAll(`[data-filter-section="shape"] label`);
-                                  options.forEach((option: any) => {
+                                  options.forEach((option: Element) => {
                                     const text = option.textContent?.toLowerCase() || '';
-                                    option.style.display = text.includes(searchValue) ? 'flex' : 'none';
+                                    if (option instanceof HTMLElement) {
+                                      option.style.display = text.includes(searchValue) ? 'flex' : 'none';
+                                    }
                                   });
                                 }}
                               />
@@ -663,9 +665,11 @@ export default function GemstoneProductsPage() {
                               onChange={(e) => {
                                 const searchValue = e.target.value.toLowerCase();
                                 const options = document.querySelectorAll(`[data-filter-section="color"] label`);
-                                options.forEach((option: any) => {
+                                options.forEach((option: Element) => {
                                   const text = option.textContent?.toLowerCase() || '';
-                                  option.style.display = text.includes(searchValue) ? 'flex' : 'none';
+                                  if (option instanceof HTMLElement) {
+                                    option.style.display = text.includes(searchValue) ? 'flex' : 'none';
+                                  }
                                 });
                               }}
                             />
@@ -727,9 +731,11 @@ export default function GemstoneProductsPage() {
                               onChange={(e) => {
                                 const searchValue = e.target.value.toLowerCase();
                                 const options = document.querySelectorAll(`[data-filter-section="clarity"] label`);
-                                options.forEach((option: any) => {
+                                options.forEach((option: Element) => {
                                   const text = option.textContent?.toLowerCase() || '';
-                                  option.style.display = text.includes(searchValue) ? 'flex' : 'none';
+                                  if (option instanceof HTMLElement) {
+                                    option.style.display = text.includes(searchValue) ? 'flex' : 'none';
+                                  }
                                 });
                               }}
                             />
@@ -790,9 +796,11 @@ export default function GemstoneProductsPage() {
                               onChange={(e) => {
                                 const searchValue = e.target.value.toLowerCase();
                                 const options = document.querySelectorAll(`[data-filter-section="origin"] label`);
-                                options.forEach((option: any) => {
+                                options.forEach((option: Element) => {
                                   const text = option.textContent?.toLowerCase() || '';
-                                  option.style.display = text.includes(searchValue) ? 'flex' : 'none';
+                                  if (option instanceof HTMLElement) {
+                                    option.style.display = text.includes(searchValue) ? 'flex' : 'none';
+                                  }
                                 });
                               }}
                             />
@@ -853,9 +861,11 @@ export default function GemstoneProductsPage() {
                               onChange={(e) => {
                                 const searchValue = e.target.value.toLowerCase();
                                 const options = document.querySelectorAll(`[data-filter-section="certification"] label`);
-                                options.forEach((option: any) => {
+                                options.forEach((option: Element) => {
                                   const text = option.textContent?.toLowerCase() || '';
-                                  option.style.display = text.includes(searchValue) ? 'flex' : 'none';
+                                  if (option instanceof HTMLElement) {
+                                    option.style.display = text.includes(searchValue) ? 'flex' : 'none';
+                                  }
                                 });
                               }}
                             />
@@ -916,9 +926,11 @@ export default function GemstoneProductsPage() {
                               onChange={(e) => {
                                 const searchValue = e.target.value.toLowerCase();
                                 const options = document.querySelectorAll(`[data-filter-section="cut"] label`);
-                                options.forEach((option: any) => {
+                                options.forEach((option: Element) => {
                                   const text = option.textContent?.toLowerCase() || '';
-                                  option.style.display = text.includes(searchValue) ? 'flex' : 'none';
+                                  if (option instanceof HTMLElement) {
+                                    option.style.display = text.includes(searchValue) ? 'flex' : 'none';
+                                  }
                                 });
                               }}
                             />
@@ -979,9 +991,11 @@ export default function GemstoneProductsPage() {
                               onChange={(e) => {
                                 const searchValue = e.target.value.toLowerCase();
                                 const options = document.querySelectorAll(`[data-filter-section="treatment"] label`);
-                                options.forEach((option: any) => {
+                                options.forEach((option: Element) => {
                                   const text = option.textContent?.toLowerCase() || '';
-                                  option.style.display = text.includes(searchValue) ? 'flex' : 'none';
+                                  if (option instanceof HTMLElement) {
+                                    option.style.display = text.includes(searchValue) ? 'flex' : 'none';
+                                  }
                                 });
                               }}
                             />
