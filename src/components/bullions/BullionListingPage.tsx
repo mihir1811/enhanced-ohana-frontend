@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { JewelryItem, JewelryQueryParams } from '@/services/jewelryService';
 import { Shield, Award, TrendingUp, ArrowRight, Grid, List, Loader2, X, ChevronDown, Filter, Search, ArrowUpDown } from 'lucide-react';
+import { SECTION_WIDTH } from '@/lib/constants';
 
 interface BullionFilters {
   subcategory: string[];
@@ -557,7 +558,7 @@ const BullionListingPage: React.FC<BullionListingPageProps> = ({
         }
       `}</style>
       <div className="w-full py-5 min-h-screen">
-        <div className="flex flex-col md:flex-row gap-6 relative max-w-7xl mx-auto">
+        <div className={`flex flex-col md:flex-row gap-6 relative max-w-[${SECTION_WIDTH}px] mx-auto`}>
         {/* Drawer for mobile filters with animation */}
         {drawerVisible && (
           <>
