@@ -7,14 +7,14 @@ import BullionListingPage from '@/components/bullions/BullionListingPage'
 import { jewelryService } from '@/services/jewelryService'
 import { Shield, Award, TrendingUp } from 'lucide-react'
 
-const SECTION_WIDTH = 1920
+const SECTION_WIDTH = 1400
 
 export default function BullionsPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       <NavigationUser />
       {/* Main Content */}
-      <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 sm:px-6 lg:px-8`}>
+      <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-2 sm:px-6 lg:px-6`}>
         <BullionListingPage
           fetchBullions={jewelryService.getAllJewelry}
           title="Precious Metal Bullions"
