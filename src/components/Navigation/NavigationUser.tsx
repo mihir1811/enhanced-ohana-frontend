@@ -294,6 +294,7 @@ export default function NavigationUser() {
       ]
     },
     { href: '/jewelry', label: 'Jewelry' },
+    { href: '/bullions', label: 'Bullions' },
     { href: '/auctions', label: 'Auctions' },
     { href: '/diamond-education', label: 'Diamond Education' }
   ], [])
