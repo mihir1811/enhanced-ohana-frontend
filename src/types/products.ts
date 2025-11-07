@@ -56,7 +56,7 @@ export interface GemstoneSearchForm extends BaseProductSearch {
 
 // Jewelry Search Interface
 export interface JewelrySearchForm extends BaseProductSearch {
-  jewelryType: 'rings' | 'necklaces' | 'earrings' | 'bracelets' | 'pendants'
+  jewelryType: 'rings' | 'necklaces' | 'chains' | 'earrings' | 'watches' | 'bracelets' | 'accessories'
   category: 'engagement' | 'wedding' | 'fashion' | 'luxury'
   metal: string[]
   style: string[]
