@@ -442,6 +442,7 @@ const BullionListingPage: React.FC<BullionListingPageProps> = ({
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // Fetch bullions when filters/page changes
   useEffect(() => {
@@ -636,49 +637,45 @@ const BullionListingPage: React.FC<BullionListingPageProps> = ({
 
         {/* Main content */}
         <main className="flex-1 w-full min-w-0 z-0 relative">
-          {/* Subcategory Horizontal Filter Bar */}
+          {/* Horizontal Filter Bar - Subcategory and Metal Types */}
           <div className="mb-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-2 border border-gray-200 dark:border-gray-700">
+
+            {/* Metal Type Filters */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="flex items-center">
-                <span className="text-sm font-medium mr-3 whitespace-nowrap text-gray-900 dark:text-white">Filter by Type:</span>
+                <span className="text-sm font-medium mr-3 whitespace-nowrap text-gray-900 dark:text-white">Metal Type:</span>
               </div>
               <div className="flex flex-nowrap gap-3 overflow-x-auto w-full scrollbar-hide">
-                {/* All Types Button */}
+                {/* All Metals Button */}
                 <button
-                  onClick={() => handleFiltersChange({ ...filters, subcategory: [] })}
+                  onClick={() => handleFiltersChange({ ...filters, metalType: [] })}
                   className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200 ${
-                    filters.subcategory.length === 0
+                    filters.metalType.length === 0
                       ? 'bg-gray-700 border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-800' 
                       : 'border border-slate-300 dark:border-gray-600 text-slate-700 dark:text-gray-300 hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-400 bg-white dark:bg-gray-700'
                   }`}
                 >
-                  All Types
+                  All Metals
                 </button>
                 
-                {/* Subcategory Buttons */}
-                {['Bar', 'Coin', 'Granules', 'Rounds'].map(subcat => {
-                  const isSelected = filters.subcategory.includes(subcat);
-                  
-                  // Emoji icons for each subcategory
-                  const getIcon = (type: string) => {
-                    switch(type) {
-                      case 'Bar': return '🟨';
-                      case 'Coin': return '🪙';
-                      case 'Granules': return '⚪';
-                      case 'Rounds': return '⭕';
-                      default: return '💰';
-                    }
-                  };
+                {/* Metal Type Buttons */}
+                {[
+                  { name: 'Gold', icon: '🟡', color: 'from-yellow-500 to-yellow-600' },
+                  { name: 'Silver', icon: '⚪', color: 'from-gray-300 to-gray-400' },
+                  { name: 'Platinum', icon: '⚫', color: 'from-gray-600 to-gray-700' },
+                  { name: 'Palladium', icon: '🔘', color: 'from-gray-400 to-gray-500' }
+                ].map(metal => {
+                  const isSelected = filters.metalType.includes(metal.name);
                   
                   return (
                     <button
-                      key={subcat}
+                      key={metal.name}
                       onClick={() => {
-                        const currentSubcategories = filters.subcategory;
-                        const newSubcategories = isSelected
-                          ? currentSubcategories.filter(s => s !== subcat)
-                          : [...currentSubcategories, subcat];
-                        handleFiltersChange({ ...filters, subcategory: newSubcategories });
+                        const currentMetalTypes = filters.metalType;
+                        const newMetalTypes = isSelected
+                          ? currentMetalTypes.filter(m => m !== metal.name)
+                          : [...currentMetalTypes, metal.name];
+                        handleFiltersChange({ ...filters, metalType: newMetalTypes });
                       }}
                       className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap ${
                         isSelected
@@ -687,12 +684,12 @@ const BullionListingPage: React.FC<BullionListingPageProps> = ({
                       }`}
                     >
                       {/* Icon */}
-                      <span className="text-lg" role="img" aria-label={subcat}>
-                        {getIcon(subcat)}
+                      <span className="text-lg" role="img" aria-label={metal.name}>
+                        {metal.icon}
                       </span>
                       {/* Name */}
                       <span className="text-sm font-medium">
-                        {subcat}
+                        {metal.name}
                       </span>
                     </button>
                   );
@@ -742,13 +739,23 @@ const BullionListingPage: React.FC<BullionListingPageProps> = ({
                 {/* View Mode */}
                 <div className="flex items-center bg-white dark:bg-gray-700 shadow border border-gray-200 dark:border-gray-600 rounded-lg">
                   <button
-                    className="w-8 h-8 flex items-center justify-center rounded-lg transition bg-gray-900 dark:bg-gray-600 text-white"
+                    onClick={() => setViewMode('grid')}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${
+                      viewMode === 'grid' 
+                        ? 'bg-gray-900 dark:bg-gray-600 text-white' 
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                    }`}
                     aria-label="Grid view"
                   >
                     <Grid className="w-4 h-4" />
                   </button>
                   <button
-                    className="w-8 h-8 flex items-center justify-center rounded-lg transition text-gray-700 dark:text-gray-300"
+                    onClick={() => setViewMode('list')}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${
+                      viewMode === 'list' 
+                        ? 'bg-gray-900 dark:bg-gray-600 text-white' 
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                    }`}
                     aria-label="List view"
                   >
                     <List className="w-4 h-4" />
@@ -890,16 +897,31 @@ const BullionListingPage: React.FC<BullionListingPageProps> = ({
           )}
 
           {!loading && bullions.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {bullions.map((bullion) => (
-                <BullionCard 
-                  key={bullion.id} 
-                  bullion={bullion} 
-                  viewMode="grid"
-                  onClick={() => router.push(`/product/jewelry/${bullion.id}`)}
-                />
-              ))}
-            </div>
+            <>
+              {viewMode === 'grid' ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {bullions.map((bullion) => (
+                    <BullionCard 
+                      key={bullion.id} 
+                      bullion={bullion} 
+                      viewMode="grid"
+                      onClick={() => router.push(`/product/jewelry/${bullion.id}`)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {bullions.map((bullion) => (
+                    <BullionCard 
+                      key={bullion.id} 
+                      bullion={bullion} 
+                      viewMode="list"
+                      onClick={() => router.push(`/product/jewelry/${bullion.id}`)}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </main>
         </div>
