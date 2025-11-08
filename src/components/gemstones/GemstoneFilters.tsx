@@ -568,7 +568,7 @@ export default function GemstoneFilters({
           <ButtonFilterGroup options={CLARITY_OPTIONS} category="clarity" />
         </FilterSection>
 
-        <FilterSection title="Mineral Classification">
+        {/* <FilterSection title="Mineral Classification">
           <ButtonFilterGroup 
             options={MINERAL_CLASSIFICATIONS} 
             category="minerals" 
@@ -582,7 +582,7 @@ export default function GemstoneFilters({
             totalItems={MINERAL_CLASSIFICATIONS.length}
             visibleItems={12}
           />
-        </FilterSection>
+        </FilterSection> */}
 
         <FilterSection title="Treatments">
           <ButtonFilterGroup options={TREATMENTS} category="treatment" />

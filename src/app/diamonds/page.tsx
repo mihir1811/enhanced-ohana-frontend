@@ -116,6 +116,8 @@ interface DiamondSearchForm {
   clarity: string[]
   cut: string[]
   priceRange: { min: number; max: number }
+  totalPcs: { min: number; max: number }
+  pricePerPcs: { min: number; max: number }
   certification: string[]
   fluorescence: string[]
   grownMethod: string[]
@@ -293,6 +295,28 @@ class DiamondSearchHelpers {
       : { min: 500, max: 50000 }
   }
 
+  static getPricePerPcsRange(diamondType: 'natural' | 'lab-grown', category: 'single' | 'melee') {
+    if (category === 'melee') {
+      return diamondType === 'natural'
+        ? { min: 10, max: 500 }
+        : { min: 5, max: 200 }
+    }
+    return diamondType === 'natural'
+      ? { min: 1000, max: 100000 }
+      : { min: 500, max: 50000 }
+  }
+
+  static getPricePerCaratRange(diamondType: 'natural' | 'lab-grown', category: 'single' | 'melee') {
+    if (category === 'melee') {
+      return diamondType === 'natural'
+        ? { min: 10, max: 500 }
+        : { min: 5, max: 200 }
+    }
+    return diamondType === 'natural'
+      ? { min: 1000, max: 100000 }
+      : { min: 500, max: 50000 }
+  }
+
   static getDefaultSearchForm(diamondType: 'natural' | 'lab-grown', category: 'single' | 'melee'): DiamondSearchForm {
     return {
       diamondType,
@@ -303,6 +327,8 @@ class DiamondSearchHelpers {
       clarity: [],
       cut: [],
       priceRange: this.getPriceRange(diamondType, category),
+      totalPcs: { min: 1, max: 1000 },
+      pricePerPcs: this.getPricePerPcsRange(diamondType, category),
       certification: [],
       fluorescence: [],
       grownMethod: [],
@@ -321,7 +347,7 @@ class DiamondSearchHelpers {
       depthPercent: { min: 55, max: 75 },
       girdle: [],
       culet: [],
-      pricePerCarat: { min: 500, max: 50000 },
+      pricePerCarat: this.getPricePerCaratRange(diamondType, category),
       measurements: {
         length: { min: 0, max: 20 },
         width: { min: 0, max: 20 },
@@ -380,6 +406,8 @@ class DiamondSearchHelpers {
     const rangeFields = [
       { key: 'carat', field: 'caratWeight' },
       { key: 'price', field: 'priceRange' },
+      { key: 'totalPcs', field: 'totalPcs' },
+      { key: 'pricePerPcs', field: 'pricePerPcs' },
       { key: 'table', field: 'tablePercent' },
       { key: 'depth', field: 'depthPercent' },
       { key: 'pricePerCarat', field: 'pricePerCarat' },
@@ -1006,6 +1034,11 @@ const RangeInput = React.memo(({
   const getDefaultBounds = () => {
     if (label.toLowerCase().includes('carat')) {
       return { minBound: 0, maxBound: 10 }
+    } else if (label.toLowerCase().includes('total pcs')) {
+      return { minBound: 1, maxBound: 1000 }
+    } else if (label.toLowerCase().includes('price per pcs') || label.toLowerCase().includes('price per carat')) {
+      // Match the total price bounds
+      return { minBound: 0, maxBound: 200000 }
     } else if (label.toLowerCase().includes('price')) {
       return { minBound: 0, maxBound: 200000 }
     } else if (label.toLowerCase().includes('table') || label.toLowerCase().includes('depth')) {
@@ -1021,6 +1054,11 @@ const RangeInput = React.memo(({
   }
 
   const { minBound, maxBound } = getDefaultBounds()
+
+  // Constrain values within bounds
+  const constrainValue = (value: number) => {
+    return Math.max(minBound, Math.min(maxBound, value))
+  }
 
   return (
     <div className="space-y-3">
@@ -1058,11 +1096,11 @@ const RangeInput = React.memo(({
           min={minBound}
           max={maxBound}
           step={step}
-          value={min}
+          value={constrainValue(min)}
           onChange={(e) => {
             const value = parseFloat(e.target.value)
             if (value <= max) {
-              onMinChange(value)
+              onMinChange(constrainValue(value))
             }
           }}
           className="absolute w-full h-2 top-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-yellow-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-yellow-500 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg"
@@ -1074,11 +1112,11 @@ const RangeInput = React.memo(({
           min={minBound}
           max={maxBound}
           step={step}
-          value={max}
+          value={constrainValue(max)}
           onChange={(e) => {
             const value = parseFloat(e.target.value)
             if (value >= min) {
-              onMaxChange(value)
+              onMaxChange(constrainValue(value))
             }
           }}
           className="absolute w-full h-2 top-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-yellow-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-yellow-500 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg"
@@ -1094,8 +1132,28 @@ const RangeInput = React.memo(({
           <input
             type="number"
             step={step}
+            min={minBound}
+            max={maxBound}
             value={min}
-            onChange={(e) => onMinChange(parseFloat(e.target.value) || minBound)}
+            onChange={(e) => {
+              const value = parseFloat(e.target.value)
+              if (!isNaN(value)) {
+                const constrainedValue = constrainValue(value)
+                if (constrainedValue <= max) {
+                  onMinChange(constrainedValue)
+                }
+              }
+            }}
+            onBlur={(e) => {
+              const value = parseFloat(e.target.value)
+              if (isNaN(value) || value < minBound) {
+                onMinChange(minBound)
+              } else if (value > maxBound) {
+                onMinChange(maxBound)
+              } else if (value > max) {
+                onMinChange(max)
+              }
+            }}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
           />
         </div>
@@ -1106,8 +1164,28 @@ const RangeInput = React.memo(({
           <input
             type="number"
             step={step}
+            min={minBound}
+            max={maxBound}
             value={max}
-            onChange={(e) => onMaxChange(parseFloat(e.target.value) || maxBound)}
+            onChange={(e) => {
+              const value = parseFloat(e.target.value)
+              if (!isNaN(value)) {
+                const constrainedValue = constrainValue(value)
+                if (constrainedValue >= min) {
+                  onMaxChange(constrainedValue)
+                }
+              }
+            }}
+            onBlur={(e) => {
+              const value = parseFloat(e.target.value)
+              if (isNaN(value) || value < minBound) {
+                onMaxChange(minBound)
+              } else if (value > maxBound) {
+                onMaxChange(maxBound)
+              } else if (value < min) {
+                onMaxChange(min)
+              }
+            }}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
           />
         </div>
@@ -1244,6 +1322,60 @@ const SieveSizeTable = React.memo(({
           </button>
         </div>
       </div>
+
+      {/* Selected sizes display at top */}
+      {selectedSizes.length > 0 && (
+        <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 border border-yellow-300 dark:border-yellow-700 shadow-sm">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span className="text-sm font-bold text-yellow-800 dark:text-yellow-300">
+                {selectedSizes.length} Sieve Size{selectedSizes.length > 1 ? 's' : ''} Selected
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {selectedSizes.map((size) => {
+                const sieveData = SIEVE_DATA.find(item => item.mm === size)
+                return (
+                  <div
+                    key={size}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 rounded-full border border-yellow-400 dark:border-yellow-600 shadow-sm"
+                  >
+                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                      {size}mm
+                    </span>
+                    {sieveData && (
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        ({sieveData.sieve} • {sieveData.cts}ct)
+                      </span>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onSizeToggle(size)
+                      }}
+                      className="ml-1 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                      title="Remove this size"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+          <button
+            onClick={() => selectedSizes.forEach(size => onSizeToggle(size))}
+            className="ml-4 flex-shrink-0 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all border border-red-200 dark:border-red-800"
+          >
+            Clear All
+          </button>
+        </div>
+      )}
       
       {/* Table Header */}
       <div className="flex font-medium bg-gray-50 dark:bg-gray-800 rounded-t-md border border-gray-200 dark:border-gray-700">
@@ -1321,24 +1453,9 @@ const SieveSizeTable = React.memo(({
         </div>
       </div>
 
-      {/* Selected sizes display */}
-      {selectedSizes.length > 0 && (
-        <div className="mt-3 flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-          <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
-            {selectedSizes.length} sieve size{selectedSizes.length > 1 ? 's' : ''} selected: <strong>{selectedSizes.join(', ')}mm</strong>
-          </span>
-          <button
-            onClick={() => selectedSizes.forEach(size => onSizeToggle(size))}
-            className="text-xs underline hover:no-underline transition-all text-blue-600 dark:text-blue-400 font-medium"
-          >
-            Clear all
-          </button>
-        </div>
-      )}
-
       {/* Help text */}
       <div className="text-xs text-gray-500 dark:text-gray-400">
-        Click on sizes to select or deselect them. Visual circles show relative size.
+        💡 Click on sizes to select or deselect them. Visual circles show relative size.
       </div>
     </div>
   );
@@ -1366,6 +1483,7 @@ export default function DiamondsSearchPage() {
   const [clarityRangeStart, setClarityRangeStart] = useState<string | null>(null);
   const [sieveRangeMode, setSieveRangeMode] = useState(false);
   const [sieveRangeStart, setSieveRangeStart] = useState<string | null>(null);
+  const [gridleRangeError, setGridleRangeError] = useState<string>('');
 
   // Update state when URL parameters change
   useEffect(() => {
@@ -1382,12 +1500,16 @@ export default function DiamondsSearchPage() {
   const handleDiamondTypeChange = useCallback((type: 'natural' | 'lab-grown') => {
     const newCaratRange = DiamondSearchHelpers.getCaratRange(searchForm.category)
     const newPriceRange = DiamondSearchHelpers.getPriceRange(type, searchForm.category)
+    const newPricePerPcsRange = DiamondSearchHelpers.getPricePerPcsRange(type, searchForm.category)
+    const newPricePerCaratRange = DiamondSearchHelpers.getPricePerCaratRange(type, searchForm.category)
 
     setSearchForm(prev => ({
       ...prev,
       diamondType: type,
       caratWeight: newCaratRange,
-      priceRange: newPriceRange
+      priceRange: newPriceRange,
+      pricePerPcs: newPricePerPcsRange,
+      pricePerCarat: newPricePerCaratRange
     }))
   }, [searchForm.category])
 
@@ -1395,12 +1517,16 @@ export default function DiamondsSearchPage() {
   const handleCategoryChange = useCallback((category: 'single' | 'melee') => {
     const newCaratRange = DiamondSearchHelpers.getCaratRange(category)
     const newPriceRange = DiamondSearchHelpers.getPriceRange(searchForm.diamondType, category)
+    const newPricePerPcsRange = DiamondSearchHelpers.getPricePerPcsRange(searchForm.diamondType, category)
+    const newPricePerCaratRange = DiamondSearchHelpers.getPricePerCaratRange(searchForm.diamondType, category)
 
     setSearchForm(prev => ({
       ...prev,
       category,
       caratWeight: newCaratRange,
-      priceRange: newPriceRange
+      priceRange: newPriceRange,
+      pricePerPcs: newPricePerPcsRange,
+      pricePerCarat: newPricePerCaratRange
     }))
   }, [searchForm.diamondType])
 
@@ -1621,13 +1747,18 @@ export default function DiamondsSearchPage() {
   }, [sieveRangeMode, sieveRangeStart, searchForm.sieveSizes])
 
   const handleRangeChange = useCallback((field: keyof DiamondSearchForm, type: 'min' | 'max', value: number) => {
-    setSearchForm(prev => ({
-      ...prev,
-      [field]: {
-        ...(prev[field] as { min: number; max: number }),
-        [type]: value
-      }
-    }))
+    setSearchForm(prev => {
+      console.log('Previous value:', prev[field]);
+      const newForm = {
+        ...prev,
+        [field]: {
+          ...(prev[field] as { min: number; max: number }),
+          [type]: value
+        }
+      };
+      console.log('New value:', newForm[field]);
+      return newForm;
+    });
   }, [])
 
   const handleStringRangeChange = useCallback((field: keyof DiamondSearchForm, type: 'min' | 'max', value: string) => {
@@ -1814,10 +1945,10 @@ export default function DiamondsSearchPage() {
               )}
             </div>
 
-            {/* Carat and Price Range */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Carat and Price Range - All 5 filters for melee diamonds */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
               <RangeInput
-                label="Carat Range"
+                label="Total Carat"
                 min={searchForm.caratWeight.min}
                 max={searchForm.caratWeight.max}
                 onMinChange={(value) => handleRangeChange('caratWeight', 'min', value)}
@@ -1827,13 +1958,33 @@ export default function DiamondsSearchPage() {
               />
 
               <RangeInput
-                label="Price Range"
+                label="Total Price"
                 min={searchForm.priceRange.min}
                 max={searchForm.priceRange.max}
                 onMinChange={(value) => handleRangeChange('priceRange', 'min', value)}
                 onMaxChange={(value) => handleRangeChange('priceRange', 'max', value)}
                 unit="$"
                 step={1000}
+              />
+
+              <RangeInput
+                label="Total Pcs"
+                min={searchForm.totalPcs.min}
+                max={searchForm.totalPcs.max}
+                onMinChange={(value) => handleRangeChange('totalPcs', 'min', value)}
+                onMaxChange={(value) => handleRangeChange('totalPcs', 'max', value)}
+                unit=" pcs"
+                step={1}
+              />
+
+              <RangeInput
+                label="Price per Pcs"
+                min={searchForm.pricePerPcs.min}
+                max={searchForm.pricePerPcs.max}
+                onMinChange={(value) => handleRangeChange('pricePerPcs', 'min', value)}
+                onMaxChange={(value) => handleRangeChange('pricePerPcs', 'max', value)}
+                unit="$"
+                step={10}
               />
             </div>
 
@@ -2075,6 +2226,16 @@ export default function DiamondsSearchPage() {
               )}
             </div>
 
+            
+            <MultiSelectFilter
+              options={DIAMOND_CONSTANTS.FINISH_OPTIONS}
+              selected={searchForm.finish}
+              onChange={handleMultiSelect}
+              label="Finish (Quick Select)"
+              gridCols="grid-cols-2 md:grid-cols-4"
+              colorVariant="purple"
+            />
+
             {/* Cut Grade, Finish, Certification, Fluorescence */}
             <MultiSelectFilter
               options={DIAMOND_CONSTANTS.CUTS}
@@ -2098,15 +2259,6 @@ export default function DiamondsSearchPage() {
                 </button>
               </div>
             )}
-
-            <MultiSelectFilter
-              options={DIAMOND_CONSTANTS.FINISH_OPTIONS}
-              selected={searchForm.finish}
-              onChange={handleMultiSelect}
-              label="Finish (Quick Select)"
-              gridCols="grid-cols-2 md:grid-cols-4"
-              colorVariant="purple"
-            />
 
             {/* Polish and Symmetry - Auto-selected by Finish */}
             <div className="grid md:grid-cols-2 gap-6">
@@ -2170,10 +2322,78 @@ export default function DiamondsSearchPage() {
               />
             )}
             </div>
+
+            {/* Company, Location, Origin Search - Moved before Advanced Filters */}
+            <div className="grid md:grid-cols-3 gap-6 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
+              <SearchInput
+                label="Company Name"
+                placeholder="Search by company name"
+                selected={searchForm.company}
+                onAdd={(value) => handleAddToArray('company', value)}
+                onRemove={(value) => handleRemoveFromArray('company', value)}
+              />
+
+              <SearchInput
+                label="Vendor's Location"
+                placeholder="Search by location"
+                selected={searchForm.location}
+                onAdd={(value) => handleAddToArray('location', value)}
+                onRemove={(value) => handleRemoveFromArray('location', value)}
+              />
+
+              <SearchInput
+                label="Origin"
+                placeholder="Search by origin"
+                selected={searchForm.origin}
+                onAdd={(value) => handleAddToArray('origin', value)}
+                onRemove={(value) => handleRemoveFromArray('origin', value)}
+              />
+            </div>
           </div>
 
-          {/* Advanced Filters Toggle */}
-          <div className="mt-8 border-t pt-6" style={{ borderColor: 'var(--border)' }}>
+          {/* Melee-specific Measurement Filters - Shown before Advanced Filters */}
+          {searchForm.category === 'melee' && (
+            <div className="mt-8 border-t pt-6" style={{ borderColor: 'var(--border)' }}>
+              <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--foreground)' }}>
+                Measurement Filters
+              </h3>
+              <div className="grid md:grid-cols-3 gap-6">
+                <RangeInput
+                  label="Length Range"
+                  min={searchForm.lengthRange.min}
+                  max={searchForm.lengthRange.max}
+                  onMinChange={(value) => handleRangeChange('lengthRange', 'min', value)}
+                  onMaxChange={(value) => handleRangeChange('lengthRange', 'max', value)}
+                  unit="mm"
+                  step={0.1}
+                />
+
+                <RangeInput
+                  label="Width Range"
+                  min={searchForm.widthRange.min}
+                  max={searchForm.widthRange.max}
+                  onMinChange={(value) => handleRangeChange('widthRange', 'min', value)}
+                  onMaxChange={(value) => handleRangeChange('widthRange', 'max', value)}
+                  unit="mm"
+                  step={0.1}
+                />
+
+                <RangeInput
+                  label="Height Range"
+                  min={searchForm.heightRange.min}
+                  max={searchForm.heightRange.max}
+                  onMinChange={(value) => handleRangeChange('heightRange', 'min', value)}
+                  onMaxChange={(value) => handleRangeChange('heightRange', 'max', value)}
+                  unit="mm"
+                  step={0.1}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Advanced Filters Toggle - Hidden for Melee */}
+          {searchForm.category !== 'melee' && (
+            <div className="mt-8 border-t pt-6" style={{ borderColor: 'var(--border)' }}>
             <div className='flex justify-center relative'>
               <button
                 onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
@@ -2230,33 +2450,6 @@ export default function DiamondsSearchPage() {
                   label="Culet Size"
                   gridCols="grid-cols-2 md:grid-cols-5"
                 />
-
-                {/* Company, Location, Origin Search */}
-                <div className="grid md:grid-cols-3 gap-6">
-                  <SearchInput
-                    label="Company Name"
-                    placeholder="Search by company name"
-                    selected={searchForm.company}
-                    onAdd={(value) => handleAddToArray('company', value)}
-                    onRemove={(value) => handleRemoveFromArray('company', value)}
-                  />
-
-                  <SearchInput
-                    label="Vendor's Location"
-                    placeholder="Search by location"
-                    selected={searchForm.location}
-                    onAdd={(value) => handleAddToArray('location', value)}
-                    onRemove={(value) => handleRemoveFromArray('location', value)}
-                  />
-
-                  <SearchInput
-                    label="Origin"
-                    placeholder="Search by origin"
-                    selected={searchForm.origin}
-                    onAdd={(value) => handleAddToArray('origin', value)}
-                    onRemove={(value) => handleRemoveFromArray('origin', value)}
-                  />
-                </div>
 
                 {/* Additional Measurements */}
                 <div className="grid md:grid-cols-3 gap-6">
@@ -2381,9 +2574,24 @@ export default function DiamondsSearchPage() {
                       <label className="block text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Minimum</label>
                       <select
                         value={searchForm.gridleRange.min}
-                        onChange={(e) => handleStringRangeChange('gridleRange', 'min', e.target.value)}
-                        className="w-full p-3 border rounded-lg"
-                        style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                        onChange={(e) => {
+                          const newMin = e.target.value
+                          const minIndex = DIAMOND_CONSTANTS.GIRDLE_ORDER.indexOf(newMin)
+                          const maxIndex = DIAMOND_CONSTANTS.GIRDLE_ORDER.indexOf(searchForm.gridleRange.max)
+                          
+                          // If max is set and new min is greater than max, show error
+                          if (searchForm.gridleRange.max && minIndex > maxIndex) {
+                            setGridleRangeError('Minimum girdle thickness cannot be greater than maximum.')
+                            return
+                          }
+                          
+                          setGridleRangeError('')
+                          handleStringRangeChange('gridleRange', 'min', newMin)
+                        }}
+                        className={`w-full p-3 border rounded-lg transition-colors ${
+                          gridleRangeError ? 'border-red-500 focus:ring-red-500' : ''
+                        }`}
+                        style={{ backgroundColor: 'var(--card)', borderColor: gridleRangeError ? '#ef4444' : 'var(--border)', color: 'var(--foreground)' }}
                       >
                         <option value="">Select minimum</option>
                         {DIAMOND_CONSTANTS.GIRDLE_ORDER.map((option) => (
@@ -2397,9 +2605,24 @@ export default function DiamondsSearchPage() {
                       <label className="block text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Maximum</label>
                       <select
                         value={searchForm.gridleRange.max}
-                        onChange={(e) => handleStringRangeChange('gridleRange', 'max', e.target.value)}
-                        className="w-full p-3 border rounded-lg"
-                        style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                        onChange={(e) => {
+                          const newMax = e.target.value
+                          const minIndex = DIAMOND_CONSTANTS.GIRDLE_ORDER.indexOf(searchForm.gridleRange.min)
+                          const maxIndex = DIAMOND_CONSTANTS.GIRDLE_ORDER.indexOf(newMax)
+                          
+                          // If min is set and new max is less than min, show error
+                          if (searchForm.gridleRange.min && maxIndex < minIndex) {
+                            setGridleRangeError('Maximum girdle thickness cannot be less than minimum.')
+                            return
+                          }
+                          
+                          setGridleRangeError('')
+                          handleStringRangeChange('gridleRange', 'max', newMax)
+                        }}
+                        className={`w-full p-3 border rounded-lg transition-colors ${
+                          gridleRangeError ? 'border-red-500 focus:ring-red-500' : ''
+                        }`}
+                        style={{ backgroundColor: 'var(--card)', borderColor: gridleRangeError ? '#ef4444' : 'var(--border)', color: 'var(--foreground)' }}
                       >
                         <option value="">Select maximum</option>
                         {DIAMOND_CONSTANTS.GIRDLE_ORDER.map((option) => (
@@ -2410,9 +2633,26 @@ export default function DiamondsSearchPage() {
                       </select>
                     </div>
                   </div>
-                  {searchForm.gridleRange.min && searchForm.gridleRange.max && (
-                    <div className="mt-2">
-                      <span className="text-sm text-blue-600">
+                  
+                  {/* Error Message */}
+                  {gridleRangeError && (
+                    <div className="mt-2 flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                      <svg className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="text-sm font-medium text-red-600 dark:text-red-400">
+                        {gridleRangeError}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {/* Success Message */}
+                  {!gridleRangeError && searchForm.gridleRange.min && searchForm.gridleRange.max && (
+                    <div className="mt-2 flex items-start gap-2 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                      <svg className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-sm font-medium text-green-600 dark:text-green-400">
                         Selected range: {searchForm.gridleRange.min} to {searchForm.gridleRange.max}
                       </span>
                     </div>
@@ -2422,6 +2662,7 @@ export default function DiamondsSearchPage() {
 
             )}
           </div>
+          )}
         </div>
 
 

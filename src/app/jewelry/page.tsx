@@ -11,33 +11,53 @@ import { ArrowRight, Play, Star, Shield, Award, Gem, ChevronLeft, ChevronRight }
 const HERO_SLIDES = [
   {
     id: 1,
-    title: 'Timeless Elegance',
-    subtitle: 'Discover our curated collection',
+    title: 'Exquisite Rings',
+    subtitle: 'Timeless Elegance',
     description: 'Fine jewelry crafted with precision and designed to last generations',
-    image: 'https://images.stockcake.com/public/7/4/0/7402e635-3f62-4d2a-b2b1-2d1428fd667d_large/elegant-engagement-ring-stockcake.jpg',
-    cta: 'Shop Now',
+    image: '/images/jewelryCategoryImages/ring.webp',
+    cta: 'Shop Rings',
     ctaLink: '/jewelry/rings',
     bgGradient: 'from-amber-50 via-rose-50 to-white'
   },
   {
     id: 2,
-    title: 'Luxury Watches',
-    subtitle: 'Precision Timepieces',
-    description: 'Swiss-made watches that combine heritage with modern innovation',
-    image: 'https://images.stockcake.com/public/8/5/1/851ab78a-7c85-4a5e-ae28-e26c70e6e2e7_large/luxury-watch-display-stockcake.jpg',
-    cta: 'Explore Watches',
-    ctaLink: '/jewelry/watches',
-    bgGradient: 'from-slate-50 via-gray-50 to-white'
+    title: 'Elegant Necklaces',
+    subtitle: 'Statement Pieces',
+    description: 'Stunning necklaces that elevate any outfit with sophisticated charm',
+    image: '/images/jewelryCategoryImages/necklace.webp',
+    cta: 'View Necklaces',
+    ctaLink: '/jewelry/necklaces',
+    bgGradient: 'from-blue-50 via-indigo-50 to-white'
   },
   {
     id: 3,
-    title: 'Diamond Jewelries',
-    subtitle: 'Brilliance Redefined',
-    description: 'Ethically sourced diamonds certified for their exceptional quality',
-    image: 'https://images.stockcake.com/public/9/2/3/923ff1de-6d28-4c57-9e7e-3c3c3c2b2a1a_large/sparkling-diamond-necklace-stockcake.jpg',
-    cta: 'View Diamonds',
-    ctaLink: '/jewelry/necklaces',
-    bgGradient: 'from-blue-50 via-indigo-50 to-white'
+    title: 'Beautiful Earrings',
+    subtitle: 'Elegant Designs',
+    description: 'Premium earrings that combine sophistication with timeless style',
+    image: '/images/jewelryCategoryImages/earrings.webp',
+    cta: 'Explore Earrings',
+    ctaLink: '/jewelry/earrings',
+    bgGradient: 'from-slate-50 via-gray-50 to-white'
+  },
+  {
+    id: 4,
+    title: 'Stunning Bracelets',
+    subtitle: 'Wrist Elegance',
+    description: 'Handcrafted bracelets that add a touch of luxury to your style',
+    image: '/images/jewelryCategoryImages/bracelet.webp',
+    cta: 'Shop Bracelets',
+    ctaLink: '/jewelry/bracelets',
+    bgGradient: 'from-emerald-50 via-teal-50 to-white'
+  },
+  {
+    id: 5,
+    title: 'Complete Jewelry Sets',
+    subtitle: 'Perfect Harmony',
+    description: 'Coordinated jewelry sets for a perfectly matched look',
+    image: '/images/jewelryCategoryImages/set.webp',
+    cta: 'View Sets',
+    ctaLink: '/jewelry/sets',
+    bgGradient: 'from-purple-50 via-pink-50 to-white'
   }
 ];
 
@@ -246,43 +266,49 @@ export default function JewelryHomePage() {
               {[
                 {
                   title: 'Rings',
-                  emoji: '💍',
+                  image: '/images/jewelryCategoryImages/ring.webp',
                   href: '/jewelry/rings',
                   bgColor: 'from-pink-100 to-rose-100'
                 },
                 {
                   title: 'Necklaces',
-                  emoji: '📿',
+                  image: '/images/jewelryCategoryImages/necklace.webp',
                   href: '/jewelry/necklaces',
                   bgColor: 'from-purple-100 to-violet-100'
                 },
                 {
-                  title: 'Chains',
-                  emoji: '⛓️',
-                  href: '/jewelry/chains',
-                  bgColor: 'from-gray-100 to-slate-100'
-                },
-                {
                   title: 'Earrings',
-                  emoji: '�',
+                  image: '/images/jewelryCategoryImages/earrings.webp',
                   href: '/jewelry/earrings',
                   bgColor: 'from-blue-100 to-sky-100'
                 },
                 {
-                  title: 'Watches',
-                  emoji: '⌚',
-                  href: '/jewelry/watches',
-                  bgColor: 'from-amber-100 to-yellow-100'
-                },
-                {
                   title: 'Bracelets',
-                  emoji: '🔗',
+                  image: '/images/jewelryCategoryImages/bracelet.webp',
                   href: '/jewelry/bracelets',
                   bgColor: 'from-emerald-100 to-green-100'
                 },
                 {
+                  title: 'Jewelry Sets',
+                  image: '/images/jewelryCategoryImages/set.webp',
+                  href: '/jewelry',
+                  bgColor: 'from-rose-100 to-pink-100'
+                },
+                {
+                  title: 'Chains',
+                  image: '/images/jewelryCategoryImages/necklace.webp',
+                  href: '/jewelry/chains',
+                  bgColor: 'from-gray-100 to-slate-100'
+                },
+                {
+                  title: 'Watches',
+                  image: '/images/jewelryCategoryImages/set.webp',
+                  href: '/jewelry/watches',
+                  bgColor: 'from-amber-100 to-yellow-100'
+                },
+                {
                   title: 'Accessories',
-                  emoji: '✨',
+                  image: '/images/jewelryCategoryImages/earrings.webp',
                   href: '/jewelry/accessories',
                   bgColor: 'from-rose-100 to-pink-100'
                 }
@@ -297,7 +323,7 @@ export default function JewelryHomePage() {
                     <div className="relative w-48 h-48 rounded-full overflow-visible">
                       <div className="relative w-48 h-48 rounded-full overflow-hidden shadow-xl group-hover:shadow-2xl dark:shadow-gray-800 dark:group-hover:shadow-gray-700 group-hover:scale-105 ring-4 ring-white dark:ring-gray-700 group-hover:ring-amber-200 dark:group-hover:ring-amber-500 transition-all duration-300">
                         <Image
-                          src="https://images.stockcake.com/public/7/4/0/7402e635-3f62-4d2a-b2b1-2d1428fd667d_large/elegant-engagement-ring-stockcake.jpg"
+                          src={category.image}
                           alt={category.title}
                           fill
                           className="object-cover"
