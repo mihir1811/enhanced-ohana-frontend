@@ -716,6 +716,79 @@ const getRingTypeIcon = (ringType: string) => {
   return iconMap[ringType] || '💍'
 }
 
+// Helper function to get necklace chain type icons
+const getChainTypeIcon = (chainType: string) => {
+  const iconMap: Record<string, string> = {
+    'cable': '🔗',
+    'rope': '🪢',
+    'box': '📦',
+    'curb': '⛓️',
+    'figaro': '🔗',
+    'snake': '🐍',
+    'wheat': '🌾',
+    'link': '🔗'
+  }
+  return iconMap[chainType] || '🔗'
+}
+
+// Helper function to get earring style icons
+const getEarringStyleIcon = (style: string) => {
+  const iconMap: Record<string, string> = {
+    'stud': '💎',
+    'hoop': '⭕',
+    'dangle': '💫',
+    'drop': '💧',
+    'huggie': '🤗',
+    'chandelier': '🕯️',
+    'cluster': '✨',
+    'halo': '⭕',
+    'jhumanka': '🔔',
+    'ear-climbers-crawlers': '🧗',
+    'ear-cuffs': '🎧',
+    'threader': '🧵',
+    'jacket': '🧥'
+  }
+  return iconMap[style] || '👂'
+}
+
+// Helper function to get bracelet chain type icons
+const getBraceletChainTypeIcon = (chainType: string) => {
+  const iconMap: Record<string, string> = {
+    'cable': '🔗',
+    'rope': '🪢',
+    'box': '📦',
+    'curb': '⛓️',
+    'figaro': '🔗',
+    'snake': '🐍',
+    'wheat': '🌾',
+    'link': '🔗',
+    'bangle': '⭕',
+    'cuff': '💪',
+    'tennis': '🎾',
+    'charm': '🔮'
+  }
+  return iconMap[chainType] || '⛓️'
+}
+
+// Helper function to get accessory type icons
+const getAccessoryTypeIcon = (accessoryType: string) => {
+  const iconMap: Record<string, string> = {
+    'maang-tikka': '👑',
+    'nose-pin': '👃',
+    'anklet': '👣',
+    'charms': '🔮',
+    'hair-pin': '📍',
+    'cuff-links': '👔',
+    'armlet': '💪',
+    'brooch': '📌',
+    'belly-chain': '⛓️',
+    'belly-button-ring': '⭕',
+    'toe-ring': '👣',
+    'chatelaine': '🔑'
+  }
+  return iconMap[accessoryType] || '✨'
+}
+
 export default function JewelryCategoryPage() {
   const params = useParams()
 
@@ -1234,6 +1307,286 @@ export default function JewelryCategoryPage() {
           </div>
         )}
 
+        {/* Necklace Chain Types Filter Bar - For necklaces category */}
+        {category === 'necklaces' && Array.isArray(categoryFilters.chainTypes) && categoryFilters.chainTypes.length > 0 && (
+          <div className="mb-2 bg-white rounded-lg shadow-sm p-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex items-center">
+                <span className="text-sm font-medium mr-3 whitespace-nowrap">Filter by Chain Type:</span>
+              </div>
+              <div className="flex flex-nowrap gap-3 overflow-x-auto w-full scrollbar-hide">
+                {/* All Chain Types Button */}
+                <button
+                  onClick={() => handleFilterChange('chainTypes', [])}
+                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200 ${
+                    (!filters.chainTypes || filters.chainTypes.length === 0)
+                      ? 'bg-gray-700 border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-800' 
+                      : 'border border-slate-300 text-slate-700 hover:border-gray-500 hover:text-gray-700 bg-white'
+                  }`}
+                >
+                  All Chain Types
+                </button>
+                
+                {/* Chain Type Buttons */}
+                {(categoryFilters.chainTypes as Array<{ value: string; label: string }> | undefined)?.map(chainType => {
+                  const isSelected = filters.chainTypes?.includes(chainType.value) || false
+
+                  return (
+                    <button
+                      key={chainType.value}
+                      onClick={() => {
+                        const currentChainTypes = filters.chainTypes || []
+                        const newChainTypes = isSelected
+                          ? currentChainTypes.filter(c => c !== chainType.value)
+                          : [...currentChainTypes, chainType.value]
+                        handleFilterChange('chainTypes', newChainTypes)
+                      }}
+                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap ${
+                        isSelected
+                          ? 'bg-purple-600 border-purple-600 text-white hover:bg-purple-700'
+                          : 'bg-white border-slate-300 text-slate-700 hover:border-purple-400 hover:text-purple-600'
+                      }`}
+                    >
+                      {/* Chain Type Icon */}
+                      <span className="text-lg" role="img" aria-label={chainType.label}>
+                        {getChainTypeIcon(chainType.value)}
+                      </span>
+                      {/* Chain Type Name */}
+                      <span className="text-sm font-medium">
+                        {chainType.label}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Earring Styles Filter Bar - For earrings category */}
+        {category === 'earrings' && Array.isArray(categoryFilters.styles) && categoryFilters.styles.length > 0 && (
+          <div className="mb-2 bg-white rounded-lg shadow-sm p-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex items-center">
+                <span className="text-sm font-medium mr-3 whitespace-nowrap">Filter by Style:</span>
+              </div>
+              <div className="flex flex-nowrap gap-3 overflow-x-auto w-full scrollbar-hide">
+                {/* All Styles Button */}
+                <button
+                  onClick={() => handleFilterChange('style', [])}
+                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200 ${
+                    (!filters.style || filters.style.length === 0)
+                      ? 'bg-gray-700 border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-800' 
+                      : 'border border-slate-300 text-slate-700 hover:border-gray-500 hover:text-gray-700 bg-white'
+                  }`}
+                >
+                  All Styles
+                </button>
+                
+                {/* Earring Style Buttons - Show first 10 popular styles */}
+                {(categoryFilters.styles as Array<{ value: string; label: string }> | undefined)?.slice(0, 10).map(style => {
+                  const isSelected = filters.style?.includes(style.value) || false
+
+                  return (
+                    <button
+                      key={style.value}
+                      onClick={() => {
+                        const currentStyles = filters.style || []
+                        const newStyles = isSelected
+                          ? currentStyles.filter(s => s !== style.value)
+                          : [...currentStyles, style.value]
+                        handleFilterChange('style', newStyles)
+                      }}
+                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap ${
+                        isSelected
+                          ? 'bg-pink-600 border-pink-600 text-white hover:bg-pink-700'
+                          : 'bg-white border-slate-300 text-slate-700 hover:border-pink-400 hover:text-pink-600'
+                      }`}
+                    >
+                      {/* Earring Style Icon */}
+                      <span className="text-lg" role="img" aria-label={style.label}>
+                        {getEarringStyleIcon(style.value)}
+                      </span>
+                      {/* Earring Style Name */}
+                      <span className="text-sm font-medium">
+                        {style.label}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Bracelet Chain Types Filter Bar - For bracelets category */}
+        {category === 'bracelets' && Array.isArray(categoryFilters.chainTypes) && categoryFilters.chainTypes.length > 0 && (
+          <div className="mb-2 bg-white rounded-lg shadow-sm p-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex items-center">
+                <span className="text-sm font-medium mr-3 whitespace-nowrap">Filter by Chain Type:</span>
+              </div>
+              <div className="flex flex-nowrap gap-3 overflow-x-auto w-full scrollbar-hide">
+                {/* All Chain Types Button */}
+                <button
+                  onClick={() => handleFilterChange('chainTypes', [])}
+                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200 ${
+                    (!filters.chainTypes || filters.chainTypes.length === 0)
+                      ? 'bg-gray-700 border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-800' 
+                      : 'border border-slate-300 text-slate-700 hover:border-gray-500 hover:text-gray-700 bg-white'
+                  }`}
+                >
+                  All Chain Types
+                </button>
+                
+                {/* Bracelet Chain Type Buttons */}
+                {(categoryFilters.chainTypes as Array<{ value: string; label: string }> | undefined)?.map(chainType => {
+                  const isSelected = filters.chainTypes?.includes(chainType.value) || false
+
+                  return (
+                    <button
+                      key={chainType.value}
+                      onClick={() => {
+                        const currentChainTypes = filters.chainTypes || []
+                        const newChainTypes = isSelected
+                          ? currentChainTypes.filter(c => c !== chainType.value)
+                          : [...currentChainTypes, chainType.value]
+                        handleFilterChange('chainTypes', newChainTypes)
+                      }}
+                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap ${
+                        isSelected
+                          ? 'bg-teal-600 border-teal-600 text-white hover:bg-teal-700'
+                          : 'bg-white border-slate-300 text-slate-700 hover:border-teal-400 hover:text-teal-600'
+                      }`}
+                    >
+                      {/* Bracelet Chain Type Icon */}
+                      <span className="text-lg" role="img" aria-label={chainType.label}>
+                        {getBraceletChainTypeIcon(chainType.value)}
+                      </span>
+                      {/* Bracelet Chain Type Name */}
+                      <span className="text-sm font-medium">
+                        {chainType.label}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Chain Styles Filter Bar - For chains category */}
+        {category === 'chains' && Array.isArray(categoryFilters.styles) && categoryFilters.styles.length > 0 && (
+          <div className="mb-2 bg-white rounded-lg shadow-sm p-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex items-center">
+                <span className="text-sm font-medium mr-3 whitespace-nowrap">Filter by Chain Style:</span>
+              </div>
+              <div className="flex flex-nowrap gap-3 overflow-x-auto w-full scrollbar-hide">
+                {/* All Chain Styles Button */}
+                <button
+                  onClick={() => handleFilterChange('style', [])}
+                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200 ${
+                    (!filters.style || filters.style.length === 0)
+                      ? 'bg-gray-700 border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-800' 
+                      : 'border border-slate-300 text-slate-700 hover:border-gray-500 hover:text-gray-700 bg-white'
+                  }`}
+                >
+                  All Styles
+                </button>
+                
+                {/* Chain Style Buttons */}
+                {(categoryFilters.styles as Array<{ value: string; label: string }> | undefined)?.map(style => {
+                  const isSelected = filters.style?.includes(style.value) || false
+
+                  return (
+                    <button
+                      key={style.value}
+                      onClick={() => {
+                        const currentStyles = filters.style || []
+                        const newStyles = isSelected
+                          ? currentStyles.filter(s => s !== style.value)
+                          : [...currentStyles, style.value]
+                        handleFilterChange('style', newStyles)
+                      }}
+                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap ${
+                        isSelected
+                          ? 'bg-indigo-600 border-indigo-600 text-white hover:bg-indigo-700'
+                          : 'bg-white border-slate-300 text-slate-700 hover:border-indigo-400 hover:text-indigo-600'
+                      }`}
+                    >
+                      {/* Chain Style Icon */}
+                      <span className="text-lg" role="img" aria-label={style.label}>
+                        {getChainTypeIcon(style.value)}
+                      </span>
+                      {/* Chain Style Name */}
+                      <span className="text-sm font-medium">
+                        {style.label}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Accessory Types Filter Bar - For accessories category */}
+        {category === 'accessories' && Array.isArray(categoryFilters.accessoryTypes) && categoryFilters.accessoryTypes.length > 0 && (
+          <div className="mb-2 bg-white rounded-lg shadow-sm p-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex items-center">
+                <span className="text-sm font-medium mr-3 whitespace-nowrap">Filter by Accessory Type:</span>
+              </div>
+              <div className="flex flex-nowrap gap-3 overflow-x-auto w-full scrollbar-hide">
+                {/* All Accessory Types Button */}
+                <button
+                  onClick={() => handleFilterChange('accessoryTypes', [])}
+                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200 ${
+                    (!filters.accessoryTypes || filters.accessoryTypes.length === 0)
+                      ? 'bg-gray-700 border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-800' 
+                      : 'border border-slate-300 text-slate-700 hover:border-gray-500 hover:text-gray-700 bg-white'
+                  }`}
+                >
+                  All Types
+                </button>
+                
+                {/* Accessory Type Buttons */}
+                {(categoryFilters.accessoryTypes as Array<{ value: string; label: string }> | undefined)?.map(accessoryType => {
+                  const isSelected = filters.accessoryTypes?.includes(accessoryType.value) || false
+
+                  return (
+                    <button
+                      key={accessoryType.value}
+                      onClick={() => {
+                        const currentAccessoryTypes = filters.accessoryTypes || []
+                        const newAccessoryTypes = isSelected
+                          ? currentAccessoryTypes.filter(a => a !== accessoryType.value)
+                          : [...currentAccessoryTypes, accessoryType.value]
+                        handleFilterChange('accessoryTypes', newAccessoryTypes)
+                      }}
+                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap ${
+                        isSelected
+                          ? 'bg-rose-600 border-rose-600 text-white hover:bg-rose-700'
+                          : 'bg-white border-slate-300 text-slate-700 hover:border-rose-400 hover:text-rose-600'
+                      }`}
+                    >
+                      {/* Accessory Type Icon */}
+                      <span className="text-lg" role="img" aria-label={accessoryType.label}>
+                        {getAccessoryTypeIcon(accessoryType.value)}
+                      </span>
+                      {/* Accessory Type Name */}
+                      <span className="text-sm font-medium">
+                        {accessoryType.label}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Results */}
         <div className="w-full">
           {/* Results Header */}
@@ -1476,6 +1829,104 @@ export default function JewelryCategoryPage() {
                 </FilterSection>
               )}
 
+              {/* Necklace Chain Types - Show only for necklaces category */}
+              {category === 'necklaces' && Array.isArray(categoryFilters.chainTypes) && categoryFilters.chainTypes.length > 0 && (
+                <FilterSection 
+                  title="Chain Type" 
+                  count={filters.chainTypes?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.chainTypes}
+                    selectedValues={filters.chainTypes || []}
+                    onChange={(value) => handleFilterChange('chainTypes', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Necklace Styles - Show only for necklaces category */}
+              {category === 'necklaces' && Array.isArray(categoryFilters.styles) && categoryFilters.styles.length > 0 && (
+                <FilterSection 
+                  title="Necklace Style" 
+                  count={filters.style?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.styles}
+                    selectedValues={filters.style || []}
+                    onChange={(value) => handleFilterChange('style', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Necklace Lengths - Show only for necklaces category */}
+              {category === 'necklaces' && Array.isArray(categoryFilters.lengths) && categoryFilters.lengths.length > 0 && (
+                <FilterSection 
+                  title="Length" 
+                  count={filters.lengths?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.lengths}
+                    selectedValues={filters.lengths || []}
+                    onChange={(value) => handleFilterChange('lengths', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Earring Styles - Show only for earrings category */}
+              {category === 'earrings' && Array.isArray(categoryFilters.styles) && categoryFilters.styles.length > 0 && (
+                <FilterSection 
+                  title="Earring Style" 
+                  count={filters.style?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.styles}
+                    selectedValues={filters.style || []}
+                    onChange={(value) => handleFilterChange('style', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Bracelet Chain Types - Show only for bracelets category */}
+              {category === 'bracelets' && Array.isArray(categoryFilters.chainTypes) && categoryFilters.chainTypes.length > 0 && (
+                <FilterSection 
+                  title="Bracelet Type" 
+                  count={filters.chainTypes?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.chainTypes}
+                    selectedValues={filters.chainTypes || []}
+                    onChange={(value) => handleFilterChange('chainTypes', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Bracelet Lengths - Show only for bracelets category */}
+              {category === 'bracelets' && Array.isArray(categoryFilters.lengths) && categoryFilters.lengths.length > 0 && (
+                <FilterSection 
+                  title="Length" 
+                  count={filters.lengths?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.lengths}
+                    selectedValues={filters.lengths || []}
+                    onChange={(value) => handleFilterChange('lengths', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Chain Styles - Show only for chains category */}
+              {category === 'chains' && Array.isArray(categoryFilters.styles) && categoryFilters.styles.length > 0 && (
+                <FilterSection 
+                  title="Chain Style" 
+                  count={filters.style?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.styles}
+                    selectedValues={filters.style || []}
+                    onChange={(value) => handleFilterChange('style', value)}
+                  />
+                </FilterSection>
+              )}
+
               {/* Watch Brands - Show only for watches category */}
               {category === 'watches' && Array.isArray(categoryFilters.brands) && categoryFilters.brands.length > 0 && (
                 <FilterSection 
@@ -1500,6 +1951,146 @@ export default function JewelryCategoryPage() {
                     options={categoryFilters.models}
                     selectedValues={filters.models || []}
                     onChange={(value) => handleFilterChange('models', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Watch Dial Color - Show only for watches category */}
+              {category === 'watches' && Array.isArray(categoryFilters.dialColors) && categoryFilters.dialColors.length > 0 && (
+                <FilterSection 
+                  title="Dial Color" 
+                  count={filters.dialColors?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.dialColors}
+                    selectedValues={filters.dialColors || []}
+                    onChange={(value) => handleFilterChange('dialColors', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Watch Case Shape - Show only for watches category */}
+              {category === 'watches' && Array.isArray(categoryFilters.caseShapes) && categoryFilters.caseShapes.length > 0 && (
+                <FilterSection 
+                  title="Case Shape" 
+                  count={filters.caseShapes?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.caseShapes}
+                    selectedValues={filters.caseShapes || []}
+                    onChange={(value) => handleFilterChange('caseShapes', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Watch Case Size - Show only for watches category */}
+              {category === 'watches' && Array.isArray(categoryFilters.caseSizes) && categoryFilters.caseSizes.length > 0 && (
+                <FilterSection 
+                  title="Case Size" 
+                  count={filters.caseSizes?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.caseSizes}
+                    selectedValues={filters.caseSizes || []}
+                    onChange={(value) => handleFilterChange('caseSizes', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Watch Case Material - Show only for watches category */}
+              {category === 'watches' && Array.isArray(categoryFilters.caseMaterials) && categoryFilters.caseMaterials.length > 0 && (
+                <FilterSection 
+                  title="Case Material" 
+                  count={filters.caseMaterials?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.caseMaterials}
+                    selectedValues={filters.caseMaterials || []}
+                    onChange={(value) => handleFilterChange('caseMaterials', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Watch Strap Material - Show only for watches category */}
+              {category === 'watches' && Array.isArray(categoryFilters.strapMaterials) && categoryFilters.strapMaterials.length > 0 && (
+                <FilterSection 
+                  title="Strap Material" 
+                  count={filters.strapMaterials?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.strapMaterials}
+                    selectedValues={filters.strapMaterials || []}
+                    onChange={(value) => handleFilterChange('strapMaterials', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Watch Strap Color - Show only for watches category */}
+              {category === 'watches' && Array.isArray(categoryFilters.strapColors) && categoryFilters.strapColors.length > 0 && (
+                <FilterSection 
+                  title="Strap Color" 
+                  count={filters.strapColors?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.strapColors}
+                    selectedValues={filters.strapColors || []}
+                    onChange={(value) => handleFilterChange('strapColors', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Watch Movement - Show only for watches category */}
+              {category === 'watches' && Array.isArray(categoryFilters.movements) && categoryFilters.movements.length > 0 && (
+                <FilterSection 
+                  title="Movement" 
+                  count={filters.movements?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.movements}
+                    selectedValues={filters.movements || []}
+                    onChange={(value) => handleFilterChange('movements', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Watch Water Resistance - Show only for watches category */}
+              {category === 'watches' && Array.isArray(categoryFilters.waterResistance) && categoryFilters.waterResistance.length > 0 && (
+                <FilterSection 
+                  title="Water Resistance" 
+                  count={filters.waterResistance?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.waterResistance}
+                    selectedValues={filters.waterResistance || []}
+                    onChange={(value) => handleFilterChange('waterResistance', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Watch Features - Show only for watches category */}
+              {category === 'watches' && Array.isArray(categoryFilters.features) && categoryFilters.features.length > 0 && (
+                <FilterSection 
+                  title="Features" 
+                  count={filters.features?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.features}
+                    selectedValues={filters.features || []}
+                    onChange={(value) => handleFilterChange('features', value)}
+                  />
+                </FilterSection>
+              )}
+
+              {/* Watch Dial Stones - Show only for watches category */}
+              {category === 'watches' && Array.isArray(categoryFilters.dialStones) && categoryFilters.dialStones.length > 0 && (
+                <FilterSection 
+                  title="Dial Stones" 
+                  count={filters.dialStones?.length || 0}
+                >
+                  <CheckboxGroup
+                    options={categoryFilters.dialStones}
+                    selectedValues={filters.dialStones || []}
+                    onChange={(value) => handleFilterChange('dialStones', value)}
                   />
                 </FilterSection>
               )}
@@ -1556,193 +2147,6 @@ export default function JewelryCategoryPage() {
                     options={categoryFilters.gemstones}
                     selectedValues={filters.gemstones || []}
                     onChange={(value) => handleFilterChange('gemstones', value)}
-                  />
-                </FilterSection>
-              )}
-
-              {/* Styles */}
-              {Array.isArray(categoryFilters.styles) && categoryFilters.styles.length > 0 && (
-                <FilterSection 
-                  title="Style" 
-                  count={filters.style.length}
-                >
-                  <CheckboxGroup
-                    options={categoryFilters.styles}
-                    selectedValues={filters.style}
-                    onChange={(value) => handleFilterChange('style', value)}
-                  />
-                </FilterSection>
-              )}
-
-              {/* Watch-specific filters */}
-              {category === 'watches' && (
-                <>
-                  {/* Dial Color */}
-                  {Array.isArray(categoryFilters.dialColors) && categoryFilters.dialColors.length > 0 && (
-                    <FilterSection 
-                      title="Dial Color" 
-                      count={filters.dialColors?.length || 0}
-                    >
-                      <CheckboxGroup
-                        options={categoryFilters.dialColors}
-                        selectedValues={filters.dialColors || []}
-                        onChange={(value) => handleFilterChange('dialColors', value)}
-                      />
-                    </FilterSection>
-                  )}
-
-                  {/* Case Shape */}
-                  {Array.isArray(categoryFilters.caseShapes) && categoryFilters.caseShapes.length > 0 && (
-                    <FilterSection 
-                      title="Case Shape" 
-                      count={filters.caseShapes?.length || 0}
-                    >
-                      <CheckboxGroup
-                        options={categoryFilters.caseShapes}
-                        selectedValues={filters.caseShapes || []}
-                        onChange={(value) => handleFilterChange('caseShapes', value)}
-                      />
-                    </FilterSection>
-                  )}
-
-                  {/* Movement */}
-                  {Array.isArray(categoryFilters.movements) && categoryFilters.movements.length > 0 && (
-                    <FilterSection 
-                      title="Movement" 
-                      count={filters.movements?.length || 0}
-                    >
-                      <CheckboxGroup
-                        options={categoryFilters.movements}
-                        selectedValues={filters.movements || []}
-                        onChange={(value) => handleFilterChange('movements', value)}
-                      />
-                    </FilterSection>
-                  )}
-
-                  {/* Water Resistance */}
-                  {Array.isArray(categoryFilters.waterResistance) && categoryFilters.waterResistance.length > 0 && (
-                    <FilterSection 
-                      title="Water Resistance" 
-                      count={filters.waterResistance?.length || 0}
-                    >
-                      <CheckboxGroup
-                        options={categoryFilters.waterResistance}
-                        selectedValues={filters.waterResistance || []}
-                        onChange={(value) => handleFilterChange('waterResistance', value)}
-                      />
-                    </FilterSection>
-                  )}
-
-                  {/* Case Size */}
-                  {Array.isArray(categoryFilters.caseSizes) && categoryFilters.caseSizes.length > 0 && (
-                    <FilterSection 
-                      title="Case Size" 
-                      count={filters.caseSizes?.length || 0}
-                    >
-                      <CheckboxGroup
-                        options={categoryFilters.caseSizes}
-                        selectedValues={filters.caseSizes || []}
-                        onChange={(value) => handleFilterChange('caseSizes', value)}
-                      />
-                    </FilterSection>
-                  )}
-
-                  {/* Case Material */}
-                  {Array.isArray(categoryFilters.caseMaterials) && categoryFilters.caseMaterials.length > 0 && (
-                    <FilterSection 
-                      title="Case Material" 
-                      count={filters.caseMaterials?.length || 0}
-                    >
-                      <CheckboxGroup
-                        options={categoryFilters.caseMaterials}
-                        selectedValues={filters.caseMaterials || []}
-                        onChange={(value) => handleFilterChange('caseMaterials', value)}
-                      />
-                    </FilterSection>
-                  )}
-
-                  {/* Strap Material */}
-                  {Array.isArray(categoryFilters.strapMaterials) && categoryFilters.strapMaterials.length > 0 && (
-                    <FilterSection 
-                      title="Strap Material" 
-                      count={filters.strapMaterials?.length || 0}
-                    >
-                      <CheckboxGroup
-                        options={categoryFilters.strapMaterials}
-                        selectedValues={filters.strapMaterials || []}
-                        onChange={(value) => handleFilterChange('strapMaterials', value)}
-                      />
-                    </FilterSection>
-                  )}
-
-                  {/* Strap Color */}
-                  {Array.isArray(categoryFilters.strapColors) && categoryFilters.strapColors.length > 0 && (
-                    <FilterSection 
-                      title="Strap Color" 
-                      count={filters.strapColors?.length || 0}
-                    >
-                      <CheckboxGroup
-                        options={categoryFilters.strapColors}
-                        selectedValues={filters.strapColors || []}
-                        onChange={(value) => handleFilterChange('strapColors', value)}
-                      />
-                    </FilterSection>
-                  )}
-
-                  {/* Features */}
-                  {Array.isArray(categoryFilters.features) && categoryFilters.features.length > 0 && (
-                    <FilterSection 
-                      title="Features" 
-                      count={filters.features?.length || 0}
-                    >
-                      <CheckboxGroup
-                        options={categoryFilters.features}
-                        selectedValues={filters.features || []}
-                        onChange={(value) => handleFilterChange('features', value)}
-                      />
-                    </FilterSection>
-                  )}
-
-                  {/* Dial Stones */}
-                  {Array.isArray(categoryFilters.dialStones) && categoryFilters.dialStones.length > 0 && (
-                    <FilterSection 
-                      title="Dial Stones" 
-                      count={filters.dialStones?.length || 0}
-                    >
-                      <CheckboxGroup
-                        options={categoryFilters.dialStones}
-                        selectedValues={filters.dialStones || []}
-                        onChange={(value) => handleFilterChange('dialStones', value)}
-                      />
-                    </FilterSection>
-                  )}
-                </>
-              )}
-
-              {/* Chain Types - For necklaces and bracelets only */}
-              {(category === 'necklaces' || category === 'bracelets') && Array.isArray(categoryFilters.chainTypes) && categoryFilters.chainTypes.length > 0 && (
-                <FilterSection 
-                  title="Chain Type" 
-                  count={filters.chainTypes?.length || 0}
-                >
-                  <CheckboxGroup
-                    options={categoryFilters.chainTypes}
-                    selectedValues={filters.chainTypes || []}
-                    onChange={(value) => handleFilterChange('chainTypes', value)}
-                  />
-                </FilterSection>
-              )}
-
-              {/* Length - For chains, necklaces, and bracelets */}
-              {(category === 'chains' || category === 'necklaces' || category === 'bracelets') && Array.isArray(categoryFilters.lengths) && categoryFilters.lengths.length > 0 && (
-                <FilterSection 
-                  title={category === 'bracelets' ? 'Bracelet Length' : 'Chain Length'}
-                  count={filters.lengths?.length || 0}
-                >
-                  <CheckboxGroup
-                    options={categoryFilters.lengths}
-                    selectedValues={filters.lengths || []}
-                    onChange={(value) => handleFilterChange('lengths', value)}
                   />
                 </FilterSection>
               )}

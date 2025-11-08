@@ -1003,7 +1003,17 @@ const MultiSelectFilter = React.memo(({
       <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
         {label}
       </label>
-      <div className={`grid ${gridCols} gap-2`}>
+      
+      {/* Selected Options Display */}
+      <SelectedOptionsDisplay
+        selected={selected || []}
+        label={label}
+        onRemove={(value) => onChange(fieldMap[label.toLowerCase()] || label.toLowerCase() as keyof DiamondSearchForm, value)}
+        colorVariant={colorVariant}
+      />
+      
+      {/* Options Grid */}
+      <div className={`grid ${gridCols} gap-2 ${(selected && selected.length > 0) ? 'mt-3' : ''}`}>
         {memoizedButtons}
       </div>
     </div>
@@ -1011,6 +1021,102 @@ const MultiSelectFilter = React.memo(({
 })
 
 MultiSelectFilter.displayName = 'MultiSelectFilter'
+
+// Selected Options Display Component
+const SelectedOptionsDisplay = React.memo(({
+  selected,
+  label,
+  onRemove,
+  colorVariant = 'yellow'
+}: {
+  selected: string[]
+  label: string
+  onRemove: (value: string) => void
+  colorVariant?: 'blue' | 'green' | 'purple' | 'yellow' | 'orange'
+}) => {
+  const colorConfig = useMemo(() => ({
+    blue: {
+      bg: 'from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20',
+      border: 'border-blue-300 dark:border-blue-700',
+      text: 'text-blue-800 dark:text-blue-300',
+      icon: 'text-blue-600 dark:text-blue-400',
+      badge: 'border-blue-400 dark:border-blue-600'
+    },
+    green: {
+      bg: 'from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20',
+      border: 'border-green-300 dark:border-green-700',
+      text: 'text-green-800 dark:text-green-300',
+      icon: 'text-green-600 dark:text-green-400',
+      badge: 'border-green-400 dark:border-green-600'
+    },
+    purple: {
+      bg: 'from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20',
+      border: 'border-purple-300 dark:border-purple-700',
+      text: 'text-purple-800 dark:text-purple-300',
+      icon: 'text-purple-600 dark:text-purple-400',
+      badge: 'border-purple-400 dark:border-purple-600'
+    },
+    yellow: {
+      bg: 'from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20',
+      border: 'border-yellow-300 dark:border-yellow-700',
+      text: 'text-yellow-800 dark:text-yellow-300',
+      icon: 'text-yellow-600 dark:text-yellow-400',
+      badge: 'border-yellow-400 dark:border-yellow-600'
+    },
+    orange: {
+      bg: 'from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20',
+      border: 'border-orange-300 dark:border-orange-700',
+      text: 'text-orange-800 dark:text-orange-300',
+      icon: 'text-orange-600 dark:text-orange-400',
+      badge: 'border-orange-400 dark:border-orange-600'
+    }
+  }), [])
+
+  const colors = colorConfig[colorVariant]
+
+  if (!selected || selected.length === 0) return null
+
+  return (
+    <div className={`flex items-center justify-between p-3 rounded-lg bg-gradient-to-r ${colors.bg} border ${colors.border} shadow-sm`}>
+      <div className="flex-1">
+        <div className="flex items-center gap-2 mb-2">
+          <svg className={`w-5 h-5 ${colors.icon}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          <span className={`text-sm font-bold ${colors.text}`}>
+            {selected.length} {label}{selected.length > 1 ? 's' : ''} Selected
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {selected.map((option) => (
+            <div
+              key={option}
+              className={`inline-flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 rounded-full border ${colors.badge} shadow-sm`}
+            >
+              <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                {option}
+              </span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRemove(option)
+                }}
+                className="ml-1 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                title={`Remove ${option}`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+})
+
+SelectedOptionsDisplay.displayName = 'SelectedOptionsDisplay'
 
 // Range Input Component
 const RangeInput = React.memo(({
@@ -1032,15 +1138,17 @@ const RangeInput = React.memo(({
 }) => {
   // Determine appropriate min/max bounds based on label
   const getDefaultBounds = () => {
-    if (label.toLowerCase().includes('carat')) {
-      return { minBound: 0, maxBound: 10 }
-    } else if (label.toLowerCase().includes('total pcs')) {
-      return { minBound: 1, maxBound: 1000 }
-    } else if (label.toLowerCase().includes('price per pcs') || label.toLowerCase().includes('price per carat')) {
-      // Match the total price bounds
+    // Check price-related fields first (before carat, since "price per carat" contains "carat")
+    if (label.toLowerCase().includes('price per carat')) {
+      return { minBound: 0, maxBound: 200000 }
+    } else if (label.toLowerCase().includes('price per pcs')) {
       return { minBound: 0, maxBound: 200000 }
     } else if (label.toLowerCase().includes('price')) {
       return { minBound: 0, maxBound: 200000 }
+    } else if (label.toLowerCase().includes('carat')) {
+      return { minBound: 0, maxBound: 10 }
+    } else if (label.toLowerCase().includes('total pcs')) {
+      return { minBound: 1, maxBound: 1000 }
     } else if (label.toLowerCase().includes('table') || label.toLowerCase().includes('depth')) {
       return { minBound: 0, maxBound: 100 }
     } else if (label.toLowerCase().includes('length') || label.toLowerCase().includes('width') || label.toLowerCase().includes('height')) {
@@ -1931,61 +2039,111 @@ export default function DiamondsSearchPage() {
               )}
 
               {(searchForm.shape || []).length > 0 && (
-                <div className="mt-3 flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                  <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
-                    {searchForm.shape.length} shape{searchForm.shape.length > 1 ? 's' : ''} selected: <strong>{searchForm.shape.join(', ')}</strong>
-                  </span>
-                  <button
-                    onClick={() => setSearchForm(prev => ({ ...prev, shape: [] }))}
-                    className="text-xs underline hover:no-underline transition-all text-blue-600 dark:text-blue-400 font-medium"
-                  >
-                    Clear all
-                  </button>
+                <div className="mt-3">
+                  <SelectedOptionsDisplay
+                    selected={searchForm.shape || []}
+                    label="Shape"
+                    onRemove={(shape) => handleMultiSelect('shape', shape)}
+                    colorVariant="blue"
+                  />
                 </div>
               )}
             </div>
 
             {/* Carat and Price Range - All 5 filters for melee diamonds */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
-              <RangeInput
-                label="Total Carat"
-                min={searchForm.caratWeight.min}
-                max={searchForm.caratWeight.max}
-                onMinChange={(value) => handleRangeChange('caratWeight', 'min', value)}
-                onMaxChange={(value) => handleRangeChange('caratWeight', 'max', value)}
-                unit=" ct"
-                step={0.01}
-              />
+            <div>
+              {/* Header with Deselect All button */}
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+                  Range Filters
+                </label>
+                {(() => {
+                  const defaultForm = DiamondSearchHelpers.getDefaultSearchForm(searchForm.diamondType, searchForm.category);
+                  const isCaratModified = searchForm.caratWeight.min !== defaultForm.caratWeight.min || searchForm.caratWeight.max !== defaultForm.caratWeight.max;
+                  const isPriceModified = searchForm.priceRange.min !== defaultForm.priceRange.min || searchForm.priceRange.max !== defaultForm.priceRange.max;
+                  const isTotalPcsModified = searchForm.category === 'melee' && (searchForm.totalPcs.min !== defaultForm.totalPcs.min || searchForm.totalPcs.max !== defaultForm.totalPcs.max);
+                  const isPricePerPcsModified = searchForm.category === 'melee' && (searchForm.pricePerPcs.min !== defaultForm.pricePerPcs.min || searchForm.pricePerPcs.max !== defaultForm.pricePerPcs.max);
+                  const isPricePerCaratModified = searchForm.category === 'melee' && (searchForm.pricePerCarat.min !== defaultForm.pricePerCarat.min || searchForm.pricePerCarat.max !== defaultForm.pricePerCarat.max);
+                  const hasAnyRangeFilter = isCaratModified || isPriceModified || isTotalPcsModified || isPricePerPcsModified || isPricePerCaratModified;
+                  
+                  return hasAnyRangeFilter ? (
+                    <button
+                      onClick={() => {
+                        setSearchForm(prev => ({
+                          ...prev,
+                          caratWeight: defaultForm.caratWeight,
+                          priceRange: defaultForm.priceRange,
+                          ...(searchForm.category === 'melee' && {
+                            totalPcs: defaultForm.totalPcs,
+                            pricePerPcs: defaultForm.pricePerPcs,
+                            pricePerCarat: defaultForm.pricePerCarat
+                          })
+                        }));
+                      }}
+                      className="text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
+                    >
+                      Deselect All
+                    </button>
+                  ) : null;
+                })()}
+              </div>
 
-              <RangeInput
-                label="Total Price"
-                min={searchForm.priceRange.min}
-                max={searchForm.priceRange.max}
-                onMinChange={(value) => handleRangeChange('priceRange', 'min', value)}
-                onMaxChange={(value) => handleRangeChange('priceRange', 'max', value)}
-                unit="$"
-                step={1000}
-              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
+                <RangeInput
+                  label="Total Carat"
+                  min={searchForm.caratWeight.min}
+                  max={searchForm.caratWeight.max}
+                  onMinChange={(value) => handleRangeChange('caratWeight', 'min', value)}
+                  onMaxChange={(value) => handleRangeChange('caratWeight', 'max', value)}
+                  unit=" ct"
+                  step={0.01}
+                />
 
-              <RangeInput
-                label="Total Pcs"
-                min={searchForm.totalPcs.min}
-                max={searchForm.totalPcs.max}
-                onMinChange={(value) => handleRangeChange('totalPcs', 'min', value)}
-                onMaxChange={(value) => handleRangeChange('totalPcs', 'max', value)}
-                unit=" pcs"
-                step={1}
-              />
+                <RangeInput
+                  label="Total Price"
+                  min={searchForm.priceRange.min}
+                  max={searchForm.priceRange.max}
+                  onMinChange={(value) => handleRangeChange('priceRange', 'min', value)}
+                  onMaxChange={(value) => handleRangeChange('priceRange', 'max', value)}
+                  unit="$"
+                  step={1000}
+                />
 
-              <RangeInput
-                label="Price per Pcs"
-                min={searchForm.pricePerPcs.min}
-                max={searchForm.pricePerPcs.max}
-                onMinChange={(value) => handleRangeChange('pricePerPcs', 'min', value)}
-                onMaxChange={(value) => handleRangeChange('pricePerPcs', 'max', value)}
-                unit="$"
-                step={10}
-              />
+                {/* Only show Total Pcs, Price per Pcs, and Price per Carat for melee diamonds */}
+                {searchForm.category === 'melee' && (
+                  <>
+                    <RangeInput
+                      label="Total Pcs"
+                      min={searchForm.totalPcs.min}
+                      max={searchForm.totalPcs.max}
+                      onMinChange={(value) => handleRangeChange('totalPcs', 'min', value)}
+                      onMaxChange={(value) => handleRangeChange('totalPcs', 'max', value)}
+                      unit=" pcs"
+                      step={1}
+                    />
+
+                    <RangeInput
+                      label="Price per Pcs"
+                      min={searchForm.pricePerPcs.min}
+                      max={searchForm.pricePerPcs.max}
+                      onMinChange={(value) => handleRangeChange('pricePerPcs', 'min', value)}
+                      onMaxChange={(value) => handleRangeChange('pricePerPcs', 'max', value)}
+                      unit="$"
+                      step={1000}
+                    />
+
+                    <RangeInput
+                      label="Price per Carat"
+                      min={searchForm.pricePerCarat.min}
+                      max={searchForm.pricePerCarat.max}
+                      onMinChange={(value) => handleRangeChange('pricePerCarat', 'min', value)}
+                      onMaxChange={(value) => handleRangeChange('pricePerCarat', 'max', value)}
+                      unit="$"
+                      step={1000}
+                    />
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Color */}
@@ -2065,8 +2223,30 @@ export default function DiamondsSearchPage() {
                 </div>
               </div>
 
+              {/* Selected Colors Display */}
+              {!searchForm.isFancyColor && (searchForm.color || []).length > 0 && (
+                <div className="mb-4">
+                  <SelectedOptionsDisplay
+                    selected={searchForm.color || []}
+                    label="Color"
+                    onRemove={(color) => handleMultiSelect('color', color)}
+                    colorVariant="yellow"
+                  />
+                </div>
+              )}
+
               {searchForm.isFancyColor ? (
                 <div className="space-y-6">
+                  {/* Selected Fancy Colors Display */}
+                  {(searchForm.fancyColors || []).length > 0 && (
+                    <SelectedOptionsDisplay
+                      selected={searchForm.fancyColors || []}
+                      label="Fancy Color"
+                      onRemove={(color) => handleMultiSelect('fancyColors', color)}
+                      colorVariant="orange"
+                    />
+                  )}
+
                   {/* Fancy Colors with Color Circles */}
                   <div>
                     <label className="block text-sm font-medium mb-4" style={{ color: 'var(--foreground)' }}>
@@ -2212,16 +2392,13 @@ export default function DiamondsSearchPage() {
               </div>
 
               {(searchForm.clarity || []).length > 0 && (
-                <div className="mt-3 flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                  <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
-                    {searchForm.clarity.length} clarity option{searchForm.clarity.length > 1 ? 's' : ''} selected: <strong>{searchForm.clarity.join(', ')}</strong>
-                  </span>
-                  <button
-                    onClick={() => setSearchForm(prev => ({ ...prev, clarity: [] }))}
-                    className="text-xs underline hover:no-underline transition-all text-blue-600 dark:text-bl ue-400 font-medium"
-                  >
-                    Clear all
-                  </button>
+                <div className="mt-3">
+                  <SelectedOptionsDisplay
+                    selected={searchForm.clarity || []}
+                    label="Clarity"
+                    onRemove={(clarity) => handleMultiSelect('clarity', clarity)}
+                    colorVariant="purple"
+                  />
                 </div>
               )}
             </div>
@@ -2232,7 +2409,7 @@ export default function DiamondsSearchPage() {
               selected={searchForm.finish}
               onChange={handleMultiSelect}
               label="Finish (Quick Select)"
-              gridCols="grid-cols-2 md:grid-cols-4"
+              gridCols="grid-cols-2 md:grid-cols-5"
               colorVariant="purple"
             />
 
@@ -2246,28 +2423,14 @@ export default function DiamondsSearchPage() {
               colorVariant="green"
             />
 
-            {(searchForm.cutGrade || []).length > 0 && (
-              <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
-                  {searchForm.cutGrade.length} cut grade{searchForm.cutGrade.length > 1 ? 's' : ''} selected: <strong>{searchForm.cutGrade.join(', ')}</strong>
-                </span>
-                <button
-                  onClick={() => setSearchForm(prev => ({ ...prev, cutGrade: [] }))}
-                  className="text-xs underline hover:no-underline transition-all text-blue-600 dark:text-blue-400 font-medium"
-                >
-                  Clear all
-                </button>
-              </div>
-            )}
-
             {/* Polish and Symmetry - Auto-selected by Finish */}
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-1 gap-6">
               <MultiSelectFilter
                 options={DIAMOND_CONSTANTS.POLISH_SYMMETRY_OPTIONS}
                 selected={searchForm.polish}
                 onChange={handleMultiSelect}
                 label="Polish"
-                gridCols="grid-cols-2 md:grid-cols-3"
+                gridCols="grid-cols-2 md:grid-cols-6"
                 colorVariant="blue"
               />
 
@@ -2276,7 +2439,7 @@ export default function DiamondsSearchPage() {
                 selected={searchForm.symmetry}
                 onChange={handleMultiSelect}
                 label="Symmetry"
-                gridCols="grid-cols-2 md:grid-cols-3"
+                gridCols="grid-cols-2 md:grid-cols-6"
                 colorVariant="green"
               />
             </div>
@@ -2286,7 +2449,7 @@ export default function DiamondsSearchPage() {
               selected={searchForm.certification}
               onChange={handleMultiSelect}
               label="Certification"
-              gridCols="grid-cols-3 md:grid-cols-4"
+              gridCols="grid-cols-3 md:grid-cols-5"
               colorVariant="yellow"
             />
 
@@ -2354,9 +2517,34 @@ export default function DiamondsSearchPage() {
           {/* Melee-specific Measurement Filters - Shown before Advanced Filters */}
           {searchForm.category === 'melee' && (
             <div className="mt-8 border-t pt-6" style={{ borderColor: 'var(--border)' }}>
-              <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--foreground)' }}>
-                Measurement Filters
-              </h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>
+                  Measurement Filters
+                </h3>
+                {(() => {
+                  const defaultForm = DiamondSearchHelpers.getDefaultSearchForm(searchForm.diamondType, searchForm.category);
+                  const isLengthModified = searchForm.lengthRange.min !== defaultForm.lengthRange.min || searchForm.lengthRange.max !== defaultForm.lengthRange.max;
+                  const isWidthModified = searchForm.widthRange.min !== defaultForm.widthRange.min || searchForm.widthRange.max !== defaultForm.widthRange.max;
+                  const isHeightModified = searchForm.heightRange.min !== defaultForm.heightRange.min || searchForm.heightRange.max !== defaultForm.heightRange.max;
+                  const hasAnyMeasurementFilter = isLengthModified || isWidthModified || isHeightModified;
+                  
+                  return hasAnyMeasurementFilter ? (
+                    <button
+                      onClick={() => {
+                        setSearchForm(prev => ({
+                          ...prev,
+                          lengthRange: defaultForm.lengthRange,
+                          widthRange: defaultForm.widthRange,
+                          heightRange: defaultForm.heightRange
+                        }));
+                      }}
+                      className="text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
+                    >
+                      Deselect All
+                    </button>
+                  ) : null;
+                })()}
+              </div>
               <div className="grid md:grid-cols-3 gap-6">
                 <RangeInput
                   label="Length Range"
@@ -2412,6 +2600,53 @@ export default function DiamondsSearchPage() {
             {/* Advanced Filters Content */}
             {showAdvancedFilters && (
               <div className="mt-8 space-y-6 p-6 rounded-xl border" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--muted)/5' }}>
+                {/* Header with Deselect All button for Advanced Range Filters */}
+                {(() => {
+                  const defaultForm = DiamondSearchHelpers.getDefaultSearchForm(searchForm.diamondType, searchForm.category);
+                  const isTableModified = searchForm.tablePercent.min !== defaultForm.tablePercent.min || searchForm.tablePercent.max !== defaultForm.tablePercent.max;
+                  const isDepthModified = searchForm.depthPercent.min !== defaultForm.depthPercent.min || searchForm.depthPercent.max !== defaultForm.depthPercent.max;
+                  const isLengthModified = searchForm.lengthRange.min !== defaultForm.lengthRange.min || searchForm.lengthRange.max !== defaultForm.lengthRange.max;
+                  const isWidthModified = searchForm.widthRange.min !== defaultForm.widthRange.min || searchForm.widthRange.max !== defaultForm.widthRange.max;
+                  const isHeightModified = searchForm.heightRange.min !== defaultForm.heightRange.min || searchForm.heightRange.max !== defaultForm.heightRange.max;
+                  const isRatioModified = searchForm.ratioRange.min !== defaultForm.ratioRange.min || searchForm.ratioRange.max !== defaultForm.ratioRange.max;
+                  const isCrownAngleModified = searchForm.crownAngleRange.min !== defaultForm.crownAngleRange.min || searchForm.crownAngleRange.max !== defaultForm.crownAngleRange.max;
+                  const isCrownHeightModified = searchForm.crownHeightRange.min !== defaultForm.crownHeightRange.min || searchForm.crownHeightRange.max !== defaultForm.crownHeightRange.max;
+                  const isPavilionAngleModified = searchForm.pavilionAngleRange.min !== defaultForm.pavilionAngleRange.min || searchForm.pavilionAngleRange.max !== defaultForm.pavilionAngleRange.max;
+                  const isPavilionDepthModified = searchForm.pavilionDepthRange.min !== defaultForm.pavilionDepthRange.min || searchForm.pavilionDepthRange.max !== defaultForm.pavilionDepthRange.max;
+                  
+                  const hasAnyAdvancedRangeFilter = isTableModified || isDepthModified || isLengthModified || isWidthModified || 
+                                                     isHeightModified || isRatioModified || isCrownAngleModified || 
+                                                     isCrownHeightModified || isPavilionAngleModified || isPavilionDepthModified;
+                  
+                  return hasAnyAdvancedRangeFilter ? (
+                    <div className="flex items-center justify-between mb-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                      <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                        Advanced range filters active
+                      </span>
+                      <button
+                        onClick={() => {
+                          setSearchForm(prev => ({
+                            ...prev,
+                            tablePercent: defaultForm.tablePercent,
+                            depthPercent: defaultForm.depthPercent,
+                            lengthRange: defaultForm.lengthRange,
+                            widthRange: defaultForm.widthRange,
+                            heightRange: defaultForm.heightRange,
+                            ratioRange: defaultForm.ratioRange,
+                            crownAngleRange: defaultForm.crownAngleRange,
+                            crownHeightRange: defaultForm.crownHeightRange,
+                            pavilionAngleRange: defaultForm.pavilionAngleRange,
+                            pavilionDepthRange: defaultForm.pavilionDepthRange
+                          }));
+                        }}
+                        className="text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all font-medium"
+                      >
+                        Deselect All Ranges
+                      </button>
+                    </div>
+                  ) : null;
+                })()}
+
                 <div className="grid md:grid-cols-2 gap-6">
                   <RangeInput
                     label="Table Percent"
