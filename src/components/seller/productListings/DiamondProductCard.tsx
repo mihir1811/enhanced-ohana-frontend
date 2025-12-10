@@ -201,45 +201,49 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
   };
 
   return (
-    <div className="relative bg-white rounded-2xl shadow-lg border hover:shadow-2xl transition-all flex flex-col overflow-hidden group">
+    <div className="relative rounded-2xl shadow-lg border hover:shadow-2xl transition-all flex flex-col overflow-hidden group" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
       {/* Dropdown at top right */}
       <div className="absolute top-3 right-3 z-10">
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <button
-              className="p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 shadow"
+              className="p-2 rounded-full border shadow hover:opacity-90"
               aria-label="More actions"
               onClick={e => e.stopPropagation()}
+              style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
             >
-              <MoreVertical className="w-5 h-5 text-gray-700" />
+              <MoreVertical className="w-5 h-5" />
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
             <DropdownMenu.Content
-              className="bg-white rounded-lg shadow-xl border border-gray-100 py-1 px-0 min-w-[170px] z-50"
+              className="rounded-lg shadow-xl border py-1 px-0 min-w-[170px] z-50"
               sideOffset={8}
               align="end"
+              style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
             >
               <DropdownMenu.Item
-                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer text-gray-700"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors"
                 onSelect={() => {
                   setShowQuickView(true);
                   if (onQuickView) onQuickView(product);
                 }}
+                style={{ color: 'var(--foreground)' }}
               >
                 <Eye className="w-4 h-4" />
                 Quick View
               </DropdownMenu.Item>
               <DropdownMenu.Item
-                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer text-gray-700"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors"
                 onSelect={() => {
                   window.location.href = `/seller/products/${product.id}/edit`;
                 }}
+                style={{ color: 'var(--foreground)' }}
               >
                 <Pencil className="w-4 h-4" />
                 Edit Product
               </DropdownMenu.Item>
-              <DropdownMenu.Separator className="h-px bg-gray-100 my-1" />
+              <DropdownMenu.Separator className="h-px my-1" style={{ backgroundColor: 'var(--border)' }} />
               <DropdownMenu.Item
                 className="flex items-center gap-2 px-3 py-2 hover:bg-red-50 cursor-pointer text-red-600"
                 onSelect={() => setShowDelete(true)}
@@ -256,7 +260,7 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
         {getStatusTag(product.isDeleted, product.stockNumber)}
       </div>
       {/* Image */}
-      <div className="relative w-full aspect-[4/3] bg-gray-100 flex items-center justify-center">
+      <div className="relative w-full aspect-[4/3] flex items-center justify-center" style={{ backgroundColor: 'var(--muted)' }}>
         <img
           src={displayImages[imgIdx]}
           alt={product.name}
@@ -267,7 +271,7 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
           <>
             {/* Prev Arrow */}
             <button
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow flex items-center justify-center z-10"
+              className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full p-1 shadow flex items-center justify-center z-10"
               onClick={e => {
                 e.stopPropagation();
                 handleImageChange(imgIdx === 0 ? displayImages.length - 1 : imgIdx - 1);
@@ -275,11 +279,11 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
               aria-label="Previous image"
               type="button"
             >
-              <ChevronLeft className="w-5 h-5 text-blue-600" />
+              <ChevronLeft className="w-5 h-5" style={{ color: 'var(--primary)' }} />
             </button>
             {/* Next Arrow */}
             <button
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow flex items-center justify-center z-10"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 shadow flex items-center justify-center z-10"
               onClick={e => {
                 e.stopPropagation();
                 handleImageChange(imgIdx === displayImages.length - 1 ? 0 : imgIdx + 1);
@@ -287,15 +291,14 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
               aria-label="Next image"
               type="button"
             >
-              <ChevronRight className="w-5 h-5 text-blue-600" />
+              <ChevronRight className="w-5 h-5" style={{ color: 'var(--primary)' }} />
             </button>
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
               {displayImages.map((_, idx) => (
                 <button
                   key={idx}
-                  className={`w-2 h-2 rounded-full ${
-                    imgIdx === idx ? "bg-blue-600" : "bg-gray-300"
-                  } border border-white`}
+                  className="w-2 h-2 rounded-full border"
+                  style={{ backgroundColor: imgIdx === idx ? 'var(--primary)' : 'var(--border)', borderColor: 'var(--border)' }}
                   onClick={e => {
                     e.stopPropagation();
                     handleImageChange(idx);
@@ -305,9 +308,9 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
               ))}
             </div>
             {/* Carousel icon at bottom right */}
-            <div className="absolute bottom-3 right-3 bg-white/80 rounded-full p-1 shadow flex items-center justify-center">
+            <div className="absolute bottom-3 right-3 rounded-full p-1 shadow flex items-center justify-center" style={{ backgroundColor: 'var(--card)' }}>
               <span title="Carousel available">
-                <Images className="w-5 h-5 text-blue-600" />
+                <Images className="w-5 h-5" style={{ color: 'var(--primary)' }} />
               </span>
             </div>
           </>
@@ -316,63 +319,63 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
       {/* Info */}
       <div className="p-4 flex flex-col gap-2 flex-1">
         <div className="flex items-center justify-between">
-          <h3 className="font-bold text-lg text-gray-900 line-clamp-2">
+          <h3 className="font-bold text-lg line-clamp-2" style={{ color: 'var(--card-foreground)' }}>
             {product.name}
           </h3>
         </div>
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <span className="bg-gray-100 rounded-full px-2 py-1 font-semibold">
+        <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--muted-foreground)' }}>
+          <span className="rounded-full px-2 py-1 font-semibold" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
             Diamond
           </span>
-          <span className="bg-blue-50 text-blue-700 rounded-full px-2 py-1 font-semibold">
+          <span className="rounded-full px-2 py-1 font-semibold" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
             {product.shape}
           </span>
         </div>
         <div className="flex items-baseline gap-2">
-          <span className="text-xl font-extrabold text-blue-600">
+          <span className="text-xl font-extrabold" style={{ color: 'var(--primary)' }}>
             ${Number(product.price).toLocaleString()}
           </span>
         </div>
         <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs mb-2">
           <div className="flex items-center gap-1">
-            <span className="text-gray-400 font-semibold">SKU:</span>
-            <span className="font-bold text-gray-700">{product.sellerSKU}</span>
+            <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>SKU:</span>
+            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.sellerSKU}</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="text-gray-400 font-semibold">Stock #:</span>
-            <span className="font-bold text-gray-700">{product.stockNumber}</span>
+            <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Stock #:</span>
+            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.stockNumber}</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="text-gray-400 font-semibold">Color:</span>
-            <span className="font-bold text-gray-700">{product.color}</span>
+            <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Color:</span>
+            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.color}</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="text-gray-400 font-semibold">Clarity:</span>
-            <span className="font-bold text-gray-700">{product.clarity}</span>
+            <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Clarity:</span>
+            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.clarity}</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="text-gray-400 font-semibold">Cut:</span>
-            <span className="font-bold text-gray-700">{product.cut}</span>
+            <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Cut:</span>
+            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.cut}</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="text-gray-400 font-semibold">Shape:</span>
-            <span className="font-bold text-gray-700">{product.shape}</span>
+            <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Shape:</span>
+            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.shape}</span>
           </div>
         </div>
         {/* Auction Timer */}
         {product.isOnAuction && product.auctionEndTime && (
           <CountdownTimer endTime={product.auctionEndTime} />
         )}
-        <div className="flex items-center justify-between text-xs text-gray-500 mt-auto">
+        <div className="flex items-center justify-between text-xs mt-auto" style={{ color: 'var(--muted-foreground)' }}>
           <div className="flex items-center gap-1">
             <span className="font-semibold">Updated:</span>
-            <span className="font-bold text-gray-700">
+            <span className="font-bold" style={{ color: 'var(--foreground)' }}>
               {new Date(product.updatedAt).toLocaleDateString()}
             </span>
           </div>
           <div className="flex items-center gap-1">
             <span className="font-semibold">Stock:</span>
-            <span className="font-bold text-gray-700">{product.stockNumber}</span>
+            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.stockNumber}</span>
             {/* {product.isOnAuction && (
               <div className="ml-2 relative">
                 <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg border-2 border-white animate-pulse">
@@ -394,11 +397,12 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
       {/* Quick View Modal */}
       {showQuickView && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 relative">
+          <div className="rounded-xl shadow-xl max-w-lg w-full p-6 relative" style={{ backgroundColor: 'var(--card)' }}>
             <button
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-900"
+              className="absolute top-2 right-2 hover:opacity-80"
               onClick={() => setShowQuickView(false)}
               aria-label="Close"
+              style={{ color: 'var(--muted-foreground)' }}
             >
               <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M6 6l12 12M6 18L18 6" />
@@ -407,11 +411,11 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
             <h2 className="text-xl font-bold mb-2">{product.name}</h2>
             <div className="flex items-center gap-2 mb-2">
               {getStatusTag(product.isDeleted, product.stockNumber)}
-              <span className="bg-blue-50 text-blue-700 rounded-full px-2 py-1 text-xs font-semibold tracking-wide uppercase">
+              <span className="rounded-full px-2 py-1 text-xs font-semibold tracking-wide uppercase" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
                 {product.shape}
               </span>
             </div>
-            <div className="relative w-full h-64 bg-gray-100 flex items-center justify-center mb-4">
+            <div className="relative w-full h-64 flex items-center justify-center mb-4" style={{ backgroundColor: 'var(--muted)' }}>
               <img
                 src={displayImages[imgIdx]}
                 alt={product.name}
@@ -422,7 +426,7 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
                 <>
                   {/* Prev Arrow */}
                   <button
-                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow flex items-center justify-center z-10"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full p-1 shadow flex items-center justify-center z-10"
                     onClick={e => {
                       e.stopPropagation();
                       handleImageChange(imgIdx === 0 ? displayImages.length - 1 : imgIdx - 1);
@@ -430,11 +434,11 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
                     aria-label="Previous image"
                     type="button"
                   >
-                    <ChevronLeft className="w-5 h-5 text-blue-600" />
+                    <ChevronLeft className="w-5 h-5" style={{ color: 'var(--primary)' }} />
                   </button>
                   {/* Next Arrow */}
                   <button
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow flex items-center justify-center z-10"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 shadow flex items-center justify-center z-10"
                     onClick={e => {
                       e.stopPropagation();
                       handleImageChange(imgIdx === displayImages.length - 1 ? 0 : imgIdx + 1);
@@ -442,15 +446,14 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
                     aria-label="Next image"
                     type="button"
                   >
-                    <ChevronRight className="w-5 h-5 text-blue-600" />
+                    <ChevronRight className="w-5 h-5" style={{ color: 'var(--primary)' }} />
                   </button>
                   <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
                     {displayImages.map((_, idx) => (
                       <button
                         key={idx}
-                        className={`w-2 h-2 rounded-full ${
-                          imgIdx === idx ? "bg-blue-600" : "bg-gray-300"
-                        } border border-white`}
+                        className="w-2 h-2 rounded-full border"
+                        style={{ backgroundColor: imgIdx === idx ? 'var(--primary)' : 'var(--border)', borderColor: 'var(--border)' }}
                         onClick={e => {
                           e.stopPropagation();
                           handleImageChange(idx);
@@ -460,27 +463,27 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
                     ))}
                   </div>
                   {/* Carousel icon at bottom right */}
-                  <div className="absolute bottom-3 right-3 bg-white/80 rounded-full p-1 shadow flex items-center justify-center">
+                  <div className="absolute bottom-3 right-3 rounded-full p-1 shadow flex items-center justify-center" style={{ backgroundColor: 'var(--card)' }}>
                     <span title="Carousel available">
-                      <Images className="w-4 h-4 text-blue-600" />
+                      <Images className="w-4 h-4" style={{ color: 'var(--primary)' }} />
                     </span>
                   </div>
                 </>
               )}
             </div>
             <div className="mb-4">
-              <span className="text-2xl font-extrabold text-blue-600">${Number(product.price).toLocaleString()}</span>
+              <span className="text-2xl font-extrabold" style={{ color: 'var(--primary)' }}>${Number(product.price).toLocaleString()}</span>
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mb-4">
-              <div><span className="text-gray-400 font-semibold">SKU:</span> <span className="font-bold text-gray-700">{product.sellerSKU}</span></div>
-              <div><span className="text-gray-400 font-semibold">Stock #:</span> <span className="font-bold text-gray-700">{product.stockNumber}</span></div>
-              <div><span className="text-gray-400 font-semibold">Color:</span> <span className="font-bold text-gray-700">{product.color}</span></div>
-              <div><span className="text-gray-400 font-semibold">Clarity:</span> <span className="font-bold text-gray-700">{product.clarity}</span></div>
-              <div><span className="text-gray-400 font-semibold">Cut:</span> <span className="font-bold text-gray-700">{product.cut}</span></div>
-              <div><span className="text-gray-400 font-semibold">Shape:</span> <span className="font-bold text-gray-700">{product.shape}</span></div>
-              <div><span className="text-gray-400 font-semibold">Updated:</span> <span className="font-bold text-gray-700">{new Date(product.updatedAt).toLocaleDateString()}</span></div>
-              <div><span className="text-gray-400 font-semibold">Auction:</span> <span className="font-bold text-gray-700">{product.isOnAuction ? 'Yes' : 'No'}</span></div>
-              <div><span className="text-gray-400 font-semibold">Sold:</span> <span className="font-bold text-gray-700">{product.isSold ? 'Yes' : 'No'}</span></div>
+              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>SKU:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.sellerSKU}</span></div>
+              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Stock #:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.stockNumber}</span></div>
+              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Color:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.color}</span></div>
+              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Clarity:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.clarity}</span></div>
+              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Cut:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.cut}</span></div>
+              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Shape:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.shape}</span></div>
+              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Updated:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{new Date(product.updatedAt).toLocaleDateString()}</span></div>
+              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Auction:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.isOnAuction ? 'Yes' : 'No'}</span></div>
+              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Sold:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.isSold ? 'Yes' : 'No'}</span></div>
             </div>
             {/* Auction Timer */}
             {product.isOnAuction && product.auctionEndTime && (
