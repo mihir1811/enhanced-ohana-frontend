@@ -843,36 +843,36 @@ const DiamondShapesCarousel = ({
         <div className="flex gap-2">
           <button
             onClick={handlePrev}
-            className="bg-white dark:bg-slate-700 p-2 rounded-full shadow-lg hover:bg-blue-50 dark:hover:bg-slate-600 transition-all border border-gray-200 dark:border-slate-600"
+            className="p-2 rounded-full transition-colors border border-gray-200 dark:border-slate-600"
             style={{ transform: 'translate(-50%, -50%)' }}
             aria-label="Previous slide"
           >
-            <MoveLeft className="w-6 h-6  dark:text-gray-200" />
+            <MoveLeft className="w-6 h-6" style={{ color: 'var(--foreground)' }} />
           </button>
 
           <button
             onClick={handleNext}
-            className="bg-white dark:bg-slate-700 p-2 rounded-full shadow-lg hover:bg-blue-50 dark:hover:bg-slate-600 transition-all border border-gray-200 dark:border-slate-600"
+            className="p-2 rounded-full transition-colors border border-gray-200 dark:border-slate-600"
             style={{ transform: 'translate(50%, -50%)' }}
             aria-label="Next slide"
           >
-            <MoveRight className="w-6 h-6  dark:text-gray-200" />
+            <MoveRight className="w-6 h-6" style={{ color: 'var(--foreground)' }} />
           </button>
         </div>
       </div>
 
       <button
         onClick={toggleAutoplay}
-        className="absolute right-0 bottom-0 z-10 bg-white dark:bg-slate-700 p-2 rounded-full shadow-lg hover:bg-blue-50 dark:hover:bg-slate-600 transition-all mb-2 mr-2 border border-gray-200 dark:border-slate-600"
+        className="absolute right-0 bottom-0 z-10 p-2 rounded-full transition-colors mb-2 mr-2 border border-gray-200 dark:border-slate-600"
         aria-label={isAutoPlaying ? "Pause autoplay" : "Start autoplay"}
       >
         {isAutoPlaying ? (
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=" dark:text-gray-200">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--foreground)' }}>
             <rect x="6" y="4" width="4" height="16"></rect>
             <rect x="14" y="4" width="4" height="16"></rect>
           </svg>
         ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=" dark:text-gray-200">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--foreground)' }}>
             <polygon points="5 3 19 12 5 21 5 3"></polygon>
           </svg>
         )}
@@ -901,7 +901,7 @@ const DiamondShapesCarousel = ({
                 onShapeToggle(shape.name);
               }}
             >
-              <div className="relative w-25 h-25 mb-1 flex items-center justify-center ">
+              <div className="relative w-24 h-24 mb-1 flex items-center justify-center transition-transform duration-300 group-hover:scale-125">
                 <Image
                   src={shape.image}
                   alt={shape.alt}
@@ -911,7 +911,7 @@ const DiamondShapesCarousel = ({
                   priority={index < 6}
                 />
               </div>
-              <h3 className="text-xs font-medium pt-5 text-foreground group-hover:dark:text-black transition-colors">{shape.name}</h3>
+              <h3 className="text-xs font-medium pt-5 transition-colors" style={{ color: 'var(--foreground)' }}>{shape.name}</h3>
             </div>
           </div>
         ))}
@@ -1112,6 +1112,12 @@ const SelectedOptionsDisplay = React.memo(({
           ))}
         </div>
       </div>
+      <button
+        onClick={() => selected.slice().forEach(val => onRemove(val))}
+        className="ml-4 flex-shrink-0 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all border border-red-200 dark:border-red-800"
+      >
+        Clear All
+      </button>
     </div>
   )
 })
@@ -1170,9 +1176,17 @@ const RangeInput = React.memo(({
 
   return (
     <div className="space-y-3">
-      <label className="block text-sm font-medium text-gray-900 dark:text-white">
-        {label}
-      </label>
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-medium text-gray-900 dark:text-white">
+          {label}
+        </label>
+        <button
+          onClick={() => { onMinChange(minBound); onMaxChange(maxBound); }}
+          className="text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
+        >
+          Clear
+        </button>
+      </div>
       
       {/* Range Display */}
       <div className="flex items-center justify-between px-2">
@@ -1335,9 +1349,19 @@ const SearchInput = React.memo(({
 
   return (
     <div>
-      <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
-        {label}
-      </label>
+      <div className="flex items-center justify-between mb-3">
+        <label className="block text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+          {label}
+        </label>
+        {selected.length > 0 && (
+          <button
+            onClick={() => selected.slice().forEach(item => onRemove(item))}
+            className="text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
+          >
+            Clear All
+          </button>
+        )}
+      </div>
       <div className="flex gap-2 mb-3">
         <input
           type="text"
@@ -1903,6 +1927,15 @@ export default function DiamondsSearchPage() {
     setSearchForm(DiamondSearchHelpers.getDefaultSearchForm(searchForm.diamondType, searchForm.category))
   }, [searchForm.diamondType, searchForm.category])
 
+  const isDefaultFilters = useMemo(() => {
+    const def = DiamondSearchHelpers.getDefaultSearchForm(searchForm.diamondType, searchForm.category)
+    try {
+      return JSON.stringify(def) === JSON.stringify(searchForm)
+    } catch {
+      return false
+    }
+  }, [searchForm])
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       {/* Navigation */}
@@ -2323,7 +2356,7 @@ export default function DiamondsSearchPage() {
                             :
                           isSelected
                             ? 'bg-yellow-50 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100 border-yellow-500 dark:border-yellow-500 shadow-sm'
-                            : 'bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:border-yellow-400 dark:hover:border-yellow-600 hover:shadow-sm'
+                            : 'dark:bg-slate-800 border-gray-300 dark:border-slate-600 dark:text-gray-300 hover:text-black hover:bg-yellow-50  dark:hover:bg-yellow-900/20 hover:border-yellow-400 dark:hover:border-yellow-600 hover:shadow-sm'
                         }`}
                       >
                         {color}
@@ -2382,7 +2415,7 @@ export default function DiamondsSearchPage() {
                           :
                         isSelected
                           ? 'bg-yellow-50 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100 border-yellow-500 dark:border-yellow-500 shadow-sm'
-                          : 'bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:border-yellow-400 dark:hover:border-yellow-600 hover:shadow-sm'
+                          : 'dark:bg-slate-800 border-gray-300 dark:border-slate-600 dark:text-gray-300 hover:text-black hover:bg-yellow-50  dark:hover:bg-yellow-900/20 hover:border-yellow-400 dark:hover:border-yellow-600 hover:shadow-sm'
                       }`}
                     >
                       {clarity}
@@ -2906,16 +2939,21 @@ export default function DiamondsSearchPage() {
         <div className="flex flex-col md:flex-row gap-4 mt-8 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
           <button
             onClick={handleSearch}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-medium text-lg transition-colors flex items-center justify-center"
-            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+            className="group flex-1 px-6 py-4 rounded-2xl font-semibold text-base md:text-lg flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2"
+            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--primary) 80%, currentColor 20%)' }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--primary)' }}
           >
             <Search className="w-5 h-5 mr-2" />
             Find Diamonds
           </button>
           <button
             onClick={resetFilters}
-            className="md:w-auto px-8 py-4 border rounded-lg font-medium transition-colors flex items-center justify-center"
-            style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+            disabled={isDefaultFilters}
+            className="group md:w-auto px-6 py-4 rounded-2xl font-semibold text-base md:text-lg flex items-center justify-center transition-all duration-200 border disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ borderColor: 'var(--border)', color: 'var(--foreground)', background: 'transparent' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, currentColor 40%, transparent)' }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
           >
             <Filter className="w-5 h-5 mr-2" />
             Reset Filters

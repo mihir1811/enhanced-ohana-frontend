@@ -183,6 +183,14 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData]);
 
+  useEffect(() => {
+    const parts = [form.caratWeight, form.shape, form.color, form.clarity].filter((p) => p && String(p).trim() !== '');
+    const newName = parts.join(' ');
+    if (form.name !== newName) {
+      setForm((prev) => ({ ...prev, name: newName }));
+    }
+  }, [form.caratWeight, form.shape, form.color, form.clarity]);
+
   // Handlers
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -325,7 +333,7 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
               name="name"
               value={form.name}
               onChange={handleChange}
-              required
+              disabled
               placeholder="e.g. Round Brilliant Diamond"
               className="w-full transition-all duration-200 hover:border-primary/50"
             />

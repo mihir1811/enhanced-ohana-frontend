@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback, useLayoutEffect, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Search, Filter, Grid, List, Loader2, Eye, ShoppingCart, MapPin, Star, X, ChevronDown } from 'lucide-react';
 import NavigationUser from '@/components/Navigation/NavigationUser';
 import Footer from '@/components/Footer';
@@ -218,22 +219,22 @@ export default function GemstoneProductsPage() {
           background: #6b7280;
         }
       `}</style>
-      <div className="min-h-screen bg-slate-50 dark:bg-gray-950">
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
         <NavigationUser />
       
       <div className="container mx-auto px-6 pb-8 pt-4">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">
+          <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>
             {categoryTitle}
           </h1>
-          <p className="text-slate-600">
+          <p style={{ color: 'var(--muted-foreground)' }}>
             Discover beautiful {categoryTitle.toLowerCase()} with comprehensive filtering and search
           </p>
         </div>
 
         {/* Search and Controls */}
-        <div className="bg-white rounded-lg p-3 mb-8 shadow-sm">
+        <div className=" rounded-lg p-3 mb-8 shadow-sm">
           <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
             {/* Search */}
             <div className="relative flex-1 max-w-md">
@@ -243,7 +244,8 @@ export default function GemstoneProductsPage() {
                 placeholder="Search gemstones..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
               />
             </div>
 
@@ -253,7 +255,8 @@ export default function GemstoneProductsPage() {
               <select
                 value={sortBy}
                 onChange={(e) => handleSortChange(e.target.value)}
-                className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-4 py-2 rounded-lg focus:outline-none focus:ring-2"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
               >
                 {SORT_OPTIONS.map(option => (
                   <option key={option.value} value={option.value}>
@@ -265,23 +268,26 @@ export default function GemstoneProductsPage() {
               {/* Filter Toggle */}
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg"
+                style={{ borderColor: 'var(--border)', color: 'var(--foreground)', borderStyle: 'solid', borderWidth: 1 }}
               >
                 <Filter className="w-4 h-4" />
                 Filters
               </button>
 
               {/* View Mode */}
-              <div className="flex border border-slate-300 rounded-lg overflow-hidden">
+              <div className="flex rounded-lg overflow-hidden" style={{ borderColor: 'var(--border)', borderStyle: 'solid', borderWidth: 1 }}>
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 ${viewMode === 'grid' ? 'bg-blue-500 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+                  className={`p-2 ${viewMode === 'grid' ? '' : ''}`}
+                  style={viewMode === 'grid' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { backgroundColor: 'var(--card)', color: 'var(--muted-foreground)' }}
                 >
                   <Grid className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 ${viewMode === 'list' ? 'bg-blue-500 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+                  className={`p-2 ${viewMode === 'list' ? '' : ''}`}
+                  style={viewMode === 'list' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { backgroundColor: 'var(--card)', color: 'var(--muted-foreground)' }}
                 >
                   <List className="w-4 h-4" />
                 </button>
@@ -302,20 +308,23 @@ export default function GemstoneProductsPage() {
               />
               {/* Drawer */}
               <div
-                className={`fixed top-0 right-0 w-full max-w-md h-full bg-white dark:bg-gray-900 z-[110] shadow-2xl p-0 flex flex-col transition-transform duration-300 ease-out ${drawerOpen ? 'translate-x-0' : 'translate-x-full'}`}
-                style={{ minHeight: '100vh' }}
+                className={`fixed top-0 right-0 w-full max-w-md h-full z-[110] shadow-2xl p-0 flex flex-col transition-transform duration-300 ease-out ${drawerOpen ? 'translate-x-0' : 'translate-x-full'}`}
+                style={{ minHeight: '100vh', backgroundColor: 'var(--card)' }}
                 onTransitionEnd={() => {
                   if (!drawerOpen) setDrawerVisible(false);
                 }}
               >
                 {/* Header */}
-                <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-5 sticky top-0 z-10">
+                <div className="border-b px-6 py-5 sticky top-0 z-10" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                   <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    <h2 className="text-xl font-semibold" style={{ color: 'var(--foreground)' }}>
                       Filters
                     </h2>
                     <button
-                      className="p-1.5 rounded-full hover:bg-white dark:hover:bg-gray-800 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
+                      className="p-1.5 rounded-full transition-all"
+                      style={{ color: 'var(--muted-foreground)' }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, currentColor 14%, transparent)'; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
                       onClick={() => setShowFilters(false)}
                       aria-label="Close filters"
                     >
@@ -327,7 +336,7 @@ export default function GemstoneProductsPage() {
                   <div className="flex items-center justify-between">
                     {totalAppliedFilters > 0 ? (
                       <>
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                        <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                           {totalAppliedFilters} {totalAppliedFilters === 1 ? 'filter' : 'filters'} applied
                         </span>
                         <button
@@ -338,15 +347,15 @@ export default function GemstoneProductsPage() {
                         </button>
                       </>
                     ) : (
-                      <span className="text-sm text-gray-500 dark:text-gray-500">
+                      <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                         No filters applied
                       </span>
                     )}
                   </div>
                 </div>
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
-                  <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                <div className="flex-1 overflow-y-auto" style={{ backgroundColor: 'var(--card)' }}>
+                  <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
                     
                     {/* Price Range Section */}
                     <div>
@@ -354,10 +363,10 @@ export default function GemstoneProductsPage() {
                         onClick={() => toggleSection('priceRange')}
                         className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
                       >
-                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
+                        <h3 className="text-sm font-semibold text-[var(--foreground)] group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
                           Price Range
                           {(filters.priceRange.min > 0 || filters.priceRange.max > 0) && (
-                            <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+                            <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
                               ${filters.priceRange.min.toLocaleString()} - ${filters.priceRange.max.toLocaleString()}
                             </span>
                           )}
@@ -367,15 +376,16 @@ export default function GemstoneProductsPage() {
                         />
                       </button>
                       {expandedSections.includes('priceRange') && (
-                        <div className="px-6 pb-5 pt-3 bg-gray-50/50 dark:bg-gray-800/20">
+                        <div className="px-6 pb-5 pt-3" style={{ backgroundColor: 'var(--muted)' }}>
                           <div className="flex gap-3 mb-4">
                             <div className="flex-1">
-                              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Min Price</label>
+                              <label className="block text-xs font-medium mb-2" style={{ color: 'var(--muted-foreground)' }}>Min Price</label>
                               <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: 'var(--muted-foreground)' }}>$</span>
                                 <input
                                   type="number"
-                                  className="w-full pl-7 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                  className="w-full pl-7 pr-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                                   placeholder="0"
                                   min={0}
                                   step={100}
@@ -385,12 +395,13 @@ export default function GemstoneProductsPage() {
                               </div>
                             </div>
                             <div className="flex-1">
-                              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Max Price</label>
+                              <label className="block text-xs font-medium mb-2" style={{ color: 'var(--muted-foreground)' }}>Max Price</label>
                               <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: 'var(--muted-foreground)' }}>$</span>
                                 <input
                                   type="number"
-                                  className="w-full pl-7 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                  className="w-full pl-7 pr-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                                   placeholder="No limit"
                                   min={0}
                                   step={100}
@@ -402,7 +413,7 @@ export default function GemstoneProductsPage() {
                           </div>
                           {/* Quick Price Ranges */}
                           <div className="space-y-2">
-                            <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Quick Select</p>
+                            <p className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>Quick Select</p>
                             <div className="grid grid-cols-2 gap-2">
                               {[
                                 { label: 'Under $1K', min: 0, max: 1000 },
@@ -415,7 +426,8 @@ export default function GemstoneProductsPage() {
                                 <button
                                   key={range.label}
                                   type="button"
-                                  className="px-3 py-2 text-xs font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-amber-50 hover:border-amber-500 hover:text-amber-700 dark:hover:bg-amber-900/20 dark:hover:border-amber-600 dark:hover:text-amber-400 transition-all"
+                                  className="px-3 py-2 text-xs font-medium rounded-lg transition-all"
+                                  style={{ backgroundColor: 'var(--card)', color: 'var(--muted-foreground)', border: '1px solid var(--border)' }}
                                   onClick={() => handleFiltersChange({ ...filters, priceRange: { min: range.min, max: range.max } })}
                                 >
                                   {range.label}
@@ -433,10 +445,10 @@ export default function GemstoneProductsPage() {
                         onClick={() => toggleSection('gemstoneType')}
                         className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
                       >
-                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
+                        <h3 className="text-sm font-semibold text-[var(--foreground)] group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
                           Gemstone Type
                           {filters.gemstoneType.length > 0 && (
-                            <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+                            <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
                               {filters.gemstoneType.length}
                             </span>
                           )}
@@ -446,14 +458,15 @@ export default function GemstoneProductsPage() {
                         />
                       </button>
                       {expandedSections.includes('gemstoneType') && (
-                        <div className="px-6 pb-5 pt-3 bg-gray-50/50 dark:bg-gray-800/20">
+                        <div className="px-6 pb-5 pt-3" style={{ backgroundColor: 'var(--muted)' }}>
                           {/* Search Input */}
                           <div className="mb-3">
                             <div className="relative">
                               <input
                                 type="text"
                                 placeholder="Search gemstone..."
-                                className="w-full px-3 py-2 pl-9 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                className="w-full px-3 py-2 pl-9 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                                 onChange={(e) => {
                                   const searchValue = e.target.value.toLowerCase();
                                   const options = document.querySelectorAll(`[data-filter-section="gemstoneType"] label`);
@@ -465,7 +478,7 @@ export default function GemstoneProductsPage() {
                                   });
                                 }}
                               />
-                              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--muted-foreground)' }} />
                             </div>
                           </div>
                           <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1 custom-scrollbar" data-filter-section="gemstoneType">
@@ -477,7 +490,7 @@ export default function GemstoneProductsPage() {
                                   className={`flex items-center gap-3 cursor-pointer group py-2 px-3 rounded-lg transition-all ${
                                     isSelected 
                                       ? 'bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30' 
-                                      : 'hover:bg-white dark:hover:bg-gray-800'
+                                      : ''
                                   }`}
                                 >
                                   <input
@@ -489,12 +502,11 @@ export default function GemstoneProductsPage() {
                                         : [...filters.gemstoneType, type];
                                       handleFiltersChange({ ...filters, gemstoneType: next });
                                     }}
-                                    className="w-4 h-4 text-amber-600 border-gray-300 dark:border-gray-500 rounded focus:ring-2 focus:ring-amber-500 focus:ring-offset-0 cursor-pointer transition-all"
+                                    className="w-4 h-4 text-amber-600 rounded focus:ring-2 focus:ring-amber-500 focus:ring-offset-0 cursor-pointer transition-all"
+                                    style={{ borderColor: 'var(--border)' }}
                                   />
                                   <span className={`text-sm select-none transition-colors ${
-                                    isSelected 
-                                      ? 'text-amber-900 dark:text-amber-100 font-medium' 
-                                      : 'text-gray-700 dark:text-gray-300'
+                                    isSelected ? 'font-medium text-[var(--foreground)]' : 'text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]'
                                   }`}>
                                     {type}
                                   </span>
@@ -512,10 +524,10 @@ export default function GemstoneProductsPage() {
                         onClick={() => toggleSection('shape')}
                         className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
                       >
-                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
+                        <h3 className="text-sm font-semibold text-[var(--foreground)] group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
                           Shape
                           {filters.shape.length > 0 && (
-                            <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+                            <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
                               {filters.shape.length}
                             </span>
                           )}
@@ -525,14 +537,15 @@ export default function GemstoneProductsPage() {
                         />
                       </button>
                       {expandedSections.includes('shape') && (
-                        <div className="px-6 pb-5 pt-3 bg-gray-50/50 dark:bg-gray-800/20">
+                        <div className="px-6 pb-5 pt-3" style={{ backgroundColor: 'var(--muted)' }}>
                           {/* Search Input */}
                           <div className="mb-3">
                             <div className="relative">
                               <input
                                 type="text"
                                 placeholder="Search shape..."
-                                className="w-full px-3 py-2 pl-9 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                className="w-full px-3 py-2 pl-9 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                                 onChange={(e) => {
                                   const searchValue = e.target.value.toLowerCase();
                                   const options = document.querySelectorAll(`[data-filter-section="shape"] label`);
@@ -544,7 +557,7 @@ export default function GemstoneProductsPage() {
                                   });
                                 }}
                               />
-                              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--muted-foreground)' }} />
                             </div>
                           </div>
                           <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1 custom-scrollbar" data-filter-section="shape">
@@ -568,12 +581,11 @@ export default function GemstoneProductsPage() {
                                         : [...filters.shape, shape];
                                       handleFiltersChange({ ...filters, shape: next });
                                     }}
-                                    className="w-4 h-4 text-amber-600 border-gray-300 dark:border-gray-500 rounded focus:ring-2 focus:ring-amber-500 focus:ring-offset-0 cursor-pointer transition-all"
+                                  className="w-4 h-4 text-amber-600 rounded focus:ring-2 focus:ring-amber-500 focus:ring-offset-0 cursor-pointer transition-all"
+                                  style={{ borderColor: 'var(--border)' }}
                                   />
                                   <span className={`text-sm select-none transition-colors ${
-                                    isSelected 
-                                      ? 'text-amber-900 dark:text-amber-100 font-medium' 
-                                      : 'text-gray-700 dark:text-gray-300'
+                                    isSelected ? 'font-medium text-[var(--foreground)]' : 'text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]'
                                   }`}>
                                     {shape}
                                   </span>
@@ -585,16 +597,17 @@ export default function GemstoneProductsPage() {
                       )}
                     </div>
 
-                    {/* Carat Weight Range */}
+                    {/* Carat Weight Range */
+                    }
                     <div>
                       <button
                         onClick={() => toggleSection('caratWeight')}
                         className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
                       >
-                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
+                        <h3 className="text-sm font-semibold text-[var(--foreground)] group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
                           Carat Weight
                           {(filters.caratWeight.min > 0.1 || filters.caratWeight.max < 50) && (
-                            <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+                            <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
                               {filters.caratWeight.min}-{filters.caratWeight.max}ct
                             </span>
                           )}
@@ -604,13 +617,14 @@ export default function GemstoneProductsPage() {
                         />
                       </button>
                       {expandedSections.includes('caratWeight') && (
-                        <div className="px-5 pb-4 pt-2">
+                        <div className="px-5 pb-4 pt-2" style={{ backgroundColor: 'var(--muted)' }}>
                           <div className="flex gap-2">
                             <div className="flex-1">
-                              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Min</label>
+                              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted-foreground)' }}>Min</label>
                               <input
                                 type="number"
-                                className="w-full border border-gray-200 dark:border-gray-700 rounded px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
+                                className="w-full border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
+                                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                                 placeholder="0.1"
                                 min={0}
                                 step={0.01}
@@ -619,10 +633,11 @@ export default function GemstoneProductsPage() {
                               />
                             </div>
                             <div className="flex-1">
-                              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Max</label>
+                              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted-foreground)' }}>Max</label>
                               <input
                                 type="number"
-                                className="w-full border border-gray-200 dark:border-gray-700 rounded px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
+                                className="w-full border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
+                                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                                 placeholder="50"
                                 min={0}
                                 step={0.01}
@@ -631,7 +646,7 @@ export default function GemstoneProductsPage() {
                               />
                             </div>
                           </div>
-                          <div className="mt-2.5 text-xs text-gray-500 dark:text-gray-400">
+                          <div className="mt-2.5 text-xs" style={{ color: 'var(--muted-foreground)' }}>
                             Range: {filters.caratWeight.min}ct - {filters.caratWeight.max}ct
                           </div>
                         </div>
@@ -644,10 +659,10 @@ export default function GemstoneProductsPage() {
                         onClick={() => toggleSection('color')}
                         className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                       >
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                        <h3 className="text-sm font-medium text-[var(--foreground)]">
                           Color
                           {filters.color.length > 0 && (
-                            <span className="ml-1.5 text-xs font-normal text-gray-500">({filters.color.length})</span>
+                            <span className="ml-1.5 text-xs font-normal" style={{ color: 'var(--muted-foreground)' }}>({filters.color.length})</span>
                           )}
                         </h3>
                         <ChevronDown 
@@ -661,7 +676,8 @@ export default function GemstoneProductsPage() {
                             <input
                               type="text"
                               placeholder="Search color..."
-                              className="w-full px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
+                              className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
+                              style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                               onChange={(e) => {
                                 const searchValue = e.target.value.toLowerCase();
                                 const options = document.querySelectorAll(`[data-filter-section="color"] label`);
@@ -691,9 +707,10 @@ export default function GemstoneProductsPage() {
                                         : [...filters.color, color];
                                       handleFiltersChange({ ...filters, color: next });
                                     }}
-                                    className="w-4 h-4 text-amber-600 border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-amber-500 focus:ring-offset-0 cursor-pointer"
+                                    className="w-4 h-4 text-amber-600 rounded focus:ring-1 focus:ring-amber-500 focus:ring-offset-0 cursor-pointer"
+                                    style={{ borderColor: 'var(--border)' }}
                                   />
-                                  <span className="text-sm text-gray-700 dark:text-gray-300 select-none">
+                                  <span className="text-sm select-none text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]">
                                     {color}
                                   </span>
                                 </label>
@@ -710,10 +727,10 @@ export default function GemstoneProductsPage() {
                         onClick={() => toggleSection('clarity')}
                         className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                       >
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                        <h3 className="text-sm font-medium text-[var(--foreground)]">
                           Clarity
                           {filters.clarity.length > 0 && (
-                            <span className="ml-1.5 text-xs font-normal text-gray-500">({filters.clarity.length})</span>
+                            <span className="ml-1.5 text-xs font-normal" style={{ color: 'var(--muted-foreground)' }}>({filters.clarity.length})</span>
                           )}
                         </h3>
                         <ChevronDown 
@@ -727,7 +744,8 @@ export default function GemstoneProductsPage() {
                             <input
                               type="text"
                               placeholder="Search clarity..."
-                              className="w-full px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
+                              className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
+                              style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                               onChange={(e) => {
                                 const searchValue = e.target.value.toLowerCase();
                                 const options = document.querySelectorAll(`[data-filter-section="clarity"] label`);
@@ -757,9 +775,10 @@ export default function GemstoneProductsPage() {
                                         : [...filters.clarity, clarity];
                                       handleFiltersChange({ ...filters, clarity: next });
                                     }}
-                                    className="w-4 h-4 text-amber-600 border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-amber-500 focus:ring-offset-0 cursor-pointer"
+                                    className="w-4 h-4 text-amber-600 rounded focus:ring-1 focus:ring-amber-500 focus:ring-offset-0 cursor-pointer"
+                                    style={{ borderColor: 'var(--border)' }}
                                   />
-                                  <span className="text-sm text-gray-700 dark:text-gray-300 select-none">
+                                  <span className="text-sm select-none text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]">
                                     {clarity}
                                   </span>
                                 </label>
@@ -776,10 +795,10 @@ export default function GemstoneProductsPage() {
                         onClick={() => toggleSection('origin')}
                         className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                       >
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                        <h3 className="text-sm font-medium text-[var(--foreground)]">
                           Origin
                           {filters.origin.length > 0 && (
-                            <span className="ml-1.5 text-xs font-normal text-gray-500">({filters.origin.length})</span>
+                            <span className="ml-1.5 text-xs font-normal" style={{ color: 'var(--muted-foreground)' }}>({filters.origin.length})</span>
                           )}
                         </h3>
                         <ChevronDown 
@@ -792,7 +811,8 @@ export default function GemstoneProductsPage() {
                             <input
                               type="text"
                               placeholder="Search origin..."
-                              className="w-full px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
+                              className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
+                              style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                               onChange={(e) => {
                                 const searchValue = e.target.value.toLowerCase();
                                 const options = document.querySelectorAll(`[data-filter-section="origin"] label`);
@@ -822,9 +842,10 @@ export default function GemstoneProductsPage() {
                                         : [...filters.origin, origin];
                                       handleFiltersChange({ ...filters, origin: next });
                                     }}
-                                    className="w-4 h-4 text-amber-600 border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-amber-500 focus:ring-offset-0 cursor-pointer"
+                                    className="w-4 h-4 text-amber-600 rounded focus:ring-1 focus:ring-amber-500 focus:ring-offset-0 cursor-pointer"
+                                    style={{ borderColor: 'var(--border)' }}
                                   />
-                                  <span className="text-sm text-gray-700 dark:text-gray-300 select-none">
+                                  <span className="text-sm select-none text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]">
                                     {origin}
                                   </span>
                                 </label>
@@ -841,10 +862,10 @@ export default function GemstoneProductsPage() {
                         onClick={() => toggleSection('certification')}
                         className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                       >
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                        <h3 className="text-sm font-medium text-[var(--foreground)]">
                           Certification
                           {filters.certification.length > 0 && (
-                            <span className="ml-1.5 text-xs font-normal text-gray-500">({filters.certification.length})</span>
+                            <span className="ml-1.5 text-xs font-normal" style={{ color: 'var(--muted-foreground)' }}>({filters.certification.length})</span>
                           )}
                         </h3>
                         <ChevronDown 
@@ -857,7 +878,8 @@ export default function GemstoneProductsPage() {
                             <input
                               type="text"
                               placeholder="Search certification..."
-                              className="w-full px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
+                              className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
+                              style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                               onChange={(e) => {
                                 const searchValue = e.target.value.toLowerCase();
                                 const options = document.querySelectorAll(`[data-filter-section="certification"] label`);
@@ -887,9 +909,10 @@ export default function GemstoneProductsPage() {
                                         : [...filters.certification, cert];
                                       handleFiltersChange({ ...filters, certification: next });
                                     }}
-                                    className="w-4 h-4 text-amber-600 border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-amber-500 focus:ring-offset-0 cursor-pointer"
+                                    className="w-4 h-4 text-amber-600 rounded focus:ring-1 focus:ring-amber-500 focus:ring-offset-0 cursor-pointer"
+                                    style={{ borderColor: 'var(--border)' }}
                                   />
-                                  <span className="text-sm text-gray-700 dark:text-gray-300 select-none">
+                                  <span className="text-sm select-none text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]">
                                     {cert}
                                   </span>
                                 </label>
@@ -906,10 +929,10 @@ export default function GemstoneProductsPage() {
                         onClick={() => toggleSection('cut')}
                         className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                       >
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                        <h3 className="text-sm font-medium text-[var(--foreground)]">
                           Cut Quality
                           {filters.cut.length > 0 && (
-                            <span className="ml-1.5 text-xs font-normal text-gray-500">({filters.cut.length})</span>
+                            <span className="ml-1.5 text-xs font-normal" style={{ color: 'var(--muted-foreground)' }}>({filters.cut.length})</span>
                           )}
                         </h3>
                         <ChevronDown 
@@ -922,7 +945,8 @@ export default function GemstoneProductsPage() {
                             <input
                               type="text"
                               placeholder="Search cut quality..."
-                              className="w-full px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
+                              className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
+                              style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                               onChange={(e) => {
                                 const searchValue = e.target.value.toLowerCase();
                                 const options = document.querySelectorAll(`[data-filter-section="cut"] label`);
@@ -952,9 +976,10 @@ export default function GemstoneProductsPage() {
                                         : [...filters.cut, cut];
                                       handleFiltersChange({ ...filters, cut: next });
                                     }}
-                                    className="w-4 h-4 text-amber-600 border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-amber-500 focus:ring-offset-0 cursor-pointer"
+                                    className="w-4 h-4 text-amber-600 rounded focus:ring-1 focus:ring-amber-500 focus:ring-offset-0 cursor-pointer"
+                                    style={{ borderColor: 'var(--border)' }}
                                   />
-                                  <span className="text-sm text-gray-700 dark:text-gray-300 select-none">
+                                  <span className="text-sm select-none text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]">
                                     {cut}
                                   </span>
                                 </label>
@@ -971,10 +996,10 @@ export default function GemstoneProductsPage() {
                         onClick={() => toggleSection('treatment')}
                         className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                       >
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                        <h3 className="text-sm font-medium text-[var(--foreground)]">
                           Treatment
                           {filters.treatment.length > 0 && (
-                            <span className="ml-1.5 text-xs font-normal text-gray-500">({filters.treatment.length})</span>
+                            <span className="ml-1.5 text-xs font-normal" style={{ color: 'var(--muted-foreground)' }}>({filters.treatment.length})</span>
                           )}
                         </h3>
                         <ChevronDown 
@@ -987,7 +1012,8 @@ export default function GemstoneProductsPage() {
                             <input
                               type="text"
                               placeholder="Search treatment..."
-                              className="w-full px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
+                              className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
+                              style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                               onChange={(e) => {
                                 const searchValue = e.target.value.toLowerCase();
                                 const options = document.querySelectorAll(`[data-filter-section="treatment"] label`);
@@ -1017,9 +1043,10 @@ export default function GemstoneProductsPage() {
                                         : [...filters.treatment, treatment];
                                       handleFiltersChange({ ...filters, treatment: next });
                                     }}
-                                    className="w-4 h-4 text-amber-600 border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-amber-500 focus:ring-offset-0 cursor-pointer"
+                                    className="w-4 h-4 text-amber-600 rounded focus:ring-1 focus:ring-amber-500 focus:ring-offset-0 cursor-pointer"
+                                    style={{ borderColor: 'var(--border)' }}
                                   />
-                                  <span className="text-sm text-gray-700 dark:text-gray-300 select-none">
+                                  <span className="text-sm select-none text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]">
                                     {treatment}
                                   </span>
                                 </label>
@@ -1036,12 +1063,10 @@ export default function GemstoneProductsPage() {
                         onClick={() => toggleSection('dimensions')}
                         className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
                       >
-                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
+                        <h3 className="text-sm font-semibold text-[var(--foreground)] group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
                           Dimensions (mm)
                           {((filters.length.min > 0 || filters.length.max > 0) || (filters.width.min > 0 || filters.width.max > 0) || (filters.height.min > 0 || filters.height.max > 0)) && (
-                            <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
-                              Set
-                            </span>
+                            <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>Set</span>
                           )}
                         </h3>
                         <ChevronDown 
@@ -1049,17 +1074,18 @@ export default function GemstoneProductsPage() {
                         />
                       </button>
                       {expandedSections.includes('dimensions') && (
-                        <div className="px-6 pb-5 pt-3 bg-gray-50/50 dark:bg-gray-800/20 space-y-4">
+                        <div className="px-6 pb-5 pt-3 space-y-4" style={{ backgroundColor: 'var(--muted)' }}>
                           {/* Length */}
                           <div>
-                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                            <label className="block text-xs font-medium mb-2" style={{ color: 'var(--muted-foreground)' }}>
                               Length
                             </label>
                             <div className="flex gap-3">
                               <div className="flex-1 relative">
                                 <input
                                   type="number"
-                                  className="w-full pr-3 pl-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                  className="w-full pr-3 pl-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                                   placeholder="Min"
                                   min={0}
                                   step={0.1}
@@ -1070,7 +1096,8 @@ export default function GemstoneProductsPage() {
                               <div className="flex-1 relative">
                                 <input
                                   type="number"
-                                  className="w-full pr-3 pl-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                  className="w-full pr-3 pl-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                                   placeholder="Max"
                                   min={0}
                                   step={0.1}
@@ -1082,14 +1109,15 @@ export default function GemstoneProductsPage() {
                           </div>
                           {/* Width */}
                           <div>
-                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                            <label className="block text-xs font-medium mb-2" style={{ color: 'var(--muted-foreground)' }}>
                               Width
                             </label>
                             <div className="flex gap-3">
                               <div className="flex-1 relative">
                                 <input
                                   type="number"
-                                  className="w-full pr-3 pl-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                  className="w-full pr-3 pl-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                                   placeholder="Min"
                                   min={0}
                                   step={0.1}
@@ -1100,7 +1128,8 @@ export default function GemstoneProductsPage() {
                               <div className="flex-1 relative">
                                 <input
                                   type="number"
-                                  className="w-full pr-3 pl-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                  className="w-full pr-3 pl-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                                   placeholder="Max"
                                   min={0}
                                   step={0.1}
@@ -1112,14 +1141,15 @@ export default function GemstoneProductsPage() {
                           </div>
                           {/* Height/Depth */}
                           <div>
-                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                            <label className="block text-xs font-medium mb-2" style={{ color: 'var(--muted-foreground)' }}>
                               Height/Depth
                             </label>
                             <div className="flex gap-3">
                               <div className="flex-1 relative">
                                 <input
                                   type="number"
-                                  className="w-full pr-3 pl-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                  className="w-full pr-3 pl-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                                   placeholder="Min"
                                   min={0}
                                   step={0.1}
@@ -1130,7 +1160,8 @@ export default function GemstoneProductsPage() {
                               <div className="flex-1 relative">
                                 <input
                                   type="number"
-                                  className="w-full pr-3 pl-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                  className="w-full pr-3 pl-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                                   placeholder="Max"
                                   min={0}
                                   step={0.1}
@@ -1147,7 +1178,7 @@ export default function GemstoneProductsPage() {
                   </div>
                 </div>
                 {/* Sticky Footer */}
-                <div className="sticky bottom-0 left-0 w-full bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 px-6 py-4 z-20">
+                <div className="sticky bottom-0 left-0 w-full px-6 py-4 z-20" style={{ backgroundColor: 'var(--card)', borderTop: '1px solid var(--border)' }}>
                   <button
                     className="w-full py-3 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold transition-colors"
                     onClick={() => setShowFilters(false)}
@@ -1163,7 +1194,7 @@ export default function GemstoneProductsPage() {
           <div className="flex-1 w-full min-w-0 z-0 relative">
             {/* Results Header */}
             <div className="flex items-center justify-between mb-6">
-              <p className="text-slate-600">
+              <p style={{ color: 'var(--muted-foreground)' }}>
                 {loading ? (
                   'Loading...'
                 ) : (
@@ -1195,7 +1226,7 @@ export default function GemstoneProductsPage() {
             {/* No Results */}
             {!loading && !error && gemstones.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-slate-600 mb-4">No gemstones found matching your criteria.</p>
+                <p className="mb-4" style={{ color: 'var(--muted-foreground)' }}>No gemstones found matching your criteria.</p>
                 <button
                   onClick={clearFilters}
                   className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
@@ -1278,17 +1309,23 @@ interface GemstoneCardProps {
 }
 
 function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
+  const router = useRouter();
+  const goToDetails = () => {
+    router.push(`/gemstones/single/${item.id}`);
+  };
   if (viewMode === 'list') {
     return (
-      <div className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+      <div className="rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
         <div className="flex gap-6">
-          <div className="w-32 h-32 bg-slate-100 rounded-lg flex-shrink-0">
+          <div className="w-32 h-32 rounded-lg flex-shrink-0" style={{ backgroundColor: 'var(--card)' }}>
             {item.image1 ? (
-              <img 
-                src={item.image1} 
-                alt={item.name}
-                className="w-full h-full object-cover rounded-lg"
-              />
+              <Link href={`/gemstones/single/${item.id}`}>
+                <img 
+                  src={item.image1} 
+                  alt={item.name}
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              </Link>
             ) : (
               <div className="w-full h-full flex items-center justify-center text-slate-400">
                 No Image
@@ -1298,41 +1335,49 @@ function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
           
           <div className="flex-1">
             <div className="flex items-start justify-between mb-2">
-              <h3 className="text-lg font-medium text-slate-900">{item.name}</h3>
+              <Link href={`/gemstones/single/${item.id}`} className="text-lg font-medium" style={{ color: 'var(--foreground)' }}>
+                {item.name}
+              </Link>
               <WishlistButton productId={Number(item.id)} productType="gemstone" />
             </div>
             
-            <p className="text-slate-600 text-sm mb-2">{item.skuCode}</p>
+            <p className="text-sm mb-2" style={{ color: 'var(--muted-foreground)' }}>{item.skuCode}</p>
             
             <div className="flex items-center gap-4 mb-3">
-              <span className="text-2xl font-bold text-slate-900">
+              <span className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
                 ${item.totalPrice?.toLocaleString() || 'Price on request'}
               </span>
               
               {item.gemType && (
-                <span className="px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded">
+                <span className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
                   {item.gemType.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
                 </span>
               )}
               
               {item.caratWeight && (
-                <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
+                <span className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
                   {item.caratWeight}ct
                 </span>
               )}
             </div>
             
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-slate-600">
+              <div className="flex items-center gap-2" style={{ color: 'var(--muted-foreground)' }}>
                 <MapPin className="w-4 h-4" />
                 <span className="text-sm">Seller ID: {item.sellerId.slice(-8)}</span>
               </div>
               
               <div className="flex items-center gap-2">
-                <button className="p-2 border border-slate-300 rounded-lg hover:bg-slate-50">
+                <button
+                  onClick={goToDetails}
+                  className="p-2 rounded-lg border"
+                  style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, currentColor 14%, transparent)' }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
+                >
                   <Eye className="w-4 h-4" />
                 </button>
-                <button className="p-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800">
+                <button className="p-2 rounded-lg" style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}>
                   <ShoppingCart className="w-4 h-4" />
                 </button>
               </div>
@@ -1344,14 +1389,16 @@ function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group">
-      <div className="relative aspect-square bg-slate-100">
+    <div className="rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+      <div className="relative aspect-square" style={{ backgroundColor: 'var(--card)' }}>
         {item.image1 ? (
-          <img 
-            src={item.image1} 
-            alt={item.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
+          <Link href={`/gemstones/single/${item.id}`}>
+            <img 
+              src={item.image1} 
+              alt={item.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          </Link>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-slate-400">
             <div className="text-center">
@@ -1368,54 +1415,62 @@ function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
         </div>
         
         {item.isOnAuction && (
-          <div className="absolute top-3 left-3 px-2 py-1 bg-red-500 text-white text-xs rounded">
+          <div className="absolute top-3 left-3 px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
             Auction
           </div>
         )}
       </div>
       
-      <div className="p-4">
-        <h3 className="font-medium text-slate-900 mb-1 line-clamp-1">{item.name}</h3>
-        <p className="text-sm text-slate-600 mb-2">{item.skuCode}</p>
+      <div className="p-4" style={{ color: 'var(--foreground)' }}>
+        <Link href={`/gemstones/single/${item.id}`} className="font-medium mb-1 line-clamp-1" style={{ color: 'var(--foreground)' }}>
+          {item.name}
+        </Link>
+        <p className="text-sm mb-2" style={{ color: 'var(--muted-foreground)' }}>{item.skuCode}</p>
         
         <div className="flex items-center justify-between mb-3">
-          <span className="text-lg font-bold text-slate-900">
+          <span className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>
             ${item.totalPrice?.toLocaleString() || 'POA'}
           </span>
           
           <div className="flex gap-1">
             {item.gemType && (
-              <span className="px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded">
+              <span className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
                 {item.gemType.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
               </span>
             )}
             {item.caratWeight && (
-              <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
+              <span className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
                 {item.caratWeight}ct
               </span>
             )}
           </div>
         </div>
         
-        <div className="flex items-center justify-between text-sm text-slate-600 mb-3">
+        <div className="flex items-center justify-between text-sm mb-3" style={{ color: 'var(--muted-foreground)' }}>
           <div className="flex items-center gap-1">
             <MapPin className="w-3 h-3" />
             <span>ID: {item.sellerId.slice(-8)}</span>
           </div>
           
           {item.origin && (
-            <div className="text-xs text-slate-500">
+            <div className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
               {item.origin}
             </div>
           )}
         </div>
         
         <div className="flex items-center gap-2">
-          <button className="flex-1 px-3 py-2 bg-slate-900 text-white text-sm rounded hover:bg-slate-800 flex items-center justify-center gap-2">
+          <button className="flex-1 px-3 py-2 text-sm rounded flex items-center justify-center gap-2" style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}>
             <ShoppingCart className="w-4 h-4" />
             Add to Cart
           </button>
-          <button className="p-2 border border-slate-300 rounded hover:bg-slate-50">
+          <button
+            onClick={goToDetails}
+            className="p-2 rounded border"
+            style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, currentColor 14%, transparent)' }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
+          >
             <Eye className="w-4 h-4" />
           </button>
         </div>

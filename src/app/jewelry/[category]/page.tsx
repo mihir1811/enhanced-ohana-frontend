@@ -1036,12 +1036,12 @@ export default function JewelryCategoryPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
         <NavigationUser />
 
         <div className="container mx-auto px-6 pb-8 pt-4">
           {/* Search and Controls */}
-        <div className="bg-white rounded-lg p-3 mb-2 shadow-sm">
+        <div className="rounded-lg p-3 mb-2 shadow-sm border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
           <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
             {/* Search */}
             <div className="relative flex-1 max-w-md">
@@ -1051,7 +1051,8 @@ export default function JewelryCategoryPage() {
                 placeholder="Search jewelry..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
               />
             </div>
 
@@ -1059,20 +1060,26 @@ export default function JewelryCategoryPage() {
             <div className="flex items-center gap-2">
               {/* Sort */}
               <button
-                className="w-8 h-8 flex items-center justify-center rounded-lg bg-white shadow border border-gray-200 hover:bg-gray-50 active:scale-95 transition"
+                className="w-8 h-8 flex items-center justify-center rounded-lg shadow border active:scale-95 transition"
                 aria-label="Sort"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, currentColor 12%, transparent)' }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--card)' }}
               >
-                <ArrowUpDown className="w-4 h-4 text-gray-700" />
+                <ArrowUpDown className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
               </button>
 
               {/* Filter Button */}
               <button
-                className="px-3 py-2 flex items-center gap-2 rounded-lg bg-white shadow border border-gray-200 hover:bg-gray-50 active:scale-95 transition"
+                className="px-3 py-2 flex items-center gap-2 rounded-lg shadow border active:scale-95 transition"
                 onClick={() => setShowFilters(true)}
                 aria-label="Open filters"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, currentColor 12%, transparent)' }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--card)' }}
               >
-                <Filter className="w-4 h-4 text-gray-700" />
-                <span className="text-sm font-medium text-gray-700">Filters</span>
+                <Filter className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
+                <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>Filters</span>
                 {getTotalAppliedFilters() > 0 && (
                   <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">
                     {getTotalAppliedFilters()}
@@ -1081,17 +1088,19 @@ export default function JewelryCategoryPage() {
               </button>
 
               {/* View Mode */}
-              <div className="flex items-center bg-white shadow border border-gray-200 rounded-lg">
+              <div className="flex items-center shadow border rounded-lg" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${viewMode === 'grid' ? 'bg-gray-900 text-white' : 'text-gray-700'}`}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition`}
+                  style={viewMode === 'grid' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { color: 'var(--muted-foreground)' }}
                   aria-label="Grid view"
                 >
                   <Grid className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${viewMode === 'list' ? 'bg-gray-900 text-white' : 'text-gray-700'}`}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition`}
+                  style={viewMode === 'list' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { color: 'var(--muted-foreground)' }}
                   aria-label="List view"
                 >
                   <List className="w-4 h-4" />
@@ -1171,7 +1180,7 @@ export default function JewelryCategoryPage() {
 
         {/* Watch Brands Horizontal Filter - For watches category */}
         {category === 'watches' && Array.isArray(categoryFilters.brands) && categoryFilters.brands.length > 0 && (
-          <div className="mb-2 bg-white rounded-lg shadow-sm p-2">
+          <div className="mb-2 rounded-lg shadow-sm p-2 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="flex items-center">
                 <span className="text-sm font-medium mr-3 whitespace-nowrap">Filter by Brand:</span>
@@ -1180,11 +1189,8 @@ export default function JewelryCategoryPage() {
                 {/* All Brands Button */}
                 <button
                   onClick={() => handleFilterChange('brands', [])}
-                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200 ${
-                    (!filters.brands || filters.brands.length === 0)
-                      ? 'bg-gray-700 border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-800' 
-                      : 'border border-slate-300 text-slate-700 hover:border-gray-500 hover:text-gray-700 bg-white'
-                  }`}
+                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200`}
+                  style={(!filters.brands || filters.brands.length === 0) ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)', borderStyle: 'solid' }}
                 >
                   All Brands
                 </button>
@@ -1204,11 +1210,8 @@ export default function JewelryCategoryPage() {
                           : [...currentBrands, brand.value] // Allow multiple selection
                         handleFilterChange('brands', newBrands)
                       }}
-                      className={`p-1 rounded-lg transition-all duration-200 flex items-center justify-center whitespace-nowrap h-auto border ${
-                        isSelected
-                          ? 'bg-blue-600 border-blue-600 text-white'
-                          : 'bg-white border-slate-300 hover:text-yellow-600 hover:border-yellow-400'
-                      }`}
+                      className={`p-1 rounded-lg transition-all duration-200 flex items-center justify-center whitespace-nowrap h-auto border`}
+                      style={isSelected ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
                     >
                       <div className="w-20 h-10 relative flex items-center justify-center">
                         {logoPath ? (
@@ -1253,7 +1256,7 @@ export default function JewelryCategoryPage() {
 
         {/* Ring Types Filter Bar - For rings category */}
         {category === 'rings' && Array.isArray(categoryFilters.ringTypes) && categoryFilters.ringTypes.length > 0 && (
-          <div className="mb-2 bg-white rounded-lg shadow-sm p-2">
+          <div className="mb-2 rounded-lg shadow-sm p-2 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="flex items-center">
                 <span className="text-sm font-medium mr-3 whitespace-nowrap">Filter by Ring Type:</span>
@@ -1262,11 +1265,8 @@ export default function JewelryCategoryPage() {
                 {/* All Ring Types Button */}
                 <button
                   onClick={() => handleFilterChange('ringTypes', [])}
-                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200 ${
-                    (!filters.ringTypes || filters.ringTypes.length === 0)
-                      ? 'bg-gray-700 border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-800' 
-                      : 'border border-slate-300 text-slate-700 hover:border-gray-500 hover:text-gray-700 bg-white'
-                  }`}
+                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200`}
+                  style={(!filters.ringTypes || filters.ringTypes.length === 0) ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)', borderStyle: 'solid' }}
                 >
                   All Types
                 </button>
@@ -1285,11 +1285,8 @@ export default function JewelryCategoryPage() {
                           : [...currentRingTypes, ringType.value]
                         handleFilterChange('ringTypes', newRingTypes)
                       }}
-                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap ${
-                        isSelected
-                          ? 'bg-amber-600 border-amber-600 text-white hover:bg-amber-700'
-                          : 'bg-white border-slate-300 text-slate-700 hover:border-amber-400 hover:text-amber-600'
-                      }`}
+                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap`}
+                      style={isSelected ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
                     >
                       {/* Ring Type Icon */}
                       <span className="text-lg" role="img" aria-label={ringType.label}>
@@ -1309,7 +1306,7 @@ export default function JewelryCategoryPage() {
 
         {/* Necklace Chain Types Filter Bar - For necklaces category */}
         {category === 'necklaces' && Array.isArray(categoryFilters.chainTypes) && categoryFilters.chainTypes.length > 0 && (
-          <div className="mb-2 bg-white rounded-lg shadow-sm p-2">
+          <div className="mb-2 rounded-lg shadow-sm p-2 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="flex items-center">
                 <span className="text-sm font-medium mr-3 whitespace-nowrap">Filter by Chain Type:</span>
@@ -1318,11 +1315,8 @@ export default function JewelryCategoryPage() {
                 {/* All Chain Types Button */}
                 <button
                   onClick={() => handleFilterChange('chainTypes', [])}
-                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200 ${
-                    (!filters.chainTypes || filters.chainTypes.length === 0)
-                      ? 'bg-gray-700 border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-800' 
-                      : 'border border-slate-300 text-slate-700 hover:border-gray-500 hover:text-gray-700 bg-white'
-                  }`}
+                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200`}
+                  style={(!filters.chainTypes || filters.chainTypes.length === 0) ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)', borderStyle: 'solid' }}
                 >
                   All Chain Types
                 </button>
@@ -1341,11 +1335,8 @@ export default function JewelryCategoryPage() {
                           : [...currentChainTypes, chainType.value]
                         handleFilterChange('chainTypes', newChainTypes)
                       }}
-                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap ${
-                        isSelected
-                          ? 'bg-purple-600 border-purple-600 text-white hover:bg-purple-700'
-                          : 'bg-white border-slate-300 text-slate-700 hover:border-purple-400 hover:text-purple-600'
-                      }`}
+                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap`}
+                      style={isSelected ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
                     >
                       {/* Chain Type Icon */}
                       <span className="text-lg" role="img" aria-label={chainType.label}>
@@ -1365,7 +1356,7 @@ export default function JewelryCategoryPage() {
 
         {/* Earring Styles Filter Bar - For earrings category */}
         {category === 'earrings' && Array.isArray(categoryFilters.styles) && categoryFilters.styles.length > 0 && (
-          <div className="mb-2 bg-white rounded-lg shadow-sm p-2">
+          <div className="mb-2 rounded-lg shadow-sm p-2 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="flex items-center">
                 <span className="text-sm font-medium mr-3 whitespace-nowrap">Filter by Style:</span>
@@ -1374,11 +1365,8 @@ export default function JewelryCategoryPage() {
                 {/* All Styles Button */}
                 <button
                   onClick={() => handleFilterChange('style', [])}
-                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200 ${
-                    (!filters.style || filters.style.length === 0)
-                      ? 'bg-gray-700 border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-800' 
-                      : 'border border-slate-300 text-slate-700 hover:border-gray-500 hover:text-gray-700 bg-white'
-                  }`}
+                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200`}
+                  style={(!filters.style || filters.style.length === 0) ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)', borderStyle: 'solid' }}
                 >
                   All Styles
                 </button>
@@ -1397,11 +1385,8 @@ export default function JewelryCategoryPage() {
                           : [...currentStyles, style.value]
                         handleFilterChange('style', newStyles)
                       }}
-                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap ${
-                        isSelected
-                          ? 'bg-pink-600 border-pink-600 text-white hover:bg-pink-700'
-                          : 'bg-white border-slate-300 text-slate-700 hover:border-pink-400 hover:text-pink-600'
-                      }`}
+                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap`}
+                      style={isSelected ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
                     >
                       {/* Earring Style Icon */}
                       <span className="text-lg" role="img" aria-label={style.label}>
@@ -1591,7 +1576,7 @@ export default function JewelryCategoryPage() {
         <div className="w-full">
           {/* Results Header */}
             <div className="flex items-center justify-between mb-6">
-              <p className="text-slate-600">
+              <p style={{ color: 'var(--muted-foreground)' }}>
                 {loading ? (
                   'Loading...'
                 ) : (
@@ -1622,7 +1607,7 @@ export default function JewelryCategoryPage() {
             {/* No Results */}
             {!loading && !error && jewelry.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-slate-600 mb-4">No jewelry found matching your criteria.</p>
+                <p className="mb-4" style={{ color: 'var(--muted-foreground)' }}>No jewelry found matching your criteria.</p>
                 <button
                   onClick={clearFilters}
                   className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
@@ -1652,7 +1637,8 @@ export default function JewelryCategoryPage() {
                       <button
                         onClick={() => handlePageChange(pagination.page - 1)}
                         disabled={pagination.page <= 1}
-                        className="px-4 py-2 border border-slate-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
+                        className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
                       >
                         Previous
                       </button>
@@ -1665,10 +1651,8 @@ export default function JewelryCategoryPage() {
                           <button
                             key={page}
                             onClick={() => handlePageChange(page)}
-                            className={`px-4 py-2 border rounded-lg ${page === pagination.page
-                                ? 'bg-blue-500 text-white border-blue-500'
-                                : 'border-slate-300 hover:bg-slate-50'
-                              }`}
+                            className={`px-4 py-2 border rounded-lg`}
+                            style={page === pagination.page ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { borderColor: 'var(--border)', color: 'var(--foreground)' }}
                           >
                             {page}
                           </button>
@@ -1678,7 +1662,8 @@ export default function JewelryCategoryPage() {
                       <button
                         onClick={() => handlePageChange(pagination.page + 1)}
                         disabled={pagination.page >= pagination.totalPages}
-                        className="px-4 py-2 border border-slate-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
+                        className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
                       >
                         Next
                       </button>
@@ -2474,12 +2459,13 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
   if (viewMode === 'list') {
     return (
       <div 
-        className="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-100 hover:border-amber-200 group"
+        className="rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer border group"
+        style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
         onClick={handleCardClick}
       >
         <div className="flex gap-6">
           {/* Image Section */}
-          <div className="w-40 h-40 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl flex-shrink-0 overflow-hidden relative group">
+          <div className="w-40 h-40 rounded-xl flex-shrink-0 overflow-hidden relative group" style={{ backgroundColor: 'var(--card)' }}>
             <ImageCarousel
               images={[item.image1, item.image2, item.image3, item.image4, item.image5, item.image6]}
               alt={item.name || 'Jewelry item'}
@@ -2496,10 +2482,10 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
           <div className="flex-1 flex flex-col">
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
-                <h3 className="text-xl font-semibold text-gray-900 mb-1 group-hover:text-amber-600 transition-colors">
+                <h3 className="text-xl font-semibold mb-1 transition-colors" style={{ color: 'var(--foreground)' }}>
                   {item.name}
                 </h3>
-                <p className="text-sm text-gray-500 font-mono">{item.skuCode}</p>
+                <p className="text-sm font-mono" style={{ color: 'var(--muted-foreground)' }}>{item.skuCode}</p>
               </div>
               <div onClick={(e) => e.stopPropagation()}>
                 <WishlistButton
@@ -2513,7 +2499,7 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
 
             {/* Details Row */}
             <div className="flex items-center gap-3 mb-4 flex-wrap">
-              <span className="text-3xl font-bold text-gray-900">
+              <span className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>
                 ${item.totalPrice?.toLocaleString() || 'POA'}
               </span>
 
@@ -2532,8 +2518,8 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
             </div>
 
             {/* Footer - Actions */}
-            <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
-              <div className="flex items-center gap-2 text-gray-600">
+            <div className="flex items-center justify-between mt-auto pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
+              <div className="flex items-center gap-2" style={{ color: 'var(--muted-foreground)' }}>
                 <MapPin className="w-4 h-4" />
                 <span className="text-sm font-mono">Seller: {item.sellerId?.slice(-8) || 'N/A'}</span>
               </div>
@@ -2544,10 +2530,11 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
                     e.stopPropagation()
                     // Quick view logic
                   }}
-                  className="p-2.5 border-2 border-gray-200 rounded-lg hover:border-amber-400 hover:bg-amber-50 transition-all duration-200 group/icon"
+                  className="p-2.5 border-2 rounded-lg transition-all duration-200 group/icon"
+                  style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
                   title="Quick View"
                 >
-                  <Eye className="w-4 h-4 text-gray-600 group-hover/icon:text-amber-600" />
+                  <Eye className="w-4 h-4" />
                 </button>
                 <button 
                   onClick={(e) => {
@@ -2569,11 +2556,12 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
 
   return (
     <div 
-      className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer border border-gray-100 hover:border-amber-200"
+      className="rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer border"
+      style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
       onClick={handleCardClick}
     >
       {/* Image Section */}
-      <div className="relative aspect-square bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden">
+      <div className="relative aspect-square overflow-hidden" style={{ backgroundColor: 'var(--card)' }}>
         <ImageCarousel
           images={[item.image1, item.image2, item.image3, item.image4, item.image5, item.image6]}
           alt={item.name || 'Jewelry item'}
@@ -2605,10 +2593,10 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
       <div className="p-4 space-y-3">
         {/* Title & SKU */}
         <div>
-          <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 text-base group-hover:text-amber-600 transition-colors">
+          <h3 className="font-semibold mb-1 line-clamp-2 text-base transition-colors" style={{ color: 'var(--foreground)' }}>
             {item.name}
           </h3>
-          <p className="text-xs text-gray-500 font-mono">{item.skuCode}</p>
+          <p className="text-xs font-mono" style={{ color: 'var(--muted-foreground)' }}>{item.skuCode}</p>
         </div>
 
         {/* Metal Type Badge */}
@@ -2622,22 +2610,22 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
 
         {/* Stones Info */}
         {item.stones && item.stones.length > 0 && (
-          <div className="flex items-center gap-1.5 text-xs text-gray-600">
+          <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--muted-foreground)' }}>
             <div className="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
             <span>{item.stones.length} {item.stones.length === 1 ? 'Stone' : 'Stones'}</span>
           </div>
         )}
 
         {/* Price Section */}
-        <div className="pt-2 border-t border-gray-100">
+        <div className="pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between mb-3">
             <div>
-              <div className="text-xs text-gray-500 mb-0.5">Price</div>
-              <span className="text-xl font-bold text-gray-900">
+              <div className="text-xs mb-0.5" style={{ color: 'var(--muted-foreground)' }}>Price</div>
+              <span className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>
                 ${item.totalPrice?.toLocaleString() || 'POA'}
               </span>
             </div>
-            <div className="flex items-center gap-1 text-xs text-gray-500">
+            <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--muted-foreground)' }}>
               <MapPin className="w-3 h-3" />
               <span className="font-mono">{item.sellerId?.slice(-6) || 'N/A'}</span>
             </div>
@@ -2660,10 +2648,11 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
                 e.stopPropagation()
                 // Quick view logic
               }}
-              className="p-2.5 border-2 border-gray-200 rounded-lg hover:border-amber-400 hover:bg-amber-50 transition-all duration-200 group/icon active:scale-95"
+              className="p-2.5 border-2 rounded-lg transition-all duration-200 group/icon active:scale-95"
+              style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
               title="Quick View"
             >
-              <Eye className="w-4 h-4 text-gray-600 group-hover/icon:text-amber-600" />
+              <Eye className="w-4 h-4" />
             </button>
           </div>
         </div>

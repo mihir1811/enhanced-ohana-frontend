@@ -144,10 +144,10 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
       <div className="max-w-7xl mx-auto p-6">
         <div className="text-center py-16">
           <div className="text-6xl mb-4 opacity-30">💎</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>
             Gemstone not found
           </h2>
-          <p className="text-gray-600">
+          <p style={{ color: 'var(--muted-foreground)' }}>
             The requested gemstone could not be loaded.
           </p>
         </div>
@@ -186,17 +186,10 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
     const score = [hasColor, hasClarity, hasCut, hasCertificate].filter(
       Boolean
     ).length;
-    if (score >= 4)
-      return {
-        grade: "Excellent",
-        color: "text-green-800",
-        bg: "bg-green-100",
-      };
-    if (score >= 3)
-      return { grade: "Very Good", color: "text-blue-700", bg: "bg-blue-100" };
-    if (score >= 2)
-      return { grade: "Good", color: "text-yellow-700", bg: "bg-yellow-100" };
-    return { grade: "Fair", color: "text-gray-500", bg: "bg-gray-50" };
+    if (score >= 4) return { grade: "Excellent", color: "", bg: "" };
+    if (score >= 3) return { grade: "Very Good", color: "", bg: "" };
+    if (score >= 2) return { grade: "Good", color: "", bg: "" };
+    return { grade: "Fair", color: "", bg: "" };
   };
 
   const certification = getCertificationGrade();
@@ -212,16 +205,16 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-8">
       {/* Breadcrumb */}
-      <nav className="flex items-center space-x-2 text-sm text-gray-600">
-        <a href="/gemstones" className="hover:text-gray-900">
+      <nav className="flex items-center space-x-2 text-sm" style={{ color: 'var(--muted-foreground)' }}>
+        <a href="/gemstones" className="hover:underline" style={{ color: 'var(--muted-foreground)' }}>
           Gemstones
         </a>
         <span>/</span>
-        <a href="#" className="hover:text-gray-900">
+        <a href="#" className="hover:underline" style={{ color: 'var(--muted-foreground)' }}>
           {gemstone.gemType || "Gemstone"}
         </a>
         <span>/</span>
-        <span className="text-gray-900 font-medium">
+        <span className="font-medium" style={{ color: 'var(--foreground)' }}>
           {gemstone.caratWeight}ct
         </span>
       </nav>
@@ -231,7 +224,7 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
         {/* Left Side - Image Gallery */}
         <div className="space-y-6">
           {/* Main Image */}
-          <div className="relative aspect-square bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl overflow-hidden group border border-gray-200">
+          <div className="relative aspect-square rounded-3xl overflow-hidden group border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             {hasImages ? (
               <>
                 <Image
@@ -247,31 +240,33 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
                   <>
                     <button
                       onClick={prevImage}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full p-2 shadow-lg transition-all opacity-0 group-hover:opacity-100 border backdrop-blur-sm"
+                      style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
                     >
-                      <ChevronLeft className="w-5 h-5 text-gray-700" />
+                      <ChevronLeft className="w-5 h-5" style={{ color: 'var(--foreground)' }} />
                     </button>
                     <button
                       onClick={nextImage}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-2 shadow-lg transition-all opacity-0 group-hover:opacity-100 border backdrop-blur-sm"
+                      style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
                     >
-                      <ChevronRight className="w-5 h-5 text-gray-700" />
+                      <ChevronRight className="w-5 h-5" style={{ color: 'var(--foreground)' }} />
                     </button>
                   </>
                 )}
 
                 {/* Image counter */}
                 {images.length > 1 && (
-                  <div className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm">
+                  <div className="absolute bottom-4 right-4 px-3 py-1 rounded-full text-sm font-medium border" style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}>
                     {imgIdx + 1} / {images.length}
                   </div>
                 )}
               </>
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <div className="text-center text-gray-400">
-                  <Star className="w-20 h-20 mx-auto mb-4" />
-                  <p className="text-lg">No Image Available</p>
+                <div className="text-center">
+                  <Star className="w-20 h-20 mx-auto mb-4" style={{ color: 'var(--muted-foreground)' }} />
+                  <p className="text-lg" style={{ color: 'var(--muted-foreground)' }}>No Image Available</p>
                 </div>
               </div>
             )}
@@ -284,11 +279,8 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
                 <button
                   key={index}
                   onClick={() => setImgIdx(index)}
-                  className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all ${
-                    index === imgIdx
-                      ? "border-amber-500 ring-2 ring-amber-200"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
+                  className="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all"
+                  style={{ borderColor: index === imgIdx ? 'var(--primary)' : 'var(--border)' }}
                 >
                   <Image
                     src={img}
@@ -315,15 +307,16 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
                     href={`/product/seller-info/${
                       gemstone.seller.id || gemstone.sellerId
                     }`}
-                    className="text-blue-600 hover:underline text-lg font-semibold mb-1 block"
+                    className="hover:underline text-lg font-semibold mb-1 block"
+                    style={{ color: 'var(--primary)' }}
                   >
                     {gemstone.seller.companyName}
                   </a>
                 )}
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>
                   {gemstone.name}
                 </h1>
-                <p className="text-gray-600 mt-1">SKU: {gemstone.skuCode}</p>
+                <p className="mt-1" style={{ color: 'var(--muted-foreground)' }}>SKU: {gemstone.skuCode}</p>
               </div>
               <WishlistButton
                 productId={Number(gemstone.id)}
@@ -332,27 +325,25 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
             </div>
 
             <div className="flex items-center space-x-4">
-              <div
-                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${certification.bg} ${certification.color}`}
-              >
-                <Award className="w-4 h-4 mr-1" />
+              <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border" style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}>
+                <Award className="w-4 h-4 mr-1" style={{ color: 'var(--muted-foreground)' }} />
                 {certification.grade}
               </div>
 
               {gemstone.isOnAuction && (
-                <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                  <Zap className="w-4 h-4 mr-1" />
+                <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border" style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}>
+                  <Zap className="w-4 h-4 mr-1" style={{ color: 'var(--muted-foreground)' }} />
                   On Auction
                 </div>
               )}
             </div>
 
             {/* Price */}
-            <div className="bg-gray-50 rounded-2xl p-6">
-              <div className="text-3xl font-bold text-gray-900 mb-2">
+            <div className="rounded-2xl p-6 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <div className="text-3xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>
                 {formatPrice(gemstone.totalPrice)}
               </div>
-              <p className="text-gray-600 text-sm">
+              <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                 Final price including all fees
               </p>
             </div>
@@ -360,27 +351,27 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
 
           {/* Quick Specs */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white border border-gray-200 rounded-xl p-4">
-              <div className="text-sm text-gray-600 mb-1">Carat Weight</div>
-              <div className="text-lg font-semibold">
+            <div className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <div className="text-sm mb-1" style={{ color: 'var(--muted-foreground)' }}>Carat Weight</div>
+              <div className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>
                 {gemstone.caratWeight || "N/A"}
               </div>
             </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-4">
-              <div className="text-sm text-gray-600 mb-1">Color</div>
-              <div className="text-lg font-semibold">
+            <div className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <div className="text-sm mb-1" style={{ color: 'var(--muted-foreground)' }}>Color</div>
+              <div className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>
                 {gemstone.color || "N/A"}
               </div>
             </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-4">
-              <div className="text-sm text-gray-600 mb-1">Clarity</div>
-              <div className="text-lg font-semibold">
+            <div className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <div className="text-sm mb-1" style={{ color: 'var(--muted-foreground)' }}>Clarity</div>
+              <div className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>
                 {gemstone.clarity || "N/A"}
               </div>
             </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-4">
-              <div className="text-sm text-gray-600 mb-1">Cut</div>
-              <div className="text-lg font-semibold">
+            <div className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <div className="text-sm mb-1" style={{ color: 'var(--muted-foreground)' }}>Cut</div>
+              <div className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>
                 {gemstone.cut || "N/A"}
               </div>
             </div>
@@ -391,7 +382,8 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
             <button 
               onClick={handleAddToCart}
               disabled={isAddingToCart}
-              className="w-full bg-gray-900 text-white py-4 rounded-xl font-semibold hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
+              className="w-full py-4 rounded-xl font-semibold transition-colors flex items-center justify-center space-x-2 disabled:cursor-not-allowed"
+              style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
             >
               <ShoppingCart className="w-5 h-5" />
               <span>{isAddingToCart ? 'Adding...' : 'Add to Cart'}</span>
@@ -400,16 +392,17 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
             <div className="grid grid-cols-3 gap-3">
               <button 
                 onClick={handleChatWithSeller}
-                className="flex items-center justify-center space-x-2 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-center space-x-2 py-3 rounded-xl border transition-colors"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
               >
                 <MessageSquare className="w-4 h-4" />
                 <span>Chat</span>
               </button>
-              <button className="flex items-center justify-center space-x-2 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
+              <button className="flex items-center justify-center space-x-2 py-3 rounded-xl border transition-colors" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
                 <Share2 className="w-4 h-4" />
                 <span>Share</span>
               </button>
-              <button className="flex items-center justify-center space-x-2 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
+              <button className="flex items-center justify-center space-x-2 py-3 rounded-xl border transition-colors" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
                 <Download className="w-4 h-4" />
                 <span>Report</span>
               </button>
@@ -419,9 +412,9 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
       </div>
 
       {/* Detailed Information Tabs */}
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+      <div className="rounded-2xl border overflow-hidden" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
         {/* Tab Navigation */}
-        <div className="border-b border-gray-200">
+        <div className="border-b" style={{ borderColor: 'var(--border)' }}>
           <nav className="flex space-x-8 px-6">
             {[
               { id: "overview", label: "Overview" },
@@ -431,11 +424,8 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as "overview" | "specifications" | "certification")}
-                className={`py-4 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === tab.id
-                    ? "border-amber-500 text-amber-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
+                className={`py-4 text-sm font-medium border-b-2 transition-colors`}
+                style={activeTab === tab.id ? { borderColor: 'var(--primary)', color: 'var(--primary)' } : { borderColor: 'transparent', color: 'var(--muted-foreground)' }}
               >
                 {tab.label}
               </button>
@@ -448,29 +438,29 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
           {activeTab === "overview" && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-semibold mb-3">Gemstone Details</h3>
+                <h3 className="text-lg font-semibold mb-3" style={{ color: 'var(--foreground)' }}>Gemstone Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <span className="text-gray-600">Type:</span>
-                    <span className="ml-2 font-medium">
+                    <span style={{ color: 'var(--muted-foreground)' }}>Type:</span>
+                    <span className="ml-2 font-medium" style={{ color: 'var(--foreground)' }}>
                       {gemstone.gemType || "N/A"}
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-600">Shape:</span>
-                    <span className="ml-2 font-medium">
+                    <span style={{ color: 'var(--muted-foreground)' }}>Shape:</span>
+                    <span className="ml-2 font-medium" style={{ color: 'var(--foreground)' }}>
                       {gemstone.shape || "N/A"}
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-600">Origin:</span>
-                    <span className="ml-2 font-medium">
+                    <span style={{ color: 'var(--muted-foreground)' }}>Origin:</span>
+                    <span className="ml-2 font-medium" style={{ color: 'var(--foreground)' }}>
                       {gemstone.origin || "N/A"}
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-600">Treatment:</span>
-                    <span className="ml-2 font-medium">
+                    <span style={{ color: 'var(--muted-foreground)' }}>Treatment:</span>
+                    <span className="ml-2 font-medium" style={{ color: 'var(--foreground)' }}>
                       {gemstone.treatment || "None disclosed"}
                     </span>
                   </div>
@@ -481,44 +471,44 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
 
           {activeTab === "specifications" && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">
+              <h3 className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>
                 Technical Specifications
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Carat Weight:</span>
-                    <span className="font-medium">
+                    <span style={{ color: 'var(--muted-foreground)' }}>Carat Weight:</span>
+                    <span className="font-medium" style={{ color: 'var(--foreground)' }}>
                       {gemstone.caratWeight || "N/A"}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Color:</span>
-                    <span className="font-medium">
+                    <span style={{ color: 'var(--muted-foreground)' }}>Color:</span>
+                    <span className="font-medium" style={{ color: 'var(--foreground)' }}>
                       {gemstone.color || "N/A"}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Clarity:</span>
-                    <span className="font-medium">
+                    <span style={{ color: 'var(--muted-foreground)' }}>Clarity:</span>
+                    <span className="font-medium" style={{ color: 'var(--foreground)' }}>
                       {gemstone.clarity || "N/A"}
                     </span>
                   </div>
                 </div>
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Cut:</span>
-                    <span className="font-medium">{gemstone.cut || "N/A"}</span>
+                    <span style={{ color: 'var(--muted-foreground)' }}>Cut:</span>
+                    <span className="font-medium" style={{ color: 'var(--foreground)' }}>{gemstone.cut || "N/A"}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Shape:</span>
-                    <span className="font-medium">
+                    <span style={{ color: 'var(--muted-foreground)' }}>Shape:</span>
+                    <span className="font-medium" style={{ color: 'var(--foreground)' }}>
                       {gemstone.shape || "N/A"}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Treatment:</span>
-                    <span className="font-medium">
+                    <span style={{ color: 'var(--muted-foreground)' }}>Treatment:</span>
+                    <span className="font-medium" style={{ color: 'var(--foreground)' }}>
                       {gemstone.treatment || "None"}
                     </span>
                   </div>
@@ -529,15 +519,15 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
 
           {activeTab === "certification" && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">
+              <h3 className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>
                 Certification Information
               </h3>
-              <div className="bg-gray-50 rounded-xl p-4">
+              <div className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                 <div className="flex items-center space-x-3 mb-3">
-                  <Shield className="w-6 h-6 text-green-600" />
-                  <span className="font-medium">Certification Status</span>
+                  <Shield className="w-6 h-6" style={{ color: 'var(--muted-foreground)' }} />
+                  <span className="font-medium" style={{ color: 'var(--foreground)' }}>Certification Status</span>
                 </div>
-                <p className="text-gray-600">
+                <p style={{ color: 'var(--muted-foreground)' }}>
                   {gemstone.certification
                     ? `This gemstone is certified by ${gemstone.certification}`
                     : "Certification information not available"}

@@ -62,10 +62,10 @@ function ImageGallery({ images, alt }: ImageGalleryProps) {
 
   if (validImages.length === 0) {
     return (
-      <div className="aspect-square bg-gray-50 rounded-3xl flex items-center justify-center border border-gray-100">
-        <div className="text-center text-gray-400">
-          <div className="w-16 h-16 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
-            <Star className="w-8 h-8 text-gray-300" />
+      <div className="aspect-square rounded-3xl flex items-center justify-center border" style={{ backgroundColor: 'var(--muted)', borderColor: 'var(--border)' }}>
+        <div className="text-center" style={{ color: 'var(--muted-foreground)' }}>
+          <div className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--muted)' }}>
+            <Star className="w-8 h-8" style={{ color: 'var(--muted-foreground)' }} />
           </div>
           <p className="text-sm">No Image</p>
         </div>
@@ -74,9 +74,24 @@ function ImageGallery({ images, alt }: ImageGalleryProps) {
   }
 
   return (
-    <div className="space-y-4">
-      {/* Main Image Display - Minimal Design */}
-      <div className="relative bg-white rounded-3xl overflow-hidden border border-gray-100 group">
+    <div className="lg:flex lg:gap-4 lg:items-start space-y-4 lg:space-y-0">
+      {validImages.length > 1 && (
+        <div className="hidden lg:flex lg:flex-col lg:gap-2 lg:w-20">
+          {validImages.map((img, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentImageIndex(index)}
+              className={`w-14 h-14 rounded-xl overflow-hidden border-2 transition-all duration-300`}
+              style={currentImageIndex === index ? { borderColor: 'var(--primary)' } : { borderColor: 'var(--border)' }}
+            >
+              <Image src={img} alt={`View ${index + 1}`} width={56} height={56} className="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Main Image Display */}
+      <div className="relative rounded-3xl overflow-hidden border group" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
         <div className="aspect-square relative">
           <Image
             src={validImages[currentImageIndex]}
@@ -92,37 +107,37 @@ function ImageGallery({ images, alt }: ImageGalleryProps) {
             <>
               <button
                 onClick={() => setCurrentImageIndex((prev) => (prev - 1 + validImages.length) % validImages.length)}
-                className="absolute left-6 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
+                className="absolute left-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full shadow-sm border flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
               >
-                <ChevronLeft className="w-4 h-4 text-gray-700" />
+                <ChevronLeft className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
               </button>
               <button
                 onClick={() => setCurrentImageIndex((prev) => (prev + 1) % validImages.length)}
-                className="absolute right-6 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
+                className="absolute right-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full shadow-sm border flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
               >
-                <ChevronRight className="w-4 h-4 text-gray-700" />
+                <ChevronRight className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
               </button>
             </>
           )}
 
-          {/* Minimal Zoom Indicator */}
-          <div className="absolute bottom-6 right-6 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-            <Eye className="w-4 h-4 text-gray-600" />
+          {/* Zoom Indicator */}
+          <div className="absolute bottom-6 right-6 w-8 h-8 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300" style={{ backgroundColor: 'var(--card)' }}>
+            <Eye className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
           </div>
         </div>
       </div>
 
-      {/* Minimal Thumbnail Gallery */}
+      {/* Thumbnail Gallery (mobile) */}
       {validImages.length > 1 && (
-        <div className="flex justify-center gap-2">
+        <div className="flex justify-center gap-2 lg:hidden">
           {validImages.map((img, index) => (
             <button
               key={index}
               onClick={() => setCurrentImageIndex(index)}
-              className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all duration-300 ${currentImageIndex === index
-                  ? 'border-gray-900'
-                  : 'border-gray-200 hover:border-gray-300'
-                }`}
+              className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all duration-300`}
+              style={currentImageIndex === index ? { borderColor: 'var(--primary)' } : { borderColor: 'var(--border)' }}
             >
               <Image src={img} alt={`View ${index + 1}`} width={64} height={64} className="w-full h-full object-cover" />
             </button>
@@ -132,7 +147,7 @@ function ImageGallery({ images, alt }: ImageGalleryProps) {
 
       {/* Minimal Zoom Modal */}
       {showZoom && (
-        <div className="fixed inset-0 z-50 bg-white/95 backdrop-blur-sm flex items-center justify-center p-8" onClick={() => setShowZoom(false)}>
+        <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center p-8" style={{ backgroundColor: 'var(--background)' }} onClick={() => setShowZoom(false)}>
           <div className="relative max-w-4xl max-h-full">
             <Image
               src={validImages[currentImageIndex]}
@@ -143,7 +158,8 @@ function ImageGallery({ images, alt }: ImageGalleryProps) {
             />
             <button
               onClick={() => setShowZoom(false)}
-              className="absolute top-4 right-4 w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-lg font-light hover:bg-gray-50 transition-colors"
+              className="absolute top-4 right-4 w-10 h-10 rounded-full shadow-sm flex items-center justify-center text-lg font-light transition-colors"
+              style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
             >
               ×
             </button>
@@ -284,16 +300,17 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
 
   if (!jewelry) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--background)' }}>
         <div className="text-center max-w-md mx-auto px-6">
-          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Star className="w-12 h-12 text-gray-300" />
+          <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: 'var(--muted)' }}>
+            <Star className="w-12 h-12" style={{ color: 'var(--muted-foreground)' }} />
           </div>
-          <h2 className="text-2xl font-light text-gray-900 mb-4">Jewelry not found</h2>
-          <p className="text-gray-500 mb-8 leading-relaxed">The jewelry piece you&apos;re looking for is not available.</p>
+          <h2 className="text-2xl font-light mb-4" style={{ color: 'var(--foreground)' }}>Jewelry not found</h2>
+          <p className="mb-8 leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>The jewelry piece you&apos;re looking for is not available.</p>
           <button
             onClick={() => router.back()}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition-colors font-medium"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full transition-colors font-medium hover:opacity-90"
+            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
           >
             <ArrowLeft className="w-4 h-4" />
             Go Back
@@ -309,20 +326,20 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       {/* Minimal Navigation */}
-      <nav className="border-b border-gray-100">
+      <nav className="border-b" style={{ borderColor: 'var(--border)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center text-xs sm:text-sm text-gray-500">
-            <button onClick={() => router.back()} className="hover:text-gray-900 transition-colors">
+          <div className="flex items-center text-xs sm:text-sm" style={{ color: 'var(--muted-foreground)' }}>
+            <button onClick={() => router.back()} className="transition-colors hover:opacity-90">
               Home
             </button>
             <span className="mx-2 sm:mx-3">/</span>
-            <button onClick={() => router.back()} className="hover:text-gray-900 transition-colors">
+            <button onClick={() => router.back()} className="transition-colors hover:opacity-90">
               {jewelry.category || 'Jewelry'}
             </button>
             <span className="mx-2 sm:mx-3">/</span>
-            <span className="text-gray-900 truncate">{jewelry.name}</span>
+            <span className="truncate" style={{ color: 'var(--foreground)' }}>{jewelry.name}</span>
           </div>
         </div>
       </nav>
@@ -346,139 +363,145 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                {jewelry.seller && jewelry.seller.companyName && (
                   <a
                     href={`/product/seller-info/${jewelry.seller.id || jewelry.sellerId}`}
-                    className="text-blue-600 hover:underline text-lg font-semibold mb-1 block"
+                    className="hover:underline text-lg font-semibold mb-1 block"
+                    style={{ color: 'var(--primary)' }}
                   >
                     {jewelry.seller.companyName}
                   </a>
                 )}
               </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-light text-gray-900 leading-tight">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-light leading-tight" style={{ color: 'var(--foreground)' }}>
                 {jewelry.name || 'Elegant Jewelry Piece'}
               </h1>
 
-              <div className="text-sm text-gray-500">
-                Style: <span className="text-gray-900 font-medium">{String(jewelry.skuCode) || 'N/A'}</span>
+              <div className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                Style: <span className="font-medium" style={{ color: 'var(--foreground)' }}>{String(jewelry.skuCode) || 'N/A'}</span>
               </div>
             </div>
 
-            {/* Price */}
-            <div className="space-y-2">
-              <div className="text-2xl sm:text-3xl font-light text-gray-900">
-                {jewelry.totalPrice ? formatPrice(jewelry.totalPrice) : 'Price on request'}
+            <div className="lg:sticky lg:top-8 rounded-2xl border p-5 sm:p-6 space-y-4" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <div className="space-y-1">
+                <div className="text-2xl sm:text-3xl font-light" style={{ color: 'var(--foreground)' }}>
+                  {jewelry.totalPrice ? formatPrice(jewelry.totalPrice) : 'Price on request'}
+                </div>
+                <div className="text-xs sm:text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                  Including all taxes and charges
+                </div>
               </div>
-              <div className="text-sm text-gray-500">
-                Including all taxes and charges
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>Quantity</span>
+                  <div className="flex items-center border rounded-full" style={{ borderColor: 'var(--border)' }}>
+                    <button
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="p-2 rounded-l-full transition-colors hover:opacity-80"
+                    >
+                      <Minus className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
+                    </button>
+                    <span className="px-4 py-2 text-sm font-medium">{quantity}</span>
+                    <button
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="p-2 rounded-r-full transition-colors hover:opacity-80"
+                    >
+                      <Plus className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <button 
+                    onClick={handleAddToCart}
+                    disabled={isAddingToCart}
+                    className="w-full py-4 rounded-full font-medium disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 touch-target hover:opacity-90 disabled:opacity-50"
+                    style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+                  >
+                    <ShoppingCart className="w-4 h-4" />
+                    {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+                  </button>
+
+                  <div className="flex gap-3">
+                    <WishlistButton
+                      productId={typeof jewelry?.id === 'string' ? parseInt(jewelry.id) : (jewelry?.id || 0)}
+                      productType="jewellery"
+                      showText
+                      variant="outline"
+                      shape="pill"
+                      className="flex-1"
+                    />
+                    <button 
+                      onClick={handleChatWithSeller}
+                      className="flex-1 border rounded-full py-3 font-medium transition-colors flex items-center justify-center gap-2 touch-target hover:opacity-90"
+                      style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      Chat
+                    </button>
+                    <button className="flex-1 border rounded-full py-3 font-medium transition-colors flex items-center justify-center gap-2 touch-target hover:opacity-90" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)', borderColor: 'var(--border)' }}>
+                      <Share2 className="w-4 h-4" />
+                      Share
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Key Features - Minimal List */}
+            {/* Key Features */}
             {(jewelry.metalType || jewelry.metalPurity || jewelry.metalWeight || jewelry.collection) && (
-              <div className="space-y-3 pb-6 sm:pb-8 border-b border-gray-100">
-                <h3 className="text-sm font-medium text-gray-900">Details</h3>
+              <div className="space-y-3 pb-6 sm:pb-8 border-b" style={{ borderColor: 'var(--border)' }}>
+                <h3 className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>Details</h3>
                 <div className="space-y-2 text-sm">
                   {jewelry.metalType && (
                     <div className="flex justify-between">
-                      <span className="text-gray-500">Metal</span>
-                      <span className="text-gray-900 capitalize">{jewelry.metalType.replace('-', ' ')}</span>
+                      <span style={{ color: 'var(--muted-foreground)' }}>Metal</span>
+                      <span className="capitalize" style={{ color: 'var(--foreground)' }}>{jewelry.metalType.replace('-', ' ')}</span>
                     </div>
                   )}
                   {jewelry.metalPurity && (
                     <div className="flex justify-between">
-                      <span className="text-gray-500">Purity</span>
-                      <span className="text-gray-900">{jewelry.metalPurity}</span>
+                      <span style={{ color: 'var(--muted-foreground)' }}>Purity</span>
+                      <span style={{ color: 'var(--foreground)' }}>{jewelry.metalPurity}</span>
                     </div>
                   )}
                   {jewelry.metalWeight && (
                     <div className="flex justify-between">
-                      <span className="text-gray-500">Weight</span>
-                      <span className="text-gray-900">{jewelry.metalWeight}g</span>
+                      <span style={{ color: 'var(--muted-foreground)' }}>Weight</span>
+                      <span style={{ color: 'var(--foreground)' }}>{jewelry.metalWeight}g</span>
                     </div>
                   )}
                   {jewelry.collection && (
                     <div className="flex justify-between">
-                      <span className="text-gray-500">Collection</span>
-                      <span className="text-gray-900">{jewelry.collection}</span>
+                      <span style={{ color: 'var(--muted-foreground)' }}>Collection</span>
+                      <span style={{ color: 'var(--foreground)' }}>{jewelry.collection}</span>
                     </div>
                   )}
                 </div>
               </div>
             )}
 
-            {/* Quantity Selector - Minimal */}
-            <div className="space-y-4 pb-8 border-b border-gray-100">
-              <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-gray-900">Quantity</span>
-                <div className="flex items-center border border-gray-200 rounded-full">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="p-2 hover:bg-gray-50 rounded-l-full transition-colors"
-                  >
-                    <Minus className="w-4 h-4 text-gray-600" />
-                  </button>
-                  <span className="px-4 py-2 text-sm font-medium">{quantity}</span>
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="p-2 hover:bg-gray-50 rounded-r-full transition-colors"
-                  >
-                    <Plus className="w-4 h-4 text-gray-600" />
-                  </button>
-                </div>
-              </div>
-            </div>
 
-            {/* Action Buttons - Minimal */}
-            <div className="space-y-4">
-              <button 
-                onClick={handleAddToCart}
-                disabled={isAddingToCart}
-                className="w-full bg-gray-900 text-white py-4 rounded-full font-medium hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 touch-target"
-              >
-                <ShoppingCart className="w-4 h-4" />
-                {isAddingToCart ? 'Adding...' : 'Add to Cart'}
-              </button>
-
-              <div className="flex gap-3">
-                <WishlistButton
-                  productId={typeof jewelry?.id === 'string' ? parseInt(jewelry.id) : (jewelry?.id || 0)}
-                  productType="jewellery"
-                  showText
-                  className="flex-1 border border-gray-200 rounded-full py-3 font-medium transition-colors flex items-center justify-center gap-2 touch-target hover:bg-gray-50"
-                />
-                <button 
-                  onClick={handleChatWithSeller}
-                  className="flex-1 border border-gray-200 rounded-full py-3 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 touch-target"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  Chat
-                </button>
-                <button className="flex-1 border border-gray-200 rounded-full py-3 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 touch-target">
-                  <Share2 className="w-4 h-4" />
-                  Share
-                </button>
-              </div>
-            </div>
 
             {/* Trust Indicators - Minimal */}
-            <div className="grid grid-cols-3 gap-4 sm:gap-6 pt-6 sm:pt-8 border-t border-gray-100">
+            <div className="grid grid-cols-3 gap-4 sm:gap-6 pt-6 sm:pt-8 border-t" style={{ borderColor: 'var(--border)' }}>
               <div className="text-center space-y-2">
-                <Truck className="w-5 h-5 text-gray-600 mx-auto" />
-                <div className="text-xs text-gray-500">Free shipping</div>
+                <Truck className="w-5 h-5 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
+                <div className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Free shipping</div>
               </div>
               <div className="text-center space-y-2">
-                <RefreshCw className="w-5 h-5 text-gray-600 mx-auto" />
-                <div className="text-xs text-gray-500">Easy returns</div>
+                <RefreshCw className="w-5 h-5 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
+                <div className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Easy returns</div>
               </div>
               <div className="text-center space-y-2">
-                <Shield className="w-5 h-5 text-gray-600 mx-auto" />
-                <div className="text-xs text-gray-500">Authentic</div>
+                <Shield className="w-5 h-5 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
+                <div className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Authentic</div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Minimal Information Tabs */}
-        <div className="mt-16 sm:mt-24 border-t border-gray-100">
-          <div className="flex border-b border-gray-100 overflow-x-auto">
+        <div className="mt-16 sm:mt-24 border-t" style={{ borderColor: 'var(--border)' }}>
+          <div className="flex border-b overflow-x-auto" style={{ borderColor: 'var(--border)' }}>
             {[
               { id: 'details', label: 'Details' },
               { id: 'specifications', label: 'Specifications' },
@@ -487,10 +510,8 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
               <button
                 key={tab.id}
                 onClick={() => setSelectedTab(tab.id)}
-                className={`px-4 sm:px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap min-w-0 flex-shrink-0 ${selectedTab === tab.id
-                    ? 'border-gray-900 text-gray-900'
-                    : 'border-transparent text-gray-500 hover:text-gray-900'
-                  }`}
+                className={`px-4 sm:px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap min-w-0 flex-shrink-0`}
+                style={selectedTab === tab.id ? { borderColor: 'var(--primary)', color: 'var(--primary)' } : { borderColor: 'transparent', color: 'var(--muted-foreground)' }}
               >
                 {tab.label}
               </button>
@@ -503,23 +524,23 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
               <div className="max-w-2xl space-y-6">
                 {jewelry.description && (
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">About this piece</h3>
-                    <p className="text-gray-600 leading-relaxed">{jewelry.description}</p>
+                    <h3 className="text-lg font-medium mb-4" style={{ color: 'var(--foreground)' }}>About this piece</h3>
+                    <p className="leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>{jewelry.description}</p>
                   </div>
                 )}
 
                 <div className="grid grid-cols-2 gap-8">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900 mb-3">Material</h4>
-                    <div className="space-y-2 text-sm text-gray-600">
+                    <h4 className="text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>Material</h4>
+                    <div className="space-y-2 text-sm" style={{ color: 'var(--muted-foreground)' }}>
                       {jewelry.metalType && <div>Type: {jewelry.metalType.replace('-', ' ')}</div>}
                       {jewelry.metalPurity && <div>Purity: {jewelry.metalPurity}</div>}
                       {jewelry.metalWeight && <div>Weight: {jewelry.metalWeight}g</div>}
                     </div>
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900 mb-3">Style</h4>
-                    <div className="space-y-2 text-sm text-gray-600">
+                    <h4 className="text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>Style</h4>
+                    <div className="space-y-2 text-sm" style={{ color: 'var(--muted-foreground)' }}>
                       {jewelry.category && <div>Category: {jewelry.category}</div>}
                       {jewelry.collection && <div>Collection: {jewelry.collection}</div>}
                       {jewelry.gender ? <div>Gender: {String(jewelry.gender)}</div> : null}
@@ -535,8 +556,8 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                 {/* Left Column - Product Summary */}
                 <div className="space-y-6 sm:space-y-8">
                   {/* Product Summary Card */}
-                  <div className="bg-gray-50 rounded-2xl p-4 sm:p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 sm:mb-6">Product Summary</h3>
+                  <div className="rounded-2xl p-4 sm:p-6" style={{ backgroundColor: 'var(--muted)' }}>
+                    <h3 className="text-lg font-semibold mb-4 sm:mb-6" style={{ color: 'var(--foreground)' }}>Product Summary</h3>
                     <div className="space-y-3 sm:space-y-4">
                       {[
                         { label: 'Style No.', value: jewelry.skuCode },
@@ -545,15 +566,15 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                         { label: 'Gross Weight', value: jewelry.grossWeight || jewelry.totalWeight ? `${jewelry.grossWeight || jewelry.totalWeight}g` : null },
                       ].filter(item => item.value).map(item => (
                         <div key={item.label} className="flex justify-between items-center py-2">
-                          <span className="text-gray-600 font-medium">{item.label}</span>
-                          <span className="text-gray-900 font-semibold">{String(item.value)}</span>
+                          <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>{item.label}</span>
+                          <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{String(item.value)}</span>
                         </div>
                       ))}
                     </div>
 
                     {jewelry.metalWeight && (
-                      <div className="mt-6 pt-4 border-t border-gray-200">
-                        <p className="text-xs text-gray-500">
+                      <div className="mt-6 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
+                        <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
                           *Difference in gold weight may occur & will apply on final price.
                         </p>
                       </div>
@@ -561,28 +582,28 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                   </div>
 
                   {/* Help Section */}
-                  <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 text-center">
-                    <h4 className="text-base font-semibold text-gray-900 mb-3">
+                  <div className="rounded-2xl p-4 sm:p-6 text-center border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                    <h4 className="text-base font-semibold mb-3" style={{ color: 'var(--foreground)' }}>
                       Need help to find the best jewellery for you?
                     </h4>
-                    <p className="text-sm text-gray-500 mb-4 sm:mb-6">We are available for your assistance</p>
+                    <p className="text-sm mb-4 sm:mb-6" style={{ color: 'var(--muted-foreground)' }}>We are available for your assistance</p>
 
                     <div className="flex justify-center gap-6 sm:gap-8">
                       <div className="text-center">
-                        <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-2 mx-auto">
-                          <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center mb-2 mx-auto" style={{ backgroundColor: 'var(--muted)' }}>
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--primary)' }}>
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                           </svg>
                         </div>
-                        <span className="text-sm font-medium text-gray-700">Speak with Experts</span>
+                        <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>Speak with Experts</span>
                       </div>
                       <div className="text-center">
-                        <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mb-2 mx-auto">
-                          <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center mb-2 mx-auto" style={{ backgroundColor: 'var(--muted)' }}>
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--primary)' }}>
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                           </svg>
                         </div>
-                        <span className="text-sm font-medium text-gray-700">Chat with Experts</span>
+                        <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>Chat with Experts</span>
                       </div>
                     </div>
                   </div>
@@ -591,55 +612,55 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                 {/* Right Column - Price Breakdown & Details */}
                 <div className="space-y-6 sm:space-y-8">
                   {/* Price Breakdown Card */}
-                  <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+                  <div className="border rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                     <button
                       onClick={() => toggleSection('priceBreakdown')}
-                      className="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-gray-50 transition-colors touch-target"
+                      className="w-full flex items-center justify-between p-4 sm:p-6 transition-colors touch-target hover:opacity-90"
                     >
-                      <h3 className="text-base sm:text-lg font-semibold text-gray-900">PRICE BREAKUP</h3>
+                      <h3 className="text-base sm:text-lg font-semibold" style={{ color: 'var(--foreground)' }}>PRICE BREAKUP</h3>
                       {collapsedSections.priceBreakdown ? (
-                        <ChevronDown className="w-5 h-5 text-gray-500" />
+                        <ChevronDown className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
                       ) : (
-                        <ChevronUp className="w-5 h-5 text-gray-500" />
+                        <ChevronUp className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
                       )}
                     </button>
 
                     {!collapsedSections.priceBreakdown && (
-                      <div className="px-4 sm:px-6 pb-4 sm:pb-6 border-t border-gray-100">
+                      <div className="px-4 sm:px-6 pb-4 sm:pb-6 border-t" style={{ borderColor: 'var(--border)' }}>
                         <div className="space-y-3 sm:space-y-4 mt-4">
                           {jewelry.basePrice && (
                             <div className="flex justify-between items-center py-3">
-                              <span className="text-gray-600 font-medium">Metal</span>
-                              <span className="text-gray-900 font-semibold text-right">{formatPrice(jewelry.basePrice)}</span>
+                              <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>Metal</span>
+                              <span className="font-semibold text-right" style={{ color: 'var(--foreground)' }}>{formatPrice(jewelry.basePrice)}</span>
                             </div>
                           )}
 
                           {jewelry.stonePrice && (
                             <div className="flex justify-between items-center py-3">
-                              <span className="text-gray-600 font-medium">Diamond</span>
+                              <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>Diamond</span>
                               <div className="text-right">
-                                <span className="text-gray-400 line-through text-sm mr-2">₹67,930</span>
-                                <span className="text-gray-900 font-semibold">{formatPrice(jewelry.stonePrice)}</span>
+                                <span className="line-through text-sm mr-2" style={{ color: 'var(--muted-foreground)' }}>₹67,930</span>
+                                <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{formatPrice(jewelry.stonePrice)}</span>
                               </div>
                             </div>
                           )}
 
                           {jewelry.makingCharge && (
                             <div className="flex justify-between items-center py-3">
-                              <span className="text-gray-600 font-medium">Making Charges</span>
+                              <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>Making Charges</span>
                               <div className="text-right">
-                                <span className="text-gray-400 line-through text-sm mr-2">₹12,700</span>
-                                <span className="text-gray-900 font-semibold">{formatPrice(jewelry.makingCharge)}</span>
+                                <span className="line-through text-sm mr-2" style={{ color: 'var(--muted-foreground)' }}>₹12,700</span>
+                                <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{formatPrice(jewelry.makingCharge)}</span>
                               </div>
                             </div>
                           )}
 
                           {jewelry.tax && (
                             <div className="flex justify-between items-center py-3">
-                              <span className="text-gray-600 font-medium">GST(3%)</span>
+                              <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>GST(3%)</span>
                               <div className="text-right">
-                                <span className="text-gray-400 line-through text-sm mr-2">₹3,657</span>
-                                <span className="text-gray-900 font-semibold">
+                                <span className="line-through text-sm mr-2" style={{ color: 'var(--muted-foreground)' }}>₹3,657</span>
+                                <span className="font-semibold" style={{ color: 'var(--foreground)' }}>
                                   {formatPrice(((jewelry.basePrice || 0) + (jewelry.makingCharge || 0) + (jewelry.stonePrice || 0)) * (jewelry.tax / 100))}
                                 </span>
                               </div>
@@ -647,14 +668,14 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                           )}
                         </div>
 
-                        <div className="border-t border-gray-200 mt-4 sm:mt-6 pt-4">
+                        <div className="border-t mt-4 sm:mt-6 pt-4" style={{ borderColor: 'var(--border)' }}>
                           <div className="flex justify-between items-center">
-                            <span className="text-gray-900 font-bold text-base sm:text-lg">Grand Total</span>
+                            <span className="font-bold text-base sm:text-lg" style={{ color: 'var(--foreground)' }}>Grand Total</span>
                             <div className="text-right">
-                              <div className="text-xl sm:text-2xl font-bold text-gray-900">
+                              <div className="text-xl sm:text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
                                 {jewelry.totalPrice ? formatPrice(jewelry.totalPrice) : '₹1,04,816'}
                               </div>
-                              <div className="text-sm text-gray-500">(MRP Incl. of all taxes)</div>
+                              <div className="text-sm" style={{ color: 'var(--muted-foreground)' }}>(MRP Incl. of all taxes)</div>
                             </div>
                           </div>
                         </div>
@@ -663,21 +684,21 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                   </div>
 
                   {/* Metal Details Card */}
-                  <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+                  <div className="border rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                     <button
                       onClick={() => toggleSection('metalDetails')}
-                      className="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-gray-50 transition-colors touch-target"
+                      className="w-full flex items-center justify-between p-4 sm:p-6 transition-colors touch-target hover:opacity-90"
                     >
-                      <h3 className="text-base sm:text-lg font-semibold text-gray-900">METAL DETAILS</h3>
+                      <h3 className="text-base sm:text-lg font-semibold" style={{ color: 'var(--foreground)' }}>METAL DETAILS</h3>
                       {collapsedSections.metalDetails ? (
-                        <ChevronDown className="w-5 h-5 text-gray-500" />
+                        <ChevronDown className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
                       ) : (
-                        <ChevronUp className="w-5 h-5 text-gray-500" />
+                        <ChevronUp className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
                       )}
                     </button>
 
                     {!collapsedSections.metalDetails && (
-                      <div className="px-4 sm:px-6 pb-4 sm:pb-6 border-t border-gray-100">
+                      <div className="px-4 sm:px-6 pb-4 sm:pb-6 border-t" style={{ borderColor: 'var(--border)' }}>
                         <div className="space-y-3 mt-4">
                           {[
                             { label: 'Metal Type', value: jewelry.metalType },
@@ -685,8 +706,8 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                             { label: 'Metal Weight', value: jewelry.metalWeight ? `${jewelry.metalWeight}g` : null }
                           ].filter(item => item.value).map(item => (
                             <div key={item.label} className="flex justify-between items-center py-2">
-                              <span className="text-gray-600 font-medium">{item.label}</span>
-                              <span className="text-gray-900 font-semibold capitalize">{item.value}</span>
+                              <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>{item.label}</span>
+                              <span className="font-semibold capitalize" style={{ color: 'var(--foreground)' }}>{item.value}</span>
                             </div>
                           ))}
                         </div>
@@ -696,25 +717,25 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
 
                   {/* Diamond/Stone Details Card */}
                   {jewelry.stones && jewelry.stones.length > 0 && (
-                    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+                    <div className="border rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                       <button
                         onClick={() => toggleSection('stoneDetails')}
-                        className="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-gray-50 transition-colors touch-target"
+                        className="w-full flex items-center justify-between p-4 sm:p-6 transition-colors touch-target hover:opacity-90"
                       >
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900">DIAMOND DETAILS</h3>
+                        <h3 className="text-base sm:text-lg font-semibold" style={{ color: 'var(--foreground)' }}>DIAMOND DETAILS</h3>
                         {collapsedSections.stoneDetails ? (
-                          <ChevronDown className="w-5 h-5 text-gray-500" />
+                          <ChevronDown className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
                         ) : (
-                          <ChevronUp className="w-5 h-5 text-gray-500" />
+                          <ChevronUp className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
                         )}
                       </button>
 
                       {!collapsedSections.stoneDetails && (
-                        <div className="px-4 sm:px-6 pb-4 sm:pb-6 border-t border-gray-100">
+                        <div className="px-4 sm:px-6 pb-4 sm:pb-6 border-t" style={{ borderColor: 'var(--border)' }}>
                           <div className="space-y-3 sm:space-y-4 mt-4">
                             {jewelry.stones.map((stone: StoneDetails, index: number) => (
                               <div key={index} className="space-y-3">
-                                <h4 className="font-semibold text-gray-900">Stone {index + 1}</h4>
+                                <h4 className="font-semibold" style={{ color: 'var(--foreground)' }}>Stone {index + 1}</h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                   {[
                                     { label: 'Type', value: stone.type },
@@ -725,19 +746,19 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                                     { label: 'Cut', value: stone.cut }
                                   ].filter(item => item.value).map(item => (
                                     <div key={item.label} className="flex justify-between py-1">
-                                      <span className="text-gray-600 text-sm">{item.label}</span>
-                                      <span className="text-gray-900 font-medium text-sm capitalize">{item.value}</span>
+                                      <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>{item.label}</span>
+                                      <span className="font-medium text-sm capitalize" style={{ color: 'var(--foreground)' }}>{item.value}</span>
                                     </div>
                                   ))}
                                 </div>
                                 {index < (jewelry.stones?.length || 0) - 1 && (
-                                  <hr className="border-gray-100" />
+                                  <hr style={{ borderColor: 'var(--border)' }} />
                                 )}
                               </div>
                             ))}
 
-                            <div className="mt-4 pt-4 border-t border-gray-100">
-                              <p className="text-xs text-gray-500">
+                            <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
+                              <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
                                 *A differential amount will be applicable with difference in weight if any.
                               </p>
                             </div>
@@ -753,8 +774,8 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
             {selectedTab === 'care' && (
               <div className="max-w-2xl space-y-4 sm:space-y-6">
                 <div>
-                  <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-4">Care Instructions</h3>
-                  <div className="space-y-3 sm:space-y-4 text-sm text-gray-600">
+                  <h3 className="text-base sm:text-lg font-medium mb-4" style={{ color: 'var(--foreground)' }}>Care Instructions</h3>
+                  <div className="space-y-3 sm:space-y-4 text-sm" style={{ color: 'var(--muted-foreground)' }}>
                     <div className="flex items-start gap-3">
                       <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
                       <span>Store in a soft cloth pouch or jewelry box to prevent scratches</span>
@@ -774,9 +795,9 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-2xl p-4 sm:p-6">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Professional Service</h4>
-                  <p className="text-sm text-gray-600">
+                <div className="rounded-2xl p-4 sm:p-6" style={{ backgroundColor: 'var(--muted)' }}>
+                  <h4 className="text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>Professional Service</h4>
+                  <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                     For deep cleaning and maintenance, visit our store or contact customer service
                     to schedule professional jewelry cleaning and inspection.
                   </p>
@@ -784,6 +805,24 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 border-t px-4 py-3 flex items-center justify-between gap-3" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+          <div>
+            <div className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>
+              {jewelry.totalPrice ? formatPrice(jewelry.totalPrice) : 'Price on request'}
+            </div>
+            <div className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Incl. taxes</div>
+          </div>
+          <button
+            onClick={handleAddToCart}
+            disabled={isAddingToCart}
+            className="flex-1 py-3 rounded-full font-medium disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 touch-target hover:opacity-90 disabled:opacity-50"
+            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+          >
+            <ShoppingCart className="w-4 h-4" />
+            {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+          </button>
         </div>
       </div>
     </div>

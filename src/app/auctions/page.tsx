@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { auctionService } from '@/services/auctionService';
-import { Clock, Search, RefreshCw, Grid, List } from 'lucide-react';
+import { Clock, Search, RefreshCw, Grid, List, Filter } from 'lucide-react';
 import NavigationUser from '@/components/Navigation/NavigationUser';
 import Footer from '@/components/Footer';
 import { SECTION_WIDTH } from '@/lib/constants';
@@ -170,26 +170,27 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
   // List view layout
   if (viewMode === 'list') {
     return (
-      <div className="group bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+      <div className="group rounded-lg shadow-sm hover:shadow-md transition-shadow border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
         <div className="flex flex-col md:flex-row gap-4 p-4">
           {/* Image Section */}
           <Link 
             href={`/auctions/${auction.id}`}
-            className="md:w-56 md:h-56 w-full h-64 flex-shrink-0 relative bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden cursor-pointer"
+            className="md:w-56 md:h-56 w-full h-64 flex-shrink-0 relative rounded-lg overflow-hidden cursor-pointer"
+            style={{ backgroundColor: 'var(--card)' }}
           >
             {/* Timer Badge */}
-            <div className="absolute top-2 left-2 z-10 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg px-2.5 py-1.5 shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="absolute top-2 left-2 z-10 backdrop-blur-sm rounded-lg px-2.5 py-1.5 shadow-sm border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
               <CountdownTimer endTime={endTime} />
             </div>
 
             {/* Product Type Badge */}
-            <div className="absolute top-2 right-2 z-10 bg-amber-500 text-white text-xs px-2.5 py-1 rounded-full font-medium">
+            <div className="absolute top-2 right-2 z-10 text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
               {getProductTypeDisplay()}
             </div>
 
             {/* Bid Count Badge */}
             {bids.length > 0 && (
-              <div className="absolute bottom-2 left-2 z-10 bg-green-500 text-white text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1">
+              <div className="absolute bottom-2 left-2 z-10 text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
                 <span>🔥</span>
                 {bids.length} {bids.length === 1 ? 'bid' : 'bids'}
               </div>
@@ -221,13 +222,13 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
                 href={`/auctions/${auction.id}`}
                 className="block"
               >
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors line-clamp-2">
+                <h3 className="text-xl font-semibold mb-2 transition-colors line-clamp-2" style={{ color: 'var(--foreground)' }}>
                   {product.name}
                 </h3>
               </Link>
-              <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--muted-foreground)' }}>
                 <span>Seller:</span>
-                <span className="font-medium text-gray-700 dark:text-gray-300">{seller.companyName}</span>
+                <span className="font-medium" style={{ color: 'var(--foreground)' }}>{seller.companyName}</span>
                 <span>•</span>
                 <span className="flex items-center gap-1">
                   📍 {seller.city}, {seller.state}
@@ -281,30 +282,30 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
             </div>
 
             {/* Bottom Section - Price and Actions */}
-            <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
+            <div className="mt-auto pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 {/* Pricing Section */}
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-3 border border-blue-100 dark:border-blue-800">
+                <div className="rounded-lg p-3 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                   {currentBid ? (
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-medium text-blue-700 dark:text-blue-300">Current Bid</span>
-                        <div className="flex items-center text-green-600 dark:text-green-400">
+                        <span className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>Current Bid</span>
+                        <div className="flex items-center" style={{ color: 'var(--muted-foreground)' }}>
                           <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1 animate-pulse"></div>
                           <span className="text-xs font-medium">Live</span>
                         </div>
                       </div>
-                      <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                      <div className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
                         ${currentBid.toLocaleString()}
                       </div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                      <div className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
                         Started at: ${('totalPrice' in product ? product.basePrice : product.price).toLocaleString()}
                       </div>
                     </div>
                   ) : (
                     <div>
-                      <div className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">Starting Price</div>
-                      <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                      <div className="text-xs font-medium mb-1" style={{ color: 'var(--muted-foreground)' }}>Starting Price</div>
+                      <div className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
                         ${displayPrice.toLocaleString()}
                       </div>
                     </div>
@@ -315,39 +316,45 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
                 <div className="flex gap-2 w-full sm:w-auto">
                   <Link 
                     href={`/auctions/${auction.id}`}
-                    className="flex-1 sm:flex-none bg-gray-900 dark:bg-gray-700 hover:bg-gray-800 dark:hover:bg-gray-600 text-white py-2.5 px-6 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 text-sm whitespace-nowrap"
+                    className="flex-1 sm:flex-none py-2.5 px-6 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 text-sm whitespace-nowrap"
+                    style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
                   >
                     {auction.isActive ? '🎯 Place Bid' : '⏰ Ended'}
                   </Link>
                   <Link 
                     href={`/auctions/${auction.id}`}
-                    className="flex-1 sm:flex-none px-4 py-2.5 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg text-sm font-medium transition-colors border border-gray-200 dark:border-gray-600 text-center"
+                    className="flex-1 sm:flex-none px-4 py-2.5 rounded-lg text-sm font-medium transition-colors border text-center"
+                    style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'color-mix(in srgb, currentColor 14%, transparent)' }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'transparent' }}
                   >
                     View Details
                   </Link>
-                  <button className="px-4 py-2.5 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg text-sm font-medium transition-colors border border-gray-200 dark:border-gray-600">
+                  <button className="px-4 py-2.5 rounded-lg text-sm font-medium transition-colors border" style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, currentColor 14%, transparent)' }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}>
                     <span className="text-lg">❤️</span>
                   </button>
                 </div>
               </div>
 
               {/* Footer Info */}
-              <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between text-xs">
-                <span className="text-gray-500 dark:text-gray-400">Auction #{auction.id}</span>
+              <div className="mt-3 pt-3 border-t flex items-center justify-between text-xs" style={{ borderColor: 'var(--border)' }}>
+                <span style={{ color: 'var(--muted-foreground)' }}>Auction #{auction.id}</span>
                 <div className="flex items-center gap-3">
                   {auction.isActive ? (
-                    <span className="flex items-center text-green-600 dark:text-green-400 font-medium">
+                    <span className="flex items-center font-medium" style={{ color: 'var(--muted-foreground)' }}>
                       <span className="w-2 h-2 bg-green-500 rounded-full mr-1.5 animate-pulse"></span>
                       Active
                     </span>
                   ) : (
-                    <span className="flex items-center text-gray-500 dark:text-gray-400">
+                    <span className="flex items-center" style={{ color: 'var(--muted-foreground)' }}>
                       <span className="w-2 h-2 bg-gray-400 rounded-full mr-1.5"></span>
                       Ended
                     </span>
                   )}
                   {bids.length > 0 && (
-                    <span className="text-gray-600 dark:text-gray-400">
+                    <span style={{ color: 'var(--muted-foreground)' }}>
                       {bids.length} {bids.length === 1 ? 'bid' : 'bids'}
                     </span>
                   )}
@@ -362,22 +369,22 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
 
   // Grid view layout
   return (
-    <div className="group bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-lg transition-all border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div className="group rounded-lg shadow-sm hover:shadow-lg transition-all border overflow-hidden" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
       {/* Image Section */}
-      <div className="relative aspect-square bg-gray-100 dark:bg-gray-700 overflow-hidden">
+      <div className="relative aspect-square overflow-hidden" style={{ backgroundColor: 'var(--card)' }}>
         {/* Timer Badge */}
-        <div className="absolute top-3 left-3 z-10 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg px-2.5 py-1.5 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="absolute top-3 left-3 z-10 backdrop-blur-sm rounded-lg px-2.5 py-1.5 shadow-sm border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
           <CountdownTimer endTime={endTime} />
         </div>
 
         {/* Product Type Badge */}
-        <div className="absolute top-3 right-3 z-10 bg-amber-500 text-white text-xs px-2.5 py-1 rounded-full font-medium">
+        <div className="absolute top-3 right-3 z-10 text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
           {getProductTypeDisplay()}
         </div>
 
         {/* Bid Count Badge */}
         {bids.length > 0 && (
-          <div className="absolute bottom-3 left-3 z-10 bg-green-500 text-white text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1">
+          <div className="absolute bottom-3 left-3 z-10 text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
             <span>🔥</span>
             {bids.length} {bids.length === 1 ? 'bid' : 'bids'}
           </div>
@@ -405,16 +412,16 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
       </div>
 
       {/* Content Section */}
-      <div className="p-4">
+      <div className="p-4" style={{ color: 'var(--foreground)' }}>
         {/* Product Name */}
-        <h3 className="font-semibold text-gray-900 dark:text-white text-base mb-2 line-clamp-2 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+        <h3 className="font-semibold text-base mb-2 line-clamp-2 transition-colors" style={{ color: 'var(--foreground)' }}>
           {product.name}
         </h3>
         
         {/* Seller Info */}
-        <div className="text-xs text-gray-600 dark:text-gray-400 mb-3 flex items-center gap-1">
+        <div className="text-xs mb-3 flex items-center gap-1" style={{ color: 'var(--muted-foreground)' }}>
           <span>By:</span>
-          <span className="font-medium text-gray-700 dark:text-gray-300">{seller.companyName}</span>
+          <span className="font-medium" style={{ color: 'var(--foreground)' }}>{seller.companyName}</span>
         </div>
 
         {/* Product Details Badges */}
@@ -449,27 +456,27 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
         </div>
 
         {/* Pricing Section */}
-        <div className="mb-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-3 border border-blue-100 dark:border-blue-800">
+        <div className="mb-4 rounded-lg p-3 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
           {currentBid ? (
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-blue-700 dark:text-blue-300">Current Bid</span>
-                <div className="flex items-center text-green-600 dark:text-green-400">
+                <span className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>Current Bid</span>
+                <div className="flex items-center" style={{ color: 'var(--muted-foreground)' }}>
                   <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1 animate-pulse"></div>
                   <span className="text-xs font-medium">Live</span>
                 </div>
               </div>
-              <div className="text-xl font-bold text-blue-900 dark:text-blue-100 mb-1">
+              <div className="text-xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>
                 ${currentBid.toLocaleString()}
               </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">
+              <div className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
                 Starting: ${('totalPrice' in product ? product.basePrice : product.price).toLocaleString()}
               </div>
             </div>
           ) : (
             <div>
-              <div className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">Starting Price</div>
-              <div className="text-xl font-bold text-blue-900 dark:text-blue-100">
+              <div className="text-xs font-medium mb-1" style={{ color: 'var(--muted-foreground)' }}>Starting Price</div>
+              <div className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>
                 ${displayPrice.toLocaleString()}
               </div>
             </div>
@@ -480,26 +487,32 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
         <div className="space-y-2">
           <Link 
             href={`/auctions/${auction.id}`}
-            className="w-full bg-gray-900 dark:bg-gray-700 hover:bg-gray-800 dark:hover:bg-gray-600 text-white py-2.5 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 text-sm"
+            className="w-full py-2.5 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 text-sm"
+            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
           >
             {auction.isActive ? '🎯 Place Bid' : '⏰ Auction Ended'}
           </Link>
           <div className="flex gap-2">
             <Link 
               href={`/auctions/${auction.id}`}
-              className="flex-1 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 py-2 px-3 rounded-lg text-xs font-medium transition-colors duration-200 border border-gray-200 dark:border-gray-600 text-center"
+              className="flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-colors duration-200 border text-center"
+              style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'color-mix(in srgb, currentColor 14%, transparent)' }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'transparent' }}
             >
               Details
             </Link>
-            <button className="flex-1 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 py-2 px-3 rounded-lg text-xs font-medium transition-colors duration-200 border border-gray-200 dark:border-gray-600">
+            <button className="flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-colors duration-200 border" style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, currentColor 14%, transparent)' }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}>
               ❤️ Watch
             </button>
           </div>
         </div>
 
         {/* Footer Info */}
-        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+        <div className="mt-3 pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
+          <div className="flex items-center justify-between text-xs" style={{ color: 'var(--muted-foreground)' }}>
             <span>#{auction.id}</span>
             <span className="flex items-center gap-1">
               📍 {seller.city}
@@ -518,6 +531,33 @@ export default function AuctionsPage() {
   const [activeFilter, setActiveFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [isFilterSidebarOpen, setFilterSidebarOpen] = useState(false);
+  const [priceMin, setPriceMin] = useState<number | ''>('');
+  const [priceMax, setPriceMax] = useState<number | ''>('');
+
+  const getAuctionDisplayPrice = useCallback((auction: AuctionItem) => {
+    const { bids, product } = auction;
+    const currentBid = bids.length > 0 ? Math.max(...bids.map(b => b.amount)) : null;
+    if (currentBid) return currentBid;
+    if ('totalPrice' in product) {
+      return (product.totalPrice || product.basePrice) as number;
+    }
+    if ('price' in product) {
+      return product.price as number;
+    }
+    return 0;
+  }, []);
+
+  const filteredAuctions = useMemo(() => {
+    return auctions
+      .filter(a => !searchQuery || a.product.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      .filter(a => {
+        const price = getAuctionDisplayPrice(a);
+        const minOk = priceMin === '' || price >= priceMin;
+        const maxOk = priceMax === '' || price <= priceMax;
+        return minOk && maxOk;
+      });
+  }, [auctions, searchQuery, priceMin, priceMax, getAuctionDisplayPrice]);
 
   const fetchAuctions = useCallback(async () => {
     try {
@@ -561,26 +601,27 @@ export default function AuctionsPage() {
     <>
       <NavigationUser />
       
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
         <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 py-6`}>
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Live Auctions 🎯</h1>
-            <p className="text-gray-600 dark:text-gray-400">Bid on premium diamonds, gemstones & jewelry</p>
+            <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>Live Auctions 🎯</h1>
+            <p style={{ color: 'var(--muted-foreground)' }}>Bid on premium diamonds, gemstones & jewelry</p>
           </div>
           
           {/* Filters Bar */}
-          <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
+          <div className="mb-6 rounded-lg shadow-sm p-4 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
               {/* Search */}
               <div className="relative flex-1 max-w-md w-full">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
                 <input
                   type="text"
                   placeholder="Search auctions..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none"
+                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
                 />
               </div>
 
@@ -590,44 +631,64 @@ export default function AuctionsPage() {
                   <button
                     key={filter.value}
                     onClick={() => setActiveFilter(filter.value)}
-                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                      activeFilter === filter.value
-                        ? 'bg-gray-900 dark:bg-gray-700 text-white border border-gray-900 dark:border-gray-700'
-                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-400'
-                    }`}
+                    className="px-4 py-2 text-sm font-medium rounded-lg transition-colors"
+                    style={{
+                      backgroundColor: activeFilter === filter.value ? 'var(--primary)' : 'var(--card)',
+                      color: activeFilter === filter.value ? 'var(--primary-foreground)' : 'var(--foreground)',
+                      borderColor: activeFilter === filter.value ? 'var(--primary)' : 'var(--border)',
+                      borderWidth: 1,
+                    }}
+                    onMouseEnter={(e) => { if (activeFilter !== filter.value) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, currentColor 12%, transparent)' }}
+                    onMouseLeave={(e) => { if (activeFilter !== filter.value) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--card)' }}
                   >
                     {filter.label}
                   </button>
                 ))}
                 
                 <button
+                  onClick={() => setFilterSidebarOpen(true)}
+                  className="flex-shrink-0 px-4 py-2 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all shadow-sm hover:shadow-md hover:opacity-90"
+                  style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' }}
+                >
+                  <Filter className="w-4 h-4" />
+                  Filters
+                </button>
+
+                <button
                   onClick={fetchAuctions}
-                  className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  className="p-2 rounded-lg transition-colors"
+                  style={{ color: 'var(--muted-foreground)' }}
                   title="Refresh"
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, currentColor 14%, transparent)' }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
                 >
                   <RefreshCw className="w-4 h-4" />
                 </button>
 
                 {/* View Mode Toggle */}
-                <div className="flex items-center bg-white dark:bg-gray-700 shadow border border-gray-200 dark:border-gray-600 rounded-lg">
+                <div className="flex items-center shadow border rounded-lg" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${
-                      viewMode === 'grid' 
-                        ? 'bg-gray-900 dark:bg-gray-600 text-white' 
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
-                    }`}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg transition"
+                    style={{
+                      backgroundColor: viewMode === 'grid' ? 'var(--primary)' : 'transparent',
+                      color: viewMode === 'grid' ? 'var(--primary-foreground)' : 'var(--foreground)'
+                    }}
+                    onMouseEnter={(e) => { if (viewMode !== 'grid') (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, currentColor 14%, transparent)' }}
+                    onMouseLeave={(e) => { if (viewMode !== 'grid') (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
                     aria-label="Grid view"
                   >
                     <Grid className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${
-                      viewMode === 'list' 
-                        ? 'bg-gray-900 dark:bg-gray-600 text-white' 
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
-                    }`}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg transition"
+                    style={{
+                      backgroundColor: viewMode === 'list' ? 'var(--primary)' : 'transparent',
+                      color: viewMode === 'list' ? 'var(--primary-foreground)' : 'var(--foreground)'
+                    }}
+                    onMouseEnter={(e) => { if (viewMode !== 'list') (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, currentColor 14%, transparent)' }}
+                    onMouseLeave={(e) => { if (viewMode !== 'list') (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
                     aria-label="List view"
                   >
                     <List className="w-4 h-4" />
@@ -638,14 +699,15 @@ export default function AuctionsPage() {
 
             {/* Active Filter Indicator */}
             {activeFilter && (
-              <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div className="mt-3 pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Active Filter:</span>
-                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-sm rounded-full">
+                  <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Active Filter:</span>
+                  <span className="inline-flex items-center gap-1 px-3 py-1 text-sm rounded-full" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
                     {filters.find(f => f.value === activeFilter)?.label}
                     <button
                       onClick={() => setActiveFilter('')}
-                      className="ml-1 hover:text-amber-900 dark:hover:text-amber-200"
+                      className="ml-1"
+                      style={{ color: 'var(--accent-foreground)' }}
                     >
                       ×
                     </button>
@@ -655,10 +717,113 @@ export default function AuctionsPage() {
             )}
           </div>
 
+          {isFilterSidebarOpen && (
+            <div className="fixed inset-0 z-50">
+              <div
+                className="absolute inset-0"
+                style={{ backgroundColor: 'color-mix(in srgb, var(--foreground) 14%, transparent)' }}
+                onClick={() => setFilterSidebarOpen(false)}
+              />
+              <div className="absolute right-0 top-0 h-full w-full sm:w-[360px] border-l shadow-xl flex flex-col"
+                   style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}>
+                <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+                  <div className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>Filters</div>
+                  <button
+                    onClick={() => setFilterSidebarOpen(false)}
+                    className="p-2 rounded-lg transition-colors hover:bg-[color:color-mix(in srgb, currentColor 40%, transparent)]"
+                    style={{ color: 'var(--foreground)' }}
+                    aria-label="Close filters"
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
+                  <div>
+                    <div className="text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>Search</div>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-3 py-2 rounded-lg border"
+                        style={{ borderColor: 'var(--border)', color: 'var(--foreground)', backgroundColor: 'var(--card)' }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>Product Type</div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {filters.map((f) => (
+                        <button
+                          key={f.value}
+                          onClick={() => setActiveFilter(f.value)}
+                          className="px-3 py-2 rounded-lg text-sm border transition-colors"
+                          style={{
+                            borderColor: 'var(--border)',
+                            color: activeFilter === f.value ? 'var(--primary-foreground)' : 'var(--foreground)',
+                            backgroundColor: activeFilter === f.value ? 'var(--primary)' : 'transparent'
+                          }}
+                        >
+                          {f.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>Price Range</div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs" style={{ color: 'var(--muted-foreground)' }}>$</span>
+                        <input
+                          type="number"
+                          min={0}
+                          value={priceMin}
+                          onChange={(e) => setPriceMin(e.target.value === '' ? '' : Number(e.target.value))}
+                          placeholder="Min"
+                          className="w-full pl-7 pr-3 py-2 rounded-lg border"
+                          style={{ borderColor: 'var(--border)', color: 'var(--foreground)', backgroundColor: 'var(--card)' }}
+                        />
+                      </div>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs" style={{ color: 'var(--muted-foreground)' }}>$</span>
+                        <input
+                          type="number"
+                          min={0}
+                          value={priceMax}
+                          onChange={(e) => setPriceMax(e.target.value === '' ? '' : Number(e.target.value))}
+                          placeholder="Max"
+                          className="w-full pl-7 pr-3 py-2 rounded-lg border"
+                          style={{ borderColor: 'var(--border)', color: 'var(--foreground)', backgroundColor: 'var(--card)' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="px-4 py-3 border-t flex gap-2" style={{ borderColor: 'var(--border)' }}>
+                  <button
+                    onClick={() => { setActiveFilter(''); setSearchQuery(''); setPriceMin(''); setPriceMax(''); fetchAuctions(); setFilterSidebarOpen(false); }}
+                    className="flex-1 px-4 py-2 rounded-lg border transition-colors hover:bg-[color:color-mix(in srgb, currentColor 40%, transparent)]"
+                    style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                  >
+                    Reset
+                  </button>
+                  <button
+                    onClick={() => { fetchAuctions(); setFilterSidebarOpen(false); }}
+                    className="flex-1 px-4 py-2 rounded-lg font-semibold"
+                    style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+                  >
+                    Apply
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Results Header */}
           <div className="flex items-center justify-between mb-6">
-            <p className="text-gray-600 dark:text-gray-400">
-              {loading ? 'Loading...' : `Showing ${auctions.filter(a => !searchQuery || a.product.name.toLowerCase().includes(searchQuery.toLowerCase())).length} of ${auctions.length} auctions`}
+            <p style={{ color: 'var(--muted-foreground)' }}>
+              {loading ? 'Loading...' : `Showing ${filteredAuctions.length} of ${auctions.length} auctions`}
             </p>
           </div>
 
@@ -702,11 +867,7 @@ export default function AuctionsPage() {
               <>
                 {viewMode === 'grid' ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {auctions
-                      .filter(auction => 
-                        !searchQuery || 
-                        auction.product.name.toLowerCase().includes(searchQuery.toLowerCase())
-                      )
+                    {filteredAuctions
                       .map((auction) => (
                         <AuctionCard key={auction.id} auction={auction} viewMode="grid" />
                       ))
@@ -714,11 +875,7 @@ export default function AuctionsPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {auctions
-                      .filter(auction => 
-                        !searchQuery || 
-                        auction.product.name.toLowerCase().includes(searchQuery.toLowerCase())
-                      )
+                    {filteredAuctions
                       .map((auction) => (
                         <AuctionCard key={auction.id} auction={auction} viewMode="list" />
                       ))

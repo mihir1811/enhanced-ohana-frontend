@@ -32,11 +32,11 @@ export default function DiamondDetailPage() {
   }, [diamondId]);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       <NavigationUser />
-      <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 sm:px-6 lg:px-8`}>
+      <div className="mx-auto px-4 sm:px-6 lg:px-8" style={{ maxWidth: SECTION_WIDTH }}>
         {loading ? (
-          <div className="py-20 text-center text-gray-500 text-lg">Loading diamond details...</div>
+          <div className="py-20 text-center text-lg" style={{ color: 'var(--muted-foreground)' }}>Loading diamond details...</div>
         ) : (
           <DiamondDetailsPage diamond={diamond} />
         )}
