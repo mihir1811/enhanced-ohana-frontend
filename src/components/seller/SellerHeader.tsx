@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { logout } from '@/features/auth/authSlice'
 import { useRouter } from 'next/navigation'
 import Loader from './Loader'
+import ThemeSwitcher from '@/components/ThemeSwitcher'
 
 interface SellerHeaderProps {
   setSidebarOpen: (open: boolean) => void
@@ -87,6 +88,7 @@ export default function SellerHeader({ setSidebarOpen }: SellerHeaderProps) {
           </form>
           
           <div className="flex items-center gap-x-4 lg:gap-x-6">
+            <ThemeSwitcher />
             {/* Notifications */}
             <button
               type="button"
