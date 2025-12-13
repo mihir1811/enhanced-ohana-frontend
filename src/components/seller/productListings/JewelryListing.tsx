@@ -226,7 +226,7 @@ const JewelryListing = () => {
                       <td className="px-4 py-2">{item.metalPurity}</td>
                       <td className="px-4 py-2" style={{ color: 'var(--primary)' }}>${(item.basePrice ?? 0).toLocaleString()}</td>
                       <td className="px-4 py-2" style={{ color: 'var(--primary)' }}>${(item.totalPrice ?? 0).toLocaleString()}</td>
-                      <td className="px-4 py-2">{(item as any).stockNumber ?? '-'}</td>
+                      <td className="px-4 py-2">{item.stockNumber ?? '-'}</td>
                     </tr>
                   ))}
                 </tbody>

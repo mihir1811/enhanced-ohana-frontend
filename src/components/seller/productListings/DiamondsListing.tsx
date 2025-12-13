@@ -4,22 +4,6 @@ import BulkUploadModal from './BulkUploadModal';
 import { diamondService, DiamondData } from '@/services/diamondService';
 import DiamondProductCard, { DiamondProduct } from './DiamondProductCard';
 
-// Extended interface for DiamondData with additional optional properties
-interface ExtendedDiamondData extends DiamondData {
-  image1?: string | null;
-  image2?: string | null;
-  image3?: string | null;
-  image4?: string | null;
-  image5?: string | null;
-  image6?: string | null;
-  stockNumber?: number;
-  isDeleted?: boolean;
-  updatedAt?: string;
-  sellerSKU?: string;
-  isOnAuction?: boolean;
-  isSold?: boolean;
-}
-
 const DiamondsListing = () => {
   const [diamonds, setDiamonds] = useState<DiamondProduct[]>([]);
   const [view, setView] = useState<'list' | 'grid'>('grid');
@@ -41,37 +25,65 @@ const DiamondsListing = () => {
     setLoading(true);
     diamondService.getDiamonds({ page, limit })
       .then((res) => {
-        const raw = Array.isArray((res as any)?.data)
-          ? (res as any).data
-          : (res as any)?.data?.data ?? [];
-        const meta = (res as any)?.data?.meta
-          || (res as any)?.meta?.pagination
-          || (res as any)?.meta;
-        const diamondsArr = (raw as any[]).map((d: any): DiamondProduct => ({
-          id: typeof d?.id === 'string' ? parseInt(d.id, 10) : Number(d?.id ?? 0),
-          name:
-            d?.name
-            || `${String(d?.shape ?? '')} ${String(d?.color ?? '')} ${String(d?.clarity ?? '')} Diamond - ${String(d?.carat ?? d?.caratWeight ?? '')}ct`,
-          price: String(d?.price ?? d?.totalPrice ?? 0),
-          image1: d?.image1 ?? (Array.isArray(d?.images) ? d.images[0] : null) ?? null,
-          image2: d?.image2 ?? (Array.isArray(d?.images) ? d.images[1] : null) ?? null,
-          image3: d?.image3 ?? (Array.isArray(d?.images) ? d.images[2] : null) ?? null,
-          image4: d?.image4 ?? (Array.isArray(d?.images) ? d.images[3] : null) ?? null,
-          image5: d?.image5 ?? (Array.isArray(d?.images) ? d.images[4] : null) ?? null,
-          image6: d?.image6 ?? (Array.isArray(d?.images) ? d.images[5] : null) ?? null,
-          stockNumber: Number(d?.stockNumber ?? 0),
-          color: String(d?.color ?? ''),
-          clarity: String(d?.clarity ?? ''),
-          cut: String(d?.cut ?? ''),
-          shape: String(d?.shape ?? ''),
-          isDeleted: Boolean(d?.isDeleted ?? false),
-          updatedAt: String(d?.updatedAt ?? new Date().toISOString()),
-          sellerSKU: String(d?.sellerSKU ?? ''),
-          isOnAuction: Boolean(d?.isOnAuction ?? false),
-          isSold: Boolean(d?.isSold ?? false),
-          auctionEndTime: d?.auctionEndTime ?? undefined,
-        }));
-        const totalCount = typeof (meta as any)?.total === 'number' ? (meta as any).total : diamondsArr.length;
+        const topLevel = res as unknown;
+
+        const getListAndMeta = (input: unknown): { list: unknown[]; metaTotal?: number } => {
+          if (typeof input === 'object' && input !== null) {
+            const obj = input as Record<string, unknown>;
+            const dataProp = obj.data as unknown;
+            const metaProp = obj.meta as unknown;
+
+            if (Array.isArray(dataProp)) {
+              const metaPagination = (metaProp as { pagination?: { total?: number } } | undefined)?.pagination;
+              return { list: dataProp, metaTotal: metaPagination?.total };
+            }
+
+            if (typeof dataProp === 'object' && dataProp !== null) {
+              const nested = dataProp as Record<string, unknown>;
+              const nestedData = nested.data as unknown;
+              const nestedMeta = nested.meta as { total?: number } | undefined;
+              if (Array.isArray(nestedData)) {
+                return { list: nestedData, metaTotal: nestedMeta?.total };
+              }
+            }
+          }
+          return { list: [] };
+        };
+
+        const { list, metaTotal } = getListAndMeta(topLevel);
+
+        const diamondsArr: DiamondProduct[] = (list as unknown[]).map((item): DiamondProduct => {
+          const d = item as Record<string, unknown>;
+          const images = Array.isArray(d.images) ? (d.images as unknown[]).map((v) => String(v)) : [];
+          const idRaw = d.id as string | number | undefined;
+          const idNum = typeof idRaw === 'string' ? parseInt(idRaw, 10) : Number(idRaw ?? 0);
+          return {
+            id: isNaN(idNum) ? 0 : idNum,
+            name:
+              (d.name as string | undefined)
+              || `${String(d.shape ?? '')} ${String(d.color ?? '')} ${String(d.clarity ?? '')} Diamond - ${String((d as Record<string, unknown>).carat ?? (d as Record<string, unknown>).caratWeight ?? '')}ct`,
+            price: String((d.price as number | string | undefined) ?? (d.totalPrice as number | string | undefined) ?? 0),
+            image1: (d.image1 as string | null | undefined) ?? (images[0] ?? null),
+            image2: (d.image2 as string | null | undefined) ?? (images[1] ?? null),
+            image3: (d.image3 as string | null | undefined) ?? (images[2] ?? null),
+            image4: (d.image4 as string | null | undefined) ?? (images[3] ?? null),
+            image5: (d.image5 as string | null | undefined) ?? (images[4] ?? null),
+            image6: (d.image6 as string | null | undefined) ?? (images[5] ?? null),
+            stockNumber: Number(d.stockNumber ?? 0),
+            color: String(d.color ?? ''),
+            clarity: String(d.clarity ?? ''),
+            cut: String(d.cut ?? ''),
+            shape: String(d.shape ?? ''),
+            isDeleted: Boolean(d.isDeleted ?? false),
+            updatedAt: String((d.updatedAt as string | undefined) ?? new Date().toISOString()),
+            sellerSKU: String(d.sellerSKU ?? ''),
+            isOnAuction: Boolean(d.isOnAuction ?? false),
+            isSold: Boolean(d.isSold ?? false),
+            auctionEndTime: (d.auctionEndTime as string | undefined) ?? undefined,
+          };
+        });
+
+        const totalCount = typeof metaTotal === 'number' ? metaTotal : diamondsArr.length;
 
         setDiamonds(diamondsArr);
         setTotal(totalCount);
