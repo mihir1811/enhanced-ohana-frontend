@@ -511,7 +511,6 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                                     >
                                       <span 
                                         className="w-4 h-4 rounded-full border"
-                                        style={{ borderColor: 'var(--border)' }}
                                         style={isGradient 
                                           ? { background: colorValue }
                                           : { backgroundColor: colorValue }
