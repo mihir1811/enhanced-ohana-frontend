@@ -153,7 +153,8 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
       {hasMoreOptions && (
         <button
           onClick={() => setShowAll(!showAll)}
-          className="text-sm text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 font-medium mt-2 transition-colors"
+          className="text-sm font-medium mt-2 transition-colors"
+          style={{ color: 'var(--foreground)' }}
         >
           {showAll ? 'Show Less' : `Show All (${filteredOptions.length})`}
         </button>
@@ -268,16 +269,17 @@ function FilterSections({ filters, onFiltersChange }: FilterSectionsProps) {
         count={(filters.priceMin > 0 || filters.priceMax < 500000) ? 1 : 0}
       >
         <div className="space-y-4">
-          <div className="mb-4 flex justify-between text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div className="mb-4 flex justify-between text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>
             <span>${filters.priceMin?.toLocaleString() || 0}</span>
             <span>${filters.priceMax?.toLocaleString() || 500000}</span>
           </div>
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Min Price</label>
+              <label className="block text-xs font-medium mb-2" style={{ color: 'var(--muted-foreground)' }}>Min Price</label>
               <input
                 type="number"
-                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                 placeholder="$0"
                 min={0}
                 value={filters.priceMin || ''}
@@ -285,10 +287,11 @@ function FilterSections({ filters, onFiltersChange }: FilterSectionsProps) {
               />
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Max Price</label>
+              <label className="block text-xs font-medium mb-2" style={{ color: 'var(--muted-foreground)' }}>Max Price</label>
               <input
                 type="number"
-                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                className="w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                 placeholder="No limit"
                 min={0}
                 value={filters.priceMax || ''}
@@ -315,11 +318,12 @@ function BullionCard({ bullion, viewMode, onClick }: BullionCardProps) {
 
   if (viewMode === 'list') {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
+      <div className="rounded-lg shadow-sm hover:shadow-md transition-shadow border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
         <div className="flex gap-6 p-6">
           <div 
             onClick={onClick}
-            className="w-32 h-32 flex-shrink-0 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden cursor-pointer"
+            className="w-32 h-32 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer"
+            style={{ backgroundColor: 'var(--card)' }}
           >
             <Image
               src={mainImage}
@@ -330,39 +334,39 @@ function BullionCard({ bullion, viewMode, onClick }: BullionCardProps) {
             />
           </div>
           
-          <div className="flex-1">
+          <div className="flex-1" style={{ color: 'var(--foreground)' }}>
             <div className="flex items-start justify-between mb-2">
               <div onClick={onClick} className="cursor-pointer flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-amber-600 dark:hover:text-amber-400 transition-colors mb-2">
+                <h3 className="text-lg font-semibold transition-colors mb-2" style={{ color: 'var(--foreground)' }}>
                   {bullion.name || 'Unnamed Bullion'}
                 </h3>
-                <div className="flex flex-wrap gap-2 text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex flex-wrap gap-2 text-sm" style={{ color: 'var(--muted-foreground)' }}>
                   {bullion.metalType && (
-                    <span className="px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">
+                    <span className="px-2 py-1 rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
                       {bullion.metalType}
                     </span>
                   )}
                   {bullion.metalWeight && (
-                    <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
+                    <span className="px-2 py-1 rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
                       {bullion.metalWeight}g
                     </span>
                   )}
                   {bullion.metalPurity && (
-                    <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
+                    <span className="px-2 py-1 rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
                       {bullion.metalPurity}
                     </span>
                   )}
                 </div>
               </div>
               <div className="text-right ml-4">
-                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+                <p className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
                   ${price.toLocaleString()}
                 </p>
               </div>
             </div>
             
             {bullion.description && (
-              <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-2">
+              <p className="text-sm line-clamp-2 mt-2" style={{ color: 'var(--muted-foreground)' }}>
                 {bullion.description}
               </p>
             )}
@@ -374,8 +378,8 @@ function BullionCard({ bullion, viewMode, onClick }: BullionCardProps) {
 
   // Grid view
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-lg transition-all border border-gray-200 dark:border-gray-700 overflow-hidden group">
-      <div onClick={onClick} className="relative aspect-square bg-gray-100 dark:bg-gray-700 overflow-hidden cursor-pointer">
+    <div className="rounded-lg shadow-sm hover:shadow-lg transition-all border overflow-hidden group" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+      <div onClick={onClick} className="relative aspect-square overflow-hidden cursor-pointer" style={{ backgroundColor: 'var(--card)' }}>
         <Image
           src={mainImage}
           alt={bullion.name || 'Bullion'}
@@ -383,42 +387,42 @@ function BullionCard({ bullion, viewMode, onClick }: BullionCardProps) {
           className="object-cover group-hover:scale-105 transition-transform duration-300"
         />
         {bullion.category && (
-          <div className="absolute top-2 right-2 bg-amber-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+          <div className="absolute top-2 right-2 text-xs px-2 py-1 rounded-full flex items-center gap-1" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
             <Shield className="w-3 h-3" />
             {bullion.category}
           </div>
         )}
       </div>
       
-      <div onClick={onClick} className="p-4 cursor-pointer">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+      <div onClick={onClick} className="p-4 cursor-pointer" style={{ color: 'var(--foreground)' }}>
+        <h3 className="text-lg font-semibold mb-2 line-clamp-2 transition-colors" style={{ color: 'var(--foreground)' }}>
           {bullion.name || 'Unnamed Bullion'}
         </h3>
         
         <div className="flex flex-wrap gap-2 mb-3 text-xs">
           {bullion.metalType && (
-            <span className="px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">
+            <span className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
               {bullion.metalType}
             </span>
           )}
           {bullion.metalWeight && (
-            <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
+            <span className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
               {bullion.metalWeight}g
             </span>
           )}
         </div>
         
         {bullion.metalPurity && (
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+          <p className="text-sm mb-2" style={{ color: 'var(--muted-foreground)' }}>
             Purity: {bullion.metalPurity}
           </p>
         )}
         
-        <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
-          <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+        <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
+          <p className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
             ${price.toLocaleString()}
           </p>
-          <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 group-hover:translate-x-1 transition-all" />
+          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-all" style={{ color: 'var(--muted-foreground)' }} />
         </div>
       </div>
     </div>
@@ -558,8 +562,9 @@ const BullionListingPage: React.FC<BullionListingPageProps> = ({
           scrollbar-width: none;
         }
       `}</style>
-      <div className="w-full py-5 min-h-screen">
-        <div className={`flex flex-col md:flex-row gap-6 relative max-w-[${SECTION_WIDTH}px] mx-auto`}>
+      <div className="w-full py-5 min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
+        <div className={`flex flex-col md:flex-row gap-6 relative mx-auto`} style={{ maxWidth: SECTION_WIDTH }}>
+        
         {/* Drawer for mobile filters with animation */}
         {drawerVisible && (
           <>
@@ -638,22 +643,19 @@ const BullionListingPage: React.FC<BullionListingPageProps> = ({
         {/* Main content */}
         <main className="flex-1 w-full min-w-0 z-0 relative">
           {/* Horizontal Filter Bar - Subcategory and Metal Types */}
-          <div className="mb-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-2 border border-gray-200 dark:border-gray-700">
+          <div className="mb-2 rounded-lg shadow-sm p-2 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
 
             {/* Metal Type Filters */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="flex items-center">
-                <span className="text-sm font-medium mr-3 whitespace-nowrap text-gray-900 dark:text-white">Metal Type:</span>
+                <span className="text-sm font-medium mr-3 whitespace-nowrap" style={{ color: 'var(--foreground)' }}>Metal Type:</span>
               </div>
               <div className="flex flex-nowrap gap-3 overflow-x-auto w-full scrollbar-hide">
                 {/* All Metals Button */}
                 <button
                   onClick={() => handleFiltersChange({ ...filters, metalType: [] })}
-                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200 ${
-                    filters.metalType.length === 0
-                      ? 'bg-gray-700 border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-800' 
-                      : 'border border-slate-300 dark:border-gray-600 text-slate-700 dark:text-gray-300 hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-400 bg-white dark:bg-gray-700'
-                  }`}
+                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200 border`}
+                  style={filters.metalType.length === 0 ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
                 >
                   All Metals
                 </button>
@@ -677,11 +679,8 @@ const BullionListingPage: React.FC<BullionListingPageProps> = ({
                           : [...currentMetalTypes, metal.name];
                         handleFiltersChange({ ...filters, metalType: newMetalTypes });
                       }}
-                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap ${
-                        isSelected
-                          ? 'bg-amber-600 border-amber-600 text-white hover:bg-amber-700'
-                          : 'bg-white dark:bg-gray-700 border-slate-300 dark:border-gray-600 text-slate-700 dark:text-gray-300 hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-400'
-                      }`}
+                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap`}
+                      style={isSelected ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
                     >
                       {/* Icon */}
                       <span className="text-lg" role="img" aria-label={metal.name}>
@@ -699,7 +698,7 @@ const BullionListingPage: React.FC<BullionListingPageProps> = ({
           </div>
 
           {/* Filter Bar */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-3 mb-4 shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="rounded-lg p-3 mb-4 shadow-sm border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
               {/* Search */}
               <div className="relative flex-1 max-w-md w-full">
@@ -707,7 +706,8 @@ const BullionListingPage: React.FC<BullionListingPageProps> = ({
                 <input
                   type="text"
                   placeholder="Search bullions..."
-                  className="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2"
+                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                 />
               </div>
 
@@ -715,47 +715,43 @@ const BullionListingPage: React.FC<BullionListingPageProps> = ({
               <div className="flex items-center gap-2">
                 {/* Sort */}
                 <button
-                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-gray-700 shadow border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 active:scale-95 transition"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg shadow border active:scale-95 transition"
                   aria-label="Sort"
+                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
                 >
-                  <ArrowUpDown className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+                  <ArrowUpDown className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
                 </button>
 
                 {/* Filter Button */}
                 <button
-                  className="px-3 py-2 flex items-center gap-2 rounded-lg bg-white dark:bg-gray-700 shadow border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 active:scale-95 transition"
+                  className="px-3 py-2 flex items-center gap-2 rounded-lg shadow border active:scale-95 transition"
                   onClick={() => setShowFilters(true)}
                   aria-label="Open filters"
+                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                 >
-                  <Filter className="w-4 h-4 text-gray-700 dark:text-gray-300" />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Filters</span>
+                  <Filter className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
+                  <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>Filters</span>
                   {totalAppliedFilters > 0 && (
-                    <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+                    <span className="px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
                       {totalAppliedFilters}
                     </span>
                   )}
                 </button>
 
                 {/* View Mode */}
-                <div className="flex items-center bg-white dark:bg-gray-700 shadow border border-gray-200 dark:border-gray-600 rounded-lg">
+                <div className="flex items-center shadow border rounded-lg" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${
-                      viewMode === 'grid' 
-                        ? 'bg-gray-900 dark:bg-gray-600 text-white' 
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
-                    }`}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition`}
+                    style={viewMode === 'grid' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { color: 'var(--muted-foreground)' }}
                     aria-label="Grid view"
                   >
                     <Grid className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${
-                      viewMode === 'list' 
-                        ? 'bg-gray-900 dark:bg-gray-600 text-white' 
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
-                    }`}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition`}
+                    style={viewMode === 'list' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { color: 'var(--muted-foreground)' }}
                     aria-label="List view"
                   >
                     <List className="w-4 h-4" />
@@ -766,12 +762,13 @@ const BullionListingPage: React.FC<BullionListingPageProps> = ({
 
             {/* Active Filters */}
             {totalAppliedFilters > 0 && (
-              <div className="mt-4 pt-4 border-t border-slate-200 dark:border-gray-700">
+              <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-slate-700 dark:text-gray-300">Active Filters:</span>
+                  <span className="text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>Active Filters:</span>
                   <button
                     onClick={clearAllFilters}
-                    className="text-sm text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+                    className="text-sm"
+                    style={{ color: 'var(--foreground)' }}
                   >
                     Clear All
                   </button>
@@ -860,7 +857,7 @@ const BullionListingPage: React.FC<BullionListingPageProps> = ({
 
           {/* Results Header */}
           <div className="flex items-center justify-between mb-6">
-            <p className="text-slate-600 dark:text-gray-400">
+            <p style={{ color: 'var(--muted-foreground)' }}>
               {loading ? (
                 'Loading...'
               ) : (
@@ -877,12 +874,12 @@ const BullionListingPage: React.FC<BullionListingPageProps> = ({
           )}
 
           {!loading && bullions.length === 0 && (
-            <div className="text-center py-20 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="text-center py-20 rounded-lg border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
               <div className="text-6xl mb-4">🪙</div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
                 No Bullions Found
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
+              <p className="mb-4" style={{ color: 'var(--muted-foreground)' }}>
                 Try adjusting your filters or check back later.
               </p>
               {totalAppliedFilters > 0 && (

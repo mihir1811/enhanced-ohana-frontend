@@ -7,9 +7,10 @@ import { getCookie } from '@/lib/cookie-utils';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Gem, Layers } from 'lucide-react';
 
 interface Option {
-  value: string;
+  value: string;  
   label: string;
 }
 
@@ -128,8 +129,8 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                   {option.label}
                 </span>
                 {option.value === value && (
-                  <svg className="w-4 h-4 text-primary shrink-0 opacity-100 group-hover:text-white transition-colors duration-200" 
-                       fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-4 h-4 text-primary shrink-0 opacity-100 group-hover:text-white transition-colors duration-200"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                   </svg>
                 )}
@@ -176,9 +177,17 @@ type DiamondFormState = {
   price: string,
   discount: string,
   color: string,
+  colorFrom: string,
+  colorTo: string,
   fancyColor: string,
+  fancyColorFrom: string,
+  fancyColorTo: string,
   fancyIntencity: string,
+  fancyIntencityFrom: string,
+  fancyIntencityTo: string,
   fancyOvertone: string,
+  fancyOvertoneFrom: string,
+  fancyOvertoneTo: string,
   caratWeight: string,
   cut: string,
   clarity: string,
@@ -202,6 +211,9 @@ type DiamondFormState = {
   pavilionAngle: string,
   pavilionDepth: string,
   culetSize: string,
+  totalPieces: string,
+  sizeMin: string,
+  sizeMax: string,
   certificateCompanyId: string,
   certificateNumber: string,
   inscription: string,
@@ -221,9 +233,17 @@ const initialState: DiamondFormState = {
   price: '',
   discount: '',
   color: '',
+  colorFrom: '',
+  colorTo: '',
   fancyColor: '',
+  fancyColorFrom: '',
+  fancyColorTo: '',
   fancyIntencity: '',
+  fancyIntencityFrom: '',
+  fancyIntencityTo: '',
   fancyOvertone: '',
+  fancyOvertoneFrom: '',
+  fancyOvertoneTo: '',
   caratWeight: '',
   cut: '',
   clarity: '',
@@ -247,6 +267,9 @@ const initialState: DiamondFormState = {
   pavilionAngle: '',
   pavilionDepth: '',
   culetSize: '',
+  totalPieces: '',
+  sizeMin: '',
+  sizeMax: '',
   certificateCompanyId: '',
   certificateNumber: '',
   inscription: '',
@@ -257,11 +280,107 @@ const initialState: DiamondFormState = {
 function AddDiamondForm() {
   // Use dynamic certificate companies
   const { options: certificateCompanies, getCompanyNameById } = useCertificateCompanies();
-  
+
   const [form, setForm] = useState<DiamondFormState>(initialState);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [activeTab, setActiveTab] = useState('Single');
+  const isMelee = activeTab === 'Melee';
+
+  useEffect(() => {
+    const parts = [form.caratWeight, form.shape, form.color, form.clarity].filter((p) => p && String(p).trim() !== '');
+    const newName = parts.join(' ');
+    if (form.name !== newName) {
+      setForm((prev) => ({ ...prev, name: newName }));
+    }
+  }, [form.caratWeight, form.shape, form.color, form.clarity]);
+
+  useEffect(() => {
+    if (isMelee) {
+      const order = diamondColors.map((o) => o.value);
+      let from = form.colorFrom;
+      let to = form.colorTo;
+      if (from && to) {
+        const fi = order.indexOf(from);
+        const ti = order.indexOf(to);
+        if (fi !== -1 && ti !== -1 && fi > ti) {
+          from = form.colorTo;
+          to = form.colorFrom;
+          setForm((prev) => ({ ...prev, colorFrom: from, colorTo: to }));
+        }
+      }
+      const range = [from, to].filter((v) => v && String(v).trim() !== '').join('-');
+      if (range !== form.color) setForm((prev) => ({ ...prev, color: range }));
+    }
+  }, [isMelee, form.colorFrom, form.colorTo]);
+
+  useEffect(() => {
+    if (isMelee) {
+      const min = parseFloat(String(form.sizeMin || ''));
+      const max = parseFloat(String(form.sizeMax || ''));
+      if (!isNaN(min) && !isNaN(max) && min > max) {
+        setForm((prev) => ({ ...prev, sizeMin: String(max), sizeMax: String(min) }));
+      }
+    }
+  }, [isMelee, form.sizeMin, form.sizeMax]);
+
+  useEffect(() => {
+    if (isMelee) {
+      const order = fancyIntensities.map((o) => o.value);
+      let from = form.fancyIntencityFrom;
+      let to = form.fancyIntencityTo;
+      if (from && to) {
+        const fi = order.indexOf(from);
+        const ti = order.indexOf(to);
+        if (fi !== -1 && ti !== -1 && fi > ti) {
+          from = form.fancyIntencityTo;
+          to = form.fancyIntencityFrom;
+          setForm((prev) => ({ ...prev, fancyIntencityFrom: from, fancyIntencityTo: to }));
+        }
+      }
+      const range = [from, to].filter((v) => v && String(v).trim() !== '').join('-');
+      if (range !== form.fancyIntencity) setForm((prev) => ({ ...prev, fancyIntencity: range }));
+    }
+  }, [isMelee, form.fancyIntencityFrom, form.fancyIntencityTo]);
+
+  useEffect(() => {
+    if (isMelee) {
+      const list = fancyOvertones.map((o) => o.value);
+      let from = form.fancyOvertoneFrom;
+      let to = form.fancyOvertoneTo;
+      if (from && to) {
+        const fi = list.indexOf(from);
+        const ti = list.indexOf(to);
+        if (fi !== -1 && ti !== -1 && fi > ti) {
+          from = form.fancyOvertoneTo;
+          to = form.fancyOvertoneFrom;
+          setForm((prev) => ({ ...prev, fancyOvertoneFrom: from, fancyOvertoneTo: to }));
+        }
+      }
+      const range = [from, to].filter((v) => v && String(v).trim() !== '').join('-');
+      if (range !== form.fancyOvertone) setForm((prev) => ({ ...prev, fancyOvertone: range }));
+    }
+  }, [isMelee, form.fancyOvertoneFrom, form.fancyOvertoneTo]);
+
+  useEffect(() => {
+    if (isMelee) {
+      const list = fancyColors.map((o) => o.value);
+      let from = form.fancyColorFrom;
+      let to = form.fancyColorTo;
+      if (from && to) {
+        const fi = list.indexOf(from);
+        const ti = list.indexOf(to);
+        if (fi !== -1 && ti !== -1 && fi > ti) {
+          from = form.fancyColorTo;
+          to = form.fancyColorFrom;
+          setForm((prev) => ({ ...prev, fancyColorFrom: from, fancyColorTo: to }));
+        }
+      }
+      const range = [from, to].filter((v) => v && String(v).trim() !== '').join('-');
+      if (range !== form.fancyColor) setForm((prev) => ({ ...prev, fancyColor: range }));
+    }
+  }, [isMelee, form.fancyColorFrom, form.fancyColorTo]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -300,7 +419,7 @@ function AddDiamondForm() {
       const formData = new FormData();
       // List of all fields as per API curl
       const fields = [
-        'stockNumber', 'name', 'description', 'origin', 'rap', 'price', 'discount', 'caratWeight', 'cut', 'color', 'shade', 'fancyColor', 'fancyIntencity', 'fancyOvertone', 'shape', 'symmetry', 'diameter', 'clarity', 'fluorescence', 'measurement', 'ratio', 'table', 'depth', 'gridleMin', 'gridleMax', 'gridlePercentage', 'crownHeight', 'crownAngle', 'pavilionAngle', 'pavilionDepth', 'culetSize', 'polish', 'treatment', 'inscription', 'certificateNumber', 'stoneType', 'process', 'certificateCompanyId', 'videoURL', 'sellerSKU'
+        'stockNumber', 'name', 'description', 'origin', 'rap', 'price', 'discount', 'caratWeight', 'cut', 'color', 'shade', 'fancyColor', 'fancyIntencity', 'fancyOvertone', 'shape', 'symmetry', 'diameter', 'clarity', 'fluorescence', 'measurement', 'ratio', 'table', 'depth', 'gridleMin', 'gridleMax', 'gridlePercentage', 'crownHeight', 'crownAngle', 'pavilionAngle', 'pavilionDepth', 'culetSize', 'polish', 'treatment', 'inscription', 'certificateNumber', 'stoneType', 'process', 'certificateCompanyId', 'videoURL', 'sellerSKU', 'totalPieces', 'sizeMin', 'sizeMax'
       ];
       fields.forEach((key) => {
         const value = form[key as keyof DiamondFormState];
@@ -308,7 +427,7 @@ function AddDiamondForm() {
           formData.append(key, String(value));
         }
       });
-      
+
       // Handle certificateCompany separately - send company name based on certificateCompanyId
       if (form.certificateCompanyId && form.certificateCompanyId !== '') {
         const companyName = getCompanyNameById(form.certificateCompanyId);
@@ -352,16 +471,64 @@ function AddDiamondForm() {
         <p className="text-muted-foreground text-sm">Fill in the details below to add a new diamond to your inventory.</p>
       </div>
 
+      <div>
+        <div
+          role="tablist"
+          aria-label="Diamond type"
+          className="inline-flex items-center gap-1 p-1 rounded-xl border"
+          style={{ background: 'var(--muted)', borderColor: 'var(--border)' }}
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'Single'}
+            onClick={() => setActiveTab('Single')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              activeTab === 'Single'
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'bg-card text-foreground border border-transparent hover:bg-muted'
+            }`}
+            style={
+              activeTab === 'Single'
+                ? { background: 'var(--primary)', color: 'var(--primary-foreground)' }
+                : { background: 'var(--card)', color: 'var(--foreground)' }
+            }
+          >
+            <Gem className="w-4 h-4" />
+            Single Diamond
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'Melee'}
+            onClick={() => setActiveTab('Melee')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              activeTab === 'Melee'
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'bg-card text-foreground border border-transparent hover:bg-muted'
+            }`}
+            style={
+              activeTab === 'Melee'
+                ? { background: 'var(--primary)', color: 'var(--primary-foreground)' }
+                : { background: 'var(--card)', color: 'var(--foreground)' }
+            }
+          >
+            <Layers className="w-4 h-4" />
+            Melee Diamonds
+          </button>
+        </div>
+      </div>
+
       {/* Basic Information */}
       <section className="space-y-6">
-        <div className="flex items-center gap-3">
+        {/* <div className="flex items-center gap-3">
           <h3 className="text-xl font-semibold text-foreground/90">Basic Information</h3>
           <div className="flex-1 border-b border-border/40"></div>
-        </div>
+        </div> */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium flex items-center gap-1 text-foreground/90">
-              Name
+              Title
               <span className="text-destructive text-xs">*</span>
             </Label>
             <Input
@@ -369,29 +536,72 @@ function AddDiamondForm() {
               name="name"
               value={form.name}
               onChange={handleChange}
-              required
+              // required
+              disabled
               placeholder="e.g. Round Brilliant Diamond"
               className="w-full transition-all duration-200 hover:border-primary/50"
-            />
-          </div>
-          <div className="md:col-span-2 space-y-2">
-            <Label htmlFor="description" className="font-medium">
-              Description
-              <span className="text-destructive ml-1">*</span>
-            </Label>
-            <textarea
-              id="description"
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              required
-              rows={3}
-              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
         </div>
       </section>
 
+      {/* Certification */}
+
+      {
+        activeTab !== 'Melee' && (
+          <section className="space-y-6">
+            <div className="flex items-center gap-3">
+              <h3 className="text-xl font-semibold text-foreground/90">Certification</h3>
+              <div className="flex-1 border-b border-border/40"></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="relative group space-y-2">
+                <Label htmlFor="certificateCompanyId" className="font-medium">
+                  Certificate Company
+                  <span className="text-destructive ml-1">*</span>
+                </Label>
+                <SearchableDropdown
+                  name="certificateCompanyId"
+                  value={form.certificateCompanyId}
+                  onChange={(value) => setForm(prev => ({ ...prev, certificateCompanyId: value }))}
+                  options={certificateCompanies}
+                  placeholder="Search certificate company..."
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="certificateNumber" className="font-medium">
+                  Certificate Number
+                  <span className="text-destructive ml-1">*</span>
+                </Label>
+                <Input
+                  id="certificateNumber"
+                  name="certificateNumber"
+                  value={form.certificateNumber}
+                  onChange={handleChange}
+                  required
+                  placeholder="e.g. 123456789"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="inscription" className="font-medium">
+                  Inscription
+                  <span className="text-destructive ml-1">*</span>
+                </Label>
+                <Input
+                  id="inscription"
+                  name="inscription"
+                  value={form.inscription}
+                  onChange={handleChange}
+                  required
+                  placeholder="e.g. GIA123456"
+                />
+              </div>
+
+            </div>
+          </section>
+        )
+      }
       {/* Media */}
       <section>
         <h3 className="text-lg font-semibold mb-2">Media</h3>
@@ -415,20 +625,20 @@ function AddDiamondForm() {
                   {form.images.length === 0 ? (
                     <div className="flex flex-col items-center justify-center gap-4">
                       {/* Cloud Upload Icon */}
-                      <svg 
-                        className="w-16 h-16 text-muted-foreground/60" 
-                        viewBox="0 0 24 24" 
+                      <svg
+                        className="w-16 h-16 text-muted-foreground/60"
+                        viewBox="0 0 24 24"
                         fill="currentColor"
                       >
-                        <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                        <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
                       </svg>
-                      
+
                       <div className="text-center space-y-2">
                         <p className="text-lg font-medium text-foreground/90">
                           Drop Your Files Here
                         </p>
                         <p className="text-sm text-muted-foreground">Or</p>
-                        <button 
+                        <button
                           type="button"
                           className="px-6 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 transition-colors"
                           onClick={(e) => {
@@ -513,7 +723,7 @@ function AddDiamondForm() {
                   />
                 </label>
               </div>
-              
+
               <div className="mt-2 flex items-center justify-between text-sm">
                 <p className="text-muted-foreground">
                   Maximum File Size 4 MB
@@ -522,11 +732,11 @@ function AddDiamondForm() {
                   {form.images.length}/6 images
                 </p>
               </div>
-              
+
               {error && (
                 <p className="text-sm text-destructive mt-2 flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                       d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   {error}
@@ -534,19 +744,105 @@ function AddDiamondForm() {
               )}
             </div>
           </div>
+          {
+            activeTab !== 'Melee' && (
+              <div className="space-y-2">
+                <Label htmlFor="certification" className="font-medium">
+                  Certification Document
+                  <span className="text-destructive ml-1">*</span>
+                </Label>
+                <div className="mt-2">
+                  <div className="flex items-center justify-center w-full">
+                    <label htmlFor="certification"
+                      className="relative flex flex-col items-center justify-center w-full 
+                    border border-dashed rounded-md cursor-pointer 
+                    bg-background/50 hover:bg-background/80 
+                    border-border hover:border-primary/50
+                    transition-all duration-200
+                    p-6">
+                      <div className="flex flex-col items-center justify-center gap-4">
+                        {/* Cloud Upload Icon */}
+                        <svg
+                          className="w-16 h-16 text-muted-foreground/60"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
+                        </svg>
+
+                        {!form.certification ? (
+                          <>
+                            <div className="text-center space-y-2">
+                              <p className="text-lg font-medium text-foreground/90">
+                                Drop Your File Here
+                              </p>
+                              <p className="text-sm text-muted-foreground">Or</p>
+                              <button
+                                type="button"
+                                className="px-6 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 transition-colors"
+                                onClick={() => document.getElementById('certification')?.click()}
+                              >
+                                Browse
+                              </button>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-center space-y-2">
+                            <p className="text-sm font-medium text-foreground/90">
+                              {form.certification.name}
+                            </p>
+                            {form.certification.type.startsWith('image/') && (
+                              <div className="relative w-32 h-32 mx-auto mt-2 rounded-md overflow-hidden border border-border">
+                                <Image
+                                  src={URL.createObjectURL(form.certification)}
+                                  alt="Preview"
+                                  width={128}
+                                  height={128}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            )}
+                            <button
+                              type="button"
+                              className="text-sm text-blue-500 hover:text-blue-600"
+                              onClick={() => document.getElementById('certification')?.click()}
+                            >
+                              Choose a different file
+                            </button>
+                          </div>
+                        )}
+
+                        <Input
+                          id="certification"
+                          name="certification"
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          required
+                          onChange={handleFileChange}
+                          className="hidden"
+                        />
+                      </div>
+                    </label>
+                  </div>
+                  <div className="mt-2 text-center text-sm text-muted-foreground">
+                    Maximum File Size 4 MB
+                  </div>
+                </div>
+              </div>
+            )}
         </div>
-          <div className='w-1/2'>
-            <Label htmlFor="videoURL" className="font-medium">
-              Video URL
-              <span className="text-destructive ml-1">*</span>
-            </Label>
-            <Input name="videoURL" value={form.videoURL} onChange={handleChange} required className="input" placeholder="e.g. https://youtu.be/abcd1234" />
-          </div>
+        <div className='w-1/2 mt-3  '>
+          <Label htmlFor="videoURL" className="font-medium mb-2">
+            Video URL
+            <span className="text-destructive ml-1">*</span>
+          </Label>
+          <Input name="videoURL" value={form.videoURL} onChange={handleChange} required className="input" placeholder="e.g. https://youtu.be/abcd1234" />
+        </div>
       </section>
 
       {/* Product Details */}
       <section>
-        <h3 className="text-lg font-semibold mb-2">Product Details</h3>
+        <h3 className="text-lg font-semibold mb-3">Product Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <Label htmlFor="stockNumber" className="font-medium">
@@ -563,7 +859,7 @@ function AddDiamondForm() {
               placeholder="e.g. 1001"
             />
           </div>
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="sellerSKU" className="font-medium">
               Seller SKU
             </Label>
@@ -574,7 +870,7 @@ function AddDiamondForm() {
               onChange={handleChange}
               placeholder="e.g. SKU-001"
             />
-          </div>
+          </div> */}
           <div className="space-y-2">
             <Label htmlFor="origin" className="font-medium">
               Origin
@@ -589,6 +885,9 @@ function AddDiamondForm() {
               placeholder="e.g. South Africa"
             />
           </div>
+
+          {
+        activeTab !== 'Melee' && (
           <div className="space-y-2">
             <Label htmlFor="rap" className="font-medium">
               RAP Price
@@ -604,6 +903,7 @@ function AddDiamondForm() {
               placeholder="e.g. 5000"
             />
           </div>
+        )}
           <div className="space-y-2">
             <Label htmlFor="price" className="font-medium">
               Price
@@ -646,62 +946,161 @@ function AddDiamondForm() {
           <div className="flex-1 border-b"></div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="color" className="font-medium">
-              Color
-              <span className="text-destructive ml-1">*</span>
-            </Label>
-            <SearchableDropdown
-              name="color"
-              value={form.color}
-              onChange={(value) => setForm(prev => ({ ...prev, color: value }))}
-              options={diamondColors}
-              placeholder="Search color grade..."
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="fancyColor" className="font-medium">
-              Fancy Color
-              <span className="text-destructive ml-1">*</span>
-            </Label>
-            <SearchableDropdown
-              name="fancyColor"
-              value={form.fancyColor}
-              onChange={(value) => setForm(prev => ({ ...prev, fancyColor: value }))}
-              options={fancyColors}
-              placeholder="Search fancy color..."
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="fancyIntencity" className="font-medium">
-              Fancy Intensity
-              <span className="text-destructive ml-1">*</span>
-            </Label>
-            <SearchableDropdown
-              name="fancyIntencity"
-              value={form.fancyIntencity}
-              onChange={(value) => setForm(prev => ({ ...prev, fancyIntencity: value }))}
-              options={fancyIntensities}
-              placeholder="Search intensity..."
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="fancyOvertone" className="font-medium">
-              Fancy Overtone
-              <span className="text-destructive ml-1">*</span>
-            </Label>
-            <SearchableDropdown
-              name="fancyOvertone"
-              value={form.fancyOvertone}
-              onChange={(value) => setForm(prev => ({ ...prev, fancyOvertone: value }))}
-              options={fancyOvertones}
-              placeholder="Search overtone..."
-              required
-            />
-          </div>
+          {!isMelee ? (
+            <div className="space-y-2">
+              <Label htmlFor="color" className="font-medium">
+                Color
+                <span className="text-destructive ml-1">*</span>
+              </Label>
+              <SearchableDropdown
+                name="color"
+                value={form.color}
+                onChange={(value) => setForm(prev => ({ ...prev, color: value }))}
+                options={diamondColors}
+                placeholder="Search color grade..."
+                required
+              />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="colorFrom" className="font-medium">
+                Color Range
+                <span className="text-destructive ml-1">*</span>
+              </Label>
+              <div className="grid grid-cols-2 gap-3">
+                <SearchableDropdown
+                  name="colorFrom"
+                  value={form.colorFrom}
+                  onChange={(value) => setForm(prev => ({ ...prev, colorFrom: value }))}
+                  options={diamondColors}
+                  placeholder="From"
+                  required
+                />
+                <SearchableDropdown
+                  name="colorTo"
+                  value={form.colorTo}
+                  onChange={(value) => setForm(prev => ({ ...prev, colorTo: value }))}
+                  options={diamondColors}
+                  placeholder="To"
+                  required
+                />
+              </div>
+            </div>
+          )}
+          {!isMelee ? (
+            <div className="space-y-2">
+              <Label htmlFor="fancyColor" className="font-medium">
+                Fancy Color
+                <span className="text-destructive ml-1">*</span>
+              </Label>
+              <SearchableDropdown
+                name="fancyColor"
+                value={form.fancyColor}
+                onChange={(value) => setForm(prev => ({ ...prev, fancyColor: value }))}
+                options={fancyColors}
+                placeholder="Search fancy color..."
+                required={!isMelee}
+              />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="fancyColorFrom" className="font-medium">
+                Fancy Color Range
+              </Label>
+              <div className="grid grid-cols-2 gap-3">
+                <SearchableDropdown
+                  name="fancyColorFrom"
+                  value={form.fancyColorFrom}
+                  onChange={(value) => setForm(prev => ({ ...prev, fancyColorFrom: value }))}
+                  options={fancyColors}
+                  placeholder="From"
+                />
+                <SearchableDropdown
+                  name="fancyColorTo"
+                  value={form.fancyColorTo}
+                  onChange={(value) => setForm(prev => ({ ...prev, fancyColorTo: value }))}
+                  options={fancyColors}
+                  placeholder="To"
+                />
+              </div>
+            </div>
+          )}
+          {!isMelee ? (
+            <div className="space-y-2">
+              <Label htmlFor="fancyIntencity" className="font-medium">
+                Fancy Intensity
+                <span className="text-destructive ml-1">*</span>
+              </Label>
+              <SearchableDropdown
+                name="fancyIntencity"
+                value={form.fancyIntencity}
+                onChange={(value) => setForm(prev => ({ ...prev, fancyIntencity: value }))}
+                options={fancyIntensities}
+                placeholder="Search intensity..."
+                required={!isMelee}
+              />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="fancyIntencityFrom" className="font-medium">
+                Fancy Intensity Range
+              </Label>
+              <div className="grid grid-cols-2 gap-3">
+                <SearchableDropdown
+                  name="fancyIntencityFrom"
+                  value={form.fancyIntencityFrom}
+                  onChange={(value) => setForm(prev => ({ ...prev, fancyIntencityFrom: value }))}
+                  options={fancyIntensities}
+                  placeholder="From"
+                />
+                <SearchableDropdown
+                  name="fancyIntencityTo"
+                  value={form.fancyIntencityTo}
+                  onChange={(value) => setForm(prev => ({ ...prev, fancyIntencityTo: value }))}
+                  options={fancyIntensities}
+                  placeholder="To"
+                />
+              </div>
+            </div>
+          )}
+          {!isMelee ? (
+            <div className="space-y-2">
+              <Label htmlFor="fancyOvertone" className="font-medium">
+                Fancy Overtone
+                <span className="text-destructive ml-1">*</span>
+              </Label>
+              <SearchableDropdown
+                name="fancyOvertone"
+                value={form.fancyOvertone}
+                onChange={(value) => setForm(prev => ({ ...prev, fancyOvertone: value }))}
+                options={fancyOvertones}
+                placeholder="Search overtone..."
+                required={!isMelee}
+              />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="fancyOvertoneFrom" className="font-medium">
+                Fancy Overtone Range
+              </Label>
+              <div className="grid grid-cols-2 gap-3">
+                <SearchableDropdown
+                  name="fancyOvertoneFrom"
+                  value={form.fancyOvertoneFrom}
+                  onChange={(value) => setForm(prev => ({ ...prev, fancyOvertoneFrom: value }))}
+                  options={fancyOvertones}
+                  placeholder="From"
+                />
+                <SearchableDropdown
+                  name="fancyOvertoneTo"
+                  value={form.fancyOvertoneTo}
+                  onChange={(value) => setForm(prev => ({ ...prev, fancyOvertoneTo: value }))}
+                  options={fancyOvertones}
+                  placeholder="To"
+                />
+              </div>
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="caratWeight" className="font-medium">
               Carat Weight
@@ -722,13 +1121,13 @@ function AddDiamondForm() {
               Cut Grade
               <span className="text-destructive ml-1">*</span>
             </Label>
-            <SearchableDropdown
+          <SearchableDropdown
               name="cut"
               value={form.cut}
               onChange={(value) => setForm(prev => ({ ...prev, cut: value }))}
               options={cutGrades}
               placeholder="Search cut grade..."
-              required
+              required={!isMelee}
             />
           </div>
           <div className="space-y-2">
@@ -750,13 +1149,13 @@ function AddDiamondForm() {
               Shade
               <span className="text-destructive ml-1">*</span>
             </Label>
-            <SearchableDropdown
+          <SearchableDropdown
               name="shade"
               value={form.shade}
               onChange={(value) => setForm(prev => ({ ...prev, shade: value }))}
               options={shades}
               placeholder="Search diamond shade..."
-              required
+              required={!isMelee}
             />
           </div>
           <div className="space-y-2">
@@ -778,13 +1177,13 @@ function AddDiamondForm() {
               Polish
               <span className="text-destructive ml-1">*</span>
             </Label>
-            <SearchableDropdown
+          <SearchableDropdown
               name="polish"
               value={form.polish}
               onChange={(value) => setForm(prev => ({ ...prev, polish: value }))}
               options={cutGrades}
               placeholder="Search polish grade..."
-              required
+              required={!isMelee}
             />
           </div>
           <div className="space-y-2">
@@ -792,13 +1191,13 @@ function AddDiamondForm() {
               Symmetry
               <span className="text-destructive ml-1">*</span>
             </Label>
-            <SearchableDropdown
+          <SearchableDropdown
               name="symmetry"
               value={form.symmetry}
               onChange={(value) => setForm(prev => ({ ...prev, symmetry: value }))}
               options={cutGrades}
               placeholder="Search symmetry grade..."
-              required
+              required={!isMelee}
             />
           </div>
           <div className="space-y-2">
@@ -806,13 +1205,13 @@ function AddDiamondForm() {
               Fluorescence
               <span className="text-destructive ml-1">*</span>
             </Label>
-            <SearchableDropdown
+          <SearchableDropdown
               name="fluorescence"
               value={form.fluorescence}
               onChange={(value) => setForm(prev => ({ ...prev, fluorescence: value }))}
               options={fluorescences}
               placeholder="Search fluorescence..."
-              required
+              required={!isMelee}
             />
           </div>
           <div className="space-y-2">
@@ -820,13 +1219,13 @@ function AddDiamondForm() {
               Treatment
               <span className="text-destructive ml-1">*</span>
             </Label>
-            <SearchableDropdown
+          <SearchableDropdown
               name="treatment"
               value={form.treatment}
               onChange={(value) => setForm(prev => ({ ...prev, treatment: value }))}
               options={treatments}
               placeholder="Search treatment type..."
-              required
+              required={!isMelee}
             />
           </div>
           <div className="space-y-2">
@@ -834,19 +1233,75 @@ function AddDiamondForm() {
               Process
               <span className="text-destructive ml-1">*</span>
             </Label>
-            <SearchableDropdown
+          <SearchableDropdown
               name="process"
               value={form.process}
               onChange={(value) => setForm(prev => ({ ...prev, process: value }))}
               options={processes}
               placeholder="Search process type..."
+              required={!isMelee}
+            />
+          </div>
+      </div>
+    </section>
+
+    {isMelee && (
+      <section className="space-y-4">
+        <div className="flex items-center gap-2">
+          <h3 className="text-xl font-semibold">Melee Parcel</h3>
+          <div className="flex-1 border-b"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="space-y-2">
+            <Label htmlFor="totalPieces" className="font-medium">
+              Total Pieces
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="totalPieces"
+              name="totalPieces"
+              type="number"
+              value={form.totalPieces}
+              onChange={handleChange}
               required
+              placeholder="e.g. 150"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="sizeMin" className="font-medium">
+              Size Min (mm)
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="sizeMin"
+              name="sizeMin"
+              type="number"
+              value={form.sizeMin}
+              onChange={handleChange}
+              required
+              placeholder="e.g. 1.0"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="sizeMax" className="font-medium">
+              Size Max (mm)
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="sizeMax"
+              name="sizeMax"
+              type="number"
+              value={form.sizeMax}
+              onChange={handleChange}
+              required
+              placeholder="e.g. 2.0"
             />
           </div>
         </div>
       </section>
-
+    )}
       {/* Measurements */}
+      {!isMelee && (
       <section className="space-y-4">
         <div className="flex items-center gap-2">
           <h3 className="text-xl font-semibold">Measurements</h3>
@@ -855,7 +1310,7 @@ function AddDiamondForm() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-2">
             <Label htmlFor="measurement" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              Measurement
+              Measurement (mm)
               <span className="text-destructive ml-1">*</span>
             </Label>
             <Input
@@ -867,7 +1322,7 @@ function AddDiamondForm() {
               placeholder="e.g. 5.00 x 5.00 x 3.00 mm"
             />
           </div>
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="diameter" className="font-medium">
               Diameter (mm)
               <span className="text-destructive ml-1">*</span>
@@ -881,7 +1336,7 @@ function AddDiamondForm() {
               required
               placeholder="e.g. 6.50"
             />
-          </div>
+          </div> */}
           <div className="space-y-2">
             <Label htmlFor="ratio" className="font-medium">
               Ratio
@@ -1046,141 +1501,24 @@ function AddDiamondForm() {
           </div>
         </div>
       </section>
+      )}
 
-      {/* Certification */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-3">
-          <h3 className="text-xl font-semibold text-foreground/90">Certification</h3>
-          <div className="flex-1 border-b border-border/40"></div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="relative group">
-            <Label htmlFor="certificateCompanyId" className="font-medium">
-              Certificate Company
-              <span className="text-destructive ml-1">*</span>
-            </Label>
-            <SearchableDropdown
-              name="certificateCompanyId"
-              value={form.certificateCompanyId}
-              onChange={(value) => setForm(prev => ({ ...prev, certificateCompanyId: value }))}
-              options={certificateCompanies}
-              placeholder="Search certificate company..."
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="certificateNumber" className="font-medium">
-              Certificate Number
-              <span className="text-destructive ml-1">*</span>
-            </Label>
-            <Input
-              id="certificateNumber"
-              name="certificateNumber"
-              value={form.certificateNumber}
-              onChange={handleChange}
-              required
-              placeholder="e.g. 123456789"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="inscription" className="font-medium">
-              Inscription
-              <span className="text-destructive ml-1">*</span>
-            </Label>
-            <Input
-              id="inscription"
-              name="inscription"
-              value={form.inscription}
-              onChange={handleChange}
-              required
-              placeholder="e.g. GIA123456"
-            />
-          </div>
-          <div className="md:col-span-3 space-y-2">
-            <Label htmlFor="certification" className="font-medium">
-              Certification Document
-              <span className="text-destructive ml-1">*</span>
-            </Label>
-            <div className="mt-2">
-              <div className="flex items-center justify-center w-full">
-                <label htmlFor="certification" 
-                  className="relative flex flex-col items-center justify-center w-full 
-                    border border-dashed rounded-md cursor-pointer 
-                    bg-background/50 hover:bg-background/80 
-                    border-border hover:border-primary/50
-                    transition-all duration-200
-                    p-6">
-                  <div className="flex flex-col items-center justify-center gap-4">
-                    {/* Cloud Upload Icon */}
-                    <svg 
-                      className="w-16 h-16 text-muted-foreground/60" 
-                      viewBox="0 0 24 24" 
-                      fill="currentColor"
-                    >
-                      <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
-                    </svg>
-                    
-                    {!form.certification ? (
-                      <>
-                        <div className="text-center space-y-2">
-                          <p className="text-lg font-medium text-foreground/90">
-                            Drop Your File Here
-                          </p>
-                          <p className="text-sm text-muted-foreground">Or</p>
-                          <button 
-                            type="button"
-                            className="px-6 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 transition-colors"
-                            onClick={() => document.getElementById('certification')?.click()}
-                          >
-                            Browse
-                          </button>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="text-center space-y-2">
-                        <p className="text-sm font-medium text-foreground/90">
-                          {form.certification.name}
-                        </p>
-                        {form.certification.type.startsWith('image/') && (
-                          <div className="relative w-32 h-32 mx-auto mt-2 rounded-md overflow-hidden border border-border">
-                            <Image 
-                              src={URL.createObjectURL(form.certification)} 
-                              alt="Preview" 
-                              width={128}
-                              height={128}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        )}
-                        <button
-                          type="button"
-                          className="text-sm text-blue-500 hover:text-blue-600"
-                          onClick={() => document.getElementById('certification')?.click()}
-                        >
-                          Choose a different file
-                        </button>
-                      </div>
-                    )}
+      <div className="md:col-span-2 space-y-2">
+        <Label htmlFor="description" className="font-medium">
+          Description
+          <span className="text-destructive ml-1">*</span>
+        </Label>
+        <textarea
+          id="description"
+          name="description"
+          value={form.description}
+          onChange={handleChange}
+          required
+          rows={3}
+          className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        />
+      </div>
 
-                    <Input
-                      id="certification"
-                      name="certification"
-                      type="file"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      required
-                      onChange={handleFileChange}
-                      className="hidden"
-                    />
-                  </div>
-                </label>
-              </div>
-              <div className="mt-2 text-center text-sm text-muted-foreground">
-                Maximum File Size 4 MB
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {error && (
         <div className="bg-destructive/15 text-destructive px-4 py-3 rounded-lg text-sm">

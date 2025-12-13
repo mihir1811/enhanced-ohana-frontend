@@ -37,31 +37,42 @@ const DiamondsListing = () => {
   };
 
   useEffect(() => {
+    console.log(page, limit, "page, limit")
     setLoading(true);
     diamondService.getDiamonds({ page, limit })
       .then((res) => {
-        const diamondsArr = (res?.data || []).map((d: ExtendedDiamondData): DiamondProduct => ({
-          id: typeof d.id === 'string' ? parseInt(d.id) : d.id,
-          name: `${d.shape} ${d.color} ${d.clarity} Diamond - ${d.carat}ct`,
-          price: d.price.toString(),
-          image1: d.image1 || null,
-          image2: d.image2 || null,
-          image3: d.image3 || null,
-          image4: d.image4 || null,
-          image5: d.image5 || null,
-          image6: d.image6 || null,
-          stockNumber: d.stockNumber ?? 0,
-          color: d.color,
-          clarity: d.clarity,
-          cut: d.cut ?? '',
-          shape: d.shape,
-          isDeleted: d.isDeleted ?? false,
-          updatedAt: d.updatedAt ?? new Date().toISOString(),
-          sellerSKU: d.sellerSKU ?? '',
-          isOnAuction: d.isOnAuction ?? false,
-          isSold: d.isSold ?? false,
+        const raw = Array.isArray((res as any)?.data)
+          ? (res as any).data
+          : (res as any)?.data?.data ?? [];
+        const meta = (res as any)?.data?.meta
+          || (res as any)?.meta?.pagination
+          || (res as any)?.meta;
+        const diamondsArr = (raw as any[]).map((d: any): DiamondProduct => ({
+          id: typeof d?.id === 'string' ? parseInt(d.id, 10) : Number(d?.id ?? 0),
+          name:
+            d?.name
+            || `${String(d?.shape ?? '')} ${String(d?.color ?? '')} ${String(d?.clarity ?? '')} Diamond - ${String(d?.carat ?? d?.caratWeight ?? '')}ct`,
+          price: String(d?.price ?? d?.totalPrice ?? 0),
+          image1: d?.image1 ?? (Array.isArray(d?.images) ? d.images[0] : null) ?? null,
+          image2: d?.image2 ?? (Array.isArray(d?.images) ? d.images[1] : null) ?? null,
+          image3: d?.image3 ?? (Array.isArray(d?.images) ? d.images[2] : null) ?? null,
+          image4: d?.image4 ?? (Array.isArray(d?.images) ? d.images[3] : null) ?? null,
+          image5: d?.image5 ?? (Array.isArray(d?.images) ? d.images[4] : null) ?? null,
+          image6: d?.image6 ?? (Array.isArray(d?.images) ? d.images[5] : null) ?? null,
+          stockNumber: Number(d?.stockNumber ?? 0),
+          color: String(d?.color ?? ''),
+          clarity: String(d?.clarity ?? ''),
+          cut: String(d?.cut ?? ''),
+          shape: String(d?.shape ?? ''),
+          isDeleted: Boolean(d?.isDeleted ?? false),
+          updatedAt: String(d?.updatedAt ?? new Date().toISOString()),
+          sellerSKU: String(d?.sellerSKU ?? ''),
+          isOnAuction: Boolean(d?.isOnAuction ?? false),
+          isSold: Boolean(d?.isSold ?? false),
+          auctionEndTime: d?.auctionEndTime ?? undefined,
         }));
-        const totalCount = diamondsArr.length;
+        const totalCount = typeof (meta as any)?.total === 'number' ? (meta as any).total : diamondsArr.length;
+
         setDiamonds(diamondsArr);
         setTotal(totalCount);
         setError(null);
@@ -94,8 +105,12 @@ const DiamondsListing = () => {
             onFileSelect={handleBulkFileSelect}
           />
           <button
-            className={`relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group
-              ${view === 'list' ? 'bg-blue-600 text-white border-blue-600 shadow' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'}`}
+            className={"relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
+            style={{
+              backgroundColor: view === 'list' ? 'var(--primary)' : 'var(--card)',
+              color: view === 'list' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
+              borderColor: view === 'list' ? 'var(--primary)' : 'var(--border)'
+            }}
             onClick={() => setView('list')}
             aria-label="List View"
             type="button"
@@ -105,14 +120,18 @@ const DiamondsListing = () => {
               <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />
             </svg>
             {/* Tooltip */}
-            <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 text-xs rounded bg-gray-800 text-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap">
+            <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap" style={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', border: '1px solid var(--border)' }}>
               List View
             </span>
           </button>
           {/* Grid View Icon Button */}
           <button
-            className={`relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group
-              ${view === 'grid' ? 'bg-blue-600 text-white border-blue-600 shadow' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'}`}
+            className={"relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
+            style={{
+              backgroundColor: view === 'grid' ? 'var(--primary)' : 'var(--card)',
+              color: view === 'grid' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
+              borderColor: view === 'grid' ? 'var(--primary)' : 'var(--border)'
+            }}
             onClick={() => setView('grid')}
             aria-label="Grid View"
             type="button"
@@ -125,7 +144,7 @@ const DiamondsListing = () => {
               <rect x="14" y="14" width="6" height="6" rx="1" fill="currentColor" />
             </svg>
             {/* Tooltip */}
-            <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 text-xs rounded bg-gray-800 text-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap">
+            <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap" style={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', border: '1px solid var(--border)' }}>
               Grid View
             </span>
           </button>
@@ -139,9 +158,9 @@ const DiamondsListing = () => {
             <div>No diamonds found.</div>
           ) : view === 'list' ? (
             <div className="overflow-x-auto">
-              {/* Table view implementation goes here */}
-              <table className="min-w-full bg-white border rounded-lg shadow">
-                <thead>
+              {/* Table view */}
+              <table className="min-w-full rounded-lg shadow border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
+                <thead className="border-b" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }}>
                   <tr>
                     <th className="px-4 py-2 text-left">Image</th>
                     <th className="px-4 py-2 text-left">Name</th>
@@ -155,7 +174,7 @@ const DiamondsListing = () => {
                 </thead>
                 <tbody>
                   {diamonds.map((diamond) => (
-                    <tr key={diamond.id} className="border-t">
+                    <tr key={diamond.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
                       <td className="px-4 py-2">
                         <Image
                           src={diamond.image1 || "https://media.istockphoto.com/id/1493089752/vector/box-and-package-icon-concept.jpg"}
@@ -166,7 +185,7 @@ const DiamondsListing = () => {
                         />
                       </td>
                       <td className="px-4 py-2">{diamond.name}</td>
-                      <td className="px-4 py-2">${Number(diamond.price).toLocaleString()}</td>
+                      <td className="px-4 py-2" style={{ color: 'var(--primary)' }}>${Number(diamond.price).toLocaleString()}</td>
                       <td className="px-4 py-2">{diamond.color}</td>
                       <td className="px-4 py-2">{diamond.clarity}</td>
                       <td className="px-4 py-2">{diamond.cut}</td>

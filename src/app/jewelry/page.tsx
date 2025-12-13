@@ -110,7 +110,7 @@ export default function JewelryHomePage() {
       <NavigationUser />
       
       {/* Simple Hero Carousel - Image Above, Content Below */}
-      <section className="relative bg-white">
+      <section className="relative bg-white dark:bg-gray-900">
         {/* Slides Container */}
         <div className="relative">
           {HERO_SLIDES.map((slide, index) => (
@@ -135,15 +135,15 @@ export default function JewelryHomePage() {
                 {/* Navigation Arrows on Image */}
                 <button
                   onClick={prevSlide}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-3 bg-white/90 hover:bg-white backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-3 bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
                 >
-                  <ChevronLeft className="w-6 h-6 text-gray-900" />
+                  <ChevronLeft className="w-6 h-6 text-gray-900 dark:text-white" />
                 </button>
                 <button
                   onClick={nextSlide}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-3 bg-white/90 hover:bg-white backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-3 bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
                 >
-                  <ChevronRight className="w-6 h-6 text-gray-900" />
+                  <ChevronRight className="w-6 h-6 text-gray-900 dark:text-white" />
                 </button>
 
                 {/* Slide Indicators on Image */}
@@ -163,27 +163,27 @@ export default function JewelryHomePage() {
               </div>
 
               {/* Content Section Below */}
-              <div className={`bg-gradient-to-br ${slide.bgGradient} py-16`}>
+              <div className="bg-gradient-to-br from-amber-50 via-rose-50 to-white dark:bg-gradient-to-br dark:from-gray-800 dark:via-gray-900 dark:to-gray-950 py-16">
                 <div className="container mx-auto px-6">
                   <div className="max-w-4xl mx-auto text-center">
                     {/* Badge */}
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-amber-100 mb-6">
-                      <Gem className="w-4 h-4 text-amber-600" />
-                      <span className="text-sm font-semibold text-gray-700">Premium Collection</span>
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full shadow-lg border border-amber-100 dark:border-amber-800 mb-6">
+                      <Gem className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">Premium Collection</span>
                     </div>
 
                     {/* Title */}
-                    <p className="text-amber-600 font-semibold text-sm uppercase tracking-widest mb-4">
+                    <p className="text-amber-600 dark:text-amber-400 font-semibold text-sm uppercase tracking-widest mb-4">
                       {slide.subtitle}
                     </p>
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
                       {slide.title.split(' ').map((word, i) => (
                         <span key={i} className={i === 1 ? 'block bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 bg-clip-text text-transparent' : 'block'}>
                           {word}
                         </span>
                       ))}
                     </h1>
-                    <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+                    <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
                       {slide.description}
                     </p>
 
@@ -198,7 +198,7 @@ export default function JewelryHomePage() {
                       </Link>
                       <Link
                         href="/about-us"
-                        className="group inline-flex items-center justify-center border-2 border-gray-900 text-gray-900 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-gray-900 hover:text-white transition-all duration-300"
+                        className="group inline-flex items-center justify-center border-2 border-gray-900 dark:border-amber-500 text-gray-900 dark:text-amber-400 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-gray-900 dark:hover:bg-amber-500 hover:text-white dark:hover:text-white transition-all duration-300"
                       >
                         <Play className="mr-2 w-5 h-5" />
                         Our Story
@@ -206,17 +206,17 @@ export default function JewelryHomePage() {
                     </div>
 
                     {/* Trust Indicators */}
-                    <div className="flex flex-wrap justify-center gap-8 text-sm text-gray-600">
+                    <div className="flex flex-wrap justify-center gap-8 text-sm text-gray-600 dark:text-gray-300">
                       <div className="flex items-center gap-2">
-                        <Shield className="w-5 h-5 text-amber-600" />
+                        <Shield className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                         <span className="font-medium">Certified</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Award className="w-5 h-5 text-amber-600" />
+                        <Award className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                         <span className="font-medium">Warranty</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Gem className="w-5 h-5 text-amber-600" />
+                        <Gem className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                         <span className="font-medium">Ethically Sourced</span>
                       </div>
                     </div>
@@ -229,7 +229,7 @@ export default function JewelryHomePage() {
       </section>
 
       {/* Shop by Category - Horizontal Scroll */}
-      <section className="py-12 bg-white dark:bg-gray-900">
+      <section className="py-12  dark:bg-gray-900">
         <div className="container mx-auto px-6">
           {/* Section Header */}
           <div className="text-center mb-6">
@@ -346,22 +346,22 @@ export default function JewelryHomePage() {
       </section>
 
       {/* Featured Piece */}
-      <section className="py-12 bg-gradient-to-br from-slate-50 via-white to-amber-50">
+      <section className="py-12 bg-gradient-to-br from-slate-50 via-white to-amber-50 dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="container mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="order-2 lg:order-1">
-              <div className="inline-block px-4 py-2 bg-amber-100 rounded-full mb-6">
-                <span className="text-sm font-semibold text-amber-700">Our Craftsmanship</span>
+              <div className="inline-block px-4 py-2 bg-amber-100 dark:bg-amber-900/30 rounded-full mb-6">
+                <span className="text-sm font-semibold text-amber-700 dark:text-amber-400">Our Craftsmanship</span>
               </div>
 
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
                 Crafted to
                 <span className="block bg-gradient-to-r from-amber-600 to-yellow-500 bg-clip-text text-transparent">
                   Perfection
                 </span>
               </h2>
               
-              <p className="text-lg text-gray-600 mb-10 leading-relaxed">
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-10 leading-relaxed">
                 Each piece in our collection is meticulously handcrafted by master jewelers, 
                 combining traditional techniques with contemporary design to create heirlooms 
                 that will be treasured for generations.
@@ -373,13 +373,13 @@ export default function JewelryHomePage() {
                   { icon: <Award className="w-6 h-6" />, text: 'Lifetime Warranty', desc: 'Guaranteed craftsmanship' },
                   { icon: <Shield className="w-6 h-6" />, text: 'Certified Authenticity', desc: 'Full documentation included' }
                 ].map((feature, index) => (
-                  <div key={index} className="flex items-start gap-4 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex-shrink-0 w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-600">
+                  <div key={index} className="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md dark:shadow-gray-900/50 dark:hover:shadow-gray-900/70 transition-shadow">
+                    <div className="flex-shrink-0 w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center text-amber-600 dark:text-amber-400">
                       {feature.icon}
                     </div>
                     <div>
-                      <h4 className="text-lg font-semibold text-gray-900 mb-1">{feature.text}</h4>
-                      <p className="text-sm text-gray-600">{feature.desc}</p>
+                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{feature.text}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{feature.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -387,7 +387,7 @@ export default function JewelryHomePage() {
               
               <Link 
                 href="/about-us" 
-                className="inline-flex items-center px-6 py-3 bg-gray-900 text-white rounded-lg font-semibold hover:bg-gray-800 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                className="inline-flex items-center px-6 py-3 bg-gray-900 dark:bg-amber-600 text-white rounded-lg font-semibold hover:bg-gray-800 dark:hover:bg-amber-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
               >
                 Learn About Our Process
                 <ArrowRight className="ml-2 w-5 h-5" />
@@ -395,21 +395,21 @@ export default function JewelryHomePage() {
             </div>
             
             <div className="relative order-1 lg:order-2">
-              <div className="aspect-square bg-gradient-to-br from-amber-100 via-yellow-50 to-white rounded-3xl shadow-2xl overflow-hidden relative">
+              <div className="aspect-square bg-gradient-to-br from-amber-100 via-yellow-50 to-white dark:bg-gradient-to-br dark:from-gray-800 dark:via-gray-900 dark:to-gray-950 rounded-3xl shadow-2xl dark:shadow-gray-900/50 overflow-hidden relative">
                 {/* Decorative Background Pattern */}
-                <div className="absolute inset-0 opacity-10">
-                  <div className="absolute top-10 left-10 w-32 h-32 border-4 border-amber-400 rounded-full" />
-                  <div className="absolute bottom-10 right-10 w-24 h-24 border-4 border-yellow-400 rounded-full" />
+                <div className="absolute inset-0 opacity-10 dark:opacity-20">
+                  <div className="absolute top-10 left-10 w-32 h-32 border-4 border-amber-400 dark:border-amber-500 rounded-full" />
+                  <div className="absolute bottom-10 right-10 w-24 h-24 border-4 border-yellow-400 dark:border-yellow-500 rounded-full" />
                 </div>
                 
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
                     <div className="relative inline-block mb-6">
-                      <Gem className="w-32 h-32 text-amber-400 animate-pulse" />
-                      <div className="absolute inset-0 bg-amber-300 blur-3xl opacity-30 animate-pulse" />
+                      <Gem className="w-32 h-32 text-amber-400 dark:text-amber-500 animate-pulse" />
+                      <div className="absolute inset-0 bg-amber-300 dark:bg-amber-500 blur-3xl opacity-30 animate-pulse" />
                     </div>
-                    <p className="text-xl font-semibold text-gray-700">Featured Jewelry</p>
-                    <p className="text-sm text-gray-500 mt-2">Discover our premium collection</p>
+                    <p className="text-xl font-semibold text-gray-700 dark:text-gray-200">Featured Jewelry</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Discover our premium collection</p>
                   </div>
                 </div>
               </div>
@@ -419,32 +419,32 @@ export default function JewelryHomePage() {
       </section>
 
       {/* Testimonial */}
-      <section className="py-24 bg-white relative overflow-hidden">
+      <section className="py-24 bg-white dark:bg-gray-900 relative overflow-hidden">
         {/* Background Decoration */}
-        <div className="absolute top-0 left-0 w-full h-full opacity-5">
-          <div className="absolute top-10 left-1/4 text-9xl">&ldquo;</div>
-          <div className="absolute bottom-10 right-1/4 text-9xl">&rdquo;</div>
+        <div className="absolute top-0 left-0 w-full h-full opacity-5 dark:opacity-10">
+          <div className="absolute top-10 left-1/4 text-9xl text-gray-900 dark:text-white">&ldquo;</div>
+          <div className="absolute bottom-10 right-1/4 text-9xl text-gray-900 dark:text-white">&rdquo;</div>
         </div>
 
         <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-4xl mx-auto">
             {/* Section Header */}
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
                 What Our Clients Say
               </h2>
               <div className="w-20 h-1 bg-gradient-to-r from-amber-500 to-yellow-500 mx-auto rounded-full" />
             </div>
 
             {/* Testimonial Card */}
-            <div className="bg-gradient-to-br from-amber-50 to-white rounded-2xl shadow-xl p-8 md:p-12 border border-amber-100">
+            <div className="bg-gradient-to-br from-amber-50 to-white dark:bg-gradient-to-br dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-xl dark:shadow-gray-900/50 p-8 md:p-12 border border-amber-100 dark:border-amber-900/30">
               <div className="flex justify-center mb-6">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-6 h-6 text-amber-400 fill-amber-400 mx-0.5" />
                 ))}
               </div>
               
-              <blockquote className="text-xl md:text-2xl lg:text-3xl font-medium text-gray-800 mb-8 leading-relaxed text-center">
+              <blockquote className="text-xl md:text-2xl lg:text-3xl font-medium text-gray-800 dark:text-gray-100 mb-8 leading-relaxed text-center">
                 &ldquo;The quality and craftsmanship exceeded all expectations. 
                 This ring will be passed down through generations. The attention to detail 
                 and personalized service made our experience truly memorable.&rdquo;
@@ -455,8 +455,8 @@ export default function JewelryHomePage() {
                   S&M
                 </div>
                 <div className="text-left">
-                  <p className="text-lg font-bold text-gray-900">Sarah & Michael</p>
-                  <p className="text-gray-600">New York, USA</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">Sarah & Michael</p>
+                  <p className="text-gray-600 dark:text-gray-400">New York, USA</p>
                 </div>
               </div>
             </div>
@@ -464,16 +464,16 @@ export default function JewelryHomePage() {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-6 mt-12 text-center">
               <div className="p-4">
-                <div className="text-3xl md:text-4xl font-bold text-amber-600 mb-2">10K+</div>
-                <div className="text-sm text-gray-600">Happy Customers</div>
+                <div className="text-3xl md:text-4xl font-bold text-amber-600 dark:text-amber-400 mb-2">10K+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Happy Customers</div>
               </div>
               <div className="p-4">
-                <div className="text-3xl md:text-4xl font-bold text-amber-600 mb-2">4.9</div>
-                <div className="text-sm text-gray-600">Average Rating</div>
+                <div className="text-3xl md:text-4xl font-bold text-amber-600 dark:text-amber-400 mb-2">4.9</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Average Rating</div>
               </div>
               <div className="p-4">
-                <div className="text-3xl md:text-4xl font-bold text-amber-600 mb-2">25+</div>
-                <div className="text-sm text-gray-600">Years Experience</div>
+                <div className="text-3xl md:text-4xl font-bold text-amber-600 dark:text-amber-400 mb-2">25+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Years Experience</div>
               </div>
             </div>
           </div>
@@ -506,11 +506,11 @@ export default function JewelryHomePage() {
             
             {/* Newsletter Form */}
             <div className="max-w-xl mx-auto">
-              <div className="flex flex-col sm:flex-row gap-3 bg-white rounded-lg p-2 shadow-2xl">
+              <div className="flex flex-col sm:flex-row gap-3 bg-white dark:bg-gray-800 rounded-lg p-2 shadow-2xl">
                 <input
                   type="email"
                   placeholder="Enter your email address"
-                  className="flex-1 px-6 py-3 bg-transparent text-gray-900 placeholder-gray-500 focus:outline-none rounded-lg"
+                  className="flex-1 px-6 py-3 bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none rounded-lg"
                 />
                 <button className="px-8 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl whitespace-nowrap">
                   Subscribe Now

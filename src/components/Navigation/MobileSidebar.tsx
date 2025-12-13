@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import ThemeSwitcher from '../ThemeSwitcher'
 
 interface MobileSidebarProps {
@@ -30,6 +30,7 @@ export default function MobileSidebar({
 }: MobileSidebarProps) {
   const [activeSection, setActiveSection] = useState<string | null>(null)
   const router = useRouter()
+  const pathname = usePathname()
 
   // Handle escape key
   useEffect(() => {
@@ -62,6 +63,7 @@ export default function MobileSidebar({
         { href: '/diamonds', label: 'Diamonds', icon: '💎' },
         { href: '/gemstones', label: 'Gemstones', icon: '💍' },
         { href: '/jewelry', label: 'Jewelry', icon: '📿' },
+        { href: '/watches', label: 'Watches', icon: '⌚' },
         { href: '/auctions', label: 'Auctions', icon: '🔨' },
         { href: '/lab-grown-diamonds', label: 'Lab Grown Diamonds', icon: '⚗️' },
         { href: '/bullions', label: 'Bullions', icon: '🥇' },
@@ -106,20 +108,20 @@ export default function MobileSidebar({
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: 'var(--sidebar-border)', backgroundColor: 'var(--sidebar-primary)', color: 'var(--sidebar-primary-foreground)' }}>
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center shadow-lg backdrop-blur-sm" style={{ borderRadius: 'var(--radius-lg)' }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg backdrop-blur-sm" style={{ borderRadius: 'var(--radius-lg)', backgroundColor: 'var(--sidebar-accent)', color: 'var(--sidebar-primary-foreground)' }}>
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2L3.09 8.26L12 14L20.91 8.26L12 2Z"/>
                 </svg>
               </div>
               <div className="flex items-center space-x-3">
-                <h2 className="font-bold text-lg">Ohana Diamonds</h2>
-                <p className="text-xs opacity-75">Diamond & Jewelry Marketplace</p>
+                <h2 className="font-bold text-lg" style={{ color: 'var(--sidebar-primary-foreground)' }}>Ohana Diamonds</h2>
+                <p className="text-xs opacity-75" style={{ color: 'var(--sidebar-primary-foreground)' }}>Diamond & Jewelry Marketplace</p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl hover:bg-white/10 transition-colors group" 
-              style={{ borderRadius: 'var(--radius-lg)' }}
+              className="p-2 rounded-xl transition-colors group hover:bg-[color:color-mix(in srgb, currentColor 40%, transparent)]" 
+              style={{ borderRadius: 'var(--radius-lg)', color: 'var(--sidebar-primary-foreground)' }}
             >
               <svg className="w-5 h-5 group-hover:rotate-90 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -151,9 +153,11 @@ export default function MobileSidebar({
                   <button
                     type="button"
                     onClick={clearSearch}
-                    className="absolute right-3 top-3.5 w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute right-3 top-3.5 w-5 h-5 rounded-lg transition-colors hover:bg-[color:color-mix(in srgb, currentColor 40%, transparent)]"
+                    style={{ color: 'var(--sidebar-foreground)' }}
+                    aria-label="Clear search"
                   >
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 m-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--sidebar-primary)' }}>
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
@@ -192,7 +196,7 @@ export default function MobileSidebar({
               <div key={section.id}>
                 <button
                   onClick={() => setActiveSection(activeSection === section.id ? null : section.id)}
-                  className="flex items-center justify-between w-full text-left mb-3 px-3 py-2 rounded-lg transition-all duration-200"
+                  className="flex items-center justify-between w-full text-left mb-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-[color:color-mix(in srgb, currentColor 40%, transparent)]"
                   style={{ color: 'var(--sidebar-foreground)', backgroundColor: activeSection === section.id ? 'var(--sidebar-accent)' : 'transparent' }}
                 >
                   <h3 className="text-xs font-semibold uppercase tracking-wider opacity-60">
@@ -214,12 +218,13 @@ export default function MobileSidebar({
                       key={item.href}
                       href={item.href} 
                       onClick={handleLinkClick} 
-                      className="group flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] hover:bg-opacity-50" 
-                      style={{ color: 'var(--sidebar-foreground)', borderRadius: 'var(--radius-xl)', backgroundColor: 'transparent' }}
+                      className="group flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] hover:bg-[color:color-mix(in srgb, currentColor 40%, transparent)] border" 
+                      style={{ color: 'var(--sidebar-foreground)', borderRadius: 'var(--radius-xl)', backgroundColor: pathname && pathname.startsWith(item.href) ? 'var(--sidebar-accent)' : 'transparent', borderColor: 'var(--sidebar-border)' }}
+                      aria-current={pathname && pathname.startsWith(item.href) ? 'page' : undefined}
                     >
-                      <span className="text-lg">{item.icon}</span>
+                      <span className="text-lg" style={{ color: 'var(--sidebar-primary)' }}>{item.icon}</span>
                       <span className="font-medium flex-1">{item.label}</span>
-                      <svg className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--sidebar-primary)' }}>
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </Link>
@@ -245,7 +250,7 @@ export default function MobileSidebar({
             </div>
 
             {/* Settings Link */}
-            <Link href="/settings" onClick={handleLinkClick} className="group flex items-center space-x-3 px-4 py-3 mb-3 rounded-xl transition-all duration-200 hover:scale-[1.02] hover:bg-opacity-50" style={{ color: 'var(--sidebar-foreground)', borderRadius: 'var(--radius-xl)' }}>
+            <Link href="/settings" onClick={handleLinkClick} className="group flex items-center space-x-3 px-4 py-3 mb-3 rounded-xl transition-all duration-200 hover:scale-[1.02] hover:bg-[color:color-mix(in srgb, currentColor 40%, transparent)] border" style={{ color: 'var(--sidebar-foreground)', borderRadius: 'var(--radius-xl)', borderColor: 'var(--sidebar-border)' }}>
               <span className="font-medium">Settings</span>
               <svg className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

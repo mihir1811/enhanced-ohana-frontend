@@ -85,39 +85,39 @@ const GemstonesListing = () => {
             onFileSelect={handleBulkFileSelect}
           />
           <button
-            className={`relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group
-              ${view === 'list' ? 'bg-blue-600 text-white border-blue-600 shadow' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'}`}
-            onClick={() => setView('list')}
-            aria-label="List View"
-            type="button"
-          >
-            {/* List Icon SVG */}
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />
-            </svg>
-            {/* Tooltip */}
-            <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 text-xs rounded bg-gray-800 text-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap">
-              List View
-            </span>
-          </button>
-          {/* Grid View Icon Button */}
-          <button
-            className={`relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group
-              ${view === 'grid' ? 'bg-blue-600 text-white border-blue-600 shadow' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'}`}
+            className={"relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
+            style={{
+              backgroundColor: view === 'grid' ? 'var(--primary)' : 'var(--card)',
+              color: view === 'grid' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
+              borderColor: view === 'grid' ? 'var(--primary)' : 'var(--border)'
+            }}
             onClick={() => setView('grid')}
             aria-label="Grid View"
             type="button"
           >
-            {/* Grid Icon SVG */}
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <rect x="4" y="4" width="6" height="6" rx="1" fill="currentColor" />
-              <rect x="14" y="4" width="6" height="6" rx="1" fill="currentColor" />
-              <rect x="4" y="14" width="6" height="6" rx="1" fill="currentColor" />
-              <rect x="14" y="14" width="6" height="6" rx="1" fill="currentColor" />
+              <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" />
             </svg>
-            {/* Tooltip */}
-            <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 text-xs rounded bg-gray-800 text-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap">
+            <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap" style={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', border: '1px solid var(--border)' }}>
               Grid View
+            </span>
+          </button>
+          <button
+            className={"relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
+            style={{
+              backgroundColor: view === 'list' ? 'var(--primary)' : 'var(--card)',
+              color: view === 'list' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
+              borderColor: view === 'list' ? 'var(--primary)' : 'var(--border)'
+            }}
+            onClick={() => setView('list')}
+            aria-label="List View"
+            type="button"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+            <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap" style={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', border: '1px solid var(--border)' }}>
+              List View
             </span>
           </button>
         </div>
@@ -130,8 +130,8 @@ const GemstonesListing = () => {
             <div>No gemstones found.</div>
           ) : view === 'list' ? (
             <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border rounded-lg shadow">
-                <thead>
+              <table className="min-w-full rounded-lg shadow border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
+                <thead className="border-b" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }}>
                   <tr>
                     <th className="px-4 py-2 text-left">Image</th>
                     <th className="px-4 py-2 text-left">Name</th>
@@ -142,7 +142,7 @@ const GemstonesListing = () => {
                 </thead>
                 <tbody>
                   {gemstones.map((gem) => (
-                    <tr key={gem.id} className="border-t">
+                    <tr key={gem.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
                       <td className="px-4 py-2">
                         <Image
                           src={gem.image1 || 'https://media.istockphoto.com/id/1493089752/vector/box-and-package-icon-concept.jpg'}
@@ -153,7 +153,7 @@ const GemstonesListing = () => {
                         />
                       </td>
                       <td className="px-4 py-2">{gem.name}</td>
-                      <td className="px-4 py-2">${gem.price?.toLocaleString() || '-'}</td>
+                      <td className="px-4 py-2" style={{ color: 'var(--primary)' }}>${gem.price?.toLocaleString() || '-'}</td>
                       <td className="px-4 py-2">{gem.color}</td>
                       <td className="px-4 py-2">{gem.shape}</td>
                     </tr>

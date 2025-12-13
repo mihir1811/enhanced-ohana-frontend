@@ -281,7 +281,7 @@ export default function NavigationUser() {
         { href: '/diamonds', params: { category: 'single', diamondType: 'natural' }, label: 'Single Diamond', description: 'Individual certified diamonds' },
         { href: '/diamonds', params: { category: 'melee', diamondType: 'natural' }, label: 'Melee Diamonds', description: 'Small diamonds for jewelry making' },
         { href: '/diamonds', params: { diamondType: 'lab-grown', category: 'single' }, label: 'Lab Grown Diamonds', description: 'Sustainable lab-created diamonds' }
-        , { href: '/diamonds', params: { category: 'melee', diamondType: 'lab-grown' }, label: 'Lab Grown Melee Diamonds', description: 'Small sustainable lab-created diamonds' }
+        ,   { href: '/diamonds', params: { category: 'melee', diamondType: 'lab-grown' }, label: 'Lab Grown Melee Diamonds', description: 'Small sustainable lab-created diamonds' }
       ]
     },
     {
@@ -294,6 +294,7 @@ export default function NavigationUser() {
       ]
     },
     { href: '/jewelry', label: 'Jewelry' },
+    { href: '/watches', label: 'Watches' },
     { href: '/bullions', label: 'Bullions' },
     { href: '/auctions', label: 'Auctions' },
     { href: '/diamond-education', label: 'Diamond Education' }
@@ -654,7 +655,7 @@ export default function NavigationUser() {
               </div>
 
               {/* Notifications */}
-              <Link href="/notifications" className="relative group p-2 transition-all duration-300 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit" style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}>
+              <Link href="/notifications" className="relative group p-2 transition-all duration-300 hover:text-amber-500 hover:bg-[var(--muted)] dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit" style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5-5V9a6 6 0 10-12 0v3l-5 5h5a6 6 0 0012 0z" />
                 </svg>
@@ -669,7 +670,7 @@ export default function NavigationUser() {
               <button
                 type="button"
                 onClick={openCartDrawer}
-                className="relative group p-2 transition-all duration-300 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit"
+                className="relative group p-2 transition-all duration-300 hover:text-amber-500 hover:bg-[var(--muted)] dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit"
                 style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}
                 aria-label="Open cart"
               >
@@ -684,7 +685,7 @@ export default function NavigationUser() {
               </button>
 
               {/* Wishlist */}
-              <Link href="/user/wishlist" className="relative group p-2 transition-all duration-300 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit" style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}>
+              <Link href="/user/wishlist" className="relative group p-2 transition-all duration-300 hover:text-amber-500 hover:bg-[var(--muted)] dark:hover:bg-[var(--muted)] rounded-lg flex-shrink-0 min-w-fit" style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
@@ -706,9 +707,9 @@ export default function NavigationUser() {
                     <button
                       ref={buttonRef}
                       onClick={toggleDropdown}
-                      className={`flex items-center space-x-2 p-1 transition-all duration-300 rounded-lg ${isDropdownOpen
-                          ? 'text-amber-500 bg-slate-100 dark:bg-slate-800/50'
-                          : 'hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800/50'
+                      className={`flex items-center space-x-2 p-2 transition-all duration-300 rounded-lg ${isDropdownOpen
+                          ? 'text-amber-500 bg-slate-100 dark:bg-[var(--muted)]'
+                          : 'hover:text-amber-500 hover:bg-[var(--muted)] dark:hover:bg-[var(--muted)]'
                         }`}
                       style={{ color: isDropdownOpen ? 'var(--chart-1)' : 'var(--foreground)', borderRadius: 'var(--radius-md)' }}
                       aria-expanded={isDropdownOpen}
@@ -1007,6 +1008,9 @@ export default function NavigationUser() {
                   )}
                 </div>
               ))}
+              <Link href="/watches" className="whitespace-nowrap px-4 py-2 text-sm font-medium hover:text-amber-500 transition-colors" style={{ color: 'var(--foreground)' }}>
+                Watches
+              </Link>
               <Link href="/products/bullions" className="whitespace-nowrap px-4 py-2 text-sm font-medium hover:text-amber-500 transition-colors" style={{ color: 'var(--foreground)' }}>
                 Bullions
               </Link>

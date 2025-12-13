@@ -70,21 +70,21 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto bg-white rounded-3xl overflow-hidden">
+    <div className="w-full max-w-6xl mx-auto rounded-3xl overflow-hidden" style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)' }}>
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-4 sm:px-6 py-4 border-b border-gray-200">
+      <div className="px-4 sm:px-6 py-4 border-b" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex-1">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
+            <h2 className="text-xl sm:text-2xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>
               {diamond.name || `${diamond.caratWeight}ct ${diamond.shape}` || 'Premium Diamond'}
             </h2>
             <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-              <span className="text-xs sm:text-sm text-gray-600">
+              <span className="text-xs sm:text-sm" style={{ color: 'var(--muted-foreground)' }}>
                 Ref: <span className="font-mono font-medium">{diamond.certificateNumber || diamond.stockNumber || 'N/A'}</span>
               </span>
               <div className="flex items-center gap-1">
                 <Award className="w-4 h-4 text-amber-500" />
-                <span className="text-xs sm:text-sm font-medium text-gray-700">Certified</span>
+                <span className="text-xs sm:text-sm font-medium" style={{ color: 'var(--foreground)' }}>Certified</span>
               </div>
               <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
                 diamond.isSold ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
@@ -94,11 +94,11 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
             </div>
           </div>
           <div className="text-right min-w-[120px]">
-            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+            <div className="text-2xl sm:text-3xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>
               {diamond.price ? formatPrice(diamond.price) : 'Price on Request'}
             </div>
             {diamond.discount && (
-              <div className="text-xs sm:text-sm text-green-600 font-medium">
+              <div className="text-xs sm:text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>
                 Save {diamond.discount}% off market price
               </div>
             )}
@@ -112,7 +112,8 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
           <div className="space-y-4">
             {/* Main Image Display */}
             <div
-              className="relative aspect-square bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden group"
+              className="relative aspect-square rounded-2xl overflow-hidden group"
+              style={{ backgroundColor: 'var(--card)' }}
               onTouchStart={onTouchStart}
               onTouchMove={onTouchMove}
               onTouchEnd={onTouchEnd}
@@ -134,25 +135,27 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
                   {images.length > 1 && (
                     <>
                       <button
-                        className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg border border-white/50 transition-all duration-200 group-hover:opacity-100 opacity-0"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full shadow-lg border transition-all duration-200 group-hover:opacity-100 opacity-0"
+                        style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
                         onClick={prevImg}
                         aria-label="Previous image"
                       >
-                        <ChevronLeft className="w-5 h-5 text-gray-700" />
+                        <ChevronLeft className="w-5 h-5" style={{ color: 'var(--foreground)' }} />
                       </button>
                       <button
-                        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg border border-white/50 transition-all duration-200 group-hover:opacity-100 opacity-0"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full shadow-lg border transition-all duration-200 group-hover:opacity-100 opacity-0"
+                        style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
                         onClick={nextImg}
                         aria-label="Next image"
                       >
-                        <ChevronRight className="w-5 h-5 text-gray-700" />
+                        <ChevronRight className="w-5 h-5" style={{ color: 'var(--foreground)' }} />
                       </button>
                     </>
                   )}
 
                   {/* Image Counter */}
                   {images.length > 1 && (
-                    <div className="absolute top-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    <div className="absolute top-4 right-4 px-3 py-1 rounded-full text-sm font-medium" style={{ backgroundColor: 'color-mix(in srgb, var(--foreground) 16%, transparent)', color: 'var(--foreground)' }}>
                       {imgIdx + 1} / {images.length}
                     </div>
                   )}
@@ -161,7 +164,7 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
                 <div className="w-full h-full flex items-center justify-center">
                   <div className="text-center">
                     <div className="text-8xl mb-4 opacity-30">💎</div>
-                    <p className="text-gray-500 font-medium">No images available</p>
+                    <p className="font-medium" style={{ color: 'var(--muted-foreground)' }}>No images available</p>
                   </div>
                 </div>
               )}
@@ -175,8 +178,8 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
                   variant="default"
                   className="shadow-lg"
                 />
-                <button className="p-2.5 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg transition-all duration-200 group">
-                  <Share2 className="w-5 h-5 text-gray-700 group-hover:scale-110 transition-transform" />
+                <button className="p-2.5 rounded-full shadow-lg transition-all duration-200 group border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                  <Share2 className="w-5 h-5 group-hover:scale-110 transition-transform" style={{ color: 'var(--foreground)' }} />
                 </button>
               </div>
             </div>
@@ -188,11 +191,8 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
                   <button
                     key={idx}
                     onClick={() => setImgIdx(idx)}
-                    className={`flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-xl overflow-hidden border-2 transition-all duration-200 ${
-                      imgIdx === idx 
-                        ? 'border-gray-900 shadow-md' 
-                        : 'border-gray-200 hover:border-gray-400'
-                    }`}
+                    className={`flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-xl overflow-hidden border-2 transition-all duration-200`}
+                    style={imgIdx === idx ? { borderColor: 'var(--primary)' } : { borderColor: 'var(--border)' }}
                   >
                     <Image
                       src={img}
@@ -210,14 +210,15 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
             {/* Video Section */}
             {diamond.videoURL && (
               <div className="mt-4">
-                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                <h4 className="font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
                   <Eye className="w-4 h-4" />
                   360° Video View
                 </h4>
                 <video 
                   src={diamond.videoURL} 
                   controls 
-                  className="w-full rounded-xl shadow-sm border border-gray-200"
+                  className="w-full rounded-xl shadow-sm border"
+                  style={{ borderColor: 'var(--border)' }}
                   poster={hasImages ? images[0] : undefined}
                 />
               </div>
@@ -226,9 +227,9 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
         </div>
 
         {/* Right Side - Details */}
-        <div className="w-full lg:w-1/2 p-4 sm:p-6 lg:border-l border-gray-200">
+        <div className="w-full lg:w-1/2 p-4 sm:p-6 lg:border-l" style={{ borderColor: 'var(--border)' }}>
           {/* Tab Navigation */}
-          <div className="flex flex-wrap space-x-0 sm:space-x-1 bg-gray-100 rounded-xl p-1 mb-6">
+          <div className="flex flex-wrap space-x-0 sm:space-x-1 rounded-xl p-1 mb-6" style={{ backgroundColor: 'var(--card)' }}>
             {[
               { id: 'details', label: 'Details', icon: Star },
               { id: 'specs', label: 'Specifications', icon: Award },
@@ -237,11 +238,8 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as 'details' | 'specs' | 'certification')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ${
-                  activeTab === tab.id
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200`}
+                style={activeTab === tab.id ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { color: 'var(--muted-foreground)' }}
               >
                 <tab.icon className="w-4 h-4" />
                 {tab.label}
@@ -256,20 +254,20 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
               <div className="space-y-6">
                 {/* Key Features */}
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">Key Features</h3>
+                  <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--foreground)' }}>Key Features</h3>
                   <div className="grid grid-cols-2 gap-4">
                     {[
-                      { label: 'Carat Weight', value: diamond.caratWeight, color: 'bg-blue-50 text-blue-700', icon: '⚖️' },
-                      { label: 'Color', value: diamond.color, color: 'bg-purple-50 text-purple-700', icon: '🎨' },
-                      { label: 'Clarity', value: diamond.clarity, color: 'bg-green-50 text-green-700', icon: '💎' },
-                      { label: 'Cut', value: diamond.cut, color: 'bg-amber-50 text-amber-700', icon: '✂️' },
+                      { label: 'Carat Weight', value: diamond.caratWeight, color: '', icon: '⚖️' },
+                      { label: 'Color', value: diamond.color, color: '', icon: '🎨' },
+                      { label: 'Clarity', value: diamond.clarity, color: '', icon: '💎' },
+                      { label: 'Cut', value: diamond.cut, color: '', icon: '✂️' },
                     ].map(item => (
-                      <div key={item.label} className={`p-4 rounded-xl ${item.color} border border-opacity-20`}>
+                      <div key={item.label} className={`p-4 rounded-xl border`} style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
                         <div className="flex items-center gap-2 mb-2">
                           <span className="text-lg">{item.icon}</span>
-                          <span className="text-sm font-medium opacity-80">{item.label}</span>
+                          <span className="text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>{item.label}</span>
                         </div>
-                        <div className="text-lg font-bold">{item.value || 'N/A'}</div>
+                        <div className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>{item.value || 'N/A'}</div>
                       </div>
                     ))}
                   </div>
@@ -277,7 +275,7 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
 
                 {/* Additional Info */}
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">Additional Information</h3>
+                  <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--foreground)' }}>Additional Information</h3>
                   <div className="space-y-3">
                     {[
                       { label: 'Shape', value: diamond.shape },
@@ -286,9 +284,9 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
                       { label: 'Symmetry', value: diamond.symmetry },
                       { label: 'Fluorescence', value: diamond.fluorescence }
                     ].map(item => (
-                      <div key={item.label} className="flex justify-between py-2 border-b border-gray-100 last:border-0">
-                        <span className="text-gray-600 font-medium">{item.label}</span>
-                        <span className="text-gray-900 font-semibold">{item.value || 'N/A'}</span>
+                      <div key={item.label} className="flex justify-between py-2 border-b last:border-0" style={{ borderColor: 'var(--border)' }}>
+                        <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>{item.label}</span>
+                        <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{item.value || 'N/A'}</span>
                       </div>
                     ))}
                   </div>
@@ -300,7 +298,7 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
             {activeTab === 'specs' && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">Measurements & Proportions</h3>
+                  <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--foreground)' }}>Measurements & Proportions</h3>
                   <div className="grid grid-cols-1 gap-4">
                     {[
                       { label: 'Diameter', value: diamond.diameter },
@@ -316,16 +314,16 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
                       { label: 'Pavilion Depth', value: diamond.pavilionDepth },
                       { label: 'Culet Size', value: diamond.culetSize }
                     ].map(item => (
-                      <div key={item.label} className="flex justify-between py-3 border-b border-gray-100 last:border-0">
-                        <span className="text-gray-600 font-medium">{item.label}</span>
-                        <span className="text-gray-900 font-semibold">{item.value || 'N/A'}</span>
+                      <div key={item.label} className="flex justify-between py-3 border-b last:border-0" style={{ borderColor: 'var(--border)' }}>
+                        <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>{item.label}</span>
+                        <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{item.value || 'N/A'}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">Fancy Color Details</h3>
+                  <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--foreground)' }}>Fancy Color Details</h3>
                   <div className="space-y-3">
                     {[
                       { label: 'Fancy Color', value: diamond.fancyColor },
@@ -333,9 +331,9 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
                       { label: 'Fancy Overtone', value: diamond.fancyOvertone },
                       { label: 'Shade', value: diamond.shade }
                     ].map(item => (
-                      <div key={item.label} className="flex justify-between py-2 border-b border-gray-100 last:border-0">
-                        <span className="text-gray-600 font-medium">{item.label}</span>
-                        <span className="text-gray-900 font-semibold">{item.value || 'N/A'}</span>
+                      <div key={item.label} className="flex justify-between py-2 border-b last:border-0" style={{ borderColor: 'var(--border)' }}>
+                        <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>{item.label}</span>
+                        <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{item.value || 'N/A'}</span>
                       </div>
                     ))}
                   </div>
@@ -347,51 +345,52 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
             {activeTab === 'certification' && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">Certification Details</h3>
+                  <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--foreground)' }}>Certification Details</h3>
                   <div className="space-y-4">
-                    <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--card)' }}>
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <Shield className="w-5 h-5 text-blue-600" />
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--accent)' }}>
+                          <Shield className="w-5 h-5" style={{ color: 'var(--accent-foreground)' }} />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-gray-900">Certificate Information</h4>
-                          <p className="text-sm text-gray-600">Official gemological certification</p>
+                          <h4 className="font-semibold" style={{ color: 'var(--foreground)' }}>Certificate Information</h4>
+                          <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Official gemological certification</p>
                         </div>
                       </div>
                       
                       <div className="space-y-3">
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Certificate #</span>
-                          <span className="font-mono font-semibold text-gray-900">{diamond.certificateNumber || 'N/A'}</span>
+                          <span style={{ color: 'var(--muted-foreground)' }}>Certificate #</span>
+                          <span className="font-mono font-semibold" style={{ color: 'var(--foreground)' }}>{diamond.certificateNumber || 'N/A'}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Certification</span>
+                          <span style={{ color: 'var(--muted-foreground)' }}>Certification</span>
                           <div className="text-right">
                             {diamond.certification && typeof diamond.certification === 'string' && diamond.certification.startsWith('http') ? (
                               <a 
                                 href={diamond.certification} 
                                 target="_blank" 
                                 rel="noopener noreferrer" 
-                                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium"
+                                className="inline-flex items-center gap-1 font-medium"
+                                style={{ color: 'var(--primary)' }}
                               >
                                 View Certificate
                                 <Download className="w-4 h-4" />
                               </a>
                             ) : (
-                              <span className="font-semibold text-gray-900">{diamond.certification || 'Available'}</span>
+                              <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{diamond.certification || 'Available'}</span>
                             )}
                           </div>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Inscription</span>
-                          <span className="font-mono text-sm text-gray-900">{diamond.inscription || 'None'}</span>
+                          <span style={{ color: 'var(--muted-foreground)' }}>Inscription</span>
+                          <span className="font-mono text-sm" style={{ color: 'var(--foreground)' }}>{diamond.inscription || 'None'}</span>
                         </div>
                       </div>
                     </div>
 
                     <div>
-                      <h4 className="font-semibold text-gray-900 mb-3">Additional Information</h4>
+                      <h4 className="font-semibold mb-3" style={{ color: 'var(--foreground)' }}>Additional Information</h4>
                       <div className="space-y-3">
                         {[
                           { label: 'Treatment', value: diamond.treatment },
@@ -399,9 +398,9 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
                           { label: 'Stone Type', value: diamond.stoneType },
                           { label: 'RAP', value: diamond.rap }
                         ].map(item => (
-                          <div key={item.label} className="flex justify-between py-2 border-b border-gray-100 last:border-0">
-                            <span className="text-gray-600 font-medium">{item.label}</span>
-                            <span className="text-gray-900 font-semibold">{item.value || 'N/A'}</span>
+                          <div key={item.label} className="flex justify-between py-2 border-b last:border-0" style={{ borderColor: 'var(--border)' }}>
+                            <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>{item.label}</span>
+                            <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{item.value || 'N/A'}</span>
                           </div>
                         ))}
                       </div>
@@ -413,9 +412,9 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
           </div>
 
           {/* Action Buttons */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="mt-8 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
             <div className="flex flex-col sm:flex-row gap-3">
-              <button className="flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md text-sm sm:text-base">
+              <button className="flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md text-sm sm:text-base" style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}>
                 <ShoppingCart className="w-5 h-5" />
                 Add to Cart
               </button>
@@ -424,17 +423,18 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
                 productType="diamond"
                 size="lg"
                 showText={true}
-                className="border border-gray-300 hover:border-gray-400 font-semibold rounded-xl text-sm sm:text-base px-4 sm:px-6 py-2.5 sm:py-3"
+                className="font-semibold rounded-xl text-sm sm:text-base px-4 sm:px-6 py-2.5 sm:py-3 border"
+                style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
               />
-              <button className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 border border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-semibold rounded-xl transition-all duration-200 text-sm sm:text-base">
+              <button className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 border font-semibold rounded-xl transition-all duration-200 text-sm sm:text-base" style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}>
                 <Share2 className="w-5 h-5" />
                 Share
               </button>
             </div>
             <div className="mt-4 text-center">
-              <p className="text-xs sm:text-sm text-gray-600">
+              <p className="text-xs sm:text-sm" style={{ color: 'var(--muted-foreground)' }}>
                 Questions about this diamond? 
-                <a href="#" className="text-blue-600 hover:text-blue-700 font-medium ml-1">Contact our experts</a>
+                <a href="#" className="font-medium ml-1" style={{ color: 'var(--primary)' }}>Contact our experts</a>
               </p>
             </div>
           </div>
@@ -519,6 +519,7 @@ interface DiamondResultsProps {
   currentPage: number
   pageSize: number
   onPageChange: (page: number) => void
+  onPageSizeChange?: (size: number) => void
   onDiamondSelect: (diamond: Diamond) => void
   onAddToCart: (diamondId: string) => void
   diamondType: 'natural-single' | 'natural-melee' | 'lab-grown-single' | 'lab-grown-melee'
@@ -536,6 +537,7 @@ export default function DiamondResults({
   currentPage,
   pageSize,
   onPageChange,
+  onPageSizeChange,
   onDiamondSelect,
   onAddToCart,
   selectedShapes: externalSelectedShapes,
@@ -694,11 +696,12 @@ export default function DiamondResults({
 
     return (
       <div
-        className="relative rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col group bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700"
+        className="relative rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col group border"
+        style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
         onClick={() => onDiamondSelect(diamond)}
       >
         {/* Image with 360 viewer */}
-        <div className="relative w-full aspect-square bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center overflow-hidden">
+        <div className="relative w-full aspect-square flex items-center justify-center overflow-hidden" style={{ backgroundColor: 'var(--card)' }}>
           {hasImages && allImages[imgIdx] ? (
             <>
               <Image
@@ -713,18 +716,20 @@ export default function DiamondResults({
               {allImages.length > 1 && (
                 <>
                   <button
-                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 rounded-full p-2 shadow-lg border border-gray-200 dark:border-slate-600 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full p-2 shadow-lg border z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
                     onClick={prevImg}
                     tabIndex={-1}
                   >
-                    <ChevronDown className="w-5 h-5 rotate-90 text-gray-700 dark:text-gray-300" />
+                    <ChevronDown className="w-5 h-5 rotate-90" style={{ color: 'var(--foreground)' }} />
                   </button>
                   <button
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 rounded-full p-2 shadow-lg border border-gray-200 dark:border-slate-600 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-2 shadow-lg border z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
                     onClick={nextImg}
                     tabIndex={-1}
                   >
-                    <ChevronDown className="w-5 h-5 -rotate-90 text-gray-700 dark:text-gray-300" />
+                    <ChevronDown className="w-5 h-5 -rotate-90" style={{ color: 'var(--foreground)' }} />
                   </button>
                 </>
               )}
@@ -743,31 +748,31 @@ export default function DiamondResults({
         </div>
 
         {/* Card Content */}
-        <div className="flex-1 flex flex-col p-4 bg-white dark:bg-slate-800">
+        <div className="flex-1 flex flex-col p-4" style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)' }}>
           {/* Certification & Location */}
           <div className="flex items-center justify-between mb-2">
-            <div className="text-sm font-bold text-gray-900 dark:text-white">
+            <div className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>
               {diamond.certificateNumber || 'IGI'}
               {/* {console.log(certificateNumber)} */}
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-sm">🇮🇳</span>
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">INDIA</span>
+              <span className="text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>INDIA</span>
             </div>
           </div>
 
           {/* Diamond Specifications Title */}
-          <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2 leading-snug">
+          <h3 className="text-sm font-bold mb-2 leading-snug" style={{ color: 'var(--foreground)' }}>
             {diamond.shape?.toUpperCase()} {diamond.caratWeight}CT {diamond.color} {diamond.cut || 'II'} {diamond.clarity || 'VG'} {diamond.polish || 'VG'} {diamond.symmetry || 'VG'} {diamond.fluorescence?.toUpperCase() || 'FNT'}
           </h3>
 
           {/* Measurements */}
-          <div className="text-xs text-gray-700 dark:text-gray-300 mb-1">
+          <div className="text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>
             <span className="font-semibold">M:</span> {diamond.measurement || `${(Number(diamond.caratWeight) * 3.5).toFixed(2)} • ${(Number(diamond.caratWeight) * 3.6).toFixed(2)} • ${(Number(diamond.caratWeight) * 2.2).toFixed(2)}`}
           </div>
 
           {/* Table, Depth, Ratio */}
-          <div className="text-xs text-gray-700 dark:text-gray-300 mb-3">
+          <div className="text-xs mb-3" style={{ color: 'var(--muted-foreground)' }}>
             <span className="font-semibold">T:</span> {diamond.table || '56.00'} | <span className="font-semibold">D:</span> {diamond.depth || '62.40'} | <span className="font-semibold">R:</span> {diamond.ratio || '0.99'}
           </div>
 
@@ -782,7 +787,7 @@ export default function DiamondResults({
           </div>
 
           {/* Delivery & Returns */}
-          <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-slate-700 text-xs text-gray-600 dark:text-gray-400">
+          <div className="flex items-center justify-between pt-2 border-t text-xs" style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}>
             <div className="flex items-center gap-1">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
@@ -804,12 +809,12 @@ export default function DiamondResults({
   // List view: horizontal card (with compare & quick view)
   const DiamondListCard = ({ diamond }: { diamond: Diamond }) => (
     <div
-      className="relative border rounded-lg bg-white dark:bg-zinc-900 hover:shadow-md transition cursor-pointer flex flex-col sm:flex-row overflow-hidden min-h-[8rem]"
+      className="relative border rounded-lg hover:shadow-md transition cursor-pointer flex flex-col sm:flex-row overflow-hidden min-h-[8rem]"
       style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
       onClick={() => onDiamondSelect && onDiamondSelect(diamond)}
     >
       {/* Left: Image & Favorite */}
-      <div className="relative w-full sm:w-40 min-w-0 sm:min-w-40 h-40 sm:h-40 bg-gray-50 dark:bg-zinc-800 overflow-hidden flex items-stretch">
+      <div className="relative w-full sm:w-40 min-w-0 sm:min-w-40 h-40 sm:h-40 overflow-hidden flex items-stretch" style={{ backgroundColor: 'var(--card)' }}>
         {diamond.images && diamond.images.length > 0 && diamond.images[0] ? (
           <Image
             src={diamond.images[0]}
@@ -830,7 +835,7 @@ export default function DiamondResults({
           size="md"
         />
         {/* Availability Badge */}
-        <span className="absolute bottom-2 left-2 px-2 py-0.5 text-xs font-semibold rounded bg-white/90 dark:bg-zinc-900/80 border border-gray-200 dark:border-zinc-700" style={{ color: 'var(--primary)' }}>
+        <span className="absolute bottom-2 left-2 px-2 py-0.5 text-xs font-semibold rounded border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--primary)' }}>
           {diamond.isSold ? 'Sold' : 'Available'}
         </span>
       </div>
@@ -844,12 +849,12 @@ export default function DiamondResults({
             {formatPrice(typeof diamond.price === 'string' ? parseFloat(diamond.price) : diamond.price)}
           </span>
         </div>
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs sm:text-sm text-gray-500 dark:text-zinc-400 mb-1">
-          <span>Ref: <span className="font-mono text-gray-700 dark:text-zinc-200">{diamond.certificateNumber || 'N/A'}</span></span>
-          <span>Color: <span className="font-medium text-gray-700 dark:text-zinc-200">{diamond.color}</span></span>
-          <span>Clarity: <span className="font-medium text-gray-700 dark:text-zinc-200">{diamond.clarity}</span></span>
-          <span className="flex items-center gap-1">Shape: <span className="inline-block align-middle w-5 h-5">{diamond.shape ? getShapeIcon(diamond.shape) : null}</span> <span className="font-medium text-gray-700 dark:text-zinc-200">{diamond.shape || 'N/A'}</span></span>
-          <span>Carat: <span className="font-medium text-gray-700 dark:text-zinc-200">{diamond.caratWeight}</span></span>
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs sm:text-sm mb-1" style={{ color: 'var(--muted-foreground)' }}>
+          <span>Ref: <span className="font-mono" style={{ color: 'var(--foreground)' }}>{diamond.certificateNumber || 'N/A'}</span></span>
+          <span>Color: <span className="font-medium" style={{ color: 'var(--foreground)' }}>{diamond.color}</span></span>
+          <span>Clarity: <span className="font-medium" style={{ color: 'var(--foreground)' }}>{diamond.clarity}</span></span>
+          <span className="flex items-center gap-1">Shape: <span className="inline-block align-middle w-5 h-5">{diamond.shape ? getShapeIcon(diamond.shape) : null}</span> <span className="font-medium" style={{ color: 'var(--foreground)' }}>{diamond.shape || 'N/A'}</span></span>
+          <span>Carat: <span className="font-medium" style={{ color: 'var(--foreground)' }}>{diamond.caratWeight}</span></span>
         </div>
         <div className="flex items-center justify-between border-t pt-2 mt-2 gap-2" style={{ borderColor: 'var(--border)' }}>
           <span className="text-xs text-gray-400 dark:text-zinc-500">
@@ -858,13 +863,15 @@ export default function DiamondResults({
           <div className="flex items-center gap-2">
             <button
               onClick={e => { e.stopPropagation(); onAddToCart(diamond.id); }}
-              className="px-3 py-1 rounded-md font-medium text-xs bg-gray-900 text-white dark:bg-zinc-700 dark:text-white hover:bg-gray-700 dark:hover:bg-zinc-600 transition-colors"
-              title="Add to Cart"
-            >
-              <ShoppingCart className="w-4 h-4 inline mr-1" />Add to Cart
-            </button>
-            <button
-              className="text-xs px-3 py-1 rounded-md font-medium bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-200 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
+            className="px-3 py-1 rounded-md font-medium text-xs transition-colors"
+            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+            title="Add to Cart"
+          >
+            <ShoppingCart className="w-4 h-4 inline mr-1" />Add to Cart
+          </button>
+          <button
+              className="text-xs px-3 py-1 rounded-md font-medium transition-colors border"
+              style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
               onClick={e => e.stopPropagation()}
             >
               View Details
@@ -876,7 +883,8 @@ export default function DiamondResults({
               size="sm"
             />
             <button
-              className="p-2 rounded-full bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
+              className="p-2 rounded-full border transition-colors"
+              style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
               title="Quick View"
               onClick={e => { e.stopPropagation(); setQuickViewDiamond(diamond); }}
             >
@@ -914,40 +922,55 @@ export default function DiamondResults({
         <div className="flex items-center gap-4">
           {/* Sort, Filter, and View Toggle - Desktop (Mobile Style) */}
           <div className="flex items-center gap-2">
+          <button
+            className="w-8 h-8 flex items-center justify-center rounded-lg shadow border active:scale-95 transition"
+            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+            onClick={() => setShowSortDropdown(!showSortDropdown)}
+            aria-label="Sort"
+          >
+            <ArrowUpDown className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
+          </button>
+          <button
+            className="w-8 h-8 flex items-center justify-center rounded-lg shadow border active:scale-95 transition"
+            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+            onClick={() => {
+              const evt = new CustomEvent('openDiamondFilters');
+              window.dispatchEvent(evt);
+            }}
+            aria-label="Open filters"
+          >
+            <FilterIcon className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
+          </button>
+          <select
+            value={pageSize}
+            onChange={(e) => onPageSizeChange && onPageSizeChange(Number(e.target.value))}
+            className="h-8 px-2 rounded-lg shadow border"
+            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+            aria-label="Items per page"
+          >
+            {[5,10,15,20].map(n => (
+              <option key={n} value={n}>{n} / page</option>
+            ))}
+          </select>
+          <div className="flex items-center shadow border rounded-lg" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <button
-              className="w-8 h-8 flex items-center justify-center rounded-lg bg-white shadow border border-gray-200 hover:bg-gray-50 active:scale-95 transition"
-              onClick={() => setShowSortDropdown(!showSortDropdown)}
-              aria-label="Sort"
+              onClick={() => setViewMode('grid')}
+              className={`w-8 h-8 flex items-center justify-center rounded-lg transition`}
+              style={viewMode === 'grid' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { color: 'var(--muted-foreground)' }}
+              aria-label="Grid view"
             >
-              <ArrowUpDown className="w-4 h-4 text-gray-700" />
+              <Grid className="w-4 h-4" />
             </button>
             <button
-              className="w-8 h-8 flex items-center justify-center rounded-lg bg-white shadow border border-gray-200 hover:bg-gray-50 active:scale-95 transition"
-              onClick={() => {
-                const evt = new CustomEvent('openDiamondFilters');
-                window.dispatchEvent(evt);
-              }}
-              aria-label="Open filters"
+              onClick={() => setViewMode('list')}
+              className={`w-8 h-8 flex items-center justify-center rounded-lg transition`}
+              style={viewMode === 'list' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { color: 'var(--muted-foreground)' }}
+              aria-label="List view"
             >
-              <FilterIcon className="w-4 h-4 text-gray-700" />
+              <List className="w-4 h-4" />
             </button>
-            <div className="flex items-center bg-white shadow border border-gray-200 rounded-lg">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${viewMode === 'grid' ? 'bg-gray-900 text-white' : 'text-gray-700'}`}
-                aria-label="Grid view"
-              >
-                <Grid className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${viewMode === 'list' ? 'bg-gray-900 text-white' : 'text-gray-700'}`}
-                aria-label="List view"
-              >
-                <List className="w-4 h-4" />
-              </button>
-            </div>
           </div>
+        </div>
         </div>
       </div>
 
@@ -956,34 +979,49 @@ export default function DiamondResults({
       <div className="sm:hidden flex items-center justify-between w-full pt-2">
         <div className="flex gap-2">
           <button
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-white shadow border border-gray-200 hover:bg-gray-50 active:scale-95 transition"
+            className="w-8 h-8 flex items-center justify-center rounded-lg shadow border active:scale-95 transition"
+            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
             onClick={() => setShowSortDropdown(!showSortDropdown)}
             aria-label="Sort"
           >
-            <ArrowUpDown className="w-4 h-4 text-gray-700" />
+            <ArrowUpDown className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
           </button>
           <button
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-white shadow border border-gray-200 hover:bg-gray-50 active:scale-95 transition"
+            className="w-8 h-8 flex items-center justify-center rounded-lg shadow border active:scale-95 transition"
+            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
             onClick={() => {
               const evt = new CustomEvent('openDiamondFilters');
               window.dispatchEvent(evt);
             }}
             aria-label="Open filters"
           >
-            <FilterIcon className="w-4 h-4 text-gray-700" />
+            <FilterIcon className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
           </button>
+          <select
+            value={pageSize}
+            onChange={(e) => onPageSizeChange && onPageSizeChange(Number(e.target.value))}
+            className="h-8 px-2 rounded-lg shadow border"
+            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+            aria-label="Items per page"
+          >
+            {[5,10,15,20].map(n => (
+              <option key={n} value={n}>{n}</option>
+            ))}
+          </select>
         </div>
-        <div className="flex items-center bg-white shadow border border-gray-200 rounded-lg gap-1">
+        <div className="flex items-center shadow border rounded-lg gap-1" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
           <button
             onClick={() => setViewMode('grid')}
-            className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${viewMode === 'grid' ? 'bg-gray-900 text-white' : 'text-gray-700'}`}
+            className={`w-8 h-8 flex items-center justify-center rounded-lg transition`}
+            style={viewMode === 'grid' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { color: 'var(--muted-foreground)' }}
             aria-label="Grid view"
           >
             <Grid className="w-4 h-4" />
           </button>
           <button
             onClick={() => setViewMode('list')}
-            className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${viewMode === 'list' ? 'bg-gray-900 text-white' : 'text-gray-700'}`}
+            className={`w-8 h-8 flex items-center justify-center rounded-lg transition`}
+            style={viewMode === 'list' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { color: 'var(--muted-foreground)' }}
             aria-label="List view"
           >
             <List className="w-4 h-4" />
