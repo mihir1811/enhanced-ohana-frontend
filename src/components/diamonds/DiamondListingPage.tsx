@@ -64,22 +64,42 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
   useEffect(() => {
     setLoading(true);
     const query = { page: currentPage, limit: pageSize, ...buildQueryFromFilters(filters) };
-    fetchDiamonds()
+    fetchDiamonds(query)
       .then((res) => {
-        const raw = Array.isArray((res as any)?.data)
-          ? (res as any).data
-          : (res as any)?.data?.data ?? [];
-        const normalized = Array.isArray(raw)
-          ? raw.map((item: ApiDiamondData) => transformApiDiamond(item))
-          : [];
+        const topLevel = res as unknown;
+
+        const getListAndMeta = (input: unknown): { list: unknown[]; metaTotal?: number; currentPage?: number; perPageOrLimit?: number } => {
+          if (typeof input === 'object' && input !== null) {
+            const obj = input as Record<string, unknown>;
+            const dataProp = obj.data as unknown;
+            const metaProp = obj.meta as unknown;
+
+            if (Array.isArray(dataProp)) {
+              const metaPagination = (metaProp as { pagination?: { total?: number; page?: number; limit?: number } } | undefined)?.pagination;
+              return { list: dataProp, metaTotal: metaPagination?.total, currentPage: metaPagination?.page, perPageOrLimit: metaPagination?.limit };
+            }
+
+            if (typeof dataProp === 'object' && dataProp !== null) {
+              const nested = dataProp as Record<string, unknown>;
+              const nestedData = nested.data as unknown;
+              const nestedMeta = nested.meta as { total?: number; currentPage?: number; perPage?: number; limit?: number } | undefined;
+              if (Array.isArray(nestedData)) {
+                return { list: nestedData, metaTotal: nestedMeta?.total, currentPage: nestedMeta?.currentPage, perPageOrLimit: nestedMeta?.perPage ?? nestedMeta?.limit };
+              }
+            }
+          }
+          return { list: [] };
+        };
+
+        const { list, metaTotal, currentPage: cp, perPageOrLimit } = getListAndMeta(topLevel);
+
+        const normalized: Diamond[] = (list as unknown[]).map((item) => transformApiDiamond(item as ApiDiamondData));
         setDiamonds(normalized);
-        const metaLegacy = (res as any)?.data?.meta;
-        const metaNew = (res as any)?.meta?.pagination || (res as any)?.meta;
-        const meta = metaLegacy || metaNew || {};
-        const total = Number((meta as any)?.total) || (Array.isArray(raw) ? raw.length : 0);
+
+        const total = typeof metaTotal === 'number' ? metaTotal : normalized.length;
         setTotalCount(total);
-        if ((meta as any)?.currentPage) setCurrentPage(Number((meta as any).currentPage));
-        if ((meta as any)?.perPage || (meta as any)?.limit) setPageSize(Number((meta as any)?.perPage || (meta as any)?.limit));
+        if (typeof cp === 'number') setCurrentPage(cp);
+        if (typeof perPageOrLimit === 'number') setPageSize(perPageOrLimit);
       })
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
