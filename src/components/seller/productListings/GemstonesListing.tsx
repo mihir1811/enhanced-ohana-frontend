@@ -84,7 +84,42 @@ const GemstonesListing = () => {
             onClose={() => setBulkModalOpen(false)}
             onFileSelect={handleBulkFileSelect}
           />
-          {/* <ViewToggle value={view} onChange={setView} /> */}
+          <button
+            className={"relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
+            style={{
+              backgroundColor: view === 'grid' ? 'var(--primary)' : 'var(--card)',
+              color: view === 'grid' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
+              borderColor: view === 'grid' ? 'var(--primary)' : 'var(--border)'
+            }}
+            onClick={() => setView('grid')}
+            aria-label="Grid View"
+            type="button"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" />
+            </svg>
+            <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap" style={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', border: '1px solid var(--border)' }}>
+              Grid View
+            </span>
+          </button>
+          <button
+            className={"relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
+            style={{
+              backgroundColor: view === 'list' ? 'var(--primary)' : 'var(--card)',
+              color: view === 'list' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
+              borderColor: view === 'list' ? 'var(--primary)' : 'var(--border)'
+            }}
+            onClick={() => setView('list')}
+            aria-label="List View"
+            type="button"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+            <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap" style={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', border: '1px solid var(--border)' }}>
+              List View
+            </span>
+          </button>
         </div>
       </div>
       {loading && <p>Loading...</p>}
