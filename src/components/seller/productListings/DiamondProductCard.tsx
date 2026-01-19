@@ -187,7 +187,7 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
     images.length > 0
       ? images
       : [
-          "https://media.istockphoto.com/id/1493089752/vector/box-and-package-icon-concept.jpg",
+          "https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg?s=2048x2048&w=is&k=20&c=dFWJz1EFJt7Tq2lA-hgTpSW119YywTWtS4EwU3fpKrE=",
         ];
 
   // Helper for fade animation
@@ -207,7 +207,7 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <button
-              className="p-2 rounded-full border shadow hover:opacity-90"
+              className="cursor-pointer p-2 rounded-full border shadow hover:opacity-90"
               aria-label="More actions"
               onClick={e => e.stopPropagation()}
               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}

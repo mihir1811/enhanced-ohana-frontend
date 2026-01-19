@@ -14,7 +14,7 @@ export default function ThemeSwitcher() {
   return (
     <button
       onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-      className="p-2 text-slate-600 dark:text-slate-300 hover:text-amber-500 transition-all duration-300 hover:bg-slate-100 dark:hover:bg-[var(--muted)] rounded-lg group"
+      className="p-2 text-slate-600 dark:text-slate-300 hover:text-amber-500 transition-all duration-300 hover:bg-slate-100 dark:hover:bg-[var(--muted)] rounded-lg group cursor-pointer"
       style={{ 
         color: 'var(--foreground)', 
         borderRadius: 'var(--radius-md)',

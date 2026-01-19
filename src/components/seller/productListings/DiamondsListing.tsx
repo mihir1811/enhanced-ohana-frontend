@@ -3,6 +3,9 @@ import Image from 'next/image';
 import BulkUploadModal from './BulkUploadModal';
 import { diamondService, DiamondData } from '@/services/diamondService';
 import DiamondProductCard, { DiamondProduct } from './DiamondProductCard';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { toast } from 'react-hot-toast';
 
 const DiamondsListing = () => {
   const [diamonds, setDiamonds] = useState<DiamondProduct[]>([]);
@@ -14,6 +17,7 @@ const DiamondsListing = () => {
   const [total, setTotal] = useState(0);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
   const handleBulkFileSelect = () => {
     // Called after successful upload in modal
     setBulkModalOpen(false);
@@ -105,7 +109,7 @@ const DiamondsListing = () => {
         <div className="flex gap-2 items-center relative">
           {/* Bulk Upload Button */}
           <button
-            className="px-4 py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 transition"
+            className="px-4 py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 transition cursor-pointer"
             onClick={() => setBulkModalOpen(true)}
             type="button"
           >
@@ -117,7 +121,7 @@ const DiamondsListing = () => {
             onFileSelect={handleBulkFileSelect}
           />
           <button
-            className={"relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
+            className={"cursor-pointer relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
             style={{
               backgroundColor: view === 'list' ? 'var(--primary)' : 'var(--card)',
               color: view === 'list' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
@@ -138,7 +142,7 @@ const DiamondsListing = () => {
           </button>
           {/* Grid View Icon Button */}
           <button
-            className={"relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
+            className={"cursor-pointer relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
             style={{
               backgroundColor: view === 'grid' ? 'var(--primary)' : 'var(--card)',
               color: view === 'grid' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
@@ -171,38 +175,81 @@ const DiamondsListing = () => {
           ) : view === 'list' ? (
             <div className="overflow-x-auto">
               {/* Table view */}
-              <table className="min-w-full rounded-lg shadow border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
+              <table
+                className="min-w-full rounded-lg shadow border border-collapse"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+              >
                 <thead className="border-b" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }}>
                   <tr>
-                    <th className="px-4 py-2 text-left">Image</th>
-                    <th className="px-4 py-2 text-left">Name</th>
-                    <th className="px-4 py-2 text-left">Price</th>
-                    <th className="px-4 py-2 text-left">Color</th>
-                    <th className="px-4 py-2 text-left">Clarity</th>
-                    <th className="px-4 py-2 text-left">Cut</th>
-                    <th className="px-4 py-2 text-left">Shape</th>
-                    <th className="px-4 py-2 text-left">Stock</th>
+                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Image</th>
+                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Name</th>
+                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Price</th>
+                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Color</th>
+                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Clarity</th>
+                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Cut</th>
+                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Shape</th>
+                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Stock</th>
+                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {diamonds.map((diamond) => (
                     <tr key={diamond.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
-                      <td className="px-4 py-2">
+                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
                         <Image
-                          src={diamond.image1 || "https://media.istockphoto.com/id/1493089752/vector/box-and-package-icon-concept.jpg"}
+                          src={diamond.image1 || "https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg?s=2048x2048&w=is&k=20&c=dFWJz1EFJt7Tq2lA-hgTpSW119YywTWtS4EwU3fpKrE="}
                           alt={diamond.name}
                           width={64}
                           height={64}
                           className="w-16 h-16 object-cover rounded"
                         />
                       </td>
-                      <td className="px-4 py-2">{diamond.name}</td>
-                      <td className="px-4 py-2" style={{ color: 'var(--primary)' }}>${Number(diamond.price).toLocaleString()}</td>
-                      <td className="px-4 py-2">{diamond.color}</td>
-                      <td className="px-4 py-2">{diamond.clarity}</td>
-                      <td className="px-4 py-2">{diamond.cut}</td>
-                      <td className="px-4 py-2">{diamond.shape}</td>
-                      <td className="px-4 py-2">{diamond.stockNumber}</td>
+                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.name}</td>
+                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)', color: 'var(--primary)' }}>${Number(diamond.price).toLocaleString()}</td>
+                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.color}</td>
+                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.clarity}</td>
+                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.cut}</td>
+                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.shape}</td>
+                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.stockNumber}</td>
+                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-full border text-xs"
+                            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+                            onClick={() => {
+                              if (typeof window !== 'undefined') {
+                                window.open(`/diamonds/${diamond.id}`, '_blank');
+                              }
+                            }}
+                            aria-label="View product"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-full border text-xs"
+                            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+                            onClick={() => {
+                              if (typeof window !== 'undefined') {
+                                window.location.href = `/seller/products/${diamond.id}/edit`;
+                              }
+                            }}
+                            aria-label="Edit product"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-full border text-xs"
+                            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--destructive)' }}
+                            onClick={() => setDeleteId(diamond.id)}
+                            aria-label="Delete product"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -240,6 +287,29 @@ const DiamondsListing = () => {
               Next
             </button>
           </div>
+          <ConfirmModal
+            open={deleteId !== null}
+            onOpenChange={(open) => {
+              if (!open) setDeleteId(null);
+            }}
+            title="Are you sure you want to delete this product?"
+            description="This action cannot be undone."
+            onYes={async () => {
+              if (deleteId === null) return;
+              const idToDelete = deleteId;
+              setDeleteId(null);
+              try {
+                const token = typeof window !== 'undefined' ? (document.cookie.match(/token=([^;]+)/)?.[1] || '') : '';
+                await diamondService.deleteDiamond(idToDelete, token);
+                setDiamonds((prev) => prev.filter((d) => d.id !== idToDelete));
+                setTotal((prev) => Math.max(0, prev - 1));
+                toast.success('Product deleted successfully!');
+              } catch {
+                toast.error('Failed to delete product.');
+              }
+            }}
+            onNo={() => setDeleteId(null)}
+          />
         </>
       )}
     </div>

@@ -3,11 +3,12 @@
 import { useRouter, useParams } from "next/navigation";
 import { useEffect } from "react";
 import { useAppSelector } from "@/store/hooks";
+import { SellerType } from "@/hooks/useSellerProducts";
 
 const allowedTypes: Record<string, string[]> = {
-  diamonds: ["diamonds", "naturalDiamond", "labGrown"],
-  jewelry: ["jewelry", "jewelries"],
-  gemstones: ["gemstones"],
+  diamonds: [SellerType.naturalDiamond, SellerType.labGrownDiamond],
+  jewelry: [SellerType.jewellery],
+  gemstones: [SellerType.gemstone],
 };
 
 export default function AddProductTypePage() {

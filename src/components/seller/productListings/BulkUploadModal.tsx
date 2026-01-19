@@ -65,14 +65,69 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   };
 
   const handleSampleDownload = () => {
-    // Use the correct sample file path and name
-    const sampleUrl = "/sample-diamond.xlsx";
+    // Generate sample CSV content dynamically
+    const headers = [
+      'stockNumber',
+      'pricePerCarat',
+      'totalPrice',
+      'caratWeight',
+      'shape',
+      'color',
+      'clarity',
+      'cut',
+      'polish',
+      'symmetry',
+      'fluorescence',
+      'measurement',
+      'table',
+      'depth',
+      'ratio',
+      'certificateCompanyName',
+      'certificateNumber',
+      'imageUrl',
+      'videoUrl',
+      'stoneType'
+    ];
+
+    const sampleRow = [
+      '12345',         // stockNumber
+      '5000',          // pricePerCarat
+      '7500',          // totalPrice
+      '1.50',          // caratWeight
+      'Round',         // shape
+      'D',             // color
+      'VS1',           // clarity
+      'Excellent',     // cut
+      'Excellent',     // polish
+      'Excellent',     // symmetry
+      'None',          // fluorescence
+      '6.50x6.50x4.00',// measurement
+      '58',            // table
+      '61.5',          // depth
+      '1.00',          // ratio
+      'GIA',           // certificateCompanyName
+      '123456789',     // certificateNumber
+      'https://example.com/image.jpg', // imageUrl
+      'https://example.com/video.mp4', // videoUrl
+      'Natural'        // stoneType
+    ];
+
+    const csvContent = [
+      headers.join(','),
+      sampleRow.join(',')
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
-    link.href = sampleUrl;
-    link.download = "sample-diamond.xlsx";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", "sample-diamond.csv");
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   if (!open) return null;
@@ -179,7 +234,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             onClick={handleSampleDownload}
             type="button"
           >
-            Download Sample Excel
+            Download Sample CSV
           </button>
           <p className="text-sm text-gray-500">
             Upload an Excel or CSV file to add multiple diamonds at once.

@@ -78,7 +78,7 @@ export default function SellerProductsPage() {
         <button
           onClick={handleAddProduct}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium shadow-sm 
-               bg-primary text-primary-foreground hover:bg-primary/90 transition"
+               bg-primary text-primary-foreground hover:bg-primary/90 transition cursor-pointer"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

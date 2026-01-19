@@ -47,7 +47,7 @@ export default function SellerHeader({ setSidebarOpen }: SellerHeaderProps) {
         {/* Mobile menu button */}
         <button
           type="button"
-          className="p-2.5 lg:hidden"
+          className="p-2.5 lg:hidden cursor-pointer"
           onClick={() => setSidebarOpen(true)}
           style={{ color: 'var(--foreground)' }}
         >
@@ -92,7 +92,7 @@ export default function SellerHeader({ setSidebarOpen }: SellerHeaderProps) {
             {/* Notifications */}
             <button
               type="button"
-              className="relative p-2.5 hover:bg-opacity-10 rounded-lg transition-colors"
+              className="relative p-2.5 hover:bg-opacity-10 rounded-lg transition-colors cursor-pointer"
               style={{ color: 'var(--foreground)' }}
             >
               <span className="sr-only">View notifications</span>
@@ -126,7 +126,7 @@ export default function SellerHeader({ setSidebarOpen }: SellerHeaderProps) {
               <DropdownMenu.Trigger asChild>
                 <button
                   type="button"
-                  className="flex items-center gap-x-3 p-1.5 text-sm leading-6 hover:bg-opacity-10 rounded-lg transition-colors"
+                  className="flex items-center gap-x-3 p-1.5 text-sm leading-6 hover:bg-opacity-10 rounded-lg transition-colors cursor-pointer"
                   style={{ color: 'var(--foreground)' }}
                 >
                   <div 
@@ -156,15 +156,16 @@ export default function SellerHeader({ setSidebarOpen }: SellerHeaderProps) {
 
               <DropdownMenu.Portal>
                 <DropdownMenu.Content
-                  className="min-w-[220px] rounded-md p-2 shadow-lg border"
+                  className="min-w-[240px] rounded-xl p-3 shadow-lg border"
                   style={{ 
                     backgroundColor: 'var(--popover)',
-                    borderColor: 'var(--border)'
+                    borderColor: 'var(--border)',
+                    boxShadow: '0 10px 25px rgba(15, 23, 42, 0.15)'
                   }}
                   sideOffset={5}
                 >
                   <DropdownMenu.Item 
-                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-sm cursor-pointer hover:bg-opacity-10 transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer hover:bg-muted transition-colors"
                     style={{ color: 'var(--popover-foreground)' }}
                   >
                     <User className="h-4 w-4" />
@@ -172,7 +173,7 @@ export default function SellerHeader({ setSidebarOpen }: SellerHeaderProps) {
                   </DropdownMenu.Item>
                   
                   <DropdownMenu.Item 
-                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-sm cursor-pointer hover:bg-opacity-10 transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer hover:bg-muted transition-colors"
                     style={{ color: 'var(--popover-foreground)' }}
                   >
                     <Settings className="h-4 w-4" />
@@ -185,7 +186,7 @@ export default function SellerHeader({ setSidebarOpen }: SellerHeaderProps) {
                   />
                   
                   <DropdownMenu.Item 
-                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-sm cursor-pointer hover:bg-opacity-10 transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer hover:bg-destructive/10 transition-colors"
                     style={{ color: 'var(--destructive)' }}
                     onClick={handleLogout}
                   >

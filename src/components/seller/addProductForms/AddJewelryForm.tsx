@@ -419,12 +419,6 @@ const AddJewelryForm = () => {
           }
         }
       });
-      // Images as image1–image6
-      if (form.images && form.images.length > 0) {
-        form.images.forEach((file, idx) => {
-          formData.append(`image${idx + 1}`, file);
-        });
-      }
       // Stones as JSON string (array), ensure carat is number
       if (form.stones && form.stones.length > 0) {
         const stonesPayload = form.stones.map((stone: Stone) => ({

@@ -223,9 +223,6 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
     setLoading(true);
     try {
       const formData = new FormData();
-      form.images.forEach((file: File, idx: number) => {
-        formData.append(`image${idx + 1}`, file);
-      });
       Object.entries(form).forEach(([key, value]) => {
         if (key !== 'images' && value !== undefined && value !== null && value !== '') {
           formData.append(key, value as string);
