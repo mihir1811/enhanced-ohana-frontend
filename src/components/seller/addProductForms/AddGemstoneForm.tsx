@@ -7,6 +7,10 @@ import { getCookie } from '@/lib/cookie-utils';
 
 // ...existing constants (GEM_SUBTYPES, CERTIFICATE_COMPANIES, etc.) ...
 
+import { auctionProductTypes } from '@/config/sellerConfigData';
+import { certificateCompanies as certificateCompaniesIds } from '@/constants/diamondDropdowns';
+
+// --- Dropdown option arrays (copy from AddGemstoneForm) ---
 const GEM_SUBTYPES: Record<string, string[]> = {
   ruby: ['Burmese', 'African', 'Thai', 'Other'],
   sapphire: ['Blue', 'Yellow', 'Pink', 'Padparadscha', 'Green', 'White', 'Other'],
@@ -20,14 +24,6 @@ const GEM_SUBTYPES: Record<string, string[]> = {
   topaz: ['Imperial', 'Blue', 'White', 'Other'],
   tourmaline: ['Paraiba', 'Rubellite', 'Indicolite', 'Watermelon', 'Other'],
 };
-
-const CERTIFICATE_COMPANIES = [
-  { value: '1', label: 'GIA' },
-  { value: '2', label: 'IGI' },
-  { value: '3', label: 'AGS' },
-  { value: '4', label: 'HRD' },
-  { value: '5', label: 'Other' },
-];
 
 const QUALITY_GRADES = [
   { value: 'good', label: 'Good' },
@@ -493,7 +489,7 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
             <label className="block font-medium mb-1">Certificate Company *</label>
             <select name="certificateCompanyId" value={form.certificateCompanyId} onChange={handleSelect} required className="input">
               <option value="">Select certificate company</option>
-              {CERTIFICATE_COMPANIES.map(opt => (
+              {certificateCompaniesIds.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>

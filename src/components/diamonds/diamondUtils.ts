@@ -51,7 +51,7 @@ export interface ApiDiamondData {
   videoURL?: string;
   stoneType?: string;
   process?: string;
-  certificateCompanyId?: number;
+  certificateCompanyName?: string;
   isOnAuction?: boolean;
   isSold?: boolean;
   isDeleted?: boolean;
@@ -158,7 +158,7 @@ export function transformApiDiamond(apiDiamond: ApiDiamondData): Diamond {
     videoURL: apiDiamond.videoURL,
     stoneType: apiDiamond.stoneType,
     process: apiDiamond.process,
-    certificateCompanyId: apiDiamond.certificateCompanyId,
+    certificateCompanyName: apiDiamond.certificateCompanyName,
     isOnAuction: apiDiamond.isOnAuction,
     isSold: apiDiamond.isSold,
     isDeleted: apiDiamond.isDeleted,

@@ -109,7 +109,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
       '123456789',     // certificateNumber
       'https://example.com/image.jpg', // imageUrl
       'https://example.com/video.mp4', // videoUrl
-      'Natural'        // stoneType
+      'naturalDiamond'        // stoneType
     ];
 
     const csvContent = [

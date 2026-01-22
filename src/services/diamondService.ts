@@ -99,6 +99,8 @@ const sanitizeParams = (params: Record<string, any> | undefined): Record<string,
     if (value !== undefined && value !== null && value !== '') {
       if (Array.isArray(value)) {
         sanitized[key] = value.join(',');
+      } else if (typeof value === 'object') {
+        sanitized[key] = JSON.stringify(value);
       } else {
         sanitized[key] = String(value);
       }
@@ -164,7 +166,12 @@ class DiamondService {
   }
   // Get all diamonds with filters
   async getDiamonds(params?: DiamondFilters): Promise<ApiResponse<DiamondData[]>> {
-    return apiService.get<DiamondData[]>('/diamond', sanitizeParams(params));
+    return apiService.get<DiamondData[]>('/diamond');
+  }
+
+  // Get all melee diamonds with filters
+  async getMeleeDiamonds(params?: DiamondFilters): Promise<ApiResponse<DiamondData[]>> {
+    return apiService.get<DiamondData[]>('/melee-diamond');
   }
 
   // Get single diamond by ID

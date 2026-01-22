@@ -78,7 +78,7 @@ export interface DetailedGemstone {
   birefringence: string;
   spacificGravity: string;
   treatment: string;
-  certificateCompanyId: number;
+  certificateCompanyName: string;
   sellerId: string;
   isOnAuction: boolean;
   isSold: boolean;
@@ -173,7 +173,7 @@ export const transformDetailedGemstone = (detailed: DetailedGemstone): GemstonIt
     clarity: detailed.clarity,
     origin: detailed.origin,
     treatment: detailed.treatment,
-    certification: detailed.certificateCompanyId?.toString(),
+    certification: detailed.certificateCompanyName || detailed.certification,
     shape: detailed.shape,
     isOnAuction: detailed.isOnAuction,
     auctionEndTime: detailed.auction?.endTime || null,

@@ -237,13 +237,13 @@ const WishlistProductCard: React.FC<WishlistProductCardProps> = ({
             >
               <Share2 className="w-4 h-4" />
             </button>
-            <button
+            {/* <button
               onClick={onRemove}
               className="p-2 rounded-lg transition-colors border text-red-600 border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20"
               title="Remove from Wishlist"
             >
               <Trash2 className="w-4 h-4" />
-            </button>
+            </button> */}
           </div>
         </div>
       </div>

@@ -501,7 +501,7 @@ export interface Diamond {
   videoURL?: string;
   stoneType?: string;
   process?: string;
-  certificateCompanyId?: number;
+  certificateCompanyName?: string;
   isOnAuction?: boolean;
   isSold?: boolean;
   isDeleted?: boolean;

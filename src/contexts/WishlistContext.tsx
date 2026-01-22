@@ -45,7 +45,7 @@ type WishlistAction =
 interface WishlistContextType extends WishlistState {
   addToWishlist: (productId: number, productType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond') => Promise<boolean>;
   removeFromWishlist: (wishlistItemId: number) => Promise<boolean>;
-  removeFromWishlistByProduct: (productId: number) => Promise<boolean>;
+  removeFromWishlistByProduct: (productId: number, explicitProductType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond') => Promise<boolean>;
   isInWishlist: (productId: number) => boolean;
   loadWishlist: (page?: number, limit?: number) => Promise<void>;
   clearWishlist: () => Promise<boolean>;
@@ -211,7 +211,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   }, [token]);
 
   // Remove item from wishlist by product ID and type
-  const removeFromWishlistByProduct = useCallback(async (productId: number): Promise<boolean> => {
+  const removeFromWishlistByProduct = useCallback(async (productId: number, explicitProductType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond'): Promise<boolean> => {
     if (!token) {
       dispatch({ type: 'SET_ERROR', payload: 'Please login to manage wishlist' });
       return false;
@@ -227,7 +227,10 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       
       // Determine productType based on the product category or default to 'jewellery'
       let productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond' = 'jewellery';
-      if (itemToRemove?.product?.category) {
+      
+      if (explicitProductType) {
+        productType = explicitProductType;
+      } else if (itemToRemove?.product?.category) {
         const category = itemToRemove.product.category.toLowerCase();
         if (category.includes('diamond')) {
           // If item is a melee diamond, tag accordingly; otherwise fallback to diamond

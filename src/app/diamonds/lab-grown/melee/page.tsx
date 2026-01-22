@@ -13,7 +13,7 @@ export default function LabGrownMeleeDiamondsPage() {
       <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 sm:px-6 lg:px-8`}>
         <DiamondListingPage
           diamondType="lab-grown-melee"
-          fetchDiamonds={diamondService.getDiamonds}
+          fetchDiamonds={diamondService.getMeleeDiamonds}
           title="Lab-Grown Melee Diamonds"
         />
       </div>

@@ -19,9 +19,9 @@ import {
   shapes, 
   fluorescences,
   processes,
-  treatments
+  treatments,
+  certificateCompanies
 } from '@/config/sellerConfigData';
-import { useCertificateCompanies } from '@/hooks/data/useCertificateCompanies';
 
 const RequiredMark = ({ show = true }: { show?: boolean }) => (
   show ? <span className="text-destructive ml-0.5">*</span> : null
@@ -184,6 +184,7 @@ type DiamondFormState = {
   origin: string,
   rap: string,
   price: string,
+  pricePerCarat: string,
   discount: string,
   color: string,
   colorFrom: string,
@@ -229,7 +230,7 @@ type DiamondFormState = {
   sizeMax: string,
   sieveSizeMin: string,
   sieveSizeMax: string,
-  certificateCompanyId: string,
+  certificateCompanyName: string,
   certificateNumber: string,
   inscription: string,
   certification: File | null,
@@ -245,6 +246,7 @@ const initialState: DiamondFormState = {
   origin: '',
   rap: '',
   price: '',
+  pricePerCarat: '',
   discount: '',
   color: '',
   colorFrom: '',
@@ -290,7 +292,7 @@ const initialState: DiamondFormState = {
   sizeMax: '',
   sieveSizeMin: '',
   sieveSizeMax: '',
-  certificateCompanyId: '',
+  certificateCompanyName: '',
   certificateNumber: '',
   inscription: '',
   certification: null,
@@ -298,9 +300,6 @@ const initialState: DiamondFormState = {
 };
 
 function AddDiamondForm() {
-  // Use dynamic certificate companies
-  const { options: certificateCompanies, getCompanyNameById } = useCertificateCompanies();
-
   const [form, setForm] = useState<DiamondFormState>(initialState);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -451,7 +450,36 @@ function AddDiamondForm() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    setForm(prev => ({ ...prev, [name]: type === 'number' ? Number(value) : value }));
+
+    setForm(prev => {
+      // For financial/precision fields, keep as string to avoid input cursor/formatting issues
+      const isPrecisionField = ['price', 'caratWeight', 'pricePerCarat', 'discount', 'rap'].includes(name);
+      const valToSet = (type === 'number' && !isPrecisionField) ? Number(value) : value;
+      
+      const updates: any = { [name]: valToSet };
+
+      if (name === 'price') {
+        const p = parseFloat(value);
+        const c = parseFloat(String(prev.caratWeight));
+        if (!isNaN(p) && !isNaN(c) && c > 0) {
+          updates.pricePerCarat = (p / c).toFixed(2);
+        }
+      } else if (name === 'caratWeight') {
+        const c = parseFloat(value);
+        const p = parseFloat(String(prev.price));
+        if (!isNaN(p) && !isNaN(c) && c > 0) {
+          updates.pricePerCarat = (p / c).toFixed(2);
+        }
+      } else if (name === 'pricePerCarat') {
+        const ppc = parseFloat(value);
+        const c = parseFloat(String(prev.caratWeight));
+        if (!isNaN(ppc) && !isNaN(c) && c > 0) {
+          updates.price = (ppc * c).toFixed(2);
+        }
+      }
+
+      return { ...prev, ...updates };
+    });
 
     if (name === 'stockNumber') {
       let message = '';
@@ -535,9 +563,8 @@ function AddDiamondForm() {
   const isFancyOvertoneRequired = () => !isMelee && !!form.fancyColor;
 
   const stoneTypes = [
-    { value: 'Natural', label: 'Natural' },
-    { value: 'Lab Grown', label: 'Lab Grown' },
-    { value: 'Treated', label: 'Treated' }
+    { value: 'naturalDiamond', label: 'Natural' },
+    { value: 'labGrownDiamond', label: 'Lab Grown' },
   ];
 
   const fillRandomData = () => {
@@ -600,7 +627,7 @@ function AddDiamondForm() {
         diameterMax: diaMax,
         measurement: `${diaMin}-${diaMax} mm`,
         stoneType: randomStoneType,
-        certificateCompanyId: certificateCompanies[0]?.value || '1', 
+        certificateCompanyName: certificateCompanies[0]?.value || 'GIA', 
         videoURL: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
         shade: randomShade,
         treatment: randomTreatment,
@@ -633,7 +660,7 @@ function AddDiamondForm() {
         ratio: getRandomFloat(1.0, 1.5),
         measurement: '6.50 x 6.50 x 4.00',
         stoneType: randomStoneType,
-        certificateCompanyId: certificateCompanies[0]?.value || '1',
+        certificateCompanyName: certificateCompanies[0]?.value || 'GIA',
         certificateNumber: getRandomInt(10000000, 99999999).toString(),
         videoURL: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
         shade: randomShade,
@@ -740,9 +767,12 @@ function AddDiamondForm() {
       // Calculate derived price fields
       const priceVal = parseFloat(form.price);
       const caratVal = parseFloat(form.caratWeight);
+      const piecesVal = parseFloat(form.totalPieces);
 
       let totalPrice = form.price;
       let pricePerCarat = form.price; // Default fallback
+      let pricePerPcs = '';
+      let caratWeightPerPcs = '';
 
       if (!isNaN(priceVal) && !isNaN(caratVal) && caratVal > 0) {
         // Assuming user enters Total Price in the 'price' field
@@ -750,13 +780,22 @@ function AddDiamondForm() {
         pricePerCarat = (priceVal / caratVal).toFixed(2);
       }
 
+      if (isMelee && !isNaN(piecesVal) && piecesVal > 0) {
+        if (!isNaN(priceVal)) {
+          pricePerPcs = (priceVal / piecesVal).toFixed(2);
+        }
+        if (!isNaN(caratVal)) {
+          caratWeightPerPcs = (caratVal / piecesVal).toFixed(2);
+        }
+      }
+
       // Explicitly map DTO fields based on type
       let dtoFields: { key: keyof DiamondFormState, backendKey?: string }[] = [];
 
       if (isMelee) {
         dtoFields = [
-          { key: 'name' },
-          { key: 'description' },
+          // { key: 'name' }, // Removed: Not in backend DTO
+          { key: 'description', backendKey: 'comment' }, // Melee also maps description -> comment
           { key: 'origin' },
           { key: 'totalPieces', backendKey: 'quantity' },
           { key: 'stockNumber' },
@@ -764,10 +803,10 @@ function AddDiamondForm() {
           { key: 'clarityTo', backendKey: 'clarityMax' },
           { key: 'colorFrom' },
           { key: 'colorTo' },
-          { key: 'fluorescence', backendKey: 'fluoreScence' }, // Backend TYPO: fluoreScence
+          { key: 'fluorescence', backendKey: 'fluoreScenceFrom' },
           { key: 'sieveSizeMin' },
           { key: 'sieveSizeMax' },
-          { key: 'polish' },
+          { key: 'polish', backendKey: 'polishFrom' },
           { key: 'shape' },
           { key: 'diameterMin' },
           { key: 'diameterMax' },
@@ -775,12 +814,13 @@ function AddDiamondForm() {
           { key: 'discount' },
           { key: 'stoneType' },
           { key: 'videoURL' },
-          { key: 'caratWeight' },
-          { key: 'cut' },
-          { key: 'symmetry' },
-          { key: 'shade' },
+          { key: 'caratWeight', backendKey: 'totalCaratWeight' },
+          { key: 'cut', backendKey: 'cutFrom' },
+          { key: 'symmetry', backendKey: 'symmetryFrom' },
+          { key: 'shade', backendKey: 'shadeFrom' },
           { key: 'treatment' },
-          { key: 'process' },
+          // { key: 'process' }, // Removed: Not in backend DTO
+          { key: 'certificateNumber' },
         ];
       } else {
         // SINGLE DIAMOND DTO MAPPING (CreateDiamondDto)
@@ -800,11 +840,7 @@ function AddDiamondForm() {
           { key: 'shape' },
           { key: 'symmetry' },
           { key: 'clarity' },
-          { key: 'fluorescence' }, // Single DTO spells it correctly? Checking...
-          // Single DTO: fluorescence (line 166 of CreateDiamondDto - inferred). 
-          // Re-checking single DTO logic... 
-          // Actually, I didn't verify the spelling in Single DTO, I assumed 'fluorescence'.
-          // Let's assume it's correct for Single unless I see otherwise.
+          { key: 'fluorescence' },
           { key: 'measurement' },
           { key: 'ratio' },
           { key: 'table' },
@@ -819,7 +855,6 @@ function AddDiamondForm() {
           { key: 'culetSize' },
           { key: 'polish' },
           { key: 'treatment' },
-          { key: 'process' },
           { key: 'inscription' },
           { key: 'certificateNumber' },
           { key: 'stoneType' },
@@ -832,7 +867,6 @@ function AddDiamondForm() {
       dtoFields.forEach(({ key, backendKey }) => {
         const val = form[key];
         if (typeof val !== 'undefined' && val !== null && val !== '') {
-          // If key is 'description' map to 'comment'
           formData.append(backendKey || key, String(val));
         }
       });
@@ -840,19 +874,15 @@ function AddDiamondForm() {
       // Add Calculated Prices
       formData.append('totalPrice', totalPrice);
       formData.append('pricePerCarat', pricePerCarat);
+      if (isMelee) {
+        if (pricePerPcs) formData.append('pricePerPcs', pricePerPcs);
+        if (caratWeightPerPcs) formData.append('caratWeightPerpcs', caratWeightPerPcs);
+      }
+      formData.append('available', 'true'); // Default to available
 
       // Certificate Company Logic
-      if (form.certificateCompanyId && form.certificateCompanyId !== '') {
-        if (isMelee) {
-          // Melee expects ID (as number, but formData sends string, backend usually handles it)
-          formData.append('certificateCompanyId', form.certificateCompanyId);
-        } else {
-          // Single expects Name (string)
-          const companyName = getCompanyNameById(form.certificateCompanyId);
-          if (companyName) {
-            formData.append('certificateCompanyName', companyName);
-          }
-        }
+      if (form.certificateCompanyName && form.certificateCompanyName !== '') {
+        formData.append('certificateCompanyName', form.certificateCompanyName);
       }
 
       // Certification File
@@ -862,8 +892,10 @@ function AddDiamondForm() {
 
       // Images
       if (form.images && form.images.length > 0) {
-        form.images.forEach((image) => {
-          formData.append('images', image);
+        form.images.forEach((image, index) => {
+          if (index < 6) {
+            formData.append(`image${index + 1}`, image);
+          }
         });
       }
 
@@ -955,9 +987,8 @@ function AddDiamondForm() {
                 value={form.stoneType}
                 onChange={(value) => setForm(prev => ({ ...prev, stoneType: value }))}
                 options={[
-                  { value: 'Natural', label: 'Natural' },
-                  { value: 'Lab Grown', label: 'Lab Grown' },
-                  { value: 'Treated', label: 'Treated' }
+                  { value: 'naturalDiamond', label: 'Natural' },
+                  { value: 'labGrownDiamond', label: 'Lab Grown' },
                 ]}
                 placeholder="Select stone type..."
                 required
@@ -984,58 +1015,23 @@ function AddDiamondForm() {
                   : 'This title is automatically generated from carat, shape, color and clarity.'}
               </p>
             </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="description" className="text-sm font-medium text-foreground">
+                Description
+              </Label>
+              <textarea
+                id="description"
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+                placeholder="Enter detailed description..."
+                className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 bg-background"
+              />
+            </div>
           </div>
         </section>
 
-        {/* Certification Card */}
-        {activeTab !== 'Melee' && (
-          <section className="bg-card rounded-2xl border border-border shadow-sm p-6 space-y-6">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="h-8 w-1 bg-primary rounded-full"></div>
-              <h3 className="text-lg font-semibold text-foreground">Certification</h3>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="relative group space-y-2">
-                <Label htmlFor="certificateCompanyId" className="font-medium text-foreground">
-                  Certificate Company
-                </Label>
-                <SearchableDropdown
-                  name="certificateCompanyId"
-                  value={form.certificateCompanyId}
-                  onChange={(value) => setForm(prev => ({ ...prev, certificateCompanyId: value }))}
-                  options={certificateCompanies}
-                  placeholder="Select company..."
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="certificateNumber" className="font-medium text-foreground">
-                  Certificate Number
-                </Label>
-                <Input
-                  id="certificateNumber"
-                  name="certificateNumber"
-                  value={form.certificateNumber}
-                  onChange={handleChange}
-                  placeholder="e.g. 123456789"
-                  className="bg-background"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="inscription" className="font-medium text-foreground">
-                  Inscription
-                </Label>
-                <Input
-                  id="inscription"
-                  name="inscription"
-                  value={form.inscription}
-                  onChange={handleChange}
-                  placeholder="e.g. GIA123456"
-                  className="bg-background"
-                />
-              </div>
-            </div>
-          </section>
-        )}
+
         {/* Media Card */}
         <section className="bg-card rounded-2xl border border-border shadow-sm p-6 space-y-6">
           <div className="flex items-center gap-2 mb-6">
@@ -1236,125 +1232,63 @@ function AddDiamondForm() {
           </div>
         </section>
 
-        {/* Product Details Card */}
+
+
+        {/* Diamond Grading Card */}
         <section className="bg-card rounded-2xl border border-border shadow-sm p-6 space-y-6">
           <div className="flex items-center gap-2 mb-6">
             <div className="h-8 w-1 bg-primary rounded-full"></div>
-            <h3 className="text-lg font-semibold text-foreground">Pricing & Details</h3>
+            <h3 className="text-lg font-semibold text-foreground">Diamond Grading</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="stockNumber" className="font-medium">
-                Stock Number<RequiredMark />
+              <Label htmlFor="shape" className="font-medium">
+                Shape<RequiredMark />
               </Label>
-              <Input
-                id="stockNumber"
-                name="stockNumber"
-                type="number"
-                value={form.stockNumber}
-                onChange={handleChange}
-                min={1}
-                step={1}
+              <SearchableDropdown
+                name="shape"
+                value={form.shape}
+                onChange={(value) => setForm(prev => ({ ...prev, shape: value }))}
+                options={shapes}
+                placeholder="Select shape..."
                 required
-                placeholder="e.g. 1001"
-                className="bg-background"
-              />
-              {fieldErrors.stockNumber && (
-                <p className="text-xs text-destructive">{fieldErrors.stockNumber}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="origin" className="font-medium">
-                Origin
-              </Label>
-              <Input
-                id="origin"
-                name="origin"
-                value={form.origin}
-                onChange={handleChange}
-                placeholder="e.g. South Africa"
-                className="bg-background"
               />
             </div>
-
-            {
-              activeTab !== 'Melee' && (
-                <div className="space-y-2">
-                  <Label htmlFor="rap" className="font-medium">
-                    RAP Price
-                  </Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                    <Input
-                      id="rap"
-                      name="rap"
-                      type="number"
-                      value={form.rap}
-                      onChange={handleChange}
-                      placeholder="5000"
-                      className="pl-6 bg-background"
-                    />
-                  </div>
-                </div>
-              )}
+            
             <div className="space-y-2">
-              <Label htmlFor="price" className="font-medium">
-                Total Price ($)<RequiredMark />
-              </Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                <Input
-                  id="price"
-                  name="price"
-                  type="number"
-                  value={form.price}
-                  onChange={handleChange}
-                  min={0}
-                  step="0.01"
-                  required
-                  placeholder="4500"
-                  className="pl-6 bg-background"
-                />
-              </div>
-              {fieldErrors.price && (
-                <p className="text-xs text-destructive">{fieldErrors.price}</p>
-              )}
-              {hasPriceCalculation && (
-                <p className="text-xs text-muted-foreground">
-                  Total Price: ${displayTotalPrice} • Price per carat (Price/ct): ${displayPricePerCarat}
-                </p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="discount" className="font-medium">
-                Discount (%)
+              <Label htmlFor="caratWeight" className="font-medium">
+                Carat Weight<RequiredMark />
               </Label>
               <Input
-                id="discount"
-                name="discount"
+                id="caratWeight"
+                name="caratWeight"
                 type="number"
-                value={form.discount}
+                value={form.caratWeight}
                 onChange={handleChange}
                 min={0}
-                max={100}
                 step="0.01"
-                placeholder="e.g. 10"
+                required
+                placeholder="e.g. 1.25"
                 className="bg-background"
               />
-              {fieldErrors.discount && (
-                <p className="text-xs text-destructive">{fieldErrors.discount}</p>
+              {fieldErrors.caratWeight && (
+                <p className="text-xs text-destructive">{fieldErrors.caratWeight}</p>
               )}
             </div>
-          </div>
-        </section>
 
-        {/* Diamond Specifications Card */}
-        <section className="bg-card rounded-2xl border border-border shadow-sm p-6 space-y-6">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="h-8 w-1 bg-primary rounded-full"></div>
-            <h3 className="text-lg font-semibold text-foreground">Diamond Specifications</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="cut" className="font-medium">
+                Cut Grade
+              </Label>
+              <SearchableDropdown
+                name="cut"
+                value={form.cut}
+                onChange={(value) => setForm(prev => ({ ...prev, cut: value }))}
+                options={cutGrades}
+                placeholder="Select cut grade..."
+              />
+            </div>
+
             {!isMelee ? (
               <div className="space-y-2">
                 <Label htmlFor="color" className="font-medium">
@@ -1396,155 +1330,6 @@ function AddDiamondForm() {
                 </div>
               </div>
             )}
-            {!isMelee ? (
-              <div className="space-y-2">
-                <Label htmlFor="fancyColor" className="font-medium">
-                  Fancy Color<RequiredMark show={isFancyColorRequired()} />
-                </Label>
-                <SearchableDropdown
-                  name="fancyColor"
-                  value={form.fancyColor}
-                  onChange={(value) => setForm(prev => ({ ...prev, fancyColor: value }))}
-                  options={fancyColors}
-                  placeholder="Select fancy color..."
-                  required={isFancyColorRequired()}
-                  disabled={!!form.color}
-                />
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Label htmlFor="fancyColorFrom" className="font-medium">
-                  Fancy Color Range
-                </Label>
-                <div className="flex items-center gap-2">
-                  <SearchableDropdown
-                    name="fancyColorFrom"
-                    value={form.fancyColorFrom}
-                    onChange={(value) => setForm(prev => ({ ...prev, fancyColorFrom: value }))}
-                    options={fancyColors}
-                    placeholder="From"
-                  />
-                  <span className="text-muted-foreground">-</span>
-                  <SearchableDropdown
-                    name="fancyColorTo"
-                    value={form.fancyColorTo}
-                    onChange={(value) => setForm(prev => ({ ...prev, fancyColorTo: value }))}
-                    options={fancyColors}
-                    placeholder="To"
-                  />
-                </div>
-              </div>
-            )}
-            {!isMelee ? (
-              <div className="space-y-2">
-                <Label htmlFor="fancyIntencity" className="font-medium">
-                  Fancy Intensity<RequiredMark show={isFancyIntensityRequired()} />
-                </Label>
-                <SearchableDropdown
-                  name="fancyIntencity"
-                  value={form.fancyIntencity}
-                  onChange={(value) => setForm(prev => ({ ...prev, fancyIntencity: value }))}
-                  options={fancyIntensities}
-                  placeholder="Select intensity..."
-                  required={isFancyIntensityRequired()}
-                  disabled={!form.fancyColor}
-                />
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Label htmlFor="fancyIntencityFrom" className="font-medium">
-                  Fancy Intensity Range
-                </Label>
-                <div className="flex items-center gap-2">
-                  <SearchableDropdown
-                    name="fancyIntencityFrom"
-                    value={form.fancyIntencityFrom}
-                    onChange={(value) => setForm(prev => ({ ...prev, fancyIntencityFrom: value }))}
-                    options={fancyIntensities}
-                    placeholder="From"
-                  />
-                  <span className="text-muted-foreground">-</span>
-                  <SearchableDropdown
-                    name="fancyIntencityTo"
-                    value={form.fancyIntencityTo}
-                    onChange={(value) => setForm(prev => ({ ...prev, fancyIntencityTo: value }))}
-                    options={fancyIntensities}
-                    placeholder="To"
-                  />
-                </div>
-              </div>
-            )}
-            {!isMelee ? (
-              <div className="space-y-2">
-                <Label htmlFor="fancyOvertone" className="font-medium">
-                  Fancy Overtone<RequiredMark show={isFancyOvertoneRequired()} />
-                </Label>
-                <SearchableDropdown
-                  name="fancyOvertone"
-                  value={form.fancyOvertone}
-                  onChange={(value) => setForm(prev => ({ ...prev, fancyOvertone: value }))}
-                  options={fancyOvertones}
-                  placeholder="Select overtone..."
-                  required={isFancyOvertoneRequired()}
-                  disabled={!form.fancyColor}
-                />
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Label htmlFor="fancyOvertoneFrom" className="font-medium">
-                  Fancy Overtone Range
-                </Label>
-                <div className="flex items-center gap-2">
-                  <SearchableDropdown
-                    name="fancyOvertoneFrom"
-                    value={form.fancyOvertoneFrom}
-                    onChange={(value) => setForm(prev => ({ ...prev, fancyOvertoneFrom: value }))}
-                    options={fancyOvertones}
-                    placeholder="From"
-                  />
-                  <span className="text-muted-foreground">-</span>
-                  <SearchableDropdown
-                    name="fancyOvertoneTo"
-                    value={form.fancyOvertoneTo}
-                    onChange={(value) => setForm(prev => ({ ...prev, fancyOvertoneTo: value }))}
-                    options={fancyOvertones}
-                    placeholder="To"
-                  />
-                </div>
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="caratWeight" className="font-medium">
-                Carat Weight<RequiredMark />
-              </Label>
-              <Input
-                id="caratWeight"
-                name="caratWeight"
-                type="number"
-                value={form.caratWeight}
-                onChange={handleChange}
-                min={0}
-                step="0.01"
-                required
-                placeholder="e.g. 1.25"
-                className="bg-background"
-              />
-              {fieldErrors.caratWeight && (
-                <p className="text-xs text-destructive">{fieldErrors.caratWeight}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="cut" className="font-medium">
-                Cut Grade
-              </Label>
-              <SearchableDropdown
-                name="cut"
-                value={form.cut}
-                onChange={(value) => setForm(prev => ({ ...prev, cut: value }))}
-                options={cutGrades}
-                placeholder="Select cut grade..."
-              />
-            </div>
 
             {!isMelee ? (
               <div className="space-y-2">
@@ -1586,32 +1371,137 @@ function AddDiamondForm() {
                 </div>
               </div>
             )}
+            
+            {/* Fancy Color Options Group */}
+            {!isMelee ? (
+              <>
+                 <div className="space-y-2">
+                  <Label htmlFor="fancyColor" className="font-medium">
+                    Fancy Color<RequiredMark show={isFancyColorRequired()} />
+                  </Label>
+                  <SearchableDropdown
+                    name="fancyColor"
+                    value={form.fancyColor}
+                    onChange={(value) => setForm(prev => ({ ...prev, fancyColor: value }))}
+                    options={fancyColors}
+                    placeholder="Select fancy color..."
+                    required={isFancyColorRequired()}
+                    disabled={!!form.color}
+                  />
+                </div>
+                {form.fancyColor && (
+                  <>
+                  <div className="space-y-2">
+                    <Label htmlFor="fancyIntencity" className="font-medium">
+                      Fancy Intensity<RequiredMark show={isFancyIntensityRequired()} />
+                    </Label>
+                    <SearchableDropdown
+                      name="fancyIntencity"
+                      value={form.fancyIntencity}
+                      onChange={(value) => setForm(prev => ({ ...prev, fancyIntencity: value }))}
+                      options={fancyIntensities}
+                      placeholder="Select intensity..."
+                      required={isFancyIntensityRequired()}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="fancyOvertone" className="font-medium">
+                      Fancy Overtone<RequiredMark show={isFancyOvertoneRequired()} />
+                    </Label>
+                    <SearchableDropdown
+                      name="fancyOvertone"
+                      value={form.fancyOvertone}
+                      onChange={(value) => setForm(prev => ({ ...prev, fancyOvertone: value }))}
+                      options={fancyOvertones}
+                      placeholder="Select overtone..."
+                      required={isFancyOvertoneRequired()}
+                    />
+                  </div>
+                  </>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="fancyColorFrom" className="font-medium">
+                    Fancy Color Range
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <SearchableDropdown
+                      name="fancyColorFrom"
+                      value={form.fancyColorFrom}
+                      onChange={(value) => setForm(prev => ({ ...prev, fancyColorFrom: value }))}
+                      options={fancyColors}
+                      placeholder="From"
+                    />
+                    <span className="text-muted-foreground">-</span>
+                    <SearchableDropdown
+                      name="fancyColorTo"
+                      value={form.fancyColorTo}
+                      onChange={(value) => setForm(prev => ({ ...prev, fancyColorTo: value }))}
+                      options={fancyColors}
+                      placeholder="To"
+                    />
+                  </div>
+                </div>
+                 {/* Simplified Fancy Range for Melee to avoid clutter unless needed - kept consistent */}
+                 <div className="space-y-2">
+                  <Label htmlFor="fancyIntencityFrom" className="font-medium">
+                    Fancy Intensity Range
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <SearchableDropdown
+                      name="fancyIntencityFrom"
+                      value={form.fancyIntencityFrom}
+                      onChange={(value) => setForm(prev => ({ ...prev, fancyIntencityFrom: value }))}
+                      options={fancyIntensities}
+                      placeholder="From"
+                    />
+                    <span className="text-muted-foreground">-</span>
+                    <SearchableDropdown
+                      name="fancyIntencityTo"
+                      value={form.fancyIntencityTo}
+                      onChange={(value) => setForm(prev => ({ ...prev, fancyIntencityTo: value }))}
+                      options={fancyIntensities}
+                      placeholder="To"
+                    />
+                  </div>
+                </div>
+                 <div className="space-y-2">
+                  <Label htmlFor="fancyOvertoneFrom" className="font-medium">
+                    Fancy Overtone Range
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <SearchableDropdown
+                      name="fancyOvertoneFrom"
+                      value={form.fancyOvertoneFrom}
+                      onChange={(value) => setForm(prev => ({ ...prev, fancyOvertoneFrom: value }))}
+                      options={fancyOvertones}
+                      placeholder="From"
+                    />
+                    <span className="text-muted-foreground">-</span>
+                    <SearchableDropdown
+                      name="fancyOvertoneTo"
+                      value={form.fancyOvertoneTo}
+                      onChange={(value) => setForm(prev => ({ ...prev, fancyOvertoneTo: value }))}
+                      options={fancyOvertones}
+                      placeholder="To"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="shade" className="font-medium">
-                Shade
-              </Label>
-              <SearchableDropdown
-                name="shade"
-                value={form.shade}
-                onChange={(value) => setForm(prev => ({ ...prev, shade: value }))}
-                options={shades}
-                placeholder="Select shade..."
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="shape" className="font-medium">
-                Shape<RequiredMark />
-              </Label>
-              <SearchableDropdown
-                name="shape"
-                value={form.shape}
-                onChange={(value) => setForm(prev => ({ ...prev, shape: value }))}
-                options={shapes}
-                placeholder="Select shape..."
-                required
-              />
-            </div>
+          </div>
+        </section>
+
+        {/* Finish & Treatments Card */}
+        <section className="bg-card rounded-2xl border border-border shadow-sm p-6 space-y-6">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="h-8 w-1 bg-primary rounded-full"></div>
+            <h3 className="text-lg font-semibold text-foreground">Finish & Treatments</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
               <Label htmlFor="polish" className="font-medium">
                 Polish
@@ -1650,6 +1540,18 @@ function AddDiamondForm() {
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="shade" className="font-medium">
+                Shade
+              </Label>
+              <SearchableDropdown
+                name="shade"
+                value={form.shade}
+                onChange={(value) => setForm(prev => ({ ...prev, shade: value }))}
+                options={shades}
+                placeholder="Select shade..."
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="treatment" className="font-medium">
                 Treatment
               </Label>
@@ -1685,13 +1587,13 @@ function AddDiamondForm() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="certificateCompanyId" className="font-medium">
+                <Label htmlFor="certificateCompanyName" className="font-medium">
                   Certificate Company<RequiredMark />
                 </Label>
                 <SearchableDropdown
-                  name="certificateCompanyId"
-                  value={form.certificateCompanyId}
-                  onChange={(value) => setForm(prev => ({ ...prev, certificateCompanyId: value }))}
+                  name="certificateCompanyName"
+                  value={form.certificateCompanyName}
+                  onChange={(value) => setForm(prev => ({ ...prev, certificateCompanyName: value }))}
                   options={certificateCompanies}
                   placeholder="Select company..."
                   required
@@ -1805,22 +1707,25 @@ function AddDiamondForm() {
           <section className="bg-card rounded-2xl border border-border shadow-sm p-6 space-y-6">
             <div className="flex items-center gap-2 mb-6">
               <div className="h-8 w-1 bg-primary rounded-full"></div>
-              <h3 className="text-lg font-semibold text-foreground">Measurements</h3>
+              <h3 className="text-lg font-semibold text-foreground">Measurements & Proportions</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="measurement" className="text-sm font-medium leading-none text-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Measurement (mm)<RequiredMark />
+                  Measurement<RequiredMark />
                 </Label>
-                <Input
-                  id="measurement"
-                  name="measurement"
-                  value={form.measurement}
-                  onChange={handleChange}
-                  required
-                  placeholder="e.g. 5.00 x 5.00 x 3.00 mm"
-                  className="bg-background"
-                />
+                <div className="relative">
+                  <Input
+                    id="measurement"
+                    name="measurement"
+                    value={form.measurement}
+                    onChange={handleChange}
+                    required
+                    placeholder="e.g. 5.00 x 5.00 x 3.00"
+                    className="bg-background pr-10"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">mm</span>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="ratio" className="font-medium">
@@ -1839,137 +1744,217 @@ function AddDiamondForm() {
                 <Label htmlFor="table" className="font-medium">
                     Table
                 </Label>
-                <Input
-                  id="table"
-                  name="table"
-                  value={form.table}
-                  onChange={handleChange}
-                  placeholder="e.g. 57"
-                  className="bg-background"
-                />
+                <div className="relative">
+                  <Input
+                    id="table"
+                    name="table"
+                    value={form.table}
+                    onChange={handleChange}
+                    placeholder="e.g. 57"
+                    className="bg-background pr-8"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">%</span>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="depth" className="font-medium">
                     Depth
                 </Label>
-                <Input
-                  id="depth"
-                  name="depth"
-                  value={form.depth}
-                  onChange={handleChange}
-                  placeholder="e.g. 62.3"
-                  className="bg-background"
-                />
+                <div className="relative">
+                  <Input
+                    id="depth"
+                    name="depth"
+                    value={form.depth}
+                    onChange={handleChange}
+                    placeholder="e.g. 62.3"
+                    className="bg-background pr-8"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">%</span>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="gridleMin" className="font-medium">
-                    Gridle Min
+                    Girdle Min
                 </Label>
-                <Input
-                  id="gridleMin"
-                  name="gridleMin"
-                  type="number"
-                  value={form.gridleMin}
-                  onChange={handleChange}
-                  placeholder="e.g. 1.0"
-                  className="bg-background"
-                />
+                <div className="relative">
+                  <Input
+                    id="gridleMin"
+                    name="gridleMin"
+                    type="number"
+                    value={form.gridleMin}
+                    onChange={handleChange}
+                    placeholder="e.g. 1.0"
+                    className="bg-background pr-10"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">mm</span>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="gridleMax" className="font-medium">
-                    Gridle Max
+                    Girdle Max
                 </Label>
-                <Input
-                  id="gridleMax"
-                  name="gridleMax"
-                  type="number"
-                  value={form.gridleMax}
-                  onChange={handleChange}
-                  placeholder="e.g. 2.0"
-                  className="bg-background"
-                />
+                <div className="relative">
+                  <Input
+                    id="gridleMax"
+                    name="gridleMax"
+                    type="number"
+                    value={form.gridleMax}
+                    onChange={handleChange}
+                    placeholder="e.g. 2.0"
+                    className="bg-background pr-10"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">mm</span>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="gridlePercentage" className="font-medium">
-                    Gridle Percentage
+                    Girdle %
                 </Label>
-                <Input
-                  id="gridlePercentage"
-                  name="gridlePercentage"
-                  type="number"
-                  value={form.gridlePercentage}
-                  onChange={handleChange}
-                  placeholder="e.g. 1.5"
-                  className="bg-background"
-                />
+                <div className="relative">
+                  <Input
+                    id="gridlePercentage"
+                    name="gridlePercentage"
+                    type="number"
+                    value={form.gridlePercentage}
+                    onChange={handleChange}
+                    placeholder="e.g. 1.5"
+                    className="bg-background pr-8"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">%</span>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="crownHeight" className="font-medium">
                     Crown Height
                 </Label>
-                <Input
-                  id="crownHeight"
-                  name="crownHeight"
-                  type="number"
-                  value={form.crownHeight}
-                  onChange={handleChange}
-                  placeholder="e.g. 15.0"
-                  className="bg-background"
-                />
+                <div className="relative">
+                  <Input
+                    id="crownHeight"
+                    name="crownHeight"
+                    type="number"
+                    value={form.crownHeight}
+                    onChange={handleChange}
+                    placeholder="e.g. 15.0"
+                    className="bg-background pr-8"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">%</span>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="crownAngle" className="font-medium">
                     Crown Angle
                 </Label>
-                <Input
-                  id="crownAngle"
-                  name="crownAngle"
-                  type="number"
-                  value={form.crownAngle}
-                  onChange={handleChange}
-                  placeholder="e.g. 34.5"
-                  className="bg-background"
-                />
+                <div className="relative">
+                  <Input
+                    id="crownAngle"
+                    name="crownAngle"
+                    type="number"
+                    value={form.crownAngle}
+                    onChange={handleChange}
+                    placeholder="e.g. 34.5"
+                    className="bg-background pr-8"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">°</span>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="pavilionAngle" className="font-medium">
                     Pavilion Angle
                 </Label>
-                <Input
-                  id="pavilionAngle"
-                  name="pavilionAngle"
-                  type="number"
-                  value={form.pavilionAngle}
-                  onChange={handleChange}
-                  placeholder="e.g. 40.8"
-                  className="bg-background"
-                />
+                <div className="relative">
+                  <Input
+                    id="pavilionAngle"
+                    name="pavilionAngle"
+                    type="number"
+                    value={form.pavilionAngle}
+                    onChange={handleChange}
+                    placeholder="e.g. 40.8"
+                    className="bg-background pr-8"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">°</span>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="pavilionDepth" className="font-medium">
                     Pavilion Depth
                 </Label>
-                <Input
-                  id="pavilionDepth"
-                  name="pavilionDepth"
-                  type="number"
-                  value={form.pavilionDepth}
-                  onChange={handleChange}
-                  placeholder="e.g. 43.0"
-                  className="bg-background"
-                />
+                <div className="relative">
+                  <Input
+                    id="pavilionDepth"
+                    name="pavilionDepth"
+                    type="number"
+                    value={form.pavilionDepth}
+                    onChange={handleChange}
+                    placeholder="e.g. 43.0"
+                    className="bg-background pr-8"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">%</span>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="culetSize" className="font-medium">
                     Culet Size
                 </Label>
+                <div className="relative">
+                  <Input
+                    id="culetSize"
+                    name="culetSize"
+                    type="number"
+                    value={form.culetSize}
+                    onChange={handleChange}
+                    placeholder="e.g. 0.5"
+                    className="bg-background pr-10"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">mm</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Certification Card */}
+        {activeTab !== 'Melee' && (
+          <section className="bg-card rounded-2xl border border-border shadow-sm p-6 space-y-6">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="h-8 w-1 bg-primary rounded-full"></div>
+              <h3 className="text-lg font-semibold text-foreground">Certification</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="relative group space-y-2">
+                <Label htmlFor="certificateCompanyName" className="font-medium text-foreground">
+                  Certificate Company
+                </Label>
+                <SearchableDropdown
+                  name="certificateCompanyName"
+                  value={form.certificateCompanyName}
+                  onChange={(value) => setForm(prev => ({ ...prev, certificateCompanyName: value }))}
+                  options={certificateCompanies}
+                  placeholder="Select company..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="certificateNumber" className="font-medium text-foreground">
+                  Certificate Number
+                </Label>
                 <Input
-                  id="culetSize"
-                  name="culetSize"
-                  type="number"
-                  value={form.culetSize}
+                  id="certificateNumber"
+                  name="certificateNumber"
+                  value={form.certificateNumber}
                   onChange={handleChange}
-                  placeholder="e.g. 0.5"
+                  placeholder="e.g. 123456789"
+                  className="bg-background"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="inscription" className="font-medium text-foreground">
+                  Inscription
+                </Label>
+                <Input
+                  id="inscription"
+                  name="inscription"
+                  value={form.inscription}
+                  onChange={handleChange}
+                  placeholder="e.g. GIA123456"
                   className="bg-background"
                 />
               </div>
@@ -1977,38 +1962,151 @@ function AddDiamondForm() {
           </section>
         )}
 
-        {/* Description & Footer Card */}
+        {/* Pricing & Details Card */}
         <section className="bg-card rounded-2xl border border-border shadow-sm p-6 space-y-6">
           <div className="flex items-center gap-2 mb-6">
             <div className="h-8 w-1 bg-primary rounded-full"></div>
-            <h3 className="text-lg font-semibold text-foreground">Additional Information</h3>
+            <h3 className="text-lg font-semibold text-foreground">Pricing & Details</h3>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="description" className="font-medium">
-              Description
-            </Label>
-            <textarea
-              id="description"
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              rows={4}
-              className="flex w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              placeholder="Describe your diamond..."
-            />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="stockNumber" className="font-medium">
+                Stock Number<RequiredMark />
+              </Label>
+              <Input
+                id="stockNumber"
+                name="stockNumber"
+                type="number"
+                value={form.stockNumber}
+                onChange={handleChange}
+                min={1}
+                step={1}
+                required
+                placeholder="e.g. 1001"
+                className="bg-background"
+              />
+              {fieldErrors.stockNumber && (
+                <p className="text-xs text-destructive">{fieldErrors.stockNumber}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="origin" className="font-medium">
+                Origin
+              </Label>
+              <Input
+                id="origin"
+                name="origin"
+                value={form.origin}
+                onChange={handleChange}
+                placeholder="e.g. South Africa"
+                className="bg-background"
+              />
+            </div>
+
+            {
+              activeTab !== 'Melee' && (
+                <div className="space-y-2">
+                  <Label htmlFor="rap" className="font-medium">
+                    RAP Price
+                  </Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                    <Input
+                      id="rap"
+                      name="rap"
+                      type="number"
+                      value={form.rap}
+                      onChange={handleChange}
+                      placeholder="5000"
+                      className="pl-6 bg-background"
+                    />
+                  </div>
+                </div>
+              )}
+            <div className="space-y-2">
+              <Label htmlFor="price" className="font-medium">
+                Total Price ($)<RequiredMark />
+              </Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                <Input
+                  id="price"
+                  name="price"
+                  type="number"
+                  value={form.price}
+                  onChange={handleChange}
+                  min={0}
+                  step="0.01"
+                  required
+                  placeholder="4500"
+                  className="pl-6 bg-background"
+                />
+              </div>
+              {fieldErrors.price && (
+                <p className="text-xs text-destructive">{fieldErrors.price}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pricePerCarat" className="font-medium">
+                Price Per Carat ($)
+              </Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                <Input
+                  id="pricePerCarat"
+                  name="pricePerCarat"
+                  type="number"
+                  value={form.pricePerCarat}
+                  onChange={handleChange}
+                  min={0}
+                  step="0.01"
+                  placeholder="e.g. 3600"
+                  className="pl-6 bg-background"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="discount" className="font-medium">
+                Discount (%)
+              </Label>
+              <Input
+                id="discount"
+                name="discount"
+                type="number"
+                value={form.discount}
+                onChange={handleChange}
+                min={0}
+                max={100}
+                step="0.01"
+                placeholder="e.g. 10"
+                className="bg-background"
+              />
+              {fieldErrors.discount && (
+                <p className="text-xs text-destructive">{fieldErrors.discount}</p>
+              )}
+            </div>
           </div>
-          {error && (
+        </section>
+
+        {/* Error Display */}
+        {error && (
             <div className="bg-destructive/15 text-destructive px-4 py-3 rounded-lg text-sm flex items-center gap-2">
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
               {error}
             </div>
-          )}
-        </section>
+        )}
       </div>
 
       {/* Sticky Footer */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-lg border-t border-border z-40">
-        <div className="max-w-[1200px] mx-auto flex justify-end gap-4">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-lg border-t border-border z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+        <div className="max-w-[1200px] mx-auto flex items-center justify-between gap-4">
+           <div className="hidden md:flex items-center text-sm text-muted-foreground">
+              <span className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                Unsaved Changes
+              </span>
+           </div>
+           <div className="flex items-center gap-4">
           <Button
             type="reset"
             variant="outline"
@@ -2018,14 +2116,14 @@ function AddDiamondForm() {
               setError('');
             }}
             disabled={loading}
-            className="min-w-[120px] rounded-xl"
+            className="min-w-[120px] rounded-xl hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50 transition-colors"
           >
             Cancel
           </Button>
           <Button
             type="submit"
             disabled={loading}
-            className="min-w-[160px] rounded-xl font-semibold shadow-lg shadow-primary/25"
+            className="min-w-[160px] rounded-xl font-semibold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all transform hover:-translate-y-0.5"
           >
             {loading ? (
               <>
@@ -2039,6 +2137,7 @@ function AddDiamondForm() {
               'Add Diamond'
             )}
           </Button>
+          </div>
         </div>
       </div>
     </form>
