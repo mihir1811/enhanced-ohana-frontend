@@ -225,7 +225,7 @@ type DiamondFormState = {
   pavilionAngle: string,
   pavilionDepth: string,
   culetSize: string,
-  totalPieces: string,
+  totalPcs: string,
   sizeMin: string,
   sizeMax: string,
   sieveSizeMin: string,
@@ -287,7 +287,7 @@ const initialState: DiamondFormState = {
   pavilionAngle: '',
   pavilionDepth: '',
   culetSize: '',
-  totalPieces: '',
+  totalPcs: '',
   sizeMin: '',
   sizeMax: '',
   sieveSizeMin: '',
@@ -316,7 +316,7 @@ function AddDiamondForm() {
 
   useEffect(() => {
     if (isMelee) {
-      const piecesPart = form.totalPieces && String(form.totalPieces).trim() !== '' ? `${form.totalPieces} Pcs` : '';
+      const piecesPart = form.totalPcs && String(form.totalPcs).trim() !== '' ? `${form.totalPcs} Pcs` : '';
       const caratPart = form.caratWeight && String(form.caratWeight).trim() !== '' ? `${form.caratWeight}ct` : '';
       const shapePart = form.shape && String(form.shape).trim() !== '' ? form.shape : '';
       const colorRange = form.colorFrom && form.colorTo
@@ -349,7 +349,7 @@ function AddDiamondForm() {
     }
   }, [
     isMelee,
-    form.totalPieces,
+    form.totalPcs,
     form.caratWeight,
     form.shape,
     form.color,
@@ -530,6 +530,19 @@ function AddDiamondForm() {
       }
       setFieldErrors(prev => ({ ...prev, discount: message }));
     }
+
+    if (name === 'totalPcs') {
+      let message = '';
+      if (value === '') {
+        message = 'Total pieces is required';
+      } else {
+        const num = Number(value);
+        if (!Number.isInteger(num) || num <= 0) {
+          message = 'Enter a valid positive whole number';
+        }
+      }
+      setFieldErrors(prev => ({ ...prev, totalPcs: message }));
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -610,7 +623,7 @@ function AddDiamondForm() {
         origin: 'Botswana',
         price: randomPrice,
         discount: getRandomFloat(0, 10),
-        totalPieces: getRandomInt(10, 100).toString(),
+        totalPcs: getRandomInt(10, 100).toString(),
         caratWeight: getRandomFloat(1.0, 20.0),
         shape: randomShape,
         colorFrom,
@@ -633,6 +646,7 @@ function AddDiamondForm() {
         treatment: randomTreatment,
         process: randomProcess,
         sizeMin: diaMin,
+        sizeMax: diaMax,
       }));
     } else {
       // Single Random Data
@@ -735,6 +749,36 @@ function AddDiamondForm() {
         return;
       }
       // Melee Diamond: Ensure required range fields
+      if (!form.totalPcs || Number(form.totalPcs) <= 0) {
+        setError('Total Pieces is required for Melee diamonds.');
+        setLoading(false);
+        toast.error('Total Pieces is required.');
+        return;
+      }
+      if (!form.stockNumber) {
+        setError('Stock Number is required.');
+        setLoading(false);
+        toast.error('Stock Number is required.');
+        return;
+      }
+      if (!form.price || Number(form.price) <= 0) {
+        setError('Total Price is required.');
+        setLoading(false);
+        toast.error('Total Price is required.');
+        return;
+      }
+      if (!form.caratWeight || Number(form.caratWeight) <= 0) {
+        setError('Total Carat Weight is required.');
+        setLoading(false);
+        toast.error('Total Carat Weight is required.');
+        return;
+      }
+      if (!form.certificateCompanyName) {
+        setError('Certificate Company is required for Melee diamonds.');
+        setLoading(false);
+        toast.error('Certificate Company is required.');
+        return;
+      }
       if (!form.colorFrom || !form.colorTo) {
         setError('Color range (From and To) is required for Melee diamonds.');
         setLoading(false);
@@ -759,6 +803,7 @@ function AddDiamondForm() {
         toast.error('Diameter range is required.');
         return;
       }
+
     }
 
     try {
@@ -767,7 +812,7 @@ function AddDiamondForm() {
       // Calculate derived price fields
       const priceVal = parseFloat(form.price);
       const caratVal = parseFloat(form.caratWeight);
-      const piecesVal = parseFloat(form.totalPieces);
+      const piecesVal = parseFloat(form.totalPcs);
 
       let totalPrice = form.price;
       let pricePerCarat = form.price; // Default fallback
@@ -795,9 +840,9 @@ function AddDiamondForm() {
       if (isMelee) {
         dtoFields = [
           // { key: 'name' }, // Removed: Not in backend DTO
-          { key: 'description', backendKey: 'comment' }, // Melee also maps description -> comment
+          { key: 'description' },
           { key: 'origin' },
-          { key: 'totalPieces', backendKey: 'quantity' },
+          { key: 'totalPcs' },
           { key: 'stockNumber' },
           { key: 'clarityFrom', backendKey: 'clarityMin' },
           { key: 'clarityTo', backendKey: 'clarityMax' },
@@ -808,9 +853,8 @@ function AddDiamondForm() {
           { key: 'sieveSizeMax' },
           { key: 'polish', backendKey: 'polishFrom' },
           { key: 'shape' },
-          { key: 'diameterMin' },
-          { key: 'diameterMax' },
-          { key: 'measurement' },
+          { key: 'sizeMin', backendKey: 'measurementMin' },
+          { key: 'sizeMax', backendKey: 'measurementMax' },
           { key: 'discount' },
           { key: 'stoneType' },
           { key: 'videoURL' },
@@ -821,6 +865,12 @@ function AddDiamondForm() {
           { key: 'treatment' },
           // { key: 'process' }, // Removed: Not in backend DTO
           { key: 'certificateNumber' },
+          { key: 'fancyColorFrom' },
+          { key: 'fancyColorTo' },
+          { key: 'fancyIntencityFrom' },
+          { key: 'fancyIntencityTo' },
+          { key: 'fancyOvertone' },
+          { key: 'ratio' },
         ];
       } else {
         // SINGLE DIAMOND DTO MAPPING (CreateDiamondDto)
@@ -1601,14 +1651,14 @@ function AddDiamondForm() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="totalPieces" className="font-medium">
+                <Label htmlFor="totalPcs" className="font-medium">
                   Total Pieces<RequiredMark />
                 </Label>
                 <Input
-                  id="totalPieces"
-                  name="totalPieces"
+                  id="totalPcs"
+                  name="totalPcs"
                   type="number"
-                  value={form.totalPieces}
+                  value={form.totalPcs}
                   onChange={handleChange}
                   required
                   placeholder="e.g. 150"
