@@ -555,7 +555,7 @@ const RangeSelectFilter = React.memo(({
               onChange([])
               setLastClickedIndex(null)
             }}
-            className="text-xs underline hover:no-underline transition-all text-green-600 font-medium"
+            className="cursor-pointer text-xs underline hover:no-underline transition-all text-green-600 font-medium"
           >
             Clear all
           </button>
@@ -986,7 +986,7 @@ const MultiSelectFilter = React.memo(({
         <button
           key={option}
           onClick={() => onChange(fieldMap[label.toLowerCase()] || label.toLowerCase() as keyof DiamondSearchForm, option)}
-          className={`group w-full px-4 py-2 rounded-3xl text-sm font-medium transition-all duration-200
+          className={`cursor-pointer group w-full px-4 py-2 rounded-3xl text-sm font-medium transition-all duration-200
             ${isSelected
               ? colorConfig[colorVariant]
               : "bg-transparent border border-input text-foreground"
@@ -1104,7 +1104,7 @@ const SelectedOptionsDisplay = React.memo(({
                   e.stopPropagation()
                   onRemove(option)
                 }}
-                className="ml-1 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                className="cursor-pointer ml-1 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
                 title={`Remove ${option}`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1117,7 +1117,7 @@ const SelectedOptionsDisplay = React.memo(({
       </div>
       <button
         onClick={() => selected.slice().forEach(val => onRemove(val))}
-        className="ml-4 flex-shrink-0 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all border border-red-200 dark:border-red-800"
+        className="cursor-pointer ml-4 flex-shrink-0 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all border border-red-200 dark:border-red-800"
       >
         Clear All
       </button>
@@ -1238,7 +1238,7 @@ const RangeInput = React.memo(({
             onMinChange(minBound);
             onMaxChange(maxBound);
           }}
-          className="text-xs px-3 py-1 rounded-full bg-destructive/10 text-destructive hover:bg-destructive/20 transition-all"
+          className="cursor-pointer text-xs px-3 py-1 rounded-full bg-destructive/10 text-destructive hover:bg-destructive/20 transition-all"
         >
           Clear
         </button>
@@ -1369,7 +1369,7 @@ const SearchInput = React.memo(({
         {selected.length > 0 && (
           <button
             onClick={() => selected.slice().forEach(item => onRemove(item))}
-            className="text-xs px-3 py-1 rounded-full bg-destructive/10 text-destructive hover:bg-destructive/20 transition-all"
+            className="cursor-pointer text-xs px-3 py-1 rounded-full bg-destructive/10 text-destructive hover:bg-destructive/20 transition-all"
           >
             Clear All
           </button>
@@ -1386,7 +1386,7 @@ const SearchInput = React.memo(({
         />
         <button
           onClick={handleAdd}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           Add
         </button>
@@ -1401,7 +1401,7 @@ const SearchInput = React.memo(({
               {item}
               <button
                 onClick={() => onRemove(item)}
-                className="text-blue-600 hover:text-blue-800"
+                className="cursor-pointer text-blue-600 hover:text-blue-800"
               >
                 ×
               </button>
@@ -1500,7 +1500,7 @@ const SieveSizeTable = React.memo(({
                         e.stopPropagation()
                         onSizeToggle(size)
                       }}
-                      className="ml-1 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                      className="cursor-pointer ml-1 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
                       title="Remove this size"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1514,7 +1514,7 @@ const SieveSizeTable = React.memo(({
           </div>
           <button
             onClick={() => selectedSizes.forEach(size => onSizeToggle(size))}
-            className="ml-4 flex-shrink-0 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all border border-red-200 dark:border-red-800"
+            className="cursor-pointer ml-4 flex-shrink-0 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all border border-red-200 dark:border-red-800"
           >
             Clear All
           </button>
@@ -1546,7 +1546,7 @@ const SieveSizeTable = React.memo(({
                     : isSelected
                     ? 'bg-yellow-500 dark:bg-yellow-600 hover:bg-yellow-600 dark:hover:bg-yellow-700 shadow-sm'
                     : index % 2 === 0 
-                      ? 'bg-white dark:bg-slate-900 hover:bg-yellow-50 dark:hover:bg-yellow-900/20' 
+                      ? 'bg-white dark:bg-black hover:bg-yellow-50 dark:hover:bg-yellow-900/20' 
                       : 'bg-gray-50/50 dark:bg-slate-800 hover:bg-yellow-50 dark:hover:bg-yellow-900/20'
                 }`}
                 onClick={() => onSizeToggle(item.mm)}
@@ -1951,7 +1951,7 @@ export default function DiamondsSearchPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       {/* Navigation */}
-      <div className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-slate-900/70 shadow-lg">
+      <div className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-black/70 shadow-lg">
         <NavigationUser />
       </div>
 
@@ -2046,7 +2046,7 @@ export default function DiamondsSearchPage() {
                     <button
                       key={shape}
                       onClick={() => handleMultiSelect('shape', shape)}
-                      className={`flex flex-col items-center gap-2 px-3 py-3 rounded-lg text-xs font-medium transition-all ${isSelected
+                      className={`cursor-pointer flex flex-col items-center gap-2 px-3 py-3 rounded-lg text-xs font-medium transition-all ${isSelected
                         ? 'bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-500 shadow-sm text-yellow-700 dark:text-yellow-400'
                         : 'bg-transparent border border-gray-200 dark:border-slate-700 hover:border-yellow-400'
                         }`}
@@ -2125,7 +2125,7 @@ export default function DiamondsSearchPage() {
                           })
                         }));
                       }}
-                      className="text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
+                      className="cursor-pointer text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
                     >
                       Deselect All
                     </button>
@@ -2204,7 +2204,7 @@ export default function DiamondsSearchPage() {
                         setColorRangeMode(!colorRangeMode)
                         setColorRangeStart(null)
                       }}
-                      className={`text-xs px-3 py-1 rounded-full transition-all ${
+                      className={`cursor-pointer text-xs px-3 py-1 rounded-full transition-all ${
                         colorRangeMode
                           ? 'bg-blue-500 text-white'
                           : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50'
@@ -2220,7 +2220,7 @@ export default function DiamondsSearchPage() {
                           color: allColors
                         }))
                       }}
-                      className="text-xs px-3 py-1 rounded-full bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition-all"
+                      className="cursor-pointer text-xs px-3 py-1 rounded-full bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition-all"
                     >
                       Select All
                     </button>
@@ -2304,7 +2304,7 @@ export default function DiamondsSearchPage() {
                           <button
                             key={color.name}
                             onClick={() => handleMultiSelect('fancyColors', color.name)}
-                            className={`group relative p-4 rounded-2xl transition-all duration-200 border
+                            className={`cursor-pointer group relative p-4 rounded-2xl transition-all duration-200 border
                               ${isSelected
                                 ? "bg-yellow-50 dark:bg-yellow-900/30 border-yellow-500 dark:border-yellow-500 shadow-lg"
                                 : "bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 hover:border-yellow-400 dark:hover:border-yellow-600 hover:shadow-md hover:bg-yellow-50/50 dark:hover:bg-yellow-900/10"
@@ -2362,7 +2362,7 @@ export default function DiamondsSearchPage() {
                       <button
                         key={color}
                         onClick={() => handleColorClick(color)}
-                        className={`px-4 py-2.5 rounded-3xl text-sm font-medium transition-all duration-200 border ${
+                        className={`cursor-pointer px-4 py-2.5 rounded-3xl text-sm font-medium transition-all duration-200 border ${
                           isRangeStart
                             ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-900 dark:text-blue-100 border-blue-500 ring-2 ring-blue-300 shadow-md'
                             :
@@ -2391,7 +2391,7 @@ export default function DiamondsSearchPage() {
                       setClarityRangeMode(!clarityRangeMode)
                       setClarityRangeStart(null)
                     }}
-                    className={`text-xs px-3 py-1 rounded-full transition-all ${
+                    className={`cursor-pointer text-xs px-3 py-1 rounded-full transition-all ${
                       clarityRangeMode
                         ? 'bg-blue-500 text-white'
                         : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50'
@@ -2407,7 +2407,7 @@ export default function DiamondsSearchPage() {
                         clarity: allClarities
                       }))
                     }}
-                    className="text-xs px-3 py-1 rounded-full bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition-all"
+                    className="cursor-pointer text-xs px-3 py-1 rounded-full bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition-all"
                   >
                     Select All
                   </button>
@@ -2421,7 +2421,7 @@ export default function DiamondsSearchPage() {
                     <button
                       key={clarity}
                       onClick={() => handleClarityClick(clarity)}
-                      className={`px-4 py-2.5 rounded-3xl text-sm font-medium transition-all duration-200 border ${
+                      className={`cursor-pointer px-4 py-2.5 rounded-3xl text-sm font-medium transition-all duration-200 border ${
                         isRangeStart
                           ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-900 dark:text-blue-100 border-blue-500 ring-2 ring-blue-300 shadow-md'
                           :
@@ -2583,7 +2583,7 @@ export default function DiamondsSearchPage() {
                           heightRange: defaultForm.heightRange
                         }));
                       }}
-                      className="text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
+                      className="cursor-pointer text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
                     >
                       Deselect All
                     </button>
@@ -2630,7 +2630,7 @@ export default function DiamondsSearchPage() {
             <div className='flex justify-center relative'>
               <button
                 onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                className="flex items-center justify-center w-[200px] p-2 rounded-full border transition-all duration-200 hover:bg-gray-50"
+                className="cursor-pointer flex items-center justify-center w-[200px] p-2 rounded-full border transition-all duration-200 hover:bg-gray-50"
                 style={{
                   backgroundColor: 'var(--card)',
                   borderColor: 'var(--border)',
@@ -2684,7 +2684,7 @@ export default function DiamondsSearchPage() {
                             pavilionDepthRange: defaultForm.pavilionDepthRange
                           }));
                         }}
-                        className="text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all font-medium"
+                        className="cursor-pointer text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all font-medium"
                       >
                         Deselect All Ranges
                       </button>
@@ -2994,7 +2994,7 @@ export default function DiamondsSearchPage() {
                   }))
                   setTimeout(handleSearch, 100)
                 }}
-                className="p-6 border rounded-xl hover:shadow-2xl transition-all text-left bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex flex-col items-start gap-2"
+                className="p-6 border rounded-xl hover:shadow-2xl transition-all text-left bg-white/80 dark:bg-black/80 backdrop-blur-xl flex flex-col items-start gap-2"
                 style={{ borderColor: 'var(--border)' }}
               >
                 {option.icon}

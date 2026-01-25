@@ -3,10 +3,13 @@
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 
-function FilterSection({ title, children }: { title: string; children: React.ReactNode }) {
+function FilterSection({ title, children, actions }: { title: string; children: React.ReactNode; actions?: React.ReactNode }) {
   return (
     <div className="filter-group rounded-lg mb-4 border-gray-100 dark:border-gray-800">
-      <h3 className="text-base font-medium mb-3" style={{ color: 'var(--foreground)' }}>{title}</h3>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-base font-medium" style={{ color: 'var(--foreground)' }}>{title}</h3>
+        {actions && <div className="flex gap-2">{actions}</div>}
+      </div>
       <div className="mt-2">{children}</div>
     </div>
   )
@@ -203,7 +206,82 @@ export default function GemstoneFilters({
   const [showAllMineralClassifications, setShowAllMineralClassifications] = useState(false)
   const [showAllOrigins, setShowAllOrigins] = useState(false)
 
-  const handleArrayFilterChange = (key: keyof GemstoneFilterValues, value: string) => {
+  const [rangeSelection, setRangeSelection] = useState<{
+    isActive: boolean;
+    category: keyof GemstoneFilterValues | null;
+    startItem: string | null;
+  }>({ isActive: false, category: null, startItem: null });
+
+  const toggleRangeMode = (category: keyof GemstoneFilterValues) => {
+    if (rangeSelection.isActive && rangeSelection.category === category) {
+      setRangeSelection({ isActive: false, category: null, startItem: null });
+    } else {
+      setRangeSelection({ isActive: true, category, startItem: null });
+    }
+  };
+
+  const selectAll = (category: keyof GemstoneFilterValues, options: string[]) => {
+    // If all are already selected, deselect all (optional, but nice UX)
+    // But user asked for "Select All", usually means select all.
+    // Let's check if all are currently selected.
+    const currentValues = filters[category] as string[];
+    const allSelected = options.every(opt => currentValues.includes(opt));
+    
+    if (allSelected) {
+        // Deselect all
+        onFiltersChange({
+            ...filters,
+            [category]: []
+        });
+    } else {
+        // Select all
+        // Merge with existing selections (though usually we just set to options)
+        // If we want to be safe and only add unique ones from the passed options:
+        const newValues = Array.from(new Set([...currentValues, ...options]));
+        onFiltersChange({
+            ...filters,
+            [category]: newValues
+        });
+    }
+  };
+
+  const clearCategory = (category: keyof GemstoneFilterValues) => {
+    onFiltersChange({
+      ...filters,
+      [category]: []
+    });
+  };
+
+  const handleArrayFilterChange = (key: keyof GemstoneFilterValues, value: string, allOptions: string[] = []) => {
+    // Range Selection Logic
+    if (rangeSelection.isActive && rangeSelection.category === key && allOptions.length > 0) {
+      if (rangeSelection.startItem === null) {
+        setRangeSelection(prev => ({ ...prev, startItem: value }));
+        // Continue to select this item normally below
+      } else {
+        const startIdx = allOptions.indexOf(rangeSelection.startItem);
+        const endIdx = allOptions.indexOf(value);
+        
+        if (startIdx !== -1 && endIdx !== -1) {
+          const min = Math.min(startIdx, endIdx);
+          const max = Math.max(startIdx, endIdx);
+          const rangeItems = allOptions.slice(min, max + 1);
+          
+          const currentValues = filters[key] as string[];
+          const newValues = Array.from(new Set([...currentValues, ...rangeItems]));
+          
+          onFiltersChange({
+            ...filters,
+            [key]: newValues
+          });
+          
+          // Reset start item but keep range mode active for next range
+          setRangeSelection(prev => ({ ...prev, startItem: null }));
+          return;
+        }
+      }
+    }
+
     const currentValues = filters[key] as string[]
     const newValues = currentValues.includes(value)
       ? currentValues.filter(v => v !== value)
@@ -275,8 +353,8 @@ export default function GemstoneFilters({
           return (
             <button
               key={option}
-              onClick={() => handleArrayFilterChange(category, option)}
-              className={`group w-full px-4 py-2 rounded-3xl text-sm font-medium transition-all duration-200
+              onClick={() => handleArrayFilterChange(category, option, options)}
+              className={`cursor-pointer group w-full px-4 py-2 rounded-3xl text-sm font-medium transition-all duration-200
                 ${isSelected
                   ? "bg-yellow-50 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100 border border-yellow-500 dark:border-yellow-500"
                   : "bg-transparent border hover:text-black border-gray-200 dark:border-slate-700 dark:text-gray-300"
@@ -293,17 +371,23 @@ export default function GemstoneFilters({
     )
   }
 
-  const ColorButtonGroup = () => (
+  const ColorButtonGroup = () => {
+    const colorOptions = COLORS.map(c => c.name);
+    return (
     <div className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-11 gap-3">
       {COLORS.map((color) => {
         const isSelected = (filters.color as string[]).includes(color.name)
+        const isRangeStart = rangeSelection.isActive && rangeSelection.category === 'color' && rangeSelection.startItem === color.name;
 
         return (
           <button
             key={color.name}
-            onClick={() => handleArrayFilterChange('color', color.name)}
-            className={`relative p-3 rounded-xl transition-all duration-200 border-2
-              ${isSelected
+            onClick={() => handleArrayFilterChange('color', color.name, colorOptions)}
+            className={`cursor-pointer relative p-3 rounded-xl transition-all duration-200 border-2
+              ${isRangeStart
+                ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-900 dark:text-blue-100 border-blue-500 ring-2 ring-blue-300 shadow-md'
+                :
+              isSelected
                 ? "bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/30 border-yellow-500 dark:border-yellow-600 shadow-md"
                 : "bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 hover:border-yellow-300 dark:hover:border-yellow-700 hover:shadow-sm"
               }
@@ -327,7 +411,7 @@ export default function GemstoneFilters({
         )
       })}
     </div>
-  )
+  )}
 
   const RangeFilter = ({
     min,
@@ -453,7 +537,7 @@ export default function GemstoneFilters({
       <div className="mt-4 flex justify-center">
         <button
           onClick={onClick}
-          className="px-6 py-2 text-sm font-medium text-yellow-600 dark:text-yellow-500 border border-yellow-300 dark:border-yellow-700 rounded-full hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-all duration-200 flex items-center gap-2"
+          className="cursor-pointer px-6 py-2 text-sm font-medium text-yellow-600 dark:text-yellow-500 border border-yellow-300 dark:border-yellow-700 rounded-full hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-all duration-200 flex items-center gap-2"
         >
           {isExpanded ? (
             <>
@@ -474,7 +558,37 @@ export default function GemstoneFilters({
   return (
     <div className={`bg-white/80 dark:bg-slate-900/80 rounded-2xl shadow-sm border p-8 backdrop-blur-xl ${className}`} style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
       <div className="space-y-6">
-        <FilterSection title="Gemstone Type">
+        <FilterSection 
+          title="Gemstone Type"
+          actions={
+            <div className="flex gap-2">
+              <button
+                onClick={() => toggleRangeMode('gemstoneType')}
+                className={`cursor-pointer text-xs px-3 py-1 rounded-full transition-all ${
+                  rangeSelection.isActive && rangeSelection.category === 'gemstoneType'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50'
+                }`}
+              >
+                {rangeSelection.isActive && rangeSelection.category === 'gemstoneType' ? 'Cancel Range' : 'Select Range'}
+              </button>
+              <button
+                onClick={() => selectAll('gemstoneType', GEMSTONE_TYPES)}
+                className="cursor-pointer text-xs px-3 py-1 rounded-full bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition-all"
+              >
+                Select All
+              </button>
+              {filters.gemstoneType.length > 0 && (
+                <button
+                  onClick={() => clearCategory('gemstoneType')}
+                  className="cursor-pointer text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          }
+        >
           <ButtonFilterGroup 
             options={GEMSTONE_TYPES} 
             category="gemstoneType" 
@@ -490,16 +604,52 @@ export default function GemstoneFilters({
           />
         </FilterSection>
 
-        <FilterSection title="Birthstones">
+        <FilterSection 
+          title="Birthstones"
+          actions={
+            <div className="flex gap-2">
+              <button
+                onClick={() => toggleRangeMode('birthstones')}
+                className={`cursor-pointer text-xs px-3 py-1 rounded-full transition-all ${
+                  rangeSelection.isActive && rangeSelection.category === 'birthstones'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50'
+                }`}
+              >
+                {rangeSelection.isActive && rangeSelection.category === 'birthstones' ? 'Cancel Range' : 'Select Range'}
+              </button>
+              <button
+                onClick={() => selectAll('birthstones', BIRTHSTONE_MONTHS.map(m => m.month))}
+                className="cursor-pointer text-xs px-3 py-1 rounded-full bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition-all"
+              >
+                Select All
+              </button>
+              {filters.birthstones.length > 0 && (
+                <button
+                  onClick={() => clearCategory('birthstones')}
+                  className="cursor-pointer text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          }
+        >
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {BIRTHSTONE_MONTHS.map((item) => {
               const isSelected = filters.birthstones?.includes(item.month)
+              const isRangeStart = rangeSelection.isActive && rangeSelection.category === 'birthstones' && rangeSelection.startItem === item.month;
+              const birthstoneOptions = BIRTHSTONE_MONTHS.map(m => m.month);
+
               return (
                 <button
                   key={item.month}
-                  onClick={() => handleArrayFilterChange('birthstones', item.month)}
+                  onClick={() => handleArrayFilterChange('birthstones', item.month, birthstoneOptions)}
                   className={`p-4 rounded-3xl cursor-pointer transition-all duration-200 border text-center
-                    ${isSelected
+                    ${isRangeStart
+                      ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-900 dark:text-blue-100 border-blue-500 ring-2 ring-blue-300 shadow-md'
+                      :
+                    isSelected
                       ? "border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100"
                       : "border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300"
                     }
@@ -519,7 +669,37 @@ export default function GemstoneFilters({
           </div>
         </FilterSection>
 
-        <FilterSection title="Shape">
+        <FilterSection 
+          title="Shape"
+          actions={
+            <div className="flex gap-2">
+              <button
+                onClick={() => toggleRangeMode('shape')}
+                className={`cursor-pointer text-xs px-3 py-1 rounded-full transition-all ${
+                  rangeSelection.isActive && rangeSelection.category === 'shape'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50'
+                }`}
+              >
+                {rangeSelection.isActive && rangeSelection.category === 'shape' ? 'Cancel Range' : 'Select Range'}
+              </button>
+              <button
+                onClick={() => selectAll('shape', SHAPES)}
+                className="cursor-pointer text-xs px-3 py-1 rounded-full bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition-all"
+              >
+                Select All
+              </button>
+              {filters.shape.length > 0 && (
+                <button
+                  onClick={() => clearCategory('shape')}
+                  className="cursor-pointer text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          }
+        >
           <ButtonFilterGroup 
             options={SHAPES} 
             category="shape" 
@@ -560,11 +740,71 @@ export default function GemstoneFilters({
           </FilterSection>
         </div>
 
-        <FilterSection title="Color">
+        <FilterSection 
+          title="Color"
+          actions={
+            <div className="flex gap-2">
+              <button
+                onClick={() => toggleRangeMode('color')}
+                className={`cursor-pointer text-xs px-3 py-1 rounded-full transition-all ${
+                  rangeSelection.isActive && rangeSelection.category === 'color'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50'
+                }`}
+              >
+                {rangeSelection.isActive && rangeSelection.category === 'color' ? 'Cancel Range' : 'Select Range'}
+              </button>
+              <button
+                onClick={() => selectAll('color', COLORS.map(c => c.name))}
+                className="cursor-pointer text-xs px-3 py-1 rounded-full bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition-all"
+              >
+                Select All
+              </button>
+              {filters.color.length > 0 && (
+                <button
+                  onClick={() => clearCategory('color')}
+                  className="cursor-pointer text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          }
+        >
           <ColorButtonGroup />
         </FilterSection>
 
-        <FilterSection title="Clarity">
+        <FilterSection 
+          title="Clarity"
+          actions={
+            <div className="flex gap-2">
+              <button
+                onClick={() => toggleRangeMode('clarity')}
+                className={`cursor-pointer text-xs px-3 py-1 rounded-full transition-all ${
+                  rangeSelection.isActive && rangeSelection.category === 'clarity'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50'
+                }`}
+              >
+                {rangeSelection.isActive && rangeSelection.category === 'clarity' ? 'Cancel Range' : 'Select Range'}
+              </button>
+              <button
+                onClick={() => selectAll('clarity', CLARITY_OPTIONS)}
+                className="cursor-pointer text-xs px-3 py-1 rounded-full bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition-all"
+              >
+                Select All
+              </button>
+              {filters.clarity.length > 0 && (
+                <button
+                  onClick={() => clearCategory('clarity')}
+                  className="cursor-pointer text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          }
+        >
           <ButtonFilterGroup options={CLARITY_OPTIONS} category="clarity" />
         </FilterSection>
 
@@ -584,15 +824,105 @@ export default function GemstoneFilters({
           />
         </FilterSection> */}
 
-        <FilterSection title="Treatments">
+        <FilterSection 
+          title="Treatments"
+          actions={
+            <div className="flex gap-2">
+              <button
+                onClick={() => toggleRangeMode('treatment')}
+                className={`cursor-pointer text-xs px-3 py-1 rounded-full transition-all ${
+                  rangeSelection.isActive && rangeSelection.category === 'treatment'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50'
+                }`}
+              >
+                {rangeSelection.isActive && rangeSelection.category === 'treatment' ? 'Cancel Range' : 'Select Range'}
+              </button>
+              <button
+                onClick={() => selectAll('treatment', TREATMENTS)}
+                className="cursor-pointer text-xs px-3 py-1 rounded-full bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition-all"
+              >
+                Select All
+              </button>
+              {filters.treatment.length > 0 && (
+                <button
+                  onClick={() => clearCategory('treatment')}
+                  className="cursor-pointer text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          }
+        >
           <ButtonFilterGroup options={TREATMENTS} category="treatment" />
         </FilterSection>
 
-        <FilterSection title="Certification">
+        <FilterSection 
+          title="Certification"
+          actions={
+            <div className="flex gap-2">
+              <button
+                onClick={() => toggleRangeMode('certification')}
+                className={`cursor-pointer text-xs px-3 py-1 rounded-full transition-all ${
+                  rangeSelection.isActive && rangeSelection.category === 'certification'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50'
+                }`}
+              >
+                {rangeSelection.isActive && rangeSelection.category === 'certification' ? 'Cancel Range' : 'Select Range'}
+              </button>
+              <button
+                onClick={() => selectAll('certification', CERTIFICATIONS)}
+                className="cursor-pointer text-xs px-3 py-1 rounded-full bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition-all"
+              >
+                Select All
+              </button>
+              {filters.certification.length > 0 && (
+                <button
+                  onClick={() => clearCategory('certification')}
+                  className="cursor-pointer text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          }
+        >
           <ButtonFilterGroup options={CERTIFICATIONS} category="certification" />
         </FilterSection>
 
-        <FilterSection title="Origin">
+        <FilterSection 
+          title="Origin"
+          actions={
+            <div className="flex gap-2">
+              <button
+                onClick={() => toggleRangeMode('origin')}
+                className={`cursor-pointer text-xs px-3 py-1 rounded-full transition-all ${
+                  rangeSelection.isActive && rangeSelection.category === 'origin'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50'
+                }`}
+              >
+                {rangeSelection.isActive && rangeSelection.category === 'origin' ? 'Cancel Range' : 'Select Range'}
+              </button>
+              <button
+                onClick={() => selectAll('origin', ORIGINS)}
+                className="cursor-pointer text-xs px-3 py-1 rounded-full bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition-all"
+              >
+                Select All
+              </button>
+              {filters.origin.length > 0 && (
+                <button
+                  onClick={() => clearCategory('origin')}
+                  className="cursor-pointer text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          }
+        >
           <ButtonFilterGroup 
             options={ORIGINS} 
             category="origin" 
@@ -608,7 +938,37 @@ export default function GemstoneFilters({
           />
         </FilterSection>
 
-        <FilterSection title="Cut Grade">
+        <FilterSection 
+          title="Cut Grade"
+          actions={
+            <div className="flex gap-2">
+              <button
+                onClick={() => toggleRangeMode('cut')}
+                className={`cursor-pointer text-xs px-3 py-1 rounded-full transition-all ${
+                  rangeSelection.isActive && rangeSelection.category === 'cut'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50'
+                }`}
+              >
+                {rangeSelection.isActive && rangeSelection.category === 'cut' ? 'Cancel Range' : 'Select Range'}
+              </button>
+              <button
+                onClick={() => selectAll('cut', CUT_GRADES)}
+                className="cursor-pointer text-xs px-3 py-1 rounded-full bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition-all"
+              >
+                Select All
+              </button>
+              {filters.cut.length > 0 && (
+                <button
+                  onClick={() => clearCategory('cut')}
+                  className="cursor-pointer text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          }
+        >
           <ButtonFilterGroup options={CUT_GRADES} category="cut" />
         </FilterSection>
 
@@ -651,13 +1011,13 @@ export default function GemstoneFilters({
       <div className="flex gap-3 pt-6 mt-6 border-t justify-center" style={{ borderColor: 'var(--border)' }}>
         <button
           onClick={clearFilters}
-          className="px-6 py-3 rounded-3xl border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
+          className="cursor-pointer px-6 py-3 rounded-3xl border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
         >
           Clear Filters
         </button>
         <button
           onClick={onSearch}
-          className="px-6 py-3 rounded-3xl bg-gradient-to-r from-yellow-600 to-yellow-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+          className="cursor-pointer px-6 py-3 rounded-3xl bg-gradient-to-r from-yellow-600 to-yellow-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
         >
           Search Gemstones
         </button>
