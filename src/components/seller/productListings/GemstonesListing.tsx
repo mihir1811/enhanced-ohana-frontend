@@ -146,14 +146,14 @@ const GemstonesListing = () => {
                       <td className="px-4 py-2">
                         <Image
                           src={gem.image1 || 'https://media.istockphoto.com/id/1493089752/vector/box-and-package-icon-concept.jpg'}
-                          alt={gem.name}
+                          alt={gem.name || gem.gemsType}
                           width={64}
                           height={64}
                           className="w-16 h-16 object-cover rounded"
                         />
                       </td>
-                      <td className="px-4 py-2">{gem.name}</td>
-                      <td className="px-4 py-2" style={{ color: 'var(--primary)' }}>${gem.price?.toLocaleString() || '-'}</td>
+                      <td className="px-4 py-2 capitalize">{gem.name || `${gem.subType || ''} ${gem.gemsType}`}</td>
+                      <td className="px-4 py-2" style={{ color: 'var(--primary)' }}>${(gem.totalPrice ? Number(gem.totalPrice) : gem.price)?.toLocaleString() || '-'}</td>
                       <td className="px-4 py-2">{gem.color}</td>
                       <td className="px-4 py-2">{gem.shape}</td>
                     </tr>

@@ -173,7 +173,7 @@ export const transformDetailedGemstone = (detailed: DetailedGemstone): GemstonIt
     clarity: detailed.clarity,
     origin: detailed.origin,
     treatment: detailed.treatment,
-    certification: detailed.certificateCompanyName || detailed.certification,
+    certification: detailed.certificateCompanyName,
     shape: detailed.shape,
     isOnAuction: detailed.isOnAuction,
     auctionEndTime: detailed.auction?.endTime || null,
@@ -203,6 +203,7 @@ export const transformDetailedGemstone = (detailed: DetailedGemstone): GemstonIt
 
 export interface GemstoneQueryParams {
   category?: string;
+  sellerId?: string;
   search?: string;
   page?: number;
   limit?: number;
@@ -255,6 +256,7 @@ export const gemstoneService = {
     // Add basic params
     if (params.page) queryParams.append('page', String(params.page));
     if (params.limit) queryParams.append('limit', String(params.limit));
+    if (params.sellerId) queryParams.append('sellerId', params.sellerId);
     if (params.sort) queryParams.append('sort', params.sort);
     if (params.search) queryParams.append('search', params.search);
     
@@ -338,14 +340,12 @@ export const gemstoneService = {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getGemstoneById: async <T = any>(id: string) => {
-    return api.get<T>(`/gem-stone/${id}`, { headers: { Accept: 'application/json' } });
+    return api.get<T>(`/gem-stone/${id}`);
   },
 
   getSingleGemstone: async (identifier: string): Promise<ApiResponse<DetailedGemstone>> => {
     // Use the specific gemstone ID in the URL path
-    return api.get<DetailedGemstone>(`/gem-stone/${identifier}`, { 
-      headers: { Accept: 'application/json' }
-    });
+    return api.get<DetailedGemstone>(`/gem-stone/${identifier}`);
   },
 
   updateGemstone: async (id: string, formData: FormData, token: string) => {
@@ -353,7 +353,7 @@ export const gemstoneService = {
     return api.uploadPatch(`/gem-stone/${id}`, formData, token);
   },
   
-  deleteGemstone: async (id: string, token: string) => {
+  deleteGemstone: async (id: string | number, token: string) => {
     // DELETE /gem-stone/:id with Accept and Authorization headers
     return api.delete(`/gem-stone/${id}`, token);
   },

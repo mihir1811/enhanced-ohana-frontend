@@ -129,7 +129,6 @@ interface GemstoneFormState {
   quantity: string;
   videoURL: string;
   stockNumber: string;
-  sellerStockNumber: string;
   description: string;
   discount: string;
   price: string;
@@ -148,6 +147,8 @@ interface GemstoneFormState {
   spacificGravity: string;
   treatment: string;
   certificateCompanyId: string;
+  certificateNumber: string;
+  pricePerCarat: string;
   images: File[];
 }
 
@@ -160,10 +161,10 @@ const initialForm: GemstoneFormState = {
   quantity: '',
   videoURL: '',
   stockNumber: '',
-  sellerStockNumber: '',
   description: '',
   discount: '',
   price: '',
+  pricePerCarat: '',
   carat: '',
   shape: '',
   color: '',
@@ -179,6 +180,7 @@ const initialForm: GemstoneFormState = {
   spacificGravity: '',
   treatment: '',
   certificateCompanyId: '',
+  certificateNumber: '',
   images: [],
 };
 
@@ -187,6 +189,61 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
   const [loading, setLoading] = useState(false);
   const [selectedGemsType, setSelectedGemsType] = useState<string | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // --- Helper to pick random element ---
+  const getRandomElement = <T extends { value: string }>(arr: T[]) => {
+    return arr[Math.floor(Math.random() * arr.length)].value;
+  };
+
+  const fillRandomData = () => {
+    const gemTypes = Object.keys(GEM_SUBTYPES);
+    const randomGemType = gemTypes[Math.floor(Math.random() * gemTypes.length)];
+    const subTypes = GEM_SUBTYPES[randomGemType] || [];
+    const randomSubType = subTypes.length > 0 ? subTypes[Math.floor(Math.random() * subTypes.length)] : '';
+    
+    // Generate random numbers for numeric fields
+    const randomPrice = Math.floor(Math.random() * 10000) + 500;
+    const randomCarat = (Math.random() * 5 + 0.5).toFixed(2);
+    const randomPricePerCarat = (randomPrice / parseFloat(randomCarat)).toFixed(2);
+
+    const newData: GemstoneFormState = {
+      name: `${randomGemType.charAt(0).toUpperCase() + randomGemType.slice(1)} Gemstone`,
+      gemsType: randomGemType,
+      subType: randomSubType,
+      composition: getRandomElement(COMPOSITIONS),
+      qualityGrade: getRandomElement(QUALITY_GRADES),
+      quantity: Math.floor(Math.random() * 10 + 1).toString(),
+      videoURL: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // Placeholder
+      stockNumber: Math.floor(Math.random() * 100000 + 1000).toString(),
+      description: 'This is a randomly generated gemstone description for testing purposes.',
+      discount: Math.floor(Math.random() * 20).toString(),
+      price: randomPrice.toString(),
+      pricePerCarat: randomPricePerCarat,
+      carat: randomCarat,
+      shape: getRandomElement(SHAPES),
+      color: getRandomElement(COLORS),
+      clarity: getRandomElement(CLARITIES),
+      hardness: (Math.random() * 10).toFixed(1),
+      origin: getRandomElement(ORIGINS),
+      fluoreScence: getRandomElement(FLUORESCENCES),
+      process: getRandomElement(PROCESSES),
+      cut: getRandomElement(CUTS),
+      dimension: `${(Math.random() * 10).toFixed(2)} x ${(Math.random() * 10).toFixed(2)} x ${(Math.random() * 5).toFixed(2)} mm`,
+      refrectiveIndex: (1.4 + Math.random() * 0.4).toFixed(3),
+      birefringence: (0.001 + Math.random() * 0.05).toFixed(3),
+      spacificGravity: (2.5 + Math.random() * 2).toFixed(2),
+      treatment: getRandomElement(TREATMENTS),
+      certificateCompanyId: certificateCompaniesIds.length > 0 
+        ? certificateCompaniesIds[Math.floor(Math.random() * certificateCompaniesIds.length)].value 
+        : '',
+      certificateNumber: `CERT-${Math.floor(Math.random() * 1000000)}`,
+      images: [], // Cannot randomly generate files
+    };
+    
+    setForm(newData);
+    // Also update selectedGemsType state for the subType dropdown
+    setSelectedGemsType(randomGemType);
+  };
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -219,11 +276,54 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
     setLoading(true);
     try {
       const formData = new FormData();
-      Object.entries(form).forEach(([key, value]) => {
-        if (key !== 'images' && value !== undefined && value !== null && value !== '') {
-          formData.append(key, value as string);
+      
+      // Explicit mapping to match CreateGemStoneDto
+      if (form.gemsType) formData.append('gemsType', form.gemsType);
+      if (form.subType) formData.append('subType', form.subType);
+      if (form.composition) formData.append('composition', form.composition);
+      if (form.qualityGrade) formData.append('qualityGrade', form.qualityGrade);
+      if (form.quantity) formData.append('quantity', form.quantity);
+      
+      // Images: image1 to image6
+      form.images.forEach((img, idx) => {
+        if (idx < 6) {
+          formData.append(`image${idx + 1}`, img);
         }
       });
+      
+      if (form.videoURL) formData.append('videoURL', form.videoURL);
+      if (form.stockNumber) formData.append('stockNumber', form.stockNumber);
+      if (form.discount) formData.append('discount', form.discount);
+      
+      // Pricing mappings
+      if (form.price) formData.append('totalPrice', form.price);
+      if (form.pricePerCarat) formData.append('pricePerCarat', form.pricePerCarat);
+      
+      // Physical Properties
+      if (form.carat) formData.append('carat', form.carat);
+      if (form.shape) formData.append('shape', form.shape);
+      if (form.color) formData.append('color', form.color);
+      if (form.clarity) formData.append('clarity', form.clarity);
+      if (form.hardness) formData.append('hardness', form.hardness);
+      if (form.origin) formData.append('origin', form.origin);
+      if (form.fluoreScence) formData.append('fluoreScence', form.fluoreScence);
+      if (form.process) formData.append('process', form.process);
+      if (form.cut) formData.append('cut', form.cut);
+      if (form.dimension) formData.append('dimension', form.dimension);
+      if (form.refrectiveIndex) formData.append('refrectiveIndex', form.refrectiveIndex);
+      if (form.birefringence) formData.append('birefringence', form.birefringence);
+      if (form.spacificGravity) formData.append('spacificGravity', form.spacificGravity);
+      if (form.treatment) formData.append('treatment', form.treatment);
+      
+      // Certificate mapping
+      if (form.certificateCompanyId) {
+        const company = certificateCompaniesIds.find(c => c.value === form.certificateCompanyId);
+        if (company) {
+          formData.append('certificateCompanyName', company.label);
+        }
+      }
+      if (form.certificateNumber) formData.append('certificateNumber', form.certificateNumber);
+
       const token = getCookie('token');
       if (!token) throw new Error('User not authenticated');
       const response = await gemstoneService.addGemstone(formData, token);
@@ -243,7 +343,16 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
 
   return (
     <form className="w-full mx-auto p-6 bg-white rounded-2xl shadow flex flex-col gap-8" onSubmit={handleSubmit}>
-      <h2 className="text-2xl font-bold mb-2">Add Gemstone</h2>
+      <div className="flex justify-between items-center mb-2">
+        <h2 className="text-2xl font-bold">Add Gemstone</h2>
+        <button 
+          type="button" 
+          onClick={fillRandomData}
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-medium"
+        >
+          Fill Random Data
+        </button>
+      </div>
       {/* Basic Information */}
       <section>
         <h3 className="text-lg font-semibold mb-2">Basic Information</h3>
@@ -276,10 +385,7 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
             <label className="block font-medium mb-1">Stock Number *</label>
             <input name="stockNumber" value={form.stockNumber} onChange={handleInput} required className="input" placeholder="e.g. 12345" />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Seller Stock Number *</label>
-            <input name="sellerStockNumber" value={form.sellerStockNumber} onChange={handleInput} required className="input" placeholder="e.g. 67890" />
-          </div>
+
           <div>
             <label className="block font-medium mb-1">Quantity *</label>
             <input name="quantity" value={form.quantity} onChange={handleInput} required className="input" placeholder="e.g. 1" />
@@ -349,8 +455,12 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
         <h3 className="text-lg font-semibold mb-2">Pricing</h3>
   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block font-medium mb-1">Price *</label>
+            <label className="block font-medium mb-1">Total Price *</label>
             <input name="price" value={form.price} onChange={handleInput} required className="input" placeholder="e.g. 1000" />
+          </div>
+          <div>
+            <label className="block font-medium mb-1">Price Per Carat *</label>
+            <input name="pricePerCarat" value={form.pricePerCarat} onChange={handleInput} required className="input" placeholder="e.g. 400" />
           </div>
           <div>
             <label className="block font-medium mb-1">Carat *</label>
@@ -493,6 +603,10 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
+          </div>
+          <div>
+            <label className="block font-medium mb-1">Certificate Number *</label>
+            <input name="certificateNumber" value={form.certificateNumber} onChange={handleInput} required className="input" placeholder="e.g. GIA-12345678" />
           </div>
         </div>
       </section>
