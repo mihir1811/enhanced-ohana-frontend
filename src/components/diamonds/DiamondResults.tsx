@@ -423,8 +423,7 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
                 productType="diamond"
                 size="lg"
                 showText={true}
-                className="font-semibold rounded-xl text-sm sm:text-base px-4 sm:px-6 py-2.5 sm:py-3 border"
-                style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                className="font-semibold rounded-xl text-sm sm:text-base px-4 sm:px-6 py-2.5 sm:py-3 border border-border text-foreground"
               />
               <button className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 border font-semibold rounded-xl transition-all duration-200 text-sm sm:text-base" style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}>
                 <Share2 className="w-5 h-5" />
@@ -502,7 +501,7 @@ export interface Diamond {
   videoURL?: string;
   stoneType?: string;
   process?: string;
-  certificateCompanyId?: number;
+  certificateCompanyName?: string;
   isOnAuction?: boolean;
   isSold?: boolean;
   isDeleted?: boolean;

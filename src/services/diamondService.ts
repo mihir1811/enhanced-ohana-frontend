@@ -92,6 +92,23 @@ export interface DiamondFilters {
   [key: string]: unknown;
 }
 
+const sanitizeParams = (params: Record<string, any> | undefined): Record<string, string | number | boolean> => {
+  if (!params) return {};
+  const sanitized: Record<string, string | number | boolean> = {};
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      if (Array.isArray(value)) {
+        sanitized[key] = value.join(',');
+      } else if (typeof value === 'object') {
+        sanitized[key] = JSON.stringify(value);
+      } else {
+        sanitized[key] = String(value);
+      }
+    }
+  });
+  return sanitized;
+}
+
 class DiamondService {
   // Get seller info by sellerId
   async getSellerInfo(sellerId: string): Promise<ApiResponse<SellerInfo>> {
@@ -108,10 +125,10 @@ class DiamondService {
     return response.json();
   }
   // Bulk upload products via Excel (dynamic productType)
-  async uploadExcel(file: File, productType: string = 'diamond', token?: string): Promise<ApiResponse<ProductUploadResponse>> {
+  async uploadExcel(file: File, productType: string = 'diamond', token?: string, hasUpdate: boolean = false): Promise<ApiResponse<ProductUploadResponse>> {
     const formData = new FormData();
     formData.append('file', file);
-    return apiService.upload(`/products/upload-excel?productType=${encodeURIComponent(productType)}`, formData, token);
+    return apiService.upload<ProductUploadResponse>(`/products/upload-file?productType=${encodeURIComponent(productType)}&has_update=${hasUpdate}`, formData, token);
   }
   // Delete diamond by ID
   async deleteDiamond(id: string | number, token?: string): Promise<ApiResponse<unknown>> {
@@ -128,7 +145,7 @@ class DiamondService {
     if (isNaN(diamondId)) {
       throw new Error('Invalid diamond ID provided');
     }
-    return apiService.uploadPatch(`/diamond/${diamondId}`, formData, token);
+    return apiService.uploadPatch<DiamondData>(`/diamond/${diamondId}`, formData, token);
   }
   // Update diamond by ID (JSON data only)
   async updateDiamondData(id: string | number, data: Partial<DiamondData>, token?: string): Promise<ApiResponse<DiamondData>> {
@@ -136,15 +153,25 @@ class DiamondService {
     if (isNaN(diamondId)) {
       throw new Error('Invalid diamond ID provided');
     }
-    return apiService.patch(`/diamond/${diamondId}`, data, token);
+    return apiService.patch<DiamondData>(`/diamond/${diamondId}`, data, token);
   }
   // Add new diamond (with file upload)
   async addDiamond(formData: FormData, token?: string): Promise<ApiResponse<DiamondData>> {
-    return apiService.upload('/diamond', formData, token);
+    return apiService.upload<DiamondData>('/diamond', formData, token);
+  }
+
+  // Add new Melee diamond (with file upload)
+  async addMeleeDiamond(formData: FormData, token?: string): Promise<ApiResponse<DiamondData>> {
+    return apiService.upload<DiamondData>('/melee-diamond', formData, token);
   }
   // Get all diamonds with filters
   async getDiamonds(params?: DiamondFilters): Promise<ApiResponse<DiamondData[]>> {
-    return apiService.get('/diamond', params);
+    return apiService.get<DiamondData[]>('/diamond');
+  }
+
+  // Get all melee diamonds with filters
+  async getMeleeDiamonds(params?: DiamondFilters): Promise<ApiResponse<DiamondData[]>> {
+    return apiService.get<DiamondData[]>('/melee-diamond');
   }
 
   // Get single diamond by ID
@@ -153,35 +180,35 @@ class DiamondService {
     if (isNaN(diamondId)) {
       throw new Error('Invalid diamond ID provided');
     }
-    return apiService.get(`/diamond/${diamondId}`);
+    return apiService.get<DiamondData>(`/diamond/${diamondId}`);
   }
 
   // Search diamonds
   async searchDiamonds(query: string, params?: SearchParams): Promise<ApiResponse<DiamondData[]>> {
-    return apiService.get('/diamond/search', { search: query, ...params });
+    return apiService.get<DiamondData[]>('/diamond/search', sanitizeParams({ search: query, ...params }));
   }
 
   // Get diamonds by seller
   async getDiamondsBySeller(sellerId: string, params?: SearchParams): Promise<ApiResponse<DiamondData[]>> {
-    return apiService.get(`/diamond/seller/${sellerId}`, params);
+    return apiService.get<DiamondData[]>(`/diamond/seller/${sellerId}`, sanitizeParams(params));
   }
 
   // Get jewelry by seller
   async getJewelryBySeller(sellerId: string, params?: SearchParams): Promise<ApiResponse<JewelryData[]>> {
     const queryParams = { sellerId, ...params };
-    return apiService.get('/jewellery', queryParams);
+    return apiService.get<JewelryData[]>('/jewellery', sanitizeParams(queryParams));
   }
 
   // Get gemstones by seller
   async getGemstonesBySeller(sellerId: string, params?: SearchParams): Promise<ApiResponse<GemstoneData[]>> {
     const queryParams = { sellerId, ...params };
-    return apiService.get('/gemstone', queryParams);
+    return apiService.get<GemstoneData[]>('/gemstone', sanitizeParams(queryParams));
   }
 
   // Get all products by seller based on seller type
   async getProductsBySeller(sellerId: string, sellerType?: string, params?: SearchParams): Promise<ProductsBySellerResponse> {
-    const promises: Promise<ApiResponse<unknown[]>>[] = [];
-    
+    const promises: Promise<ApiResponse<any>>[] = [];
+
     // Based on seller type, fetch relevant products
     if (!sellerType) {
       // If no seller type specified, fetch all product types
@@ -216,7 +243,7 @@ class DiamondService {
       const diamonds = results[0]?.status === 'fulfilled' ? (results[0].value?.data || []) as DiamondData[] : [];
       const jewelry = results[1]?.status === 'fulfilled' ? (results[1].value?.data || []) as JewelryData[] : [];
       const gemstones = results[2]?.status === 'fulfilled' ? (results[2].value?.data || []) as GemstoneData[] : [];
-      
+
       return {
         data: {
           diamonds,

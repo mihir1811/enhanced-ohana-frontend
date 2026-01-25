@@ -5,6 +5,7 @@ import { gemstoneService } from '@/services/gemstoneService';
 import { auctionService } from '@/services/auctionService';
 import { getCookie } from '@/lib/cookie-utils';
 import { auctionProductTypes } from '@/config/sellerConfigData';
+import { certificateCompanies as certificateCompaniesIds } from '@/constants/diamondDropdowns';
 
 // --- Dropdown option arrays (copy from AddGemstoneForm) ---
 const GEM_SUBTYPES = {
@@ -20,13 +21,7 @@ const GEM_SUBTYPES = {
   topaz: ['Imperial', 'Blue', 'White', 'Other'],
   tourmaline: ['Paraiba', 'Rubellite', 'Indicolite', 'Watermelon', 'Other'],
 };
-const CERTIFICATE_COMPANIES = [
-  { value: '1', label: 'GIA' },
-  { value: '2', label: 'IGI' },
-  { value: '3', label: 'AGS' },
-  { value: '4', label: 'HRD' },
-  { value: '5', label: 'Other' },
-];
+
 const QUALITY_GRADES = [
   { value: 'good', label: 'Good' },
   { value: 'very_good', label: 'Very Good' },
@@ -150,7 +145,8 @@ interface GemstoneData {
   cut: string;
   dimension: string;
   spacificGravity: string;
-  certificateCompanyId: string;
+  certificateCompanyName: string;
+  certificateCompanyId?: number;
   isOnAuction?: boolean;
   productType: string;
   startTime: string;
@@ -178,15 +174,33 @@ interface EditGemstoneFormProps {
 }
 
 const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCancel }) => {
-  const [form, setForm] = useState<GemstoneData & { images: File[] }>({
-    ...initialData,
-    isOnAuction: Boolean(initialData?.isOnAuction),
-    images: [],
-    // Auction fields
-    productType: '',
-    startTime: '',
-    endTime: '',
-    enableAuction: false
+  const [form, setForm] = useState<GemstoneData & { images: File[] }>(() => {
+    let certId = initialData.certificateCompanyId;
+    let certName = initialData.certificateCompanyName || '';
+
+    // If we have ID but no name, try to find label
+    if (certId && !certName) {
+       const found = certificateCompaniesIds.find(c => c.value === String(certId));
+       if (found) certName = found.label;
+    }
+    // If we have Name but no ID, try to find ID (reverse lookup)
+    else if (!certId && certName) {
+       const found = certificateCompaniesIds.find(c => c.label === certName);
+       if (found) certId = Number(found.value);
+    }
+
+    return {
+      ...initialData,
+      certificateCompanyId: certId,
+      certificateCompanyName: certName,
+      isOnAuction: Boolean(initialData?.isOnAuction),
+      images: [],
+      // Auction fields
+      productType: '',
+      startTime: '',
+      endTime: '',
+      enableAuction: false
+    };
   });
   const [loading, setLoading] = useState(false);
   const [selectedGemsType, setSelectedGemsType] = useState<string | undefined>(initialData?.gemsType);
@@ -274,6 +288,7 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
         if (
           key !== 'images' &&
           key !== 'id' &&
+          key !== 'certificateCompanyName' &&
           key !== 'name' &&
           key !== 'seller' &&
           key !== 'auction' &&
@@ -565,14 +580,26 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
       <section>
         <h3 className="text-lg font-semibold mb-2">Certificate</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block font-medium mb-1">Certificate Company *</label>
-            <select name="certificateCompanyId" value={form.certificateCompanyId} onChange={handleSelect} required className="input">
-              <option value="">Select certificate company</option>
-              {CERTIFICATE_COMPANIES.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+          <div className="space-y-2">
+            <Label htmlFor="certificateCompanyId" className="font-medium">
+              Certificate Company
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <SearchableDropdown
+              name="certificateCompanyId"
+              options={certificateCompaniesIds}
+              value={form.certificateCompanyId ? String(form.certificateCompanyId) : ''}
+              onChange={(value) => {
+                const selected = certificateCompaniesIds.find(c => c.value === value);
+                setForm(prev => ({ 
+                  ...prev, 
+                  certificateCompanyId: Number(value),
+                  certificateCompanyName: selected ? selected.label : ''
+                }));
+              }}
+              placeholder="Select Certificate Company"
+              required
+            />
           </div>
         </div>
       </section>

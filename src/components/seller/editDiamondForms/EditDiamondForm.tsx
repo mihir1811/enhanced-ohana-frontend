@@ -6,10 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SearchableDropdown from '@/components/shared/SearchableDropdown';
 import {
-  diamondColors, fancyColors, fancyIntensities, fancyOvertones, cutGrades, clarities, shades, shapes, fluorescences, processes, treatments
+  diamondColors, fancyColors, fancyIntensities, fancyOvertones, cutGrades, clarities, shades, shapes, fluorescences, processes, treatments, certificateCompanies as certificateCompaniesIds
 } from '@/constants/diamondDropdowns';
-import { useCertificateCompanies } from '@/hooks/data/useCertificateCompanies';
-import { auctionProductTypes } from '@/config/sellerConfigData';
+import { auctionProductTypes, certificateCompanies } from '@/config/sellerConfigData';
 import { auctionService } from '@/services/auctionService';
 import toast from 'react-hot-toast';
 
@@ -54,7 +53,7 @@ interface DiamondData {
   pavilionAngle: string;
   pavilionDepth: string;
   culetSize: string;
-  certificateCompanyId: string;
+  certificateCompanyName: string;
   certificateNumber: string;
   inscription: string;
   productType: string;
@@ -83,7 +82,7 @@ type EditDiamondFormProps = {
 };
 
 const initialState = {
-  name: '', stoneType: '', description: '', images: [] as File[], videoURL: '', stockNumber: '', sellerSKU: '', origin: '', rap: '', price: '', discount: '', color: '', fancyColor: '', fancyIntencity: '', fancyOvertone: '', caratWeight: '', cut: '', clarity: '', shade: '', shape: '', polish: '', symmetry: '', fluorescence: '', treatment: '', process: '', measurement: '', diameter: '', ratio: '', table: '', depth: '', gridleMin: '', gridleMax: '', gridlePercentage: '', crownHeight: '', crownAngle: '', pavilionAngle: '', pavilionDepth: '', culetSize: '', certificateCompanyId: '', certificateNumber: '', inscription: '', certification: null as File | null,
+  name: '', stoneType: '', description: '', images: [] as File[], videoURL: '', stockNumber: '', sellerSKU: '', origin: '', rap: '', price: '', pricePerCarat: '', discount: '', color: '', fancyColor: '', fancyIntencity: '', fancyOvertone: '', caratWeight: '', cut: '', clarity: '', shade: '', shape: '', polish: '', symmetry: '', fluorescence: '', treatment: '', process: '', measurement: '', diameter: '', ratio: '', table: '', depth: '', gridleMin: '', gridleMax: '', gridlePercentage: '', crownHeight: '', crownAngle: '', pavilionAngle: '', pavilionDepth: '', culetSize: '', certificateCompanyName: '', certificateNumber: '', inscription: '', certification: null as File | null,
   // Auction fields
   productType: '', startTime: '', endTime: '', enableAuction: false
 };
@@ -96,7 +95,6 @@ const normalizeImages = (data: DiamondData): string[] => {
 
 const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
   // Use dynamic certificate companies
-  const { options: certificateCompanies } = useCertificateCompanies();
 
   // Helper to map API string to dropdown value (case-insensitive, handle camelCase, spaces, etc)
   function normalizeApiValue(val: string | undefined) {
@@ -141,9 +139,14 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
 
   const [form, setForm] = useState<typeof initialState>(() => {
     if (initialData) {
+      const p = parseFloat(initialData.price);
+      const c = parseFloat(initialData.caratWeight);
+      const ppc = (!isNaN(p) && !isNaN(c) && c > 0) ? (p / c).toFixed(2) : '';
+
       return {
         ...initialState,
         ...initialData,
+        pricePerCarat: ppc,
         fancyColor: getDropdownValue(fancyColors, initialData.fancyColor),
         fancyIntencity: getDropdownValue(fancyIntensities, initialData.fancyIntencity),
         fancyOvertone: getDropdownValue(fancyOvertones, initialData.fancyOvertone),
@@ -151,7 +154,7 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
         fluorescence: getDropdownValue(fluorescences, initialData.fluorescence),
         treatment: getDropdownValue(treatments, initialData.treatment),
         process: getDropdownValue(processes, initialData.process, 'process'),
-        certificateCompanyId: initialData.certificateCompanyId ? String(initialData.certificateCompanyId) : '',
+        certificateCompanyName: initialData.certificateCompanyName || '',
         images: [],
         certification: null
       };
@@ -165,9 +168,21 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
 
   useEffect(() => {
     if (initialData) {
+      // Map certificateCompanyId to Name if Name is missing
+      let certName = initialData.certificateCompanyName || '';
+      if (!certName && initialData.certificateCompanyId) {
+        const found = certificateCompaniesIds.find(c => c.value === String(initialData.certificateCompanyId));
+        if (found) certName = found.label;
+      }
+
+      const p = parseFloat(initialData.price);
+      const c = parseFloat(initialData.caratWeight);
+      const ppc = (!isNaN(p) && !isNaN(c) && c > 0) ? (p / c).toFixed(2) : '';
+
       setForm({
         ...initialState,
         ...initialData,
+        pricePerCarat: ppc,
         fancyColor: getDropdownValue(fancyColors, initialData.fancyColor),
         fancyIntencity: getDropdownValue(fancyIntensities, initialData.fancyIntencity),
         fancyOvertone: getDropdownValue(fancyOvertones, initialData.fancyOvertone),
@@ -175,7 +190,7 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
         fluorescence: getDropdownValue(fluorescences, initialData.fluorescence),
         treatment: getDropdownValue(treatments, initialData.treatment),
         process: getDropdownValue(processes, initialData.process, 'process'),
-        certificateCompanyId: initialData.certificateCompanyId ? String(initialData.certificateCompanyId) : '',
+        certificateCompanyName: certName,
         images: []
       });
       setExistingImages(normalizeImages(initialData));
@@ -198,7 +213,30 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
       const checked = (e.target as HTMLInputElement).checked;
       setForm((prev: typeof form) => ({ ...prev, [name]: checked }));
     } else {
-      setForm((prev: typeof form) => ({ ...prev, [name]: value }));
+      setForm((prev: typeof form) => {
+        const updates: any = { [name]: value };
+        
+        if (name === 'price') {
+            const p = parseFloat(value);
+            const c = parseFloat(String(prev.caratWeight));
+            if (!isNaN(p) && !isNaN(c) && c > 0) {
+                updates.pricePerCarat = (p / c).toFixed(2);
+            }
+        } else if (name === 'caratWeight') {
+            const c = parseFloat(value);
+            const p = parseFloat(String(prev.price));
+            if (!isNaN(p) && !isNaN(c) && c > 0) {
+                updates.pricePerCarat = (p / c).toFixed(2);
+            }
+        } else if (name === 'pricePerCarat') {
+            const ppc = parseFloat(value);
+            const c = parseFloat(String(prev.caratWeight));
+            if (!isNaN(ppc) && !isNaN(c) && c > 0) {
+                updates.price = (ppc * c).toFixed(2);
+            }
+        }
+        return { ...prev, ...updates };
+      });
     }
   };
 
@@ -240,24 +278,47 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
       // Prepare FormData for multipart/form-data
       const formDataToSend = new FormData();
 
+      // Calculate derived price fields
+      const priceVal = parseFloat(form.price);
+      const caratVal = parseFloat(form.caratWeight);
+
+      let totalPrice = form.price;
+      let pricePerCarat = form.price; // Default fallback
+
+      if (!isNaN(priceVal) && !isNaN(caratVal) && caratVal > 0) {
+        // Assuming user enters Total Price in the 'price' field
+        totalPrice = priceVal.toFixed(2);
+        pricePerCarat = (priceVal / caratVal).toFixed(2);
+      }
+
       // Only append specific fields as per the curl request
       const fieldsToInclude = [
-        'stoneType', 'stockNumber', 'sellerSKU', 'name', 'description', 'origin',
-        'rap', 'price', 'discount', 'caratWeight', 'cut', 'color', 'shade',
+        'stoneType', 'stockNumber', 'description',
+        'rap', 'discount', 'caratWeight', 'cut', 'color', 'shade',
         'fancyColor', 'fancyIntencity', 'fancyOvertone', 'shape', 'symmetry',
-        'diameter', 'clarity', 'fluorescence', 'measurement', 'ratio', 'table',
+        'clarity', 'fluorescence', 'measurement', 'ratio', 'table',
         'depth', 'gridleMin', 'gridleMax', 'gridlePercentage', 'crownHeight',
         'crownAngle', 'pavilionAngle', 'pavilionDepth', 'culetSize', 'polish',
-        'treatment', 'inscription', 'certificateNumber', 'process',
-        'certificateCompanyId', 'videoURL'
+        'treatment', 'inscription', 'certificateNumber',
+        'certificateCompanyName', 'videoURL'
       ];
 
       fieldsToInclude.forEach(key => {
+        if (key === 'description') {
+            if (form.description) formDataToSend.append('comment', form.description);
+            return;
+        }
         const value = form[key as keyof typeof form];
         if (value !== null && value !== undefined && value !== '') {
           formDataToSend.append(key, value.toString());
         }
       });
+
+      // Append calculated prices
+      formDataToSend.append('totalPrice', totalPrice);
+      formDataToSend.append('pricePerCarat', pricePerCarat);
+      formDataToSend.append('available', 'true'); // Default to available on update if not present
+
 
       // Handle images (image1 to image6)
       if (form.images && form.images.length > 0) {
@@ -618,6 +679,22 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
               onChange={handleChange}
               required
               placeholder="e.g. 4500"
+              className="w-full transition-all duration-200 hover:border-primary/50"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="pricePerCarat" className="font-medium">
+              Price Per Carat ($)
+            </Label>
+            <Input
+              id="pricePerCarat"
+              name="pricePerCarat"
+              type="number"
+              value={form.pricePerCarat}
+              onChange={handleChange}
+              min={0}
+              step="0.01"
+              placeholder="e.g. 3600"
               className="w-full transition-all duration-200 hover:border-primary/50"
             />
           </div>
@@ -1072,15 +1149,15 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-2">
-            <Label htmlFor="certificateCompanyId" className="font-medium">
+            <Label htmlFor="certificateCompanyName" className="font-medium">
               Certificate Company
               <span className="text-destructive ml-1">*</span>
             </Label>
             <SearchableDropdown
-              name="certificateCompanyId"
+              name="certificateCompanyName"
               options={certificateCompanies}
-              value={form.certificateCompanyId}
-              onChange={(value) => setForm(prev => ({ ...prev, certificateCompanyId: value }))}
+              value={form.certificateCompanyName}
+              onChange={(value) => setForm(prev => ({ ...prev, certificateCompanyName: value }))}
               placeholder="Select Certificate Company"
               required
             />

@@ -43,27 +43,67 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
 
   const buildQueryFromFilters = (f: DiamondFilterValues): Record<string, unknown> => {
     const params: Record<string, unknown> = {};
-    if (f.shape?.length) params.shape = f.shape.join(',');
-    if (f.color?.length) params.color = f.color.join(',');
-    if (f.clarity?.length) params.clarity = f.clarity.join(',');
-    if (f.cut?.length) params.cut = f.cut.join(',');
-    if (f.caratWeight?.min) params.caratMin = f.caratWeight.min;
-    if (f.caratWeight?.max) params.caratMax = f.caratWeight.max;
-    if (f.priceRange?.min) params.priceMin = f.priceRange.min;
-    if (f.priceRange?.max) params.priceMax = f.priceRange.max;
-    if (f.certification?.length) params.certification = f.certification.join(',');
-    if (f.fluorescence?.length) params.fluorescence = f.fluorescence.join(',');
-    if (f.polish?.length) params.polish = f.polish.join(',');
-    if (f.symmetry?.length) params.symmetry = f.symmetry.join(',');
-    if (f.fancyColor?.length) params.fancyColor = f.fancyColor.join(',');
-    if (f.fancyIntensity?.length) params.fancyIntensity = f.fancyIntensity.join(',');
-    if (f.fancyOvertone?.length) params.fancyOvertone = f.fancyOvertone.join(',');
+    const isMelee = diamondType.includes('melee');
+
+    const addInFilter = (field: string, values?: string[]) => {
+      if (values?.length) {
+        params[field] = { in: values };
+      }
+    };
+
+    addInFilter('shape', f.shape);
+    addInFilter(isMelee ? 'colorFrom' : 'color', f.color);
+    addInFilter(isMelee ? 'clarityMin' : 'clarity', f.clarity);
+    addInFilter(isMelee ? 'cutFrom' : 'cut', f.cut);
+    addInFilter(isMelee ? 'symmetryFrom' : 'symmetry', f.symmetry);
+    
+    if (!isMelee) {
+      addInFilter('polish', f.polish);
+      addInFilter('fluorescence', f.fluorescence);
+    }
+
+    addInFilter('certificateCompanyName', f.certification);
+
+    addInFilter(isMelee ? 'fancyColorFrom' : 'fancyColor', f.fancyColor);
+    addInFilter(isMelee ? 'fancyIntencityFrom' : 'fancyIntencity', f.fancyIntensity);
+    addInFilter('fancyOvertone', f.fancyOvertone);
+
+    const caratField = isMelee ? 'totalCaratWeight' : 'caratWeight';
+    if (f.caratWeight?.min || f.caratWeight?.max) {
+      params[caratField] = {
+        ...(f.caratWeight.min && { gte: Number(f.caratWeight.min) }),
+        ...(f.caratWeight.max && { lte: Number(f.caratWeight.max) })
+      };
+    }
+
+    if (f.priceRange?.min || f.priceRange?.max) {
+      params.totalPrice = {
+        ...(f.priceRange.min && { gte: Number(f.priceRange.min) }),
+        ...(f.priceRange.max && { lte: Number(f.priceRange.max) })
+      };
+    }
+
     return params;
   };
 
   useEffect(() => {
     setLoading(true);
-    const query = { page: currentPage, limit: pageSize, ...buildQueryFromFilters(filters) };
+    
+    // Derive stoneType from diamondType prop
+    let stoneType: string | undefined;
+    if (diamondType.includes('natural')) {
+      stoneType = 'naturalDiamond';
+    } else if (diamondType.includes('lab-grown')) {
+      stoneType = 'labGrownDiamond';
+    }
+
+    const query = { 
+      page: currentPage, 
+      limit: pageSize, 
+      ...buildQueryFromFilters(filters),
+      ...(stoneType && { stoneType })
+    };
+
     fetchDiamonds(query)
       .then((res) => {
         const topLevel = res as unknown;

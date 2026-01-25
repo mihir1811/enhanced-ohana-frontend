@@ -29,6 +29,7 @@ export interface SellerInfo {
   gstNumber?: string;
   isVerified: boolean;
   verificationStatus: 'pending' | 'verified' | 'rejected';
+  sellerType?: string;
   businessType?: string;
   description?: string;
   website?: string;

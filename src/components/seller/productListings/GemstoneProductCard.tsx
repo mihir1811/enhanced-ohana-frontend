@@ -117,9 +117,12 @@ const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
 };
 
 export interface GemstoneProduct {
-  id: string;
-  name: string;
-  price?: number;
+  id: string | number;
+  gemsType: string;
+  subType?: string;
+  name?: string; // Optional since API might not return it
+  price?: number; // Kept for backward compatibility
+  totalPrice?: string | number;
   image1?: string | null;
   image2?: string | null;
   image3?: string | null;
@@ -135,6 +138,31 @@ export interface GemstoneProduct {
   isSold?: boolean;
   isOnAuction?: boolean;
   auctionEndTime?: string;
+  // Add other fields from API if needed for display
+  composition?: string;
+  qualityGrade?: string;
+  quantity?: number;
+  videoURL?: string;
+  description?: string | null;
+  discount?: string;
+  pricePerCarat?: string;
+  carat?: number;
+  clarity?: string;
+  hardness?: number;
+  origin?: string;
+  fluoreScence?: string;
+  process?: string;
+  cut?: string;
+  dimension?: string;
+  refrectiveIndex?: string;
+  birefringence?: string;
+  spacificGravity?: string;
+  treatment?: string;
+  certificateCompanyName?: string;
+  certificateNumber?: string;
+  sellerId?: string;
+  createdAt?: string;
+  auctionStartTime?: string | null;
 }
 
 interface Props {
@@ -190,6 +218,14 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
       : [
           "https://media.istockphoto.com/id/1493089752/vector/box-and-package-icon-concept.jpg",
         ];
+
+  // Construct display name if name is missing
+  const displayName = product.name || `${product.subType || ''} ${product.gemsType}`.trim() || 'Unnamed Gemstone';
+  
+  // Handle price display (prefer totalPrice, fallback to price)
+  const displayPrice = product.totalPrice 
+    ? Number(product.totalPrice) 
+    : product.price;
 
   const handleImageChange = (newIdx: number) => {
     if (imgIdx === newIdx) return;
@@ -263,7 +299,7 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
       <div className="relative w-full aspect-[4/3] flex items-center justify-center" style={{ backgroundColor: 'var(--muted)' }}>
         <Image
           src={displayImages[imgIdx]}
-          alt={product.name}
+          alt={displayName}
           width={400}
           height={300}
           className={`object-cover w-full h-full rounded-t-2xl transition-opacity duration-300 ${animating ? 'opacity-0' : 'opacity-100'}`}
@@ -321,13 +357,13 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
       {/* Info */}
       <div className="p-4 flex flex-col gap-2 flex-1">
         <div className="flex items-center justify-between">
-          <h3 className="font-bold text-lg line-clamp-2" style={{ color: 'var(--card-foreground)' }}>
-            {product.name}
+          <h3 className="font-bold text-lg line-clamp-2 capitalize" style={{ color: 'var(--card-foreground)' }}>
+            {displayName}
           </h3>
         </div>
         <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--muted-foreground)' }}>
-          <span className="rounded-full px-2 py-1 font-semibold" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
-            Gemstone
+          <span className="rounded-full px-2 py-1 font-semibold capitalize" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+            {product.gemsType}
           </span>
           {product.isOnAuction && (
             <span className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full px-2 py-1 font-semibold animate-pulse">
@@ -340,7 +376,7 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
         </div>
         <div className="flex items-baseline gap-2">
           <span className="text-xl font-extrabold" style={{ color: 'var(--primary)' }}>
-            ${product.price?.toLocaleString() || '-'}
+            ${displayPrice?.toLocaleString() || '-'}
           </span>
         </div>
         
@@ -394,7 +430,7 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
                 <path d="M6 6l12 12M6 18L18 6" />
               </svg>
             </button>
-            <h2 className="text-xl font-bold mb-2">{product.name}</h2>
+            <h2 className="text-xl font-bold mb-2 capitalize">{displayName}</h2>
             <div className="flex items-center gap-2 mb-2">
               {getStatusTag(product.isDeleted, product.stockNumber)}
               <span className="rounded-full px-2 py-1 text-xs font-semibold tracking-wide uppercase" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
@@ -403,7 +439,7 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
             </div>
             <Image
               src={displayImages[imgIdx]}
-              alt={product.name}
+              alt={product.name || `${product.subType || ''} ${product.gemsType}`}
               width={400}
               height={256}
               className="w-full h-64 object-cover rounded-lg mb-4"

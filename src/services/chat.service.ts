@@ -1,6 +1,6 @@
 import apiService, { ApiResponse } from './api'
 import { API_CONFIG } from '../lib/constants'
-import type { Socket } from 'socket.io-client'
+// import type { Socket } from 'socket.io-client' // Removed as socket is disabled
 
 // Define interface for message data structure
 interface MessageData {
@@ -284,90 +284,23 @@ export const chatService = {
     return apiService.delete(API_CONFIG.ENDPOINTS.CHAT.DELETE_MESSAGE.replace(':messageId', messageId), token)
   },
 
-  // Send message via WebSocket (not REST API)
-  // This is handled by the WebSocket service, but kept here for consistency
-  sendMessageViaSocket(fromId: string, toId: string, message: string, socket: Socket): void {
-    console.log('🔄 [ChatService] sendMessageViaSocket called with:', {
-      fromId,
-      toId,
-      messageLength: message.length,
-      hasSocket: !!socket,
-      socketConnected: socket?.connected,
-      socketId: socket?.id
-    })
-    
-    if (!socket) {
-      console.error('❌ [ChatService] Cannot send message - socket is null/undefined')
-      throw new Error('Socket not available')
-    }
-    
-    if (!socket.connected) {
-      console.error('❌ [ChatService] Cannot send message - socket not connected:', {
-        hasSocket: !!socket,
-        connected: socket.connected,
-        socketId: socket.id,
-        socketState: socket.connected ? 'connected' : 'disconnected'
-      })
-      throw new Error('Socket not connected')
-    }
-    
-    const payload = JSON.stringify({
-      type: 'SEND_MESSAGE',
-      data: {
-        fromId,
-        toId,
-        message,
-        messageType: 'TEXT',
-        timestamp: new Date().toISOString()
-      }
-    })
-    
-    console.log('📤 [ChatService] Sending via WebSocket:', {
-      fromId,
-      toId,
-      messageLength: message.length,
-      payload: payload.substring(0, 200) + '...'
-    })
-    
-    try {
-      socket.emit('CHAT_EVENT', payload)
-      console.log('✅ [ChatService] Message emitted successfully')
-    } catch (emitError) {
-      console.error('❌ [ChatService] Failed to emit message:', emitError)
-      throw emitError
-    }
+  // WebSocket methods removed/disabled
+  /*
+  sendMessageViaSocket(fromId: string, toId: string, message: string, socket: any): void {
+    console.warn('Socket disabled');
   },
+  */
 
   // Enhanced WebSocket message sending (socket-only, no API fallback)
-  async sendMessageWithInit(fromId: string, toId: string, message: string, socket: Socket): Promise<void> {
-    try {
-      console.log('� [ChatService] Sending message via WebSocket:', {
-        fromId,
-        toId,
-        messageLength: message.length
-      })
-      
-      // Send via WebSocket directly
-      this.sendMessageViaSocket(fromId, toId, message, socket)
-    } catch (error) {
-      console.error('❌ [ChatService] Enhanced message sending failed:', error)
-      throw error
-    }
+  /*
+  async sendMessageWithInit(fromId: string, toId: string, message: string, socket: any): Promise<void> {
+    return Promise.resolve();
   },
 
-  // Register socket connection
-  registerSocket(userId: string, socket: Socket): void {
-    if (socket && socket.connected) {
-      const payload = JSON.stringify({
-        type: 'REGISTER_SOCKET',
-        data: {
-          userId
-        }
-      })
-      
-      socket.emit('CHAT_EVENT', payload)
-    }
+  registerSocket(userId: string, socket: any): void {
+    // no-op
   }
+  */
 }
 
 export default chatService

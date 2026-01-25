@@ -75,6 +75,42 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Custom Colorful Theme - Light */
+  --hero-gradient-start: #eff6ff;
+  --hero-gradient-via: #ffffff;
+  --hero-gradient-end: #fffbeb;
+  
+  --trust-bg: #fffbeb;
+
+  /* Category: Diamond (Blue) */
+  --card-diamond-bg: #eff6ff;
+  --card-diamond-border: #dbeafe;
+  --card-diamond-icon-bg: #dbeafe;
+  --card-diamond-icon-text: #2563eb;
+
+  /* Category: Gemstone (Fuchsia) */
+  --card-gem-bg: #fdf4ff;
+  --card-gem-border: #fae8ff;
+  --card-gem-icon-bg: #fae8ff;
+  --card-gem-icon-text: #c026d3;
+
+  /* Category: Jewelry (Rose) */
+  --card-jewelry-bg: #fff1f2;
+  --card-jewelry-border: #ffe4e6;
+  --card-jewelry-icon-bg: #ffe4e6;
+  --card-jewelry-icon-text: #e11d48;
+
+  /* Category: Bullions (Amber) */
+  --card-bullion-bg: #fffbeb;
+  --card-bullion-border: #fef3c7;
+  --card-bullion-icon-bg: #fef3c7;
+  --card-bullion-icon-text: #d97706;
+
+  /* Newsletter */
+  --newsletter-bg-start: #7c3aed;
+  --newsletter-bg-via: #4f46e5;
+  --newsletter-bg-end: #2563eb;
 }
 
 .dark {
@@ -109,6 +145,42 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* Custom Colorful Theme - Dark */
+  --hero-gradient-start: #0f172a;
+  --hero-gradient-via: #0B1120;
+  --hero-gradient-end: #000000;
+  
+  --trust-bg: #0f0f0f;
+  
+  /* Category: Diamond (Blue) */
+  --card-diamond-bg: #0f172a;
+  --card-diamond-border: #1e3a8a;
+  --card-diamond-icon-bg: #172554;
+  --card-diamond-icon-text: #60a5fa;
+
+  /* Category: Gemstone (Fuchsia) */
+  --card-gem-bg: #2e1065;
+  --card-gem-border: #701a75;
+  --card-gem-icon-bg: #4a044e;
+  --card-gem-icon-text: #e879f9;
+
+  /* Category: Jewelry (Rose) */
+  --card-jewelry-bg: #4c0519;
+  --card-jewelry-border: #9f1239;
+  --card-jewelry-icon-bg: #881337;
+  --card-jewelry-icon-text: #fb7185;
+
+  /* Category: Bullions (Amber) */
+  --card-bullion-bg: #451a03;
+  --card-bullion-border: #92400e;
+  --card-bullion-icon-bg: #78350f;
+  --card-bullion-icon-text: #fbbf24;
+
+  /* Newsletter */
+  --newsletter-bg-start: #4c1d95;
+  --newsletter-bg-via: #3730a3;
+  --newsletter-bg-end: #1e3a8a;
 }
 
 @layer base {

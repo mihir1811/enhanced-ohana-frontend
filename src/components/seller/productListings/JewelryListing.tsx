@@ -134,7 +134,7 @@ const JewelryListing = () => {
         <div className="flex gap-2 items-center relative">
           {/* Bulk Upload Button */}
           <button
-            className="px-4 py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 transition"
+            className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 transition"
             onClick={() => setBulkModalOpen(true)}
             type="button"
           >
@@ -146,7 +146,7 @@ const JewelryListing = () => {
             onFileSelect={handleBulkFileSelect}
           />
           <button
-            className={"relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
+            className={"cursor-pointer relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
             style={{
               backgroundColor: view === 'grid' ? 'var(--primary)' : 'var(--card)',
               color: view === 'grid' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
@@ -164,7 +164,7 @@ const JewelryListing = () => {
             </span>
           </button>
           <button
-            className={"relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
+            className={"cursor-pointer relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
             style={{
               backgroundColor: view === 'list' ? 'var(--primary)' : 'var(--card)',
               color: view === 'list' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',

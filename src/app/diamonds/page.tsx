@@ -3,6 +3,9 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Search, Gem, Leaf, Sparkles, Filter, ChevronDown, MoveLeft, MoveRight } from 'lucide-react'
+import debounce from 'lodash.debounce'
+import Slider from 'rc-slider'
+// import 'rc-slider/assets/index.css'
 import NavigationUser from '@/components/Navigation/NavigationUser'
 import Footer from '@/components/Footer'
 import { filterOptions } from '@/constants/filterOptions'
@@ -947,11 +950,11 @@ const MultiSelectFilter = React.memo(({
   colorVariant = 'blue'
 }: MultiSelectFilterProps) => {
   const colorConfig = useMemo(() => ({
-    blue: 'border-blue-500 bg-blue-50 text-blue-700',
-    green: 'border-green-500 bg-green-50 text-green-700',
-    purple: 'border-purple-500 bg-purple-50 text-purple-700',
-    yellow: 'border-yellow-500 bg-yellow-50 text-yellow-700',
-    orange: 'border-orange-500 bg-orange-50 text-orange-700'
+    blue: 'border-blue-500 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-100',
+    green: 'border-green-500 dark:border-green-500 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-100',
+    purple: 'border-purple-500 dark:border-purple-500 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-100',
+    yellow: 'border-yellow-500 dark:border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-100',
+    orange: 'border-orange-500 dark:border-orange-500 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-100'
   }), [])
 
   const fieldMap: Record<string, keyof DiamondSearchForm> = useMemo(() => ({
@@ -985,11 +988,11 @@ const MultiSelectFilter = React.memo(({
           onClick={() => onChange(fieldMap[label.toLowerCase()] || label.toLowerCase() as keyof DiamondSearchForm, option)}
           className={`group w-full px-4 py-2 rounded-3xl text-sm font-medium transition-all duration-200
             ${isSelected
-              ? "bg-yellow-50 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100 border border-yellow-500 dark:border-yellow-500"
-              : "bg-transparent border border-gray-200 dark:border-slate-700  dark:text-gray-300"
+              ? colorConfig[colorVariant]
+              : "bg-transparent border border-input text-foreground"
             }
-            hover:bg-yellow-50 dark:hover:bg-yellow-900/30 hover:text-black
-            hover:border-yellow-500/30 dark:hover:border-yellow-500/30
+            hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-900 dark:hover:text-blue-100
+            hover:border-blue-300 dark:hover:border-blue-700
           `}
         >
           {option}
@@ -1142,37 +1145,87 @@ const RangeInput = React.memo(({
   unit?: string
   step?: number
 }) => {
+  // Local state for smooth UI interaction
+  const [localMin, setLocalMin] = useState(min)
+  const [localMax, setLocalMax] = useState(max)
+
+  // Sync local state with props when props change
+  useEffect(() => {
+    setLocalMin(min)
+  }, [min])
+
+  useEffect(() => {
+    setLocalMax(max)
+  }, [max])
+
   // Determine appropriate min/max bounds based on label
   const getDefaultBounds = () => {
-    // Check price-related fields first (before carat, since "price per carat" contains "carat")
-    if (label.toLowerCase().includes('price per carat')) {
-      return { minBound: 0, maxBound: 200000 }
-    } else if (label.toLowerCase().includes('price per pcs')) {
-      return { minBound: 0, maxBound: 200000 }
-    } else if (label.toLowerCase().includes('price')) {
-      return { minBound: 0, maxBound: 200000 }
-    } else if (label.toLowerCase().includes('carat')) {
-      return { minBound: 0, maxBound: 10 }
-    } else if (label.toLowerCase().includes('total pcs')) {
-      return { minBound: 1, maxBound: 1000 }
-    } else if (label.toLowerCase().includes('table') || label.toLowerCase().includes('depth')) {
-      return { minBound: 0, maxBound: 100 }
-    } else if (label.toLowerCase().includes('length') || label.toLowerCase().includes('width') || label.toLowerCase().includes('height')) {
-      return { minBound: 0, maxBound: 20 }
-    } else if (label.toLowerCase().includes('ratio')) {
-      return { minBound: 0, maxBound: 3 }
-    } else if (label.toLowerCase().includes('angle')) {
-      return { minBound: 0, maxBound: 50 }
-    }
-    return { minBound: 0, maxBound: 100 }
+    const lowerLabel = label.toLowerCase();
+    if (lowerLabel.includes('price per carat')) return { minBound: 0, maxBound: 200000 };
+    if (lowerLabel.includes('price per pcs')) return { minBound: 0, maxBound: 200000 };
+    if (lowerLabel.includes('price')) return { minBound: 0, maxBound: 200000 };
+    if (lowerLabel.includes('carat')) return { minBound: 0, maxBound: 10 };
+    if (lowerLabel.includes('total pcs')) return { minBound: 1, maxBound: 1000 };
+    if (lowerLabel.includes('table') || lowerLabel.includes('depth')) return { minBound: 0, maxBound: 100 };
+    if (lowerLabel.includes('length') || lowerLabel.includes('width') || lowerLabel.includes('height')) return { minBound: 0, maxBound: 20 };
+    if (lowerLabel.includes('ratio')) return { minBound: 0, maxBound: 3 };
+    if (lowerLabel.includes('angle')) return { minBound: 0, maxBound: 50 };
+    return { minBound: 0, maxBound: 100 };
   }
 
   const { minBound, maxBound } = getDefaultBounds()
 
-  // Constrain values within bounds
-  const constrainValue = (value: number) => {
-    return Math.max(minBound, Math.min(maxBound, value))
+  // Handle slider change (update local state immediately)
+  const handleSliderChange = (value: number | number[]) => {
+    if (Array.isArray(value)) {
+      setLocalMin(value[0])
+      setLocalMax(value[1])
+    }
   }
+
+  // Handle slider release (update parent)
+  const handleSliderAfterChange = (value: number | number[]) => {
+    if (Array.isArray(value)) {
+      onMinChange(value[0])
+      onMaxChange(value[1])
+    }
+  }
+
+  // Handle text input changes
+  const handleMinInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Allow empty string for typing
+    if (e.target.value === '') {
+      setLocalMin(minBound); // Or handle empty state differently?
+      return;
+    }
+    const val = parseFloat(e.target.value);
+    setLocalMin(val);
+  };
+  
+  const handleMaxInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value === '') {
+      setLocalMax(maxBound);
+      return;
+    }
+    const val = parseFloat(e.target.value);
+    setLocalMax(val);
+  };
+
+  const handleMinInputBlur = () => {
+    let val = localMin;
+    if (isNaN(val) || val < minBound) val = minBound;
+    if (val > localMax) val = localMax;
+    setLocalMin(val);
+    onMinChange(val);
+  };
+
+  const handleMaxInputBlur = () => {
+    let val = localMax;
+    if (isNaN(val) || val > maxBound) val = maxBound;
+    if (val < localMin) val = localMin;
+    setLocalMax(val);
+    onMaxChange(val);
+  };
 
   return (
     <div className="space-y-3">
@@ -1181,8 +1234,11 @@ const RangeInput = React.memo(({
           {label}
         </label>
         <button
-          onClick={() => { onMinChange(minBound); onMaxChange(maxBound); }}
-          className="text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
+          onClick={() => {
+            onMinChange(minBound);
+            onMaxChange(maxBound);
+          }}
+          className="text-xs px-3 py-1 rounded-full bg-destructive/10 text-destructive hover:bg-destructive/20 transition-all"
         >
           Clear
         </button>
@@ -1190,58 +1246,49 @@ const RangeInput = React.memo(({
       
       {/* Range Display */}
       <div className="flex items-center justify-between px-2">
-        <span className="text-sm font-semibold  dark:text-gray-300">
-          {min.toLocaleString()}{unit}
+        <span className="text-sm font-semibold dark:text-gray-300">
+          {localMin.toLocaleString()}{unit}
         </span>
         <span className="text-xs text-gray-500 dark:text-gray-400">to</span>
-        <span className="text-sm font-semibold  dark:text-gray-300">
-          {max.toLocaleString()}{unit}
+        <span className="text-sm font-semibold dark:text-gray-300">
+          {localMax.toLocaleString()}{unit}
         </span>
       </div>
 
-      {/* Dual Range Sliders */}
-      <div className="relative pt-2 pb-3">
-        <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-          {/* Active Range Bar */}
-          <div 
-            className="absolute h-2 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-full"
-            style={{
-              left: `${((min - minBound) / (maxBound - minBound)) * 100}%`,
-              right: `${100 - ((max - minBound) / (maxBound - minBound)) * 100}%`
-            }}
-          />
-        </div>
-        
-        {/* Min Slider */}
-        <input
-          type="range"
+      {/* RC Slider */}
+      <div className="px-2 py-2">
+        <Slider
+          range
           min={minBound}
           max={maxBound}
           step={step}
-          value={constrainValue(min)}
-          onChange={(e) => {
-            const value = parseFloat(e.target.value)
-            if (value <= max) {
-              onMinChange(constrainValue(value))
+          value={[localMin, localMax]}
+          onChange={handleSliderChange}
+          onAfterChange={handleSliderAfterChange}
+          trackStyle={{ backgroundColor: '#2563eb', height: 4 }}
+          railStyle={{ backgroundColor: '#e5e7eb', height: 4 }}
+          handleStyle={[
+            {
+              backgroundColor: '#ffffff',
+              borderColor: '#2563eb',
+              borderWidth: 2,
+              height: 20,
+              width: 20,
+              marginTop: -8,
+              opacity: 1,
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+            },
+            {
+              backgroundColor: '#ffffff',
+              borderColor: '#2563eb',
+              borderWidth: 2,
+              height: 20,
+              width: 20,
+              marginTop: -8,
+              opacity: 1,
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
             }
-          }}
-          className="absolute w-full h-2 top-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-yellow-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-yellow-500 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg"
-        />
-        
-        {/* Max Slider */}
-        <input
-          type="range"
-          min={minBound}
-          max={maxBound}
-          step={step}
-          value={constrainValue(max)}
-          onChange={(e) => {
-            const value = parseFloat(e.target.value)
-            if (value >= min) {
-              onMaxChange(constrainValue(value))
-            }
-          }}
-          className="absolute w-full h-2 top-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-yellow-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-yellow-500 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg"
+          ]}
         />
       </div>
 
@@ -1256,27 +1303,10 @@ const RangeInput = React.memo(({
             step={step}
             min={minBound}
             max={maxBound}
-            value={min}
-            onChange={(e) => {
-              const value = parseFloat(e.target.value)
-              if (!isNaN(value)) {
-                const constrainedValue = constrainValue(value)
-                if (constrainedValue <= max) {
-                  onMinChange(constrainedValue)
-                }
-              }
-            }}
-            onBlur={(e) => {
-              const value = parseFloat(e.target.value)
-              if (isNaN(value) || value < minBound) {
-                onMinChange(minBound)
-              } else if (value > maxBound) {
-                onMinChange(maxBound)
-              } else if (value > max) {
-                onMinChange(max)
-              }
-            }}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
+            value={localMin}
+            onChange={handleMinInputChange}
+            onBlur={handleMinInputBlur}
+            className="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           />
         </div>
         <div>
@@ -1288,27 +1318,10 @@ const RangeInput = React.memo(({
             step={step}
             min={minBound}
             max={maxBound}
-            value={max}
-            onChange={(e) => {
-              const value = parseFloat(e.target.value)
-              if (!isNaN(value)) {
-                const constrainedValue = constrainValue(value)
-                if (constrainedValue >= min) {
-                  onMaxChange(constrainedValue)
-                }
-              }
-            }}
-            onBlur={(e) => {
-              const value = parseFloat(e.target.value)
-              if (isNaN(value) || value < minBound) {
-                onMaxChange(minBound)
-              } else if (value > maxBound) {
-                onMaxChange(maxBound)
-              } else if (value < min) {
-                onMaxChange(min)
-              }
-            }}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
+            value={localMax}
+            onChange={handleMaxInputChange}
+            onBlur={handleMaxInputBlur}
+            className="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           />
         </div>
       </div>
@@ -1356,7 +1369,7 @@ const SearchInput = React.memo(({
         {selected.length > 0 && (
           <button
             onClick={() => selected.slice().forEach(item => onRemove(item))}
-            className="text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
+            className="text-xs px-3 py-1 rounded-full bg-destructive/10 text-destructive hover:bg-destructive/20 transition-all"
           >
             Clear All
           </button>
@@ -1369,12 +1382,11 @@ const SearchInput = React.memo(({
           onChange={(e) => setInputValue(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder={placeholder}
-          className="flex-1 p-3 border rounded-lg"
-          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+          className="flex-1 p-3 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
         />
         <button
           onClick={handleAdd}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           Add
         </button>

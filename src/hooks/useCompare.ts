@@ -19,6 +19,9 @@ type ComparableProduct = Diamond | Record<string, unknown>;
 export const useCompare = () => {
   const dispatch = useDispatch<AppDispatch>()
   const compareState = useSelector((state: RootState) => state.compare)
+  const products = compareState?.products || []
+  const maxProducts = compareState?.maxProducts || 6
+  const isVisible = compareState?.isVisible || false
 
   const addProduct = useCallback((product: ComparableProduct, type: 'diamond' | 'gemstone' | 'jewelry') => {
     const typedProduct = product as Record<string, unknown>;
@@ -56,26 +59,26 @@ export const useCompare = () => {
   }, [dispatch])
 
   const isProductInCompare = useCallback((productId: string) => {
-    return compareState.products.some(p => p.id === productId)
-  }, [compareState.products])
+    return products.some(p => p.id === productId)
+  }, [products])
 
   const canAddMore = useCallback(() => {
-    return compareState.products.length < compareState.maxProducts
-  }, [compareState.products.length, compareState.maxProducts])
+    return products.length < maxProducts
+  }, [products.length, maxProducts])
 
   const getCompareCount = useCallback(() => {
-    return compareState.products.length
-  }, [compareState.products.length])
+    return products.length
+  }, [products.length])
 
   const getProductsByType = useCallback((type: 'diamond' | 'gemstone' | 'jewelry') => {
-    return compareState.products.filter(p => p.type === type)
-  }, [compareState.products])
+    return products.filter(p => p.type === type)
+  }, [products])
 
   return {
     // State
-    products: compareState.products,
-    isVisible: compareState.isVisible,
-    maxProducts: compareState.maxProducts,
+    products,
+    isVisible,
+    maxProducts,
     
     // Actions
     addProduct,

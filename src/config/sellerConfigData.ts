@@ -174,11 +174,11 @@ export const treatments: Option[] = [
 
 // Certificate Companies
 export const certificateCompanies: Option[] = [
-  { value: '1', label: 'GIA' },
-  { value: '2', label: 'IGI' },
-  { value: '3', label: 'AGS' },
-  { value: '4', label: 'HRD' },
-  { value: '5', label: 'Other' },
+  { value: 'GIA', label: 'GIA' },
+  { value: 'IGI', label: 'IGI' },
+  { value: 'AGS', label: 'AGS' },
+  { value: 'HRD', label: 'HRD' },
+  { value: 'Other', label: 'Other' },
 ];
 
 // Auction Product Types

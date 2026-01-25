@@ -15,7 +15,7 @@ export interface UseWishlistReturn {
   // Actions
   addToWishlist: (productId: number, productType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond') => Promise<boolean>;
   removeFromWishlist: (wishlistItemId: number) => Promise<boolean>;
-  removeFromWishlistByProduct: (productId: number) => Promise<boolean>;
+  removeFromWishlistByProduct: (productId: number, explicitProductType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond') => Promise<boolean>;
   toggleWishlist: (productId: number) => Promise<boolean>;
   isInWishlist: (productId: number) => boolean;
   loadWishlist: (page?: number, limit?: number) => Promise<void>;
@@ -64,7 +64,7 @@ export function useWishlistButton(productId: number, productType: 'diamond' | 'g
 
   const toggleWishlist = useCallback(async () => {
     if (inWishlist) {
-      return await removeFromWishlistByProduct(productId);
+      return await removeFromWishlistByProduct(productId, productType);
     } else {
       return await addToWishlist(productId, productType);
     }
