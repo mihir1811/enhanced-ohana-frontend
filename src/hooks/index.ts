@@ -9,3 +9,4 @@ export { useUserProfile as useUserProfileManagement, useSellerProfiles } from '.
 export { useLoading } from './useLoading'
 export { default as useNavigation } from './useNavigation'
 export { default as useNavigationAnalytics } from './useNavigationAnalytics'
+export { useTheme } from './useTheme'

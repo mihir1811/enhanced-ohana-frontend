@@ -2464,7 +2464,7 @@ export default function DiamondsSearchPage() {
               selected={searchForm.cutGrade}
               onChange={handleMultiSelect}
               label="Cut Grade"
-              gridCols="grid-cols-3 md:grid-cols-5"
+              gridCols="grid-cols-3 md:grid-cols-6"
               colorVariant="green"
             />
 
