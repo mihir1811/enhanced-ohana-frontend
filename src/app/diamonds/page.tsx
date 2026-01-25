@@ -521,16 +521,16 @@ const RangeSelectFilter = React.memo(({
           className={`
               p-3 rounded-lg border-2 text-sm font-medium transition-all duration-150
               ${isSelected
-              ? 'border-yellow-500 bg-yellow-50 text-yellow-900 shadow-md transform scale-105'
+              ? 'border-yellow-400 bg-gradient-to-br from-yellow-50 to-yellow-100 text-yellow-900 shadow-md transform scale-105'
               : 'border-gray-300 bg-white  hover:border-yellow-400 hover:bg-yellow-50'
             }
               ${isLastClicked ? 'ring-2 ring-yellow-400 ring-opacity-60' : ''}
             `}
           style={{
-            backgroundColor: isSelected ? '#fefce8' : '#ffffff',
-            borderColor: isSelected ? '#eab308' : '#d1d5db',
+            background: isSelected ? 'linear-gradient(135deg, #fefce8 0%, #fef08a 100%)' : '#ffffff',
+            borderColor: isSelected ? '#facc15' : '#d1d5db',
             color: isSelected ? '#713f12' : '#374151',
-            boxShadow: isLastClicked ? '0 0 0 2px rgba(251, 191, 36, 0.6)' : isSelected ? '0 4px 12px rgba(234, 179, 8, 0.2)' : 'none'
+            boxShadow: isLastClicked ? '0 0 0 2px rgba(250, 204, 21, 0.6)' : isSelected ? '0 4px 12px rgba(250, 204, 21, 0.25)' : 'none'
           }}
         >
           {option}
@@ -1265,28 +1265,28 @@ const RangeInput = React.memo(({
           value={[localMin, localMax]}
           onChange={handleSliderChange}
           onAfterChange={handleSliderAfterChange}
-          trackStyle={{ backgroundColor: '#2563eb', height: 4 }}
+          trackStyle={{ backgroundColor: '#eab308', height: 4 }}
           railStyle={{ backgroundColor: '#e5e7eb', height: 4 }}
           handleStyle={[
             {
               backgroundColor: '#ffffff',
-              borderColor: '#2563eb',
+              borderColor: '#eab308',
               borderWidth: 2,
               height: 20,
               width: 20,
               marginTop: -8,
               opacity: 1,
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+              boxShadow: '0 4px 6px -1px rgba(234, 179, 8, 0.4), 0 2px 4px -1px rgba(234, 179, 8, 0.2)'
             },
             {
               backgroundColor: '#ffffff',
-              borderColor: '#2563eb',
+              borderColor: '#eab308',
               borderWidth: 2,
               height: 20,
               width: 20,
               marginTop: -8,
               opacity: 1,
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+              boxShadow: '0 4px 6px -1px rgba(234, 179, 8, 0.4), 0 2px 4px -1px rgba(234, 179, 8, 0.2)'
             }
           ]}
         />
