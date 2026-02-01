@@ -4,7 +4,7 @@ import React from 'react'
 import NavigationUser from '@/components/Navigation/NavigationUser'
 import Footer from '@/components/Footer'
 import BullionListingPage from '@/components/bullions/BullionListingPage'
-import { jewelryService } from '@/services/jewelryService'
+import { bullionService } from '@/services/bullion.service'
 import { Shield, Award, TrendingUp } from 'lucide-react'
 
 const SECTION_WIDTH = 1400
@@ -16,7 +16,7 @@ export default function BullionsPage() {
       {/* Main Content */}
       <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-2 sm:px-6 lg:px-6`}>
         <BullionListingPage
-          fetchBullions={jewelryService.getAllJewelry}
+          fetchBullions={(params) => bullionService.getBullions(params)}
           title="Precious Metal Bullions"
         />
       </div>

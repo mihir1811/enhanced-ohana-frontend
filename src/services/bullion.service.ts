@@ -32,6 +32,23 @@ export interface CreateBullionRequest {
   condition?: string;
   mintMark?: string;
   mintYear?: number;
+  serialNumber?: string;
+  certificateNumber?: string;
+  certification?: string;
+  availability?: string;
+}
+
+export interface BullionQueryParams {
+  page?: number;
+  limit?: number;
+  sort?: string;
+  search?: string;
+  priceMin?: number;
+  priceMax?: number;
+  metalType?: string[];
+  metalShape?: string[];
+  metalFineness?: string[];
+  stockNumber?: string;
 }
 
 export interface BullionProduct {
@@ -48,6 +65,10 @@ export interface BullionProduct {
   condition?: string;
   mintMark?: string;
   mintYear?: number;
+  serialNumber?: string;
+  certificateNumber?: string;
+  certification?: string;
+  availability?: string;
   isActive: boolean;
   isSold: boolean;
   createdAt: string;
@@ -110,11 +131,27 @@ class BullionService {
     return response.json();
   }
 
-  async getBullions(params: { page?: number; limit?: number } = {}): Promise<any> {
+  async getBullions(params: BullionQueryParams = {}): Promise<any> {
     const token = getCookie('token') || undefined;
     const queryParams = new URLSearchParams();
     if (params.page) queryParams.append('page', params.page.toString());
     if (params.limit) queryParams.append('limit', params.limit.toString());
+    if (params.sort) queryParams.append('sort', params.sort);
+    if (params.search) queryParams.append('search', params.search);
+
+    // Filters
+    if (params.priceMin !== undefined) queryParams.append('filters[price][gte]', params.priceMin.toString());
+    if (params.priceMax !== undefined) queryParams.append('filters[price][lte]', params.priceMax.toString());
+    
+    // Metal Type filter (assuming backend handles nested filtering or we filter by ID if we had it, but here we try name)
+    // Backend prisma where: { metalType: { name: { in: [...] } } }
+    if (params.metalType && params.metalType.length > 0) {
+      params.metalType.forEach(type => {
+        queryParams.append('filters[metalType][name][in][]', type);
+      });
+    }
+
+    if (params.stockNumber) queryParams.append('filters[stockNumber][contains]', params.stockNumber);
     
     const response = await fetch(`${buildApiUrl(API_CONFIG.ENDPOINTS.BULLION.ALL)}?${queryParams.toString()}`, {
       method: 'GET',

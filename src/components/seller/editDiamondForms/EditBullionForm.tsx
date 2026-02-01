@@ -34,6 +34,10 @@ const EditBullionForm: React.FC<EditBullionFormProps> = ({ initialData }) => {
     condition: initialData.condition,
     mintMark: initialData.mintMark,
     mintYear: initialData.mintYear,
+    serialNumber: initialData.serialNumber,
+    certificateNumber: initialData.certificateNumber,
+    certification: initialData.certification,
+    availability: initialData.availability,
   });
 
   useEffect(() => {
@@ -79,6 +83,10 @@ const EditBullionForm: React.FC<EditBullionFormProps> = ({ initialData }) => {
             condition: formData.condition,
             mintMark: formData.mintMark,
             mintYear: formData.mintYear ? Number(formData.mintYear) : undefined,
+            serialNumber: formData.serialNumber,
+            certificateNumber: formData.certificateNumber,
+            certification: formData.certification,
+            availability: formData.availability,
         };
 
         await bullionService.updateBullion(initialData.id, payload);
@@ -260,6 +268,56 @@ const EditBullionForm: React.FC<EditBullionFormProps> = ({ initialData }) => {
                     name="mintYear"
                     value={formData.mintYear || ''}
                     onChange={handleChange}
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                />
+            </div>
+
+            {/* Serial Number */}
+            <div>
+                <label className="block text-sm font-medium mb-1">Serial Number</label>
+                <input
+                    type="text"
+                    name="serialNumber"
+                    value={formData.serialNumber || ''}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                />
+            </div>
+
+            {/* Certificate Number */}
+            <div>
+                <label className="block text-sm font-medium mb-1">Certificate Number</label>
+                <input
+                    type="text"
+                    name="certificateNumber"
+                    value={formData.certificateNumber || ''}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                />
+            </div>
+
+            {/* Certification */}
+            <div>
+                <label className="block text-sm font-medium mb-1">Certification</label>
+                <input
+                    type="text"
+                    name="certification"
+                    value={formData.certification || ''}
+                    onChange={handleChange}
+                    placeholder="e.g. LBMA"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                />
+            </div>
+
+            {/* Availability */}
+            <div>
+                <label className="block text-sm font-medium mb-1">Availability</label>
+                <input
+                    type="text"
+                    name="availability"
+                    value={formData.availability || ''}
+                    onChange={handleChange}
+                    placeholder="e.g. In Stock"
                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
             </div>

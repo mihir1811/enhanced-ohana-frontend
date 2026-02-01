@@ -4,6 +4,7 @@ import React, { useEffect, useLayoutEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { JewelryItem, JewelryQueryParams } from '@/services/jewelryService';
+import { BullionProduct, BullionQueryParams } from '@/services/bullion.service';
 import { Shield, Award, TrendingUp, ArrowRight, Grid, List, Loader2, X, ChevronDown, Filter, Search, ArrowUpDown } from 'lucide-react';
 import { SECTION_WIDTH } from '@/lib/constants';
 
@@ -17,11 +18,11 @@ interface BullionFilters {
 }
 
 interface BullionListingPageProps {
-  fetchBullions: (params: JewelryQueryParams) => Promise<{
+  fetchBullions: (params: BullionQueryParams) => Promise<{
     success: boolean;
     message: string;
     data: {
-      data: JewelryItem[];
+      data: BullionProduct[];
       meta?: {
         total?: number;
         lastPage?: number;
@@ -307,14 +308,15 @@ function FilterSections({ filters, onFiltersChange }: FilterSectionsProps) {
 
 // Bullion Card Component
 interface BullionCardProps {
-  bullion: JewelryItem;
+  bullion: BullionProduct;
   viewMode: 'grid' | 'list';
   onClick: () => void;
 }
 
 function BullionCard({ bullion, viewMode, onClick }: BullionCardProps) {
-  const mainImage = bullion.image1 || bullion.image2 || bullion.image3 || 'https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg';
-  const price = bullion.totalPrice || bullion.basePrice || 0;
+  const mainImage = 'https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg';
+  const price = Number(bullion.price) || 0;
+  const name = `${bullion.metalWeight} ${bullion.metalType?.name || ''} ${bullion.metalShape?.name || ''}`;
 
   if (viewMode === 'list') {
     return (
@@ -327,7 +329,7 @@ function BullionCard({ bullion, viewMode, onClick }: BullionCardProps) {
           >
             <Image
               src={mainImage}
-              alt={bullion.name || 'Bullion'}
+              alt={name}
               width={128}
               height={128}
               className="w-full h-full object-cover hover:scale-105 transition-transform"
@@ -338,22 +340,22 @@ function BullionCard({ bullion, viewMode, onClick }: BullionCardProps) {
             <div className="flex items-start justify-between mb-2">
               <div onClick={onClick} className="cursor-pointer flex-1">
                 <h3 className="text-lg font-semibold transition-colors mb-2" style={{ color: 'var(--foreground)' }}>
-                  {bullion.name || 'Unnamed Bullion'}
+                  {name}
                 </h3>
                 <div className="flex flex-wrap gap-2 text-sm" style={{ color: 'var(--muted-foreground)' }}>
                   {bullion.metalType && (
                     <span className="px-2 py-1 rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
-                      {bullion.metalType}
+                      {bullion.metalType.name}
                     </span>
                   )}
                   {bullion.metalWeight && (
                     <span className="px-2 py-1 rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
-                      {bullion.metalWeight}g
+                      {bullion.metalWeight}
                     </span>
                   )}
-                  {bullion.metalPurity && (
+                  {bullion.metalFineness && (
                     <span className="px-2 py-1 rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
-                      {bullion.metalPurity}
+                      {bullion.metalFineness.name}
                     </span>
                   )}
                 </div>
@@ -365,11 +367,11 @@ function BullionCard({ bullion, viewMode, onClick }: BullionCardProps) {
               </div>
             </div>
             
-            {bullion.description && (
-              <p className="text-sm line-clamp-2 mt-2" style={{ color: 'var(--muted-foreground)' }}>
-                {bullion.description}
-              </p>
-            )}
+            <div className="text-sm mt-2 space-y-1" style={{ color: 'var(--muted-foreground)' }}>
+               {bullion.design && <p>Design: {bullion.design}</p>}
+               {bullion.condition && <p>Condition: {bullion.condition}</p>}
+               {bullion.stockNumber && <p>Stock #: {bullion.stockNumber}</p>}
+            </div>
           </div>
         </div>
       </div>
@@ -382,39 +384,39 @@ function BullionCard({ bullion, viewMode, onClick }: BullionCardProps) {
       <div onClick={onClick} className="relative aspect-square overflow-hidden cursor-pointer" style={{ backgroundColor: 'var(--card)' }}>
         <Image
           src={mainImage}
-          alt={bullion.name || 'Bullion'}
+          alt={name}
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-300"
         />
-        {bullion.category && (
+        {bullion.availability && (
           <div className="absolute top-2 right-2 text-xs px-2 py-1 rounded-full flex items-center gap-1" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
             <Shield className="w-3 h-3" />
-            {bullion.category}
+            {bullion.availability}
           </div>
         )}
       </div>
       
       <div onClick={onClick} className="p-4 cursor-pointer" style={{ color: 'var(--foreground)' }}>
         <h3 className="text-lg font-semibold mb-2 line-clamp-2 transition-colors" style={{ color: 'var(--foreground)' }}>
-          {bullion.name || 'Unnamed Bullion'}
+          {name}
         </h3>
         
         <div className="flex flex-wrap gap-2 mb-3 text-xs">
           {bullion.metalType && (
             <span className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
-              {bullion.metalType}
+              {bullion.metalType.name}
             </span>
           )}
           {bullion.metalWeight && (
             <span className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
-              {bullion.metalWeight}g
+              {bullion.metalWeight}
             </span>
           )}
         </div>
         
-        {bullion.metalPurity && (
+        {bullion.metalFineness && (
           <p className="text-sm mb-2" style={{ color: 'var(--muted-foreground)' }}>
-            Purity: {bullion.metalPurity}
+            Purity: {bullion.metalFineness.name}
           </p>
         )}
         
@@ -441,7 +443,7 @@ const BullionListingPage: React.FC<BullionListingPageProps> = ({
     priceMin: 0,
     priceMax: 0
   });
-  const [bullions, setBullions] = useState<JewelryItem[]>([]);
+  const [bullions, setBullions] = useState<BullionProduct[]>([]);
   const [loading, setLoading] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -452,13 +454,12 @@ const BullionListingPage: React.FC<BullionListingPageProps> = ({
   useEffect(() => {
     setLoading(true);
     fetchBullions({
-      // category: 'bullions',
       page: currentPage,
       limit: pageSize,
       sort: '-createdAt',
       priceMin: filters.priceMin || undefined,
       priceMax: filters.priceMax || undefined,
-      metal: filters.metalType.length > 0 ? filters.metalType : undefined,
+      metalType: filters.metalType.length > 0 ? filters.metalType : undefined,
     })
       .then((res) => {
         const bullionsRaw = res.data?.data ?? [];
