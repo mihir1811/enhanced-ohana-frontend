@@ -70,6 +70,15 @@ export const API_CONFIG = {
       SEARCH: '/jewelry/search',
       BY_SELLER: '/jewelry/seller',
     },
+
+    // Bullion
+    BULLION: {
+      BASE: '/bullion',
+      METAL_TYPES: '/bullion/metal-types',
+      METAL_SHAPES: '/bullion/metal-shapes',
+      METAL_FINENESS: '/bullion/metal-fineness',
+      ALL: '/bullion/all',
+    },
     
 
     

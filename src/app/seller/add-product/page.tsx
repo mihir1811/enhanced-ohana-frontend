@@ -5,6 +5,7 @@ import { RootState } from '@/store';
 import AddDiamondForm from '@/components/seller/addProductForms/AddDiamondForm';
 import AddGemstoneForm from '@/components/seller/addProductForms/AddGemstoneForm';
 import AddJewelryForm from '@/components/seller/addProductForms/AddJewelryForm';
+import AddBullionForm from '@/components/seller/addProductForms/AddBullionForm';
 
 // Helper function to get correct form
 function renderAddProductForm(sellerType?: string) {
@@ -22,6 +23,8 @@ function renderAddProductForm(sellerType?: string) {
       return <AddGemstoneForm onCancel={handleCancel} />;
     case 'jewellery':
       return <AddJewelryForm />;
+    case 'bullion':
+      return <AddBullionForm />;
     default:
       return (
         <div className="text-red-500 font-medium">

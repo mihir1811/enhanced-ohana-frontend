@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { diamondService } from "@/services/diamondService";
 import { gemstoneService } from "@/services/gemstoneService";
 import { jewelryService } from "@/services/jewelryService";
+import { bullionService } from "@/services/bullion.service";
 import EditDiamondForm from "@/components/seller/editDiamondForms/EditDiamondForm";
 
 // import EditJewelryForm from "@/components/seller/editJewelryForms/EditJewelryForm";
@@ -12,6 +13,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import EditGemstoneForm from "@/components/seller/editDiamondForms/EditGemstoneForm";
 import EditJewelryForm from "@/components/seller/editDiamondForms/EditJewelryForm";
+import EditBullionForm from "@/components/seller/editDiamondForms/EditBullionForm";
 
 export default function EditProductPage() {
   const { id } = useParams();
@@ -31,6 +33,8 @@ export default function EditProductPage() {
       fetcher = gemstoneService.getGemstoneById(id as string);
     } else if (sellerType === 'jewellery') {
       fetcher = jewelryService.getJewelryById(id as string);
+    } else if (sellerType === 'bullion') {
+      fetcher = bullionService.getBullionById(Number(id));
     } else {
       fetcher = diamondService.getDiamondById(id as string);
     }
@@ -53,6 +57,8 @@ export default function EditProductPage() {
         return <EditGemstoneForm initialData={product as Parameters<typeof EditGemstoneForm>[0]['initialData']} />;
       case 'jewellery':
         return <EditJewelryForm initialData={product as Parameters<typeof EditJewelryForm>[0]['initialData']} />;
+      case 'bullion':
+        return <EditBullionForm initialData={product as any} />;
       default:
         return <div className="text-red-500 font-medium">Please complete your seller profile to edit products.</div>;
     }

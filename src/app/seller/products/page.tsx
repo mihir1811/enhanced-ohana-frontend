@@ -10,6 +10,7 @@ import { RootState } from '@/store'
 import DiamondsListing from '@/components/seller/productListings/DiamondsListing'
 import GemstonesListing from '@/components/seller/productListings/GemstonesListing'
 import JewelryListing from '@/components/seller/productListings/JewelryListing'
+import BullionListing from '@/components/seller/productListings/BullionListing'
 
 export default function SellerProductsPage() {
   const { setPageLoading, isPageLoading } = useLoading()
@@ -50,6 +51,8 @@ export default function SellerProductsPage() {
         return <GemstonesListing />
       case 'jewellery':
         return <JewelryListing />
+      case 'bullion':
+        return <BullionListing />
       default:
         return (
           <div className="rounded-xl border p-8 text-center">
