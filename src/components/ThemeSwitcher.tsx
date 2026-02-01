@@ -4,7 +4,7 @@ import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 
 export default function ThemeSwitcher() {
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme, resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => setMounted(true), [])
@@ -13,16 +13,16 @@ export default function ThemeSwitcher() {
 
   return (
     <button
-      onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+      onClick={() => setTheme(resolvedTheme === 'light' ? 'dark' : 'light')}
       className="p-2 text-slate-600 dark:text-slate-300 hover:text-amber-500 transition-all duration-300 hover:bg-slate-100 dark:hover:bg-[var(--muted)] rounded-lg group cursor-pointer"
       style={{ 
         color: 'var(--foreground)', 
         borderRadius: 'var(--radius-md)',
         backgroundColor: 'transparent'
       }}
-      title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+      title={`Switch to ${resolvedTheme === 'light' ? 'dark' : 'light'} mode`}
     >
-      {theme === 'light' ? (
+      {resolvedTheme === 'light' ? (
         <svg className="w-5 h-5 group-hover:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
         </svg>
