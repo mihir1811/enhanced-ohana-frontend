@@ -6,7 +6,8 @@ export const SellerType = {
   naturalDiamond: 'naturalDiamond',
   labGrownDiamond: 'labGrownDiamond',
   jewellery: 'jewellery',
-  gemstone: 'gemstone'
+  gemstone: 'gemstone',
+  bullion: 'bullion'
 } as const;
 
 export type SellerTypeValue = typeof SellerType[keyof typeof SellerType];
