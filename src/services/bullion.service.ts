@@ -69,6 +69,13 @@ export interface BullionProduct {
   certificateNumber?: string;
   certification?: string;
   availability?: string;
+  sellerId?: string;
+  seller?: {
+    id: string;
+    userId?: string;
+    name: string;
+    companyName?: string;
+  };
   isActive: boolean;
   isSold: boolean;
   createdAt: string;

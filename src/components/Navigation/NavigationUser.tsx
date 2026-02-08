@@ -625,9 +625,9 @@ export default function NavigationUser() {
               </div>
 
               {/* Notifications */}
-              <Link href="/notifications" className="relative group p-2 transition-all duration-300 hover:text-amber-500 hover:bg-[var(--muted)] dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit" style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}>
+              <Link href="/notifications" className="relative group p-2 transition-all duration-300 hover:text-amber-500 hover:bg-[var(--muted)] dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit flex items-center justify-center" style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5-5V9a6 6 0 10-12 0v3l-5 5h5a6 6 0 0012 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
                 {notifications > 0 && (
                   <span className="absolute -top-1 -right-1 w-4 h-4 text-white text-xs rounded-full flex items-center justify-center font-bold animate-pulse" style={{ background: 'linear-gradient(90deg, var(--chart-2), var(--chart-3))', color: 'var(--primary-foreground)' }}>

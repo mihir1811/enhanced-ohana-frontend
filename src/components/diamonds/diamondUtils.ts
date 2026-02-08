@@ -61,6 +61,7 @@ export interface ApiDiamondData {
   auctionEndTime?: string | null;
   seller?: {
     id: string | number;
+    userId?: string;
     sellerType?: string;
     companyName?: string;
     companyLogo?: string;
@@ -169,6 +170,7 @@ export function transformApiDiamond(apiDiamond: ApiDiamondData): Diamond {
     seller: apiDiamond.seller
       ? {
           id: String(apiDiamond.seller.id),
+          userId: apiDiamond.seller.userId,
           sellerType: apiDiamond.seller.sellerType,
           companyName: apiDiamond.seller.companyName,
           companyLogo: apiDiamond.seller.companyLogo,

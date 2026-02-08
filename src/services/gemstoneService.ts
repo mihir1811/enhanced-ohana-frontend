@@ -37,6 +37,7 @@ export interface GemstonItem {
   // Seller information
   seller?: {
     id: string;
+    userId?: string;
     sellerType: string;
     companyName: string;
     companyLogo: string;
@@ -87,6 +88,7 @@ export interface DetailedGemstone {
   updatedAt: string;
   seller: {
     id: string;
+    userId?: string;
     sellerType: string;
     companyName: string;
     companyLogo: string;

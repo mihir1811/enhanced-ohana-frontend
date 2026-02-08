@@ -444,7 +444,8 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
 }
 
 export interface SellerInfo {
-  id?: string;
+  id: string;
+  userId?: string;
   sellerType?: string;
   companyName?: string;
   companyLogo?: string;

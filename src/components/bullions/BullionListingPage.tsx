@@ -903,7 +903,7 @@ const BullionListingPage: React.FC<BullionListingPageProps> = ({
                       key={bullion.id} 
                       bullion={bullion} 
                       viewMode="grid"
-                      onClick={() => router.push(`/product/jewelry/${bullion.id}`)}
+                      onClick={() => router.push(`/bullions/${bullion.id}`)}
                     />
                   ))}
                 </div>
@@ -914,7 +914,7 @@ const BullionListingPage: React.FC<BullionListingPageProps> = ({
                       key={bullion.id} 
                       bullion={bullion} 
                       viewMode="list"
-                      onClick={() => router.push(`/product/jewelry/${bullion.id}`)}
+                      onClick={() => router.push(`/bullions/${bullion.id}`)}
                     />
                   ))}
                 </div>

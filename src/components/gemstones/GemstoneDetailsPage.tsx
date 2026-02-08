@@ -83,7 +83,8 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
     })
     
     // Try to get seller ID from multiple possible locations
-    const sellerId = gemstone?.seller?.id || gemstone?.sellerId
+    // We prioritize seller.userId because the chat system works between Users (not Seller entities)
+    const sellerId = gemstone?.seller?.userId || gemstone?.seller?.id || gemstone?.sellerId
     
     console.log('🔍 [GemstoneChat] Resolved seller ID:', sellerId)
     
