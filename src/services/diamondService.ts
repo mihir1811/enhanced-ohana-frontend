@@ -26,6 +26,13 @@ export interface DiamondData {
   certification?: string;
   images?: string[];
   sellerId: string;
+  seller?: {
+    id: string | number;
+    userId?: string;
+    companyName?: string;
+    companyLogo?: string;
+    [key: string]: unknown;
+  };
   [key: string]: unknown;
 }
 
