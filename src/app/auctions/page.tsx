@@ -92,21 +92,30 @@ interface AuctionItem {
   product: GemsProduct | JewelryProduct;
 }
 
-// Minimalist countdown timer
-const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
+// Minimalist countdown timer with status badge
+const AuctionStatusBadge: React.FC<{ endTime: string; isActive: boolean; className?: string }> = ({ endTime, isActive, className }) => {
   const [timeLeft, setTimeLeft] = useState('');
+  const [isEnded, setIsEnded] = useState(!isActive);
 
   useEffect(() => {
-    const timer = setInterval(() => {
+    if (!isActive) {
+      setTimeLeft('Ended');
+      setIsEnded(true);
+      return;
+    }
+
+    const calculateTime = () => {
       const now = new Date().getTime();
       const end = new Date(endTime).getTime();
       const diff = end - now;
 
       if (diff <= 0) {
         setTimeLeft('Ended');
+        setIsEnded(true);
         return;
       }
 
+      setIsEnded(false);
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -118,13 +127,23 @@ const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
       } else {
         setTimeLeft(`${minutes}m`);
       }
-    }, 1000);
+    };
+
+    calculateTime();
+    const timer = setInterval(calculateTime, 1000);
 
     return () => clearInterval(timer);
-  }, [endTime]);
+  }, [endTime, isActive]);
 
   return (
-    <div className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
+    <div 
+      className={`absolute z-10 backdrop-blur-sm rounded-lg px-2.5 py-1.5 shadow-sm border flex items-center gap-1 ${className}`}
+      style={{ 
+        backgroundColor: isEnded ? 'rgba(239, 68, 68, 0.1)' : 'var(--card)', 
+        borderColor: isEnded ? 'rgba(239, 68, 68, 0.5)' : 'var(--border)', 
+        color: isEnded ? 'rgb(239, 68, 68)' : 'var(--foreground)'
+      }}
+    >
       <Clock className="w-3.5 h-3.5" />
       <span className="text-xs font-medium">{timeLeft}</span>
     </div>
@@ -133,7 +152,7 @@ const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
 
 // Enhanced auction card with detailed information
 const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }> = ({ auction, viewMode }) => {
-  const { product, bids, endTime, seller, productType } = auction;
+  const { product, bids, endTime, seller, productType, isActive } = auction;
   
   // Get current bid (highest bid from bids array)
   const currentBid = bids.length > 0 ? Math.max(...bids.map(bid => bid.amount)) : null;
@@ -151,6 +170,11 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
   };
   
   const displayPrice = getDisplayPrice();
+  
+  // Get starting price safely
+  const startingPrice = 'totalPrice' in product 
+    ? (product.basePrice ?? product.totalPrice ?? 0)
+    : (product.price ?? 0);
   
   const getProductTypeDisplay = () => {
     switch (productType) {
@@ -179,9 +203,7 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
             style={{ backgroundColor: 'var(--card)' }}
           >
             {/* Timer Badge */}
-            <div className="absolute top-2 left-2 z-10 backdrop-blur-sm rounded-lg px-2.5 py-1.5 shadow-sm border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
-              <CountdownTimer endTime={endTime} />
-            </div>
+            <AuctionStatusBadge endTime={endTime} isActive={isActive} className="top-2 left-2" />
 
             {/* Product Type Badge */}
             <div className="absolute top-2 right-2 z-10 text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
@@ -299,7 +321,7 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
                         ${currentBid.toLocaleString()}
                       </div>
                       <div className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
-                        Started at: ${('totalPrice' in product ? product.basePrice : product.price).toLocaleString()}
+                        Started at: ${startingPrice.toLocaleString()}
                       </div>
                     </div>
                   ) : (
@@ -373,9 +395,7 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
       {/* Image Section */}
       <div className="relative aspect-square overflow-hidden" style={{ backgroundColor: 'var(--card)' }}>
         {/* Timer Badge */}
-        <div className="absolute top-3 left-3 z-10 backdrop-blur-sm rounded-lg px-2.5 py-1.5 shadow-sm border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
-          <CountdownTimer endTime={endTime} />
-        </div>
+        <AuctionStatusBadge endTime={endTime} isActive={isActive} className="top-3 left-3" />
 
         {/* Product Type Badge */}
         <div className="absolute top-3 right-3 z-10 text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
@@ -470,7 +490,7 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
                 ${currentBid.toLocaleString()}
               </div>
               <div className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                Starting: ${('totalPrice' in product ? product.basePrice : product.price).toLocaleString()}
+                Starting: ${startingPrice.toLocaleString()}
               </div>
             </div>
           ) : (

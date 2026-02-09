@@ -1,8 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { auctionService } from '@/services/auctionService';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
+import { toast } from 'react-hot-toast';
 import { 
   ArrowLeft, 
   Heart, 
@@ -85,7 +88,75 @@ interface Bid {
   amount: number;
   userId: string;
   createdAt: string;
+  buyer?: {
+    id: string;
+    name: string;
+    userName: string;
+  };
 }
+
+// Bid History Component
+const BidHistory: React.FC<{ bids: Bid[] }> = ({ bids }) => {
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit', 
+      minute: '2-digit'
+    });
+  };
+
+  const maskUserName = (userName: string) => {
+    if (!userName || userName.length < 3) return '***';
+    return `${userName[0]}***${userName[userName.length - 1]}`;
+  };
+
+  return (
+    <div className="bg-white rounded-lg border border-slate-200 p-6">
+      <h3 className="text-lg font-semibold text-slate-900 mb-4">Bid History</h3>
+      
+      {bids.length === 0 ? (
+        <div className="text-center py-6 text-slate-500 text-sm">
+          No bids yet. Be the first to bid!
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between text-xs font-medium text-slate-500 pb-2 border-b border-slate-100">
+            <div>Bidder</div>
+            <div className="flex items-center gap-8">
+              <div>Amount</div>
+              <div className="w-24 text-right">Time</div>
+            </div>
+          </div>
+          
+          <div className="max-h-60 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+            {bids.map((bid, index) => (
+              <div key={bid.id} className="flex items-center justify-between text-sm">
+                <div className="text-slate-600">
+                  {bid.buyer ? maskUserName(bid.buyer.userName || bid.buyer.name) : '***'}
+                  {index === 0 && (
+                    <span className="ml-2 text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium">
+                      Highest
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-8">
+                  <div className="font-semibold text-slate-900">
+                    ${parseFloat(bid.amount.toString()).toLocaleString()}
+                  </div>
+                  <div className="w-24 text-right text-slate-500 text-xs">
+                    {formatTime(bid.createdAt)}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface AuctionItem {
   id: number;
@@ -237,22 +308,53 @@ const ImageGallery: React.FC<{ product: GemsProduct | JewelryProduct }> = ({ pro
 // Bidding Component
 const BiddingSection: React.FC<{ 
   auction: AuctionItem, 
-  currentBid: number | null 
-}> = ({ auction, currentBid }) => {
+  currentBid: number | null,
+  onBidSuccess: () => void
+}> = ({ auction, currentBid, onBidSuccess }) => {
   const [bidAmount, setBidAmount] = useState('');
   const [bidding, setBidding] = useState(false);
+  const { user, token } = useSelector((state: RootState) => state.auth);
+  const router = useRouter();
+
+  const isOwner = user?.role === 'seller' && user?.sellerData?.id === auction.sellerId;
 
   const startingPrice = 'totalPrice' in auction.product 
     ? auction.product.totalPrice 
     : auction.product.price;
 
-  const minBid = currentBid ? currentBid + 100 : startingPrice + 100;
+  const minBid = currentBid ? currentBid + 10 : startingPrice;
 
   const handleBid = async () => {
-    // Implement bid logic here
-    setBidding(true);
-    // Add API call
-    setTimeout(() => setBidding(false), 1000);
+    if (!user || !token) {
+      toast.error('Please login to place a bid');
+      router.push(`/auth/login?redirect=/auctions/${auction.id}`);
+      return;
+    }
+
+    if (!bidAmount) return;
+    
+    const amount = parseFloat(bidAmount);
+    if (isNaN(amount) || amount < minBid) {
+      toast.error(`Bid must be at least $${minBid.toLocaleString()}`);
+      return;
+    }
+
+    try {
+      setBidding(true);
+      await auctionService.placeBid({
+        auctionId: auction.id,
+        amount: amount
+      }, token);
+      
+      toast.success('Bid placed successfully!');
+      setBidAmount('');
+      onBidSuccess();
+    } catch (err: any) {
+      const message = err.response?.data?.message || err.message || 'Failed to place bid';
+      toast.error(message);
+    } finally {
+      setBidding(false);
+    }
   };
 
   return (
@@ -262,7 +364,7 @@ const BiddingSection: React.FC<{
           <h3 className="text-xl font-semibold text-slate-900">
             {currentBid ? 'Current Bid' : 'Starting Price'}
           </h3>
-          {currentBid && (
+          {auction.isActive && (
             <div className="flex items-center text-green-600">
               <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
               <span className="text-sm">Live Auction</span>
@@ -270,7 +372,7 @@ const BiddingSection: React.FC<{
           )}
         </div>
         
-        <div className="text-3xl font-bold text-slate-900 mb-2">
+        <div className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">
           ${(currentBid || startingPrice).toLocaleString()}
         </div>
         
@@ -281,33 +383,41 @@ const BiddingSection: React.FC<{
         )}
       </div>
 
-      {auction.isActive && (
+      {auction.isActive ? (
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Your Bid (Minimum: ${minBid.toLocaleString()})
             </label>
-            <input
-              type="number"
-              value={bidAmount}
-              onChange={(e) => setBidAmount(e.target.value)}
-              placeholder={`Enter bid amount`}
-              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500"
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-3 text-slate-500">$</span>
+              <input
+                type="number"
+                value={bidAmount}
+                onChange={(e) => setBidAmount(e.target.value)}
+                placeholder={`Enter ${minBid}`}
+                className="w-full pl-8 pr-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500"
+                min={minBid}
+              />
+            </div>
           </div>
           
           <button
             onClick={handleBid}
-            disabled={bidding || !bidAmount || parseInt(bidAmount) < minBid}
+            disabled={bidding || !bidAmount || parseFloat(bidAmount) < minBid || isOwner}
             className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 disabled:cursor-not-allowed text-white py-3 px-6 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
           >
             <Gavel className="w-5 h-5" />
-            {bidding ? 'Placing Bid...' : 'Place Bid'}
+            {bidding ? 'Placing Bid...' : isOwner ? 'You cannot bid on your own auction' : 'Place Bid'}
           </button>
+          
+          {!user && (
+            <p className="text-xs text-center text-slate-500">
+              You must be logged in to place a bid.
+            </p>
+          )}
         </div>
-      )}
-
-      {!auction.isActive && (
+      ) : (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
           <div className="text-red-800 font-medium">Auction Ended</div>
           {auction.isSold && (
@@ -327,31 +437,30 @@ export default function AuctionDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchAuctionDetails = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  const fetchAuctionDetails = useCallback(async () => {
+    try {
+      setError(null);
 
-        const response = await auctionService.getAuctionById<AuctionItem>(auctionId);
-        
-        if (response?.data) {
-          setAuction(response.data);
-        } else {
-          setError('Auction not found');
-        }
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load auction details';
-        setError(errorMessage);
-      } finally {
-        setLoading(false);
+      const response = await auctionService.getAuctionById<AuctionItem>(auctionId);
+      
+      if (response?.data) {
+        setAuction(response.data);
+      } else {
+        setError('Auction not found');
       }
-    };
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load auction details';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [auctionId]);
 
+  useEffect(() => {
     if (auctionId) {
       fetchAuctionDetails();
     }
-  }, [auctionId]);
+  }, [fetchAuctionDetails, auctionId]);
 
   if (loading) {
     return (
@@ -411,7 +520,7 @@ export default function AuctionDetailsPage() {
                 <ArrowLeft className="w-5 h-5 text-slate-600" />
               </Link>
               <div>
-                <h1 className="text-2xl font-semibold text-slate-900">
+                <h1 className="text-xl md:text-2xl font-semibold text-slate-900">
                   {auction.product.name}
                 </h1>
                 <div className="text-sm text-slate-600">
@@ -431,8 +540,8 @@ export default function AuctionDetailsPage() {
         </div>
 
         {/* Main Content */}
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="max-w-6xl mx-auto px-4 py-6 md:py-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             {/* Left Column - Images */}
             <div>
               <ImageGallery product={auction.product} />
@@ -444,7 +553,14 @@ export default function AuctionDetailsPage() {
               <CountdownTimer endTime={auction.endTime} />
 
               {/* Bidding Section */}
-              <BiddingSection auction={auction} currentBid={currentBid} />
+              <BiddingSection 
+                auction={auction} 
+                currentBid={currentBid} 
+                onBidSuccess={fetchAuctionDetails}
+              />
+
+              {/* Bid History */}
+              <BidHistory bids={auction.bids} />
 
               {/* Product Details */}
               <div className="bg-white rounded-lg border border-slate-200 p-6">
