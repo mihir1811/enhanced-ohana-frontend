@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import BulkUploadModal from './BulkUploadModal';
-import { diamondService, DiamondData } from '@/services/diamondService';
+import { diamondService } from '@/services/diamondService';
 import DiamondProductCard, { DiamondProduct } from './DiamondProductCard';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { toast } from 'react-hot-toast';
 
-const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType?: string }) => {
+const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType?: string }) => {
   const [diamonds, setDiamonds] = useState<DiamondProduct[]>([]);
   const [view, setView] = useState<'list' | 'grid'>('grid');
   const [loading, setLoading] = useState(true);
@@ -20,24 +20,21 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const handleBulkFileSelect = () => {
-    // Called after successful upload in modal
     setBulkModalOpen(false);
     setRefreshKey((k) => k + 1);
   };
 
   useEffect(() => {
-    console.log(page, limit, "page, limit")
     setLoading(true);
-    
     let fetchPromise;
     if (stoneType === 'labGrownDiamond') {
-      fetchPromise = diamondService.getLabDiamonds({ page, limit, sellerId });
+      fetchPromise = diamondService.getMeleeLabDiamonds({ page, limit, sellerId });
     } else if (stoneType === 'naturalDiamond') {
-      fetchPromise = diamondService.getNaturalDiamonds({ page, limit, sellerId });
+      fetchPromise = diamondService.getMeleeNaturalDiamonds({ page, limit, sellerId });
     } else {
       fetchPromise = sellerId 
-        ? diamondService.getDiamondsBySeller(sellerId, { page, limit })
-        : diamondService.getDiamonds({ page, limit });
+        ? diamondService.getMeleeDiamondsBySeller(sellerId, { page, limit })
+        : diamondService.getMeleeDiamonds({ page, limit });
     }
 
     fetchPromise
@@ -78,7 +75,7 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
             id: isNaN(idNum) ? 0 : idNum,
             name:
               (d.name as string | undefined)
-              || `${String(d.shape ?? '')} ${String(d.color ?? '')} ${String(d.clarity ?? '')} Diamond - ${String((d as Record<string, unknown>).carat ?? (d as Record<string, unknown>).caratWeight ?? '')}ct`,
+              || `Melee Parcel ${String(d.color ?? '')} ${String(d.clarity ?? '')} - ${String(d.caratWeight ?? d.carat ?? '')}ct`,
             price: String((d.price as number | string | undefined) ?? (d.totalPrice as number | string | undefined) ?? 0),
             image1: (d.image1 as string | null | undefined) ?? (images[0] ?? null),
             image2: (d.image2 as string | null | undefined) ?? (images[1] ?? null),
@@ -107,20 +104,19 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
         setError(null);
       })
       .catch(() => {
-        setError('Failed to load diamonds');
+        setError('Failed to load melee diamonds');
         setDiamonds([]);
       })
       .finally(() => setLoading(false));
-  }, [page, limit, refreshKey]);
+  }, [page, limit, refreshKey, sellerId]);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold">Diamonds</h2>
+        <h2 className="text-xl font-bold">Melee Diamond Parcels</h2>
         <div className="flex gap-2 items-center relative">
-          {/* Bulk Upload Button */}
           <button
             className="px-4 py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 transition cursor-pointer"
             onClick={() => setBulkModalOpen(true)}
@@ -132,6 +128,7 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
             open={bulkModalOpen}
             onClose={() => setBulkModalOpen(false)}
             onFileSelect={handleBulkFileSelect}
+            productType="melee-diamond"
           />
           <button
             className={"cursor-pointer relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
@@ -144,16 +141,13 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
             aria-label="List View"
             type="button"
           >
-            {/* List Icon SVG */}
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />
             </svg>
-            {/* Tooltip */}
             <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap" style={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', border: '1px solid var(--border)' }}>
               List View
             </span>
           </button>
-          {/* Grid View Icon Button */}
           <button
             className={"cursor-pointer relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
             style={{
@@ -165,29 +159,30 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
             aria-label="Grid View"
             type="button"
           >
-            {/* Grid Icon SVG */}
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <rect x="4" y="4" width="6" height="6" rx="1" fill="currentColor" />
               <rect x="14" y="4" width="6" height="6" rx="1" fill="currentColor" />
               <rect x="4" y="14" width="6" height="6" rx="1" fill="currentColor" />
               <rect x="14" y="14" width="6" height="6" rx="1" fill="currentColor" />
             </svg>
-            {/* Tooltip */}
             <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap" style={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', border: '1px solid var(--border)' }}>
               Grid View
             </span>
           </button>
         </div>
       </div>
+
       {loading && <p>Loading...</p>}
       {error && <p className="text-red-500">{error}</p>}
+      
       {!loading && !error && (
         <>
           {diamonds.length === 0 ? (
-            <div>No diamonds found.</div>
+            <div className="rounded-xl border p-8 text-center" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <p className="text-muted-foreground">No melee parcels found.</p>
+            </div>
           ) : view === 'list' ? (
             <div className="overflow-x-auto">
-              {/* Table view */}
               <table
                 className="min-w-full rounded-lg shadow border border-collapse"
                 style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
@@ -199,8 +194,6 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
                     <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Price</th>
                     <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Color</th>
                     <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Clarity</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Cut</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Shape</th>
                     <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Stock</th>
                     <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Actions</th>
                   </tr>
@@ -209,57 +202,34 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
                   {diamonds.map((diamond) => (
                     <tr key={diamond.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
                       <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
-                        <Image
-                          src={diamond.image1 || "https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg?s=2048x2048&w=is&k=20&c=dFWJz1EFJt7Tq2lA-hgTpSW119YywTWtS4EwU3fpKrE="}
-                          alt={diamond.name}
-                          width={64}
-                          height={64}
-                          className="w-16 h-16 object-cover rounded"
-                        />
+                        <div className="w-12 h-12 relative rounded overflow-hidden">
+                          <Image
+                            src={diamond.image1 || '/placeholder-diamond.png'}
+                            alt={diamond.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
                       </td>
                       <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.name}</td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)', color: 'var(--primary)' }}>${Number(diamond.price).toLocaleString()}</td>
+                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>${diamond.price}</td>
                       <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.color}</td>
                       <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.clarity}</td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.cut}</td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.shape}</td>
                       <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.stockNumber}</td>
                       <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            className="inline-flex items-center justify-center w-8 h-8 rounded-full border text-xs"
-                            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
-                            onClick={() => {
-                              if (typeof window !== 'undefined') {
-                                window.open(`/diamonds/${diamond.id}`, '_blank');
-                              }
-                            }}
-                            aria-label="View product"
-                          >
-                            <Eye className="w-4 h-4" />
+                        <div className="flex gap-2">
+                          <button className="p-1 hover:text-blue-500 transition-colors" title="View">
+                            <Eye className="w-5 h-5" />
                           </button>
-                          <button
-                            type="button"
-                            className="inline-flex items-center justify-center w-8 h-8 rounded-full border text-xs"
-                            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
-                            onClick={() => {
-                              if (typeof window !== 'undefined') {
-                                window.location.href = `/seller/products/${diamond.id}/edit`;
-                              }
-                            }}
-                            aria-label="Edit product"
-                          >
-                            <Pencil className="w-4 h-4" />
+                          <button className="p-1 hover:text-green-500 transition-colors" title="Edit">
+                            <Pencil className="w-5 h-5" />
                           </button>
-                          <button
-                            type="button"
-                            className="inline-flex items-center justify-center w-8 h-8 rounded-full border text-xs"
-                            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--destructive)' }}
+                          <button 
+                            className="p-1 hover:text-red-500 transition-colors" 
+                            title="Delete"
                             onClick={() => setDeleteId(diamond.id)}
-                            aria-label="Delete product"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-5 h-5" />
                           </button>
                         </div>
                       </td>
@@ -269,64 +239,67 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
               </table>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {diamonds.map((diamond) => (
                 <DiamondProductCard
                   key={diamond.id}
                   product={diamond}
-                  onDelete={() => {
-                    setDiamonds((prev) => prev.filter((d) => d.id !== diamond.id));
-                    setTotal((prev) => Math.max(0, prev - 1));
-                  }}
+                  onDelete={() => setDeleteId(diamond.id)}
                 />
               ))}
             </div>
           )}
-          {/* Pagination Controls */}
-          <div className="flex gap-2 mt-4">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="px-3 py-1 border rounded disabled:opacity-50"
-            >
-              Prev
-            </button>
-            <span>Page {page} of {totalPages}</span>
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="px-3 py-1 border rounded disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
-          <ConfirmModal
-            open={deleteId !== null}
-            onOpenChange={(open) => {
-              if (!open) setDeleteId(null);
-            }}
-            title="Are you sure you want to delete this product?"
-            description="This action cannot be undone."
-            onYes={async () => {
-              if (deleteId === null) return;
-              const idToDelete = deleteId;
-              setDeleteId(null);
-              try {
-                const token = typeof window !== 'undefined' ? (document.cookie.match(/token=([^;]+)/)?.[1] || '') : '';
-                await diamondService.deleteDiamond(idToDelete, token);
-                setDiamonds((prev) => prev.filter((d) => d.id !== idToDelete));
-                setTotal((prev) => Math.max(0, prev - 1));
-                toast.success('Product deleted successfully!');
-              } catch {
-                toast.error('Failed to delete product.');
-              }
-            }}
-            onNo={() => setDeleteId(null)}
-          />
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-8 flex justify-center items-center gap-4">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-4 py-2 rounded-xl border font-medium disabled:opacity-50 disabled:cursor-not-allowed
+                         bg-card text-card-foreground border-border hover:bg-muted transition"
+              >
+                Previous
+              </button>
+              <span className="text-sm font-medium">
+                Page {page} of {totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="px-4 py-2 rounded-xl border font-medium disabled:opacity-50 disabled:cursor-not-allowed
+                         bg-card text-card-foreground border-border hover:bg-muted transition"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </>
       )}
+
+      <ConfirmModal
+        isOpen={deleteId !== null}
+        onClose={() => setDeleteId(null)}
+        onConfirm={async () => {
+          if (deleteId !== null) {
+            const idToDelete = deleteId;
+            setDeleteId(null);
+            try {
+              const token = typeof window !== 'undefined' ? (document.cookie.match(/token=([^;]+)/)?.[1] || '') : '';
+              await diamondService.deleteMeleeDiamond(idToDelete, token);
+              setDiamonds((prev) => prev.filter((d) => d.id !== idToDelete));
+              setTotal((prev) => Math.max(0, prev - 1));
+              toast.success('Melee parcel deleted successfully');
+            } catch (err) {
+              toast.error('Failed to delete melee parcel');
+            }
+          }
+        }}
+        title="Delete Melee Parcel"
+        description="Are you sure you want to delete this melee parcel? This action cannot be undone."
+      />
     </div>
   );
 };
 
-export default DiamondsListing;
+export default MeleeDiamondsListing;
