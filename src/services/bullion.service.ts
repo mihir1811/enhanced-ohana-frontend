@@ -16,6 +16,8 @@ export interface MetalShape {
 export interface MetalFineness {
   id: number;
   name: string;
+  value: number;
+  metalTypeId: number;
   isActive: boolean;
 }
 
@@ -98,30 +100,33 @@ class BullionService {
   }
 
   async getMetalTypes(): Promise<{ data: MetalType[] }> {
-    const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.BULLION.METAL_TYPES), {
+    const response = await fetch(`${buildApiUrl(API_CONFIG.ENDPOINTS.BULLION.METAL_TYPES)}?limit=100`, {
       method: 'GET',
       headers: this.getHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch metal types');
-    return response.json();
+    const res = await response.json();
+    return res.data;
   }
 
   async getMetalShapes(): Promise<{ data: MetalShape[] }> {
-    const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.BULLION.METAL_SHAPES), {
+    const response = await fetch(`${buildApiUrl(API_CONFIG.ENDPOINTS.BULLION.METAL_SHAPES)}?limit=100`, {
       method: 'GET',
       headers: this.getHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch metal shapes');
-    return response.json();
+    const res = await response.json();
+    return res.data;
   }
 
   async getMetalFineness(): Promise<{ data: MetalFineness[] }> {
-    const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.BULLION.METAL_FINENESS), {
+    const response = await fetch(`${buildApiUrl(API_CONFIG.ENDPOINTS.BULLION.METAL_FINENESS)}?limit=100`, {
       method: 'GET',
       headers: this.getHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch metal fineness');
-    return response.json();
+    const res = await response.json();
+    return res.data;
   }
 
   async createBullion(data: CreateBullionRequest): Promise<any> {

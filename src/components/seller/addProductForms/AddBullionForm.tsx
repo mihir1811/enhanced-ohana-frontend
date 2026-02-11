@@ -14,6 +14,7 @@ const AddBullionForm = () => {
   const [loading, setLoading] = useState(false);
   const [metalTypes, setMetalTypes] = useState<MetalType[]>([]);
   const [metalShapes, setMetalShapes] = useState<MetalShape[]>([]);
+  const [allFineness, setAllFineness] = useState<MetalFineness[]>([]);
   const [metalFineness, setMetalFineness] = useState<MetalFineness[]>([]);
 
   const [formData, setFormData] = useState<Partial<CreateBullionRequest>>({
@@ -33,7 +34,8 @@ const AddBullionForm = () => {
         ]);
         setMetalTypes(types.data);
         setMetalShapes(shapes.data);
-        setMetalFineness(fineness.data);
+        setAllFineness(fineness.data);
+        // setMetalFineness(fineness.data); // Don't set initially, wait for selection
       } catch (error) {
         console.error('Failed to fetch master data', error);
         toast.error('Failed to load form data');
@@ -42,9 +44,62 @@ const AddBullionForm = () => {
     fetchData();
   }, []);
 
+  // Filter fineness based on selected metal type
+  useEffect(() => {
+    if (formData.metalTypeId) {
+      const filtered = allFineness.filter(f => f.metalTypeId === Number(formData.metalTypeId));
+      setMetalFineness(filtered);
+    } else {
+      setMetalFineness([]);
+    }
+  }, [formData.metalTypeId, allFineness]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+        const newData = { ...prev, [name]: value };
+        // Reset dependent fields when parent changes
+        if (name === 'metalTypeId') {
+            newData.metalFinenessId = undefined; // Clear fineness
+        }
+        return newData;
+    });
+  };
+
+  const handleFillRandom = () => {
+    // Only select metal types that have associated fineness options
+    const typesWithFineness = metalTypes.filter(type => 
+        allFineness.some(f => f.metalTypeId === type.id)
+    );
+    
+    const availableTypes = typesWithFineness.length > 0 ? typesWithFineness : metalTypes;
+    const randomTypeObj = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+    const randomType = randomTypeObj ? randomTypeObj.id : '';
+
+    const randomShape = metalShapes.length > 0 ? metalShapes[Math.floor(Math.random() * metalShapes.length)].id : '';
+    
+    // Filter fineness for the selected random type
+    const validFineness = allFineness.filter(f => f.metalTypeId === Number(randomType));
+    const randomFineness = validFineness.length > 0 ? validFineness[Math.floor(Math.random() * validFineness.length)].id : '';
+
+    setFormData({
+      stockNumber: Math.floor(1000 + Math.random() * 9000).toString(),
+      metalTypeId: Number(randomType),
+      metalShapeId: Number(randomShape),
+      metalFinenessId: Number(randomFineness),
+      metalWeight: (Math.random() * 100).toFixed(3),
+      price: (Math.random() * 1000).toFixed(2),
+      quantity: Math.floor(1 + Math.random() * 50),
+      design: `Design ${Math.floor(Math.random() * 100)}`,
+      demention: `${Math.floor(10 + Math.random() * 40)}mm x ${Math.floor(10 + Math.random() * 40)}mm`,
+      condition: Math.random() > 0.5 ? 'New' : 'Mint',
+      mintMark: `MM-${Math.floor(Math.random() * 100)}`,
+      mintYear: Math.floor(1900 + Math.random() * 124),
+      serialNumber: `SN-${Math.floor(100000 + Math.random() * 900000)}`,
+      certificateNumber: `CERT-${Math.floor(10000 + Math.random() * 90000)}`,
+      certification: Math.random() > 0.5 ? 'LBMA' : 'PAMP',
+      availability: 'In Stock',
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,9 +113,9 @@ const AddBullionForm = () => {
             metalTypeId: Number(formData.metalTypeId),
             metalShapeId: Number(formData.metalShapeId),
             metalFinenessId: Number(formData.metalFinenessId),
-            metalWeight: formData.metalWeight!,
-            price: formData.price!,
-            quantity: Number(formData.quantity),
+            metalWeight: Number(formData.metalWeight).toFixed(3),
+            price: Number(formData.price).toFixed(2),
+            quantity: Math.floor(Number(formData.quantity)),
             design: formData.design,
             demention: formData.demention,
             condition: formData.condition,
@@ -84,7 +139,16 @@ const AddBullionForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-sm border">
-        <h2 className="text-2xl font-bold mb-6">Add New Bullion Product</h2>
+        <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">Add New Bullion Product</h2>
+            <button
+                type="button"
+                onClick={handleFillRandom}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium transition-colors"
+            >
+                Fill Random Data
+            </button>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Stock Number */}
@@ -142,9 +206,10 @@ const AddBullionForm = () => {
                     required
                     value={formData.metalFinenessId || ''}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    disabled={metalFineness.length === 0}
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:bg-gray-100 disabled:text-gray-400"
                 >
-                    <option value="">Select Purity</option>
+                    <option value="">{metalFineness.length === 0 ? 'Select Metal Type first' : 'Select Purity'}</option>
                     {metalFineness.map(f => (
                         <option key={f.id} value={f.id}>{f.name}</option>
                     ))}

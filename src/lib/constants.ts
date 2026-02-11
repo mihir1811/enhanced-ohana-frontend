@@ -79,8 +79,12 @@ export const API_CONFIG = {
       METAL_FINENESS: '/bullion/metal-fineness',
       ALL: '/bullion/all',
     },
-    
 
+    // Watches
+    WATCH: {
+      BASE: '/watch',
+      ALL: '/watch/all',
+    },
     
     // Auctions
     AUCTIONS: {
