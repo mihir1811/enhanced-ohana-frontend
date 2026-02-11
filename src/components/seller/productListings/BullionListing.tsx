@@ -214,9 +214,7 @@ const BullionListing = () => {
                             className="inline-flex items-center justify-center w-8 h-8 rounded-full border text-xs"
                             style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
                             onClick={() => {
-                                if (typeof window !== 'undefined') {
-                                    window.location.href = `/seller/products/${bullion.id}/edit`;
-                                }
+                              router.push(`/seller/products/${bullion.id}/edit`);
                             }}
                             aria-label="Edit product"
                           >
@@ -244,9 +242,7 @@ const BullionListing = () => {
                 <BullionProductCard
                   key={bullion.id}
                   product={bullion}
-                  onDelete={() => {
-                    // Handled by ConfirmModal
-                  }}
+                  onDelete={() => setDeleteId(bullion.id)}
                 />
               ))}
             </div>

@@ -1,19 +1,297 @@
 'use client'
 
-import { useState } from 'react'
-import { ChevronDown, CheckSquare, X, MousePointer2 } from 'lucide-react'
+import React, { useState, useMemo, useEffect, useCallback } from 'react'
+import { ChevronDown, X, Filter, MousePointer2, CheckSquare } from 'lucide-react'
+import Slider from 'rc-slider'
 
-function FilterSection({ title, children, actions }: { title: string; children: React.ReactNode; actions?: React.ReactNode }) {
+// --- Standardized Components (Diamond Style) ---
+
+const FilterSection = ({ title, children, actions, id, expandedSections, onToggle }: { 
+  title: string; 
+  children: React.ReactNode; 
+  actions?: React.ReactNode;
+  id: string;
+  expandedSections: string[];
+  onToggle: (id: string) => void;
+}) => {
+  const isExpanded = expandedSections.includes(id);
+  
   return (
-    <div className="filter-group border-b border-gray-100 dark:border-gray-800 pb-5 mb-5 last:border-0">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold tracking-wide text-gray-900 dark:text-gray-100 uppercase">{title}</h3>
-        {actions && <div className="flex items-center gap-1">{actions}</div>}
+    <div className="border-b border-gray-100 dark:border-gray-800 pb-5 mb-5 last:border-0">
+      <div 
+        className="flex items-center justify-between mb-3 cursor-pointer group"
+        onClick={() => onToggle(id)}
+      >
+        <h3 className="text-sm font-bold tracking-wide text-gray-900 dark:text-gray-100 uppercase flex items-center gap-2">
+          {title}
+          <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+        </h3>
+        {actions && <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>{actions}</div>}
       </div>
-      <div className="mt-2">{children}</div>
+      {isExpanded && <div className="mt-2 animate-in fade-in slide-in-from-top-1 duration-200">{children}</div>}
     </div>
   )
 }
+
+const SelectedOptionsDisplay = React.memo(({
+  selected,
+  label,
+  onRemove,
+  colorVariant = 'yellow'
+}: {
+  selected: string[]
+  label: string
+  onRemove: (value: string) => void
+  colorVariant?: 'blue' | 'green' | 'purple' | 'yellow' | 'orange'
+}) => {
+  const colorConfig = useMemo(() => ({
+    blue: {
+      bg: 'from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20',
+      border: 'border-blue-300 dark:border-blue-700',
+      text: 'text-blue-800 dark:text-blue-300',
+      icon: 'text-blue-600 dark:text-blue-400',
+      badge: 'border-blue-400 dark:border-blue-600'
+    },
+    green: {
+      bg: 'from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20',
+      border: 'border-green-300 dark:border-green-700',
+      text: 'text-green-800 dark:text-green-300',
+      icon: 'text-green-600 dark:text-green-400',
+      badge: 'border-green-400 dark:border-green-600'
+    },
+    purple: {
+      bg: 'from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20',
+      border: 'border-purple-300 dark:border-purple-700',
+      text: 'text-purple-800 dark:text-purple-300',
+      icon: 'text-purple-600 dark:text-purple-400',
+      badge: 'border-purple-400 dark:border-purple-600'
+    },
+    yellow: {
+      bg: 'from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20',
+      border: 'border-yellow-300 dark:border-yellow-700',
+      text: 'text-yellow-800 dark:text-yellow-300',
+      icon: 'text-yellow-600 dark:text-yellow-400',
+      badge: 'border-yellow-400 dark:border-yellow-600'
+    },
+    orange: {
+      bg: 'from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20',
+      border: 'border-orange-300 dark:border-orange-700',
+      text: 'text-orange-800 dark:text-orange-300',
+      icon: 'text-orange-600 dark:text-orange-400',
+      badge: 'border-orange-400 dark:border-orange-600'
+    }
+  }), [])
+
+  const colors = colorConfig[colorVariant as keyof typeof colorConfig] || colorConfig.yellow
+
+  if (!selected || selected.length === 0) return null
+
+  return (
+    <div className={`flex items-center justify-between p-3 mb-3 rounded-lg bg-gradient-to-r ${colors.bg} border ${colors.border} shadow-sm`}>
+      <div className="flex-1">
+        <div className="flex items-center gap-2 mb-2">
+          <svg className={`w-4 h-4 ${colors.icon}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          <span className={`text-xs font-bold ${colors.text}`}>
+            {selected.length} {label}{selected.length > 1 ? 's' : ''}
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {selected.map((option) => (
+            <div
+              key={option}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 bg-white dark:bg-slate-800 rounded-full border ${colors.badge} shadow-sm`}
+            >
+              <span className="text-[10px] font-semibold text-gray-700 dark:text-gray-300">
+                {option}
+              </span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRemove(option)
+                }}
+                className="cursor-pointer text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+      <button
+        onClick={() => selected.slice().forEach(val => onRemove(val))}
+        className="cursor-pointer ml-3 px-3 py-1.5 text-[10px] font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all border border-red-200 dark:border-red-800 uppercase tracking-wider"
+      >
+        Clear
+      </button>
+    </div>
+  )
+})
+
+const MultiSelectFilter = React.memo(({
+  options,
+  selected,
+  onChange,
+  gridCols = 'grid-cols-2',
+  colorVariant = 'yellow',
+  limit = 10
+}: {
+  options: string[]
+  selected: string[]
+  onChange: (value: string) => void
+  gridCols?: string
+  colorVariant?: 'blue' | 'green' | 'purple' | 'yellow' | 'orange'
+  limit?: number
+}) => {
+  const [showAll, setShowAll] = useState(false)
+  const visibleOptions = showAll ? options : options.slice(0, limit)
+  const hasMore = options.length > limit
+
+  const colorConfig = useMemo(() => ({
+    blue: 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-100',
+    green: 'border-green-500 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-100',
+    purple: 'border-purple-500 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-100',
+    yellow: 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-100',
+    orange: 'border-orange-500 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-100'
+  }), [])
+
+  return (
+    <div className="space-y-3">
+      <div className={`grid ${gridCols} gap-2`}>
+        {visibleOptions.map(option => {
+          const isSelected = selected.includes(option)
+          return (
+            <button
+              key={option}
+              onClick={() => onChange(option)}
+              className={`cursor-pointer w-full px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 border
+                ${isSelected
+                  ? colorConfig[colorVariant as keyof typeof colorConfig] || colorConfig.yellow
+                  : "bg-transparent border-gray-200 dark:border-slate-800 text-foreground hover:border-yellow-400 dark:hover:border-yellow-600"
+                }
+              `}
+            >
+              {option}
+            </button>
+          )
+        })}
+      </div>
+      
+      {hasMore && (
+        <button
+          onClick={() => setShowAll(!showAll)}
+          className="w-full py-2 text-[10px] font-bold text-gray-500 dark:text-gray-400 hover:text-yellow-600 dark:hover:text-yellow-500 transition-colors uppercase tracking-widest flex items-center justify-center gap-1.5"
+        >
+          {showAll ? (
+            <>Show Less <ChevronDown className="w-3 h-3 rotate-180" /></>
+          ) : (
+            <>Show {options.length - limit} More <ChevronDown className="w-3 h-3" /></>
+          )}
+        </button>
+      )}
+    </div>
+  )
+})
+
+const RangeInput = React.memo(({
+  label,
+  min,
+  max,
+  onMinChange,
+  onMaxChange,
+  unit = '',
+  step = 1,
+  minBound = 0,
+  maxBound = 1000000
+}: {
+  label: string
+  min: number
+  max: number
+  onMinChange: (value: number) => void
+  onMaxChange: (value: number) => void
+  unit?: string
+  step?: number
+  minBound?: number
+  maxBound?: number
+}) => {
+  const [localMin, setLocalMin] = useState(min)
+  const [localMax, setLocalMax] = useState(max)
+
+  useEffect(() => { setLocalMin(min) }, [min])
+  useEffect(() => { setLocalMax(max) }, [max])
+
+  const handleSliderChange = (value: number | number[]) => {
+    if (Array.isArray(value)) {
+      setLocalMin(value[0])
+      setLocalMax(value[1])
+    }
+  }
+
+  const handleSliderAfterChange = (value: number | number[]) => {
+    if (Array.isArray(value)) {
+      onMinChange(value[0])
+      onMaxChange(value[1])
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between px-1">
+        <span className="text-xs font-bold dark:text-gray-300">
+          {localMin.toLocaleString()}{unit}
+        </span>
+        <span className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-widest font-bold">to</span>
+        <span className="text-xs font-bold dark:text-gray-300">
+          {localMax.toLocaleString()}{unit}
+        </span>
+      </div>
+
+      <div className="px-2 py-2">
+        <Slider
+          range
+          min={minBound}
+          max={maxBound}
+          step={step}
+          value={[localMin, localMax]}
+          onChange={handleSliderChange}
+          onAfterChange={handleSliderAfterChange}
+          trackStyle={{ backgroundColor: '#eab308', height: 4 }}
+          railStyle={{ backgroundColor: '#e5e7eb', height: 4 }}
+          handleStyle={[
+            { backgroundColor: '#ffffff', borderColor: '#eab308', borderWidth: 2, height: 18, width: 18, marginTop: -7, opacity: 1, boxShadow: '0 4px 6px -1px rgba(234, 179, 8, 0.4)' },
+            { backgroundColor: '#ffffff', borderColor: '#eab308', borderWidth: 2, height: 18, width: 18, marginTop: -7, opacity: 1, boxShadow: '0 4px 6px -1px rgba(234, 179, 8, 0.4)' }
+          ]}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-[10px] mb-1.5 text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider">Min</label>
+          <input
+            type="number"
+            step={step}
+            value={localMin}
+            onChange={(e) => setLocalMin(parseFloat(e.target.value))}
+            onBlur={() => onMinChange(localMin)}
+            className="w-full px-3 py-1.5 border border-gray-200 dark:border-slate-800 rounded-lg bg-background text-xs focus:ring-2 focus:ring-yellow-500 transition-all"
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] mb-1.5 text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider">Max</label>
+          <input
+            type="number"
+            step={step}
+            value={localMax}
+            onChange={(e) => setLocalMax(parseFloat(e.target.value))}
+            onBlur={() => onMaxChange(localMax)}
+            className="w-full px-3 py-1.5 border border-gray-200 dark:border-slate-800 rounded-lg bg-background text-xs focus:ring-2 focus:ring-yellow-500 transition-all"
+          />
+        </div>
+      </div>
+    </div>
+  )
+})
 
 export interface GemstoneFilterValues {
   gemstoneType: string[]
@@ -26,11 +304,19 @@ export interface GemstoneFilterValues {
   certification: string[]
   origin: string[]
   treatment: string[]
+  enhancement: string[]
+  transparency: string[]
+  luster: string[]
+  phenomena: string[]
   minerals: string[]
   birthstones: string[]
   length: { min: number; max: number }
   width: { min: number; max: number }
   height: { min: number; max: number }
+  location: string[]
+  companyName: string
+  vendorLocation: string
+  reportNumber: string
   searchTerm: string
 }
 
@@ -40,6 +326,8 @@ interface GemstoneFiltersProps {
   onSearch?: () => void
   gemstoneType: 'single' | 'melee'
   className?: string
+  expandedSections: string[]
+  onToggleSection: (id: string) => void
 }
 
 const GEMSTONE_TYPES = [
@@ -199,89 +487,11 @@ export default function GemstoneFilters({
   onFiltersChange,
   onSearch,
   gemstoneType,
-  className = ''
+  className = '',
+  expandedSections,
+  onToggleSection
 }: GemstoneFiltersProps) {
-  const [showAllGemstoneTypes, setShowAllGemstoneTypes] = useState(false)
-  const [showAllShapes, setShowAllShapes] = useState(false)
-  const [showAllMineralClassifications, setShowAllMineralClassifications] = useState(false)
-  const [showAllOrigins, setShowAllOrigins] = useState(false)
-
-  const [rangeSelection, setRangeSelection] = useState<{
-    isActive: boolean;
-    category: keyof GemstoneFilterValues | null;
-    startItem: string | null;
-  }>({ isActive: false, category: null, startItem: null });
-
-  const toggleRangeMode = (category: keyof GemstoneFilterValues) => {
-    if (rangeSelection.isActive && rangeSelection.category === category) {
-      setRangeSelection({ isActive: false, category: null, startItem: null });
-    } else {
-      setRangeSelection({ isActive: true, category, startItem: null });
-    }
-  };
-
-  const selectAll = (category: keyof GemstoneFilterValues, options: string[]) => {
-    // If all are already selected, deselect all (optional, but nice UX)
-    // But user asked for "Select All", usually means select all.
-    // Let's check if all are currently selected.
-    const currentValues = filters[category] as string[];
-    const allSelected = options.every(opt => currentValues.includes(opt));
-    
-    if (allSelected) {
-        // Deselect all
-        onFiltersChange({
-            ...filters,
-            [category]: []
-        });
-    } else {
-        // Select all
-        // Merge with existing selections (though usually we just set to options)
-        // If we want to be safe and only add unique ones from the passed options:
-        const newValues = Array.from(new Set([...currentValues, ...options]));
-        onFiltersChange({
-            ...filters,
-            [category]: newValues
-        });
-    }
-  };
-
-  const clearCategory = (category: keyof GemstoneFilterValues) => {
-    onFiltersChange({
-      ...filters,
-      [category]: []
-    });
-  };
-
-  const handleArrayFilterChange = (key: keyof GemstoneFilterValues, value: string, allOptions: string[] = []) => {
-    // Range Selection Logic
-    if (rangeSelection.isActive && rangeSelection.category === key && allOptions.length > 0) {
-      if (rangeSelection.startItem === null) {
-        setRangeSelection(prev => ({ ...prev, startItem: value }));
-        // Continue to select this item normally below
-      } else {
-        const startIdx = allOptions.indexOf(rangeSelection.startItem);
-        const endIdx = allOptions.indexOf(value);
-        
-        if (startIdx !== -1 && endIdx !== -1) {
-          const min = Math.min(startIdx, endIdx);
-          const max = Math.max(startIdx, endIdx);
-          const rangeItems = allOptions.slice(min, max + 1);
-          
-          const currentValues = filters[key] as string[];
-          const newValues = Array.from(new Set([...currentValues, ...rangeItems]));
-          
-          onFiltersChange({
-            ...filters,
-            [key]: newValues
-          });
-          
-          // Reset start item but keep range mode active for next range
-          setRangeSelection(prev => ({ ...prev, startItem: null }));
-          return;
-        }
-      }
-    }
-
+  const handleArrayFilterChange = (key: keyof GemstoneFilterValues, value: string) => {
     const currentValues = filters[key] as string[]
     const newValues = currentValues.includes(value)
       ? currentValues.filter(v => v !== value)
@@ -320,506 +530,467 @@ export default function GemstoneFilters({
       certification: [],
       origin: [],
       treatment: [],
+      enhancement: [],
+      transparency: [],
+      luster: [],
+      phenomena: [],
       minerals: [],
       birthstones: [],
       length: { min: 0, max: 100 },
       width: { min: 0, max: 100 },
       height: { min: 0, max: 100 },
+      location: [],
+      companyName: '',
+      vendorLocation: '',
+      reportNumber: '',
       searchTerm: ''
     })
   }
 
-  const ButtonFilterGroup = ({
-    options,
-    category,
-    showAll = true,
-    itemsPerRow = 6,
-    defaultRows = 2
-  }: {
-    options: string[],
-    category: keyof GemstoneFilterValues,
-    showAll?: boolean,
-    itemsPerRow?: number,
-    defaultRows?: number
-  }) => {
-    const itemsToShow = showAll ? options : options.slice(0, itemsPerRow * defaultRows)
-    
-    return (
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
-        {itemsToShow.map((option) => {
-          const values = filters[category] as string[]
-          const isSelected = values.includes(option)
-
-          return (
-            <button
-              key={option}
-              onClick={() => handleArrayFilterChange(category, option, options)}
-              className={`cursor-pointer group w-full px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200
-                ${isSelected
-                  ? "bg-yellow-50 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100 border border-yellow-500 dark:border-yellow-500"
-                  : "bg-transparent border hover:text-black border-gray-200 dark:border-slate-700 dark:text-gray-300"
-                }
-                hover:bg-yellow-50 dark:hover:bg-yellow-900/30 dark:hover:text-black 
-                hover:border-yellow-500/30 dark:hover:border-yellow-500/30
-              `}
-            >
-              {option}
-            </button>
-          )
-        })}
-      </div>
-    )
-  }
-
-  const ColorButtonGroup = () => {
-    const colorOptions = COLORS.map(c => c.name);
-    return (
-    <div className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-11 gap-3">
-      {COLORS.map((color) => {
-        const isSelected = (filters.color as string[]).includes(color.name)
-        const isRangeStart = rangeSelection.isActive && rangeSelection.category === 'color' && rangeSelection.startItem === color.name;
-
-        return (
-          <button
-            key={color.name}
-            onClick={() => handleArrayFilterChange('color', color.name, colorOptions)}
-            className={`cursor-pointer relative p-2 rounded-lg transition-all duration-200 border
-              ${isRangeStart
-                ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-900 dark:text-blue-100 border-blue-500 ring-2 ring-blue-300 shadow-sm'
-                :
-              isSelected
-                ? "bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/30 border-yellow-500 dark:border-yellow-600 shadow-sm"
-                : "bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 hover:border-yellow-300 dark:hover:border-yellow-700 hover:shadow-sm"
-              }
-            `}
-          >
-            <div className="flex flex-col items-center gap-2">
-              <div
-                className="w-6 h-6 rounded-full shadow-sm ring-2 ring-white dark:ring-slate-700"
-                style={{ background: color.color }}
-              />
-              <span
-                className={`text-xs font-medium ${isSelected
-                    ? "text-yellow-800 dark:text-yellow-300"
-                    : "text-gray-700 dark:text-gray-300"
-                  }`}
-              >
-                {color.name}
-              </span>
-            </div>
-          </button>
-        )
-      })}
-    </div>
-  )}
-
-  const FilterActionButtons = ({ 
-    category, 
-    options 
-  }: { 
-    category: keyof GemstoneFilterValues, 
-    options: string[] 
-  }) => {
-    const isRangeActive = rangeSelection.isActive && rangeSelection.category === category;
-    const hasSelection = (filters[category] as string[]).length > 0;
-
-    return (
-      <>
-        <button
-          onClick={() => toggleRangeMode(category)}
-          title={isRangeActive ? "Cancel Range" : "Select Range"}
-          className={`cursor-pointer p-1.5 rounded-md transition-all duration-200 ${
-            isRangeActive
-              ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 ring-1 ring-blue-500/30'
-              : 'text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-          }`}
-        >
-          <MousePointer2 className="w-3.5 h-3.5" />
-        </button>
-        <button
-          onClick={() => selectAll(category, options)}
-          title="Select All"
-          className="cursor-pointer p-1.5 rounded-md text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
-        >
-          <CheckSquare className="w-3.5 h-3.5" />
-        </button>
-        {hasSelection && (
-          <button
-            onClick={() => clearCategory(category)}
-            title="Clear"
-            className="cursor-pointer p-1.5 rounded-md text-red-400 hover:text-red-600 dark:text-red-500/70 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        )}
-      </>
-    )
-  }
-
-  const RangeFilter = ({
-    min,
-    max,
-    value,
-    onChange,
-    step = 0.1,
-    unit = ''
-  }: {
-    min: number
-    max: number
-    value: { min: number; max: number }
-    onChange: (rangeKey: 'min' | 'max', value: number) => void
-    step?: number
-    unit?: string
-  }) => (
-    <div className="space-y-3">
-      {/* Range Display */}
-      <div className="flex items-center justify-between px-2">
-        <span className="text-sm font-semibold dark:text-gray-300">
-          {value.min.toLocaleString()}{unit}
-        </span>
-        <span className="text-xs text-gray-500 dark:text-gray-400">to</span>
-        <span className="text-sm font-semibold dark:text-gray-300">
-          {value.max.toLocaleString()}{unit}
-        </span>
-      </div>
-
-      {/* Dual Range Sliders */}
-      <div className="relative pt-2 pb-3">
-        <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-          {/* Active Range Bar */}
-          <div
-            className="absolute h-2 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-full"
-            style={{
-              left: `${((value.min - min) / (max - min)) * 100}%`,
-              right: `${100 - ((value.max - min) / (max - min)) * 100}%`
-            }}
-          />
-        </div>
-
-        {/* Min Slider */}
-        <input
-          type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={value.min}
-          onChange={(e) => {
-            const newValue = parseFloat(e.target.value)
-            if (newValue <= value.max) {
-              onChange('min', newValue)
-            }
-          }}
-          className="absolute w-full h-2 top-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-yellow-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-yellow-500 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg"
-        />
-
-        {/* Max Slider */}
-        <input
-          type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={value.max}
-          onChange={(e) => {
-            const newValue = parseFloat(e.target.value)
-            if (newValue >= value.min) {
-              onChange('max', newValue)
-            }
-          }}
-          className="absolute w-full h-2 top-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-yellow-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-yellow-500 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg"
-        />
-      </div>
-
-      {/* Number Inputs */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs mb-1.5 text-gray-600 dark:text-gray-400">
-            Minimum{unit && ` (${unit})`}
-          </label>
-          <input
-            type="number"
-            min={min}
-            max={max}
-            step={step}
-            value={value.min}
-            onChange={(e) => onChange('min', parseFloat(e.target.value) || min)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
-          />
-        </div>
-        <div>
-          <label className="block text-xs mb-1.5 text-gray-600 dark:text-gray-400">
-            Maximum{unit && ` (${unit})`}
-          </label>
-          <input
-            type="number"
-            min={min}
-            max={max}
-            step={step}
-            value={value.max}
-            onChange={(e) => onChange('max', parseFloat(e.target.value) || max)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
-          />
-        </div>
-      </div>
-    </div>
-  )
-
-  const ShowMoreButton = ({ 
-    isExpanded, 
-    onClick, 
-    totalItems, 
-    visibleItems 
-  }: { 
-    isExpanded: boolean; 
-    onClick: () => void; 
-    totalItems: number; 
-    visibleItems: number;
-  }) => {
-    if (totalItems <= visibleItems) return null;
-    
-    return (
-      <div className="mt-4 flex justify-center">
-        <button
-          onClick={onClick}
-          className="cursor-pointer px-6 py-2 text-sm font-medium text-yellow-600 dark:text-yellow-500 border border-yellow-300 dark:border-yellow-700 rounded-full hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-all duration-200 flex items-center gap-2"
-        >
-          {isExpanded ? (
-            <>
-              <span>Show Less</span>
-              <ChevronDown className="w-4 h-4 rotate-180 transition-transform" />
-            </>
-          ) : (
-            <>
-              <span>Show More ({totalItems - visibleItems} more)</span>
-              <ChevronDown className="w-4 h-4 transition-transform" />
-            </>
-          )}
-        </button>
-      </div>
-    );
-  };
-
   return (
-    <div className={`bg-white/80 dark:bg-slate-900/80 rounded-2xl shadow-sm border p-8 backdrop-blur-xl ${className}`} style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-      <div className="space-y-6">
-        <FilterSection 
-          title="Gemstone Type"
-          actions={<FilterActionButtons category="gemstoneType" options={GEMSTONE_TYPES} />}
-        >
-          <ButtonFilterGroup 
-            options={GEMSTONE_TYPES} 
-            category="gemstoneType" 
-            showAll={showAllGemstoneTypes}
-            itemsPerRow={6}
-            defaultRows={2}
+    <div className={`space-y-2 ${className}`}>
+      {/* Search Term */}
+      <div className="mb-6">
+        <div className="relative group">
+          <input
+            type="text"
+            placeholder="Search gemstones..."
+            value={filters.searchTerm}
+            onChange={(e) => onFiltersChange({ ...filters, searchTerm: e.target.value })}
+            className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl text-sm focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500 transition-all outline-none"
           />
-          <ShowMoreButton
-            isExpanded={showAllGemstoneTypes}
-            onClick={() => setShowAllGemstoneTypes(!showAllGemstoneTypes)}
-            totalItems={GEMSTONE_TYPES.length}
-            visibleItems={12}
-          />
-        </FilterSection>
-
-        <FilterSection 
-          title="Birthstones"
-          actions={<FilterActionButtons category="birthstones" options={BIRTHSTONE_MONTHS.map(m => m.month)} />}
-        >
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {BIRTHSTONE_MONTHS.map((item) => {
-              const isSelected = filters.birthstones?.includes(item.month)
-              const isRangeStart = rangeSelection.isActive && rangeSelection.category === 'birthstones' && rangeSelection.startItem === item.month;
-              const birthstoneOptions = BIRTHSTONE_MONTHS.map(m => m.month);
-
-              return (
-                <button
-                  key={item.month}
-                  onClick={() => handleArrayFilterChange('birthstones', item.month, birthstoneOptions)}
-                  className={`p-4 rounded-3xl cursor-pointer transition-all duration-200 border text-center
-                    ${isRangeStart
-                      ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-900 dark:text-blue-100 border-blue-500 ring-2 ring-blue-300 shadow-md'
-                      :
-                    isSelected
-                      ? "border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100"
-                      : "border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300"
-                    }
-                    hover:border-yellow-500/30 dark:hover:border-yellow-500/30
-                  `}
-                >
-                  <span className="block text-sm font-medium mb-1">{item.month}</span>
-                  <span className={`block text-xs ${isSelected
-                      ? "text-yellow-600 dark:text-yellow-400"
-                      : "text-gray-600 dark:text-gray-400"
-                    }`}>
-                    {item.stone}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-        </FilterSection>
-
-        <FilterSection 
-          title="Shape"
-          actions={<FilterActionButtons category="shape" options={SHAPES} />}
-        >
-          <ButtonFilterGroup 
-            options={SHAPES} 
-            category="shape" 
-            showAll={showAllShapes}
-            itemsPerRow={6}
-            defaultRows={2}
-          />
-          <ShowMoreButton
-            isExpanded={showAllShapes}
-            onClick={() => setShowAllShapes(!showAllShapes)}
-            totalItems={SHAPES.length}
-            visibleItems={12}
-          />
-        </FilterSection>
-
-        <div className="grid md:grid-cols-3 gap-6">
-
-          <FilterSection title="Carat Weight">
-            <RangeFilter
-              min={0}
-              max={50}
-              value={filters.caratWeight}
-              onChange={(rangeKey, value) => handleRangeChange('caratWeight', rangeKey, value)}
-              step={0.01}
-              unit="ct"
-            />
-          </FilterSection>
-
-          <FilterSection title="Price Range">
-            <RangeFilter
-              min={0}
-              max={1000000}
-              value={filters.priceRange}
-              onChange={(rangeKey, value) => handleRangeChange('priceRange', rangeKey, value)}
-              step={100}
-              unit="$"
-            />
-          </FilterSection>
-        </div>
-
-        <FilterSection 
-          title="Color"
-          actions={<FilterActionButtons category="color" options={COLORS.map(c => c.name)} />}
-        >
-          <ColorButtonGroup />
-        </FilterSection>
-
-        <FilterSection 
-          title="Clarity"
-          actions={<FilterActionButtons category="clarity" options={CLARITY_OPTIONS} />}
-        >
-          <ButtonFilterGroup options={CLARITY_OPTIONS} category="clarity" />
-        </FilterSection>
-
-        {/* <FilterSection title="Mineral Classification">
-          <ButtonFilterGroup 
-            options={MINERAL_CLASSIFICATIONS} 
-            category="minerals" 
-            showAll={showAllMineralClassifications}
-            itemsPerRow={6}
-            defaultRows={2}
-          />
-          <ShowMoreButton
-            isExpanded={showAllMineralClassifications}
-            onClick={() => setShowAllMineralClassifications(!showAllMineralClassifications)}
-            totalItems={MINERAL_CLASSIFICATIONS.length}
-            visibleItems={12}
-          />
-        </FilterSection> */}
-
-        <FilterSection 
-          title="Treatments"
-          actions={<FilterActionButtons category="treatment" options={TREATMENTS} />}
-        >
-          <ButtonFilterGroup options={TREATMENTS} category="treatment" />
-        </FilterSection>
-
-        <FilterSection 
-          title="Certification"
-          actions={<FilterActionButtons category="certification" options={CERTIFICATIONS} />}
-        >
-          <ButtonFilterGroup options={CERTIFICATIONS} category="certification" />
-        </FilterSection>
-
-        <FilterSection 
-          title="Origin"
-          actions={<FilterActionButtons category="origin" options={ORIGINS} />}
-        >
-          <ButtonFilterGroup 
-            options={ORIGINS} 
-            category="origin" 
-            showAll={showAllOrigins}
-            itemsPerRow={6}
-            defaultRows={2}
-          />
-          <ShowMoreButton
-            isExpanded={showAllOrigins}
-            onClick={() => setShowAllOrigins(!showAllOrigins)}
-            totalItems={ORIGINS.length}
-            visibleItems={12}
-          />
-        </FilterSection>
-
-        <FilterSection 
-          title="Cut Grade"
-          actions={<FilterActionButtons category="cut" options={CUT_GRADES} />}
-        >
-          <ButtonFilterGroup options={CUT_GRADES} category="cut" />
-        </FilterSection>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          <FilterSection title="Length (mm)">
-            <RangeFilter
-              min={0}
-              max={100}
-              value={filters.length}
-              onChange={(rangeKey, value) => handleRangeChange('length', rangeKey, value)}
-              step={0.1}
-              unit="mm"
-            />
-          </FilterSection>
-
-          <FilterSection title="Width (mm)">
-            <RangeFilter
-              min={0}
-              max={100}
-              value={filters.width}
-              onChange={(rangeKey, value) => handleRangeChange('width', rangeKey, value)}
-              step={0.1}
-              unit="mm"
-            />
-          </FilterSection>
-
-          <FilterSection title="Height (mm)">
-            <RangeFilter
-              min={0}
-              max={100}
-              value={filters.height}
-              onChange={(rangeKey, value) => handleRangeChange('height', rangeKey, value)}
-              step={0.1}
-              unit="mm"
-            />
-          </FilterSection>
+          <Filter className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-yellow-500 transition-colors" />
         </div>
       </div>
 
-      <div className="flex gap-3 pt-6 mt-6 border-t justify-center" style={{ borderColor: 'var(--border)' }}>
+      {/* Gemstone Type */}
+      <FilterSection 
+        title="Gemstone Type" 
+        id="gemstoneType"
+        expandedSections={expandedSections}
+        onToggle={onToggleSection}
+      >
+        <SelectedOptionsDisplay
+          selected={filters.gemstoneType}
+          label="Gemstone Type"
+          onRemove={(val) => handleArrayFilterChange('gemstoneType', val)}
+          colorVariant="blue"
+        />
+        <MultiSelectFilter
+          options={GEMSTONE_TYPES}
+          selected={filters.gemstoneType}
+          onChange={(val) => handleArrayFilterChange('gemstoneType', val)}
+          colorVariant="blue"
+        />
+      </FilterSection>
+
+      {/* Shape */}
+      <FilterSection 
+        title="Shape" 
+        id="shape"
+        expandedSections={expandedSections}
+        onToggle={onToggleSection}
+      >
+        <SelectedOptionsDisplay
+          selected={filters.shape}
+          label="Shape"
+          onRemove={(val) => handleArrayFilterChange('shape', val)}
+          colorVariant="purple"
+        />
+        <MultiSelectFilter
+          options={SHAPES}
+          selected={filters.shape}
+          onChange={(val) => handleArrayFilterChange('shape', val)}
+          colorVariant="purple"
+        />
+      </FilterSection>
+
+      {/* Carat Weight */}
+      <FilterSection 
+        title="Carat Weight" 
+        id="caratWeight"
+        expandedSections={expandedSections}
+        onToggle={onToggleSection}
+      >
+        <RangeInput
+          label="Carat"
+          min={filters.caratWeight.min}
+          max={filters.caratWeight.max}
+          onMinChange={(val) => handleRangeChange('caratWeight', 'min', val)}
+          onMaxChange={(val) => handleRangeChange('caratWeight', 'max', val)}
+          unit="ct"
+          step={0.01}
+          minBound={0}
+          maxBound={50}
+        />
+      </FilterSection>
+
+      {/* Price Range */}
+      <FilterSection 
+        title="Price Range" 
+        id="priceRange"
+        expandedSections={expandedSections}
+        onToggle={onToggleSection}
+      >
+        <RangeInput
+          label="Price"
+          min={filters.priceRange.min}
+          max={filters.priceRange.max}
+          onMinChange={(val) => handleRangeChange('priceRange', 'min', val)}
+          onMaxChange={(val) => handleRangeChange('priceRange', 'max', val)}
+          unit="$"
+          step={10}
+          minBound={0}
+          maxBound={1000000}
+        />
+      </FilterSection>
+
+      {/* Color */}
+      <FilterSection 
+        title="Color" 
+        id="color"
+        expandedSections={expandedSections}
+        onToggle={onToggleSection}
+      >
+        <SelectedOptionsDisplay
+          selected={filters.color}
+          label="Color"
+          onRemove={(val) => handleArrayFilterChange('color', val)}
+          colorVariant="orange"
+        />
+        <div className="grid grid-cols-4 gap-2">
+          {COLORS.map((color) => {
+            const isSelected = filters.color.includes(color.name)
+            return (
+              <button
+                key={color.name}
+                onClick={() => handleArrayFilterChange('color', color.name)}
+                className={`cursor-pointer group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200
+                  ${isSelected
+                    ? "border-orange-500 bg-orange-50 dark:bg-orange-900/30"
+                    : "border-gray-100 dark:border-slate-800 bg-transparent hover:border-orange-300 dark:hover:border-orange-700"
+                  }
+                `}
+              >
+                <div 
+                  className="w-8 h-8 rounded-full border border-gray-200 dark:border-slate-700 shadow-sm transition-transform group-hover:scale-110"
+                  style={{ background: color.color }}
+                />
+                <span className={`text-[10px] font-bold ${isSelected ? 'text-orange-700 dark:text-orange-300' : 'text-gray-500'}`}>
+                  {color.name}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </FilterSection>
+
+      {/* Clarity */}
+      <FilterSection 
+        title="Clarity" 
+        id="clarity"
+        expandedSections={expandedSections}
+        onToggle={onToggleSection}
+      >
+        <SelectedOptionsDisplay
+          selected={filters.clarity}
+          label="Clarity"
+          onRemove={(val) => handleArrayFilterChange('clarity', val)}
+          colorVariant="green"
+        />
+        <MultiSelectFilter
+          options={CLARITY_OPTIONS}
+          selected={filters.clarity}
+          onChange={(val) => handleArrayFilterChange('clarity', val)}
+          colorVariant="green"
+        />
+      </FilterSection>
+
+      {/* Cut */}
+      <FilterSection 
+        title="Cut Grade" 
+        id="cut"
+        expandedSections={expandedSections}
+        onToggle={onToggleSection}
+      >
+        <SelectedOptionsDisplay
+          selected={filters.cut}
+          label="Cut"
+          onRemove={(val) => handleArrayFilterChange('cut', val)}
+          colorVariant="yellow"
+        />
+        <MultiSelectFilter
+          options={CUT_GRADES}
+          selected={filters.cut}
+          onChange={(val) => handleArrayFilterChange('cut', val)}
+          colorVariant="yellow"
+        />
+      </FilterSection>
+
+      {/* Certification */}
+      <FilterSection 
+        title="Certification" 
+        id="certification"
+        expandedSections={expandedSections}
+        onToggle={onToggleSection}
+      >
+        <SelectedOptionsDisplay
+          selected={filters.certification}
+          label="Certification"
+          onRemove={(val) => handleArrayFilterChange('certification', val)}
+          colorVariant="blue"
+        />
+        <MultiSelectFilter
+          options={CERTIFICATIONS}
+          selected={filters.certification}
+          onChange={(val) => handleArrayFilterChange('certification', val)}
+          colorVariant="blue"
+        />
+      </FilterSection>
+
+      {/* Origin */}
+      <FilterSection 
+        title="Origin" 
+        id="origin"
+        expandedSections={expandedSections}
+        onToggle={onToggleSection}
+      >
+        <SelectedOptionsDisplay
+          selected={filters.origin}
+          label="Origin"
+          onRemove={(val) => handleArrayFilterChange('origin', val)}
+          colorVariant="purple"
+        />
+        <MultiSelectFilter
+          options={ORIGINS}
+          selected={filters.origin}
+          onChange={(val) => handleArrayFilterChange('origin', val)}
+          colorVariant="purple"
+        />
+      </FilterSection>
+
+      {/* Treatment */}
+      <FilterSection 
+        title="Treatment" 
+        id="treatment"
+        expandedSections={expandedSections}
+        onToggle={onToggleSection}
+      >
+        <SelectedOptionsDisplay
+          selected={filters.treatment}
+          label="Treatment"
+          onRemove={(val) => handleArrayFilterChange('treatment', val)}
+          colorVariant="orange"
+        />
+        <MultiSelectFilter
+          options={TREATMENTS}
+          selected={filters.treatment}
+          onChange={(val) => handleArrayFilterChange('treatment', val)}
+          colorVariant="orange"
+        />
+      </FilterSection>
+
+      {/* Enhancement */}
+      <FilterSection 
+        title="Enhancement" 
+        id="enhancement"
+        expandedSections={expandedSections}
+        onToggle={onToggleSection}
+      >
+        <SelectedOptionsDisplay
+          selected={filters.enhancement}
+          label="Enhancement"
+          onRemove={(val) => handleArrayFilterChange('enhancement', val)}
+          colorVariant="yellow"
+        />
+        <MultiSelectFilter
+          options={ENHANCEMENTS}
+          selected={filters.enhancement}
+          onChange={(val) => handleArrayFilterChange('enhancement', val)}
+          colorVariant="yellow"
+        />
+      </FilterSection>
+
+      {/* Transparency */}
+      <FilterSection 
+        title="Transparency" 
+        id="transparency"
+        expandedSections={expandedSections}
+        onToggle={onToggleSection}
+      >
+        <SelectedOptionsDisplay
+          selected={filters.transparency}
+          label="Transparency"
+          onRemove={(val) => handleArrayFilterChange('transparency', val)}
+          colorVariant="green"
+        />
+        <MultiSelectFilter
+          options={TRANSPARENCY_OPTIONS}
+          selected={filters.transparency}
+          onChange={(val) => handleArrayFilterChange('transparency', val)}
+          colorVariant="green"
+        />
+      </FilterSection>
+
+      {/* Luster */}
+      <FilterSection 
+        title="Luster" 
+        id="luster"
+        expandedSections={expandedSections}
+        onToggle={onToggleSection}
+      >
+        <SelectedOptionsDisplay
+          selected={filters.luster}
+          label="Luster"
+          onRemove={(val) => handleArrayFilterChange('luster', val)}
+          colorVariant="blue"
+        />
+        <MultiSelectFilter
+          options={LUSTER_OPTIONS}
+          selected={filters.luster}
+          onChange={(val) => handleArrayFilterChange('luster', val)}
+          colorVariant="blue"
+        />
+      </FilterSection>
+
+      {/* Phenomena */}
+      <FilterSection 
+        title="Phenomena" 
+        id="phenomena"
+        expandedSections={expandedSections}
+        onToggle={onToggleSection}
+      >
+        <SelectedOptionsDisplay
+          selected={filters.phenomena}
+          label="Phenomena"
+          onRemove={(val) => handleArrayFilterChange('phenomena', val)}
+          colorVariant="purple"
+        />
+        <MultiSelectFilter
+          options={PHENOMENA}
+          selected={filters.phenomena}
+          onChange={(val) => handleArrayFilterChange('phenomena', val)}
+          colorVariant="purple"
+        />
+      </FilterSection>
+
+      {/* Minerals */}
+      <FilterSection 
+        title="Mineral Classification" 
+        id="minerals"
+        expandedSections={expandedSections}
+        onToggle={onToggleSection}
+      >
+        <SelectedOptionsDisplay
+          selected={filters.minerals}
+          label="Mineral"
+          onRemove={(val) => handleArrayFilterChange('minerals', val)}
+          colorVariant="blue"
+        />
+        <MultiSelectFilter
+          options={MINERAL_CLASSIFICATIONS}
+          selected={filters.minerals}
+          onChange={(val) => handleArrayFilterChange('minerals', val)}
+          colorVariant="blue"
+        />
+      </FilterSection>
+
+      {/* Birthstones */}
+      <FilterSection 
+        title="Birthstones" 
+        id="birthstones"
+        expandedSections={expandedSections}
+        onToggle={onToggleSection}
+      >
+        <SelectedOptionsDisplay
+          selected={filters.birthstones}
+          label="Birthstone"
+          onRemove={(val) => handleArrayFilterChange('birthstones', val)}
+          colorVariant="purple"
+        />
+        <div className="grid grid-cols-3 gap-2">
+          {BIRTHSTONE_MONTHS.map((item) => {
+            const isSelected = filters.birthstones.includes(item.month)
+            return (
+              <button
+                key={item.month}
+                onClick={() => handleArrayFilterChange('birthstones', item.month)}
+                className={`cursor-pointer group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200
+                  ${isSelected
+                    ? "border-purple-500 bg-purple-50 dark:bg-purple-900/30"
+                    : "border-gray-100 dark:border-slate-800 bg-transparent hover:border-purple-300 dark:hover:border-purple-700"
+                  }
+                `}
+              >
+                <div 
+                  className="w-6 h-6 rounded-md shadow-sm transition-transform group-hover:scale-110"
+                  style={{ backgroundColor: item.color }}
+                />
+                <div className="flex flex-col items-center">
+                  <span className={`text-[10px] font-bold ${isSelected ? 'text-purple-700 dark:text-purple-300' : 'text-gray-900 dark:text-gray-100'}`}>
+                    {item.month}
+                  </span>
+                  <span className="text-[8px] text-gray-500 text-center leading-tight">
+                    {item.stone.split(',')[0]}
+                  </span>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </FilterSection>
+
+      {/* Dimensions */}
+      <FilterSection 
+        title="Dimensions" 
+        id="dimensions"
+        expandedSections={expandedSections}
+        onToggle={onToggleSection}
+      >
+        <div className="space-y-6">
+          <RangeInput
+            label="Length"
+            min={filters.length.min}
+            max={filters.length.max}
+            onMinChange={(val) => handleRangeChange('length', 'min', val)}
+            onMaxChange={(val) => handleRangeChange('length', 'max', val)}
+            unit="mm"
+            step={0.1}
+            minBound={0}
+            maxBound={100}
+          />
+          <RangeInput
+            label="Width"
+            min={filters.width.min}
+            max={filters.width.max}
+            onMinChange={(val) => handleRangeChange('width', 'min', val)}
+            onMaxChange={(val) => handleRangeChange('width', 'max', val)}
+            unit="mm"
+            step={0.1}
+            minBound={0}
+            maxBound={100}
+          />
+          <RangeInput
+            label="Height"
+            min={filters.height.min}
+            max={filters.height.max}
+            onMinChange={(val) => handleRangeChange('height', 'min', val)}
+            onMaxChange={(val) => handleRangeChange('height', 'max', val)}
+            unit="mm"
+            step={0.1}
+            minBound={0}
+            maxBound={100}
+          />
+        </div>
+      </FilterSection>
+
+      {/* Clear All Button */}
+      <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
         <button
           onClick={clearFilters}
-          className="cursor-pointer px-6 py-3 rounded-3xl border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
+          className="w-full py-3 rounded-2xl text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-red-200 dark:border-red-800 uppercase tracking-widest"
         >
-          Clear Filters
-        </button>
-        <button
-          onClick={onSearch}
-          className="cursor-pointer px-6 py-3 rounded-3xl bg-gradient-to-r from-yellow-600 to-yellow-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
-        >
-          Search Gemstones
+          Clear All Filters
         </button>
       </div>
     </div>

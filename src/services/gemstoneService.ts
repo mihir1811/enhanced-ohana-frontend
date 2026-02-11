@@ -223,6 +223,22 @@ export interface GemstoneQueryParams {
   caratMin?: number;
   caratMax?: number;
   searchBy?: string[];
+  enhancement?: string[];
+  transparency?: string[];
+  luster?: string[];
+  phenomena?: string[];
+  minerals?: string[];
+  birthstones?: string[];
+  location?: string[];
+  companyName?: string;
+  vendorLocation?: string;
+  reportNumber?: string;
+  lengthMin?: number;
+  lengthMax?: number;
+  widthMin?: number;
+  widthMax?: number;
+  heightMin?: number;
+  heightMax?: number;
 }
 
 export interface GemstoneApiResponse {
@@ -303,6 +319,42 @@ export const gemstoneService = {
     if (params.certification?.length) {
       params.certification.forEach(cert => queryParams.append('certification', cert));
     }
+    
+    // Add new array filters
+    if (params.enhancement?.length) {
+      params.enhancement.forEach(val => queryParams.append('enhancement', val));
+    }
+    if (params.transparency?.length) {
+      params.transparency.forEach(val => queryParams.append('transparency', val));
+    }
+    if (params.luster?.length) {
+      params.luster.forEach(val => queryParams.append('luster', val));
+    }
+    if (params.phenomena?.length) {
+      params.phenomena.forEach(val => queryParams.append('phenomena', val));
+    }
+    if (params.minerals?.length) {
+      params.minerals.forEach(val => queryParams.append('minerals', val));
+    }
+    if (params.birthstones?.length) {
+      params.birthstones.forEach(val => queryParams.append('birthstones', val));
+    }
+    if (params.location?.length) {
+      params.location.forEach(val => queryParams.append('location', val));
+    }
+
+    // Add new string filters
+    if (params.companyName) queryParams.append('companyName', params.companyName);
+    if (params.vendorLocation) queryParams.append('vendorLocation', params.vendorLocation);
+    if (params.reportNumber) queryParams.append('reportNumber', params.reportNumber);
+
+    // Add new range filters
+    if (params.lengthMin) queryParams.append('lengthMin', String(params.lengthMin));
+    if (params.lengthMax) queryParams.append('lengthMax', String(params.lengthMax));
+    if (params.widthMin) queryParams.append('widthMin', String(params.widthMin));
+    if (params.widthMax) queryParams.append('widthMax', String(params.widthMax));
+    if (params.heightMin) queryParams.append('heightMin', String(params.heightMin));
+    if (params.heightMax) queryParams.append('heightMax', String(params.heightMax));
     
     return api.get<{
       data: GemstonItem[];

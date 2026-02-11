@@ -10,6 +10,9 @@ import {
   BullionProduct
 } from '@/services/bullion.service';
 
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { Trash2 } from 'lucide-react';
+
 interface EditBullionFormProps {
   initialData: BullionProduct;
 }
@@ -17,8 +20,10 @@ interface EditBullionFormProps {
 const EditBullionForm: React.FC<EditBullionFormProps> = ({ initialData }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [metalTypes, setMetalTypes] = useState<MetalType[]>([]);
   const [metalShapes, setMetalShapes] = useState<MetalShape[]>([]);
+  const [allFineness, setAllFineness] = useState<MetalFineness[]>([]);
   const [metalFineness, setMetalFineness] = useState<MetalFineness[]>([]);
 
   const [formData, setFormData] = useState<Partial<CreateBullionRequest>>({
@@ -50,7 +55,7 @@ const EditBullionForm: React.FC<EditBullionFormProps> = ({ initialData }) => {
         ]);
         setMetalTypes(types.data);
         setMetalShapes(shapes.data);
-        setMetalFineness(fineness.data);
+        setAllFineness(fineness.data);
       } catch (error) {
         console.error('Failed to fetch master data', error);
         toast.error('Failed to load form data');
@@ -59,9 +64,26 @@ const EditBullionForm: React.FC<EditBullionFormProps> = ({ initialData }) => {
     fetchData();
   }, []);
 
+  // Filter fineness based on selected metal type
+  useEffect(() => {
+    if (formData.metalTypeId) {
+      const filtered = allFineness.filter(f => f.metalTypeId === Number(formData.metalTypeId));
+      setMetalFineness(filtered);
+    } else {
+      setMetalFineness([]);
+    }
+  }, [formData.metalTypeId, allFineness]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+        const newData = { ...prev, [name]: value };
+        // Reset dependent fields when parent changes
+        if (name === 'metalTypeId') {
+            newData.metalFinenessId = undefined; // Clear fineness
+        }
+        return newData;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -96,6 +118,20 @@ const EditBullionForm: React.FC<EditBullionFormProps> = ({ initialData }) => {
         toast.error(error.message || 'Failed to update product');
     } finally {
         setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      setLoading(true);
+      await bullionService.deleteBullion(initialData.id);
+      toast.success('Bullion product deleted successfully');
+      router.push('/seller/products');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete product');
+    } finally {
+      setLoading(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -159,9 +195,10 @@ const EditBullionForm: React.FC<EditBullionFormProps> = ({ initialData }) => {
                     required
                     value={formData.metalFinenessId || ''}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    disabled={metalFineness.length === 0}
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:bg-gray-100 disabled:text-gray-400"
                 >
-                    <option value="">Select Purity</option>
+                    <option value="">{metalFineness.length === 0 ? 'Select Metal Type first' : 'Select Purity'}</option>
                     {metalFineness.map(f => (
                         <option key={f.id} value={f.id}>{f.name}</option>
                     ))}
@@ -323,21 +360,41 @@ const EditBullionForm: React.FC<EditBullionFormProps> = ({ initialData }) => {
             </div>
         </div>
 
-        <div className="flex justify-end gap-4 mt-8">
+        <div className="flex justify-between items-center pt-6 border-t mt-8">
             <button
                 type="button"
-                onClick={() => router.back()}
-                className="px-6 py-2 border rounded-lg hover:bg-gray-50"
-            >
-                Cancel
-            </button>
-            <button
-                type="submit"
+                onClick={() => setShowDeleteModal(true)}
                 disabled={loading}
-                className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                className="px-6 py-2 border border-red-500 text-red-500 rounded-lg hover:bg-red-50 disabled:opacity-50 flex items-center gap-2"
             >
-                {loading ? 'Updating...' : 'Update Product'}
+                <Trash2 className="w-4 h-4" />
+                Delete Product
             </button>
+            <div className="flex gap-4">
+                <button
+                    type="button"
+                    onClick={() => router.back()}
+                    className="px-6 py-2 border rounded-lg hover:bg-gray-50"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                >
+                    {loading ? 'Updating...' : 'Update Product'}
+                </button>
+            </div>
+
+            <ConfirmModal
+                open={showDeleteModal}
+                onOpenChange={setShowDeleteModal}
+                title="Are you sure you want to delete this bullion?"
+                description="This action cannot be undone and will permanently remove the product."
+                onYes={handleDelete}
+                onNo={() => setShowDeleteModal(false)}
+            />
         </div>
     </form>
   );

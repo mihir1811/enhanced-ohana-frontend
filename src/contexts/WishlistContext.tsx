@@ -142,9 +142,14 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       } else {
         dispatch({ type: 'SET_ERROR', payload: response.message || 'Failed to load wishlist' });
       }
-    } catch (error) {
-      console.error('Error loading wishlist:', error);
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to load wishlist' });
+    } catch (error: any) {
+      // Handle 401 Unauthorized silently - it usually means the token expired
+      if (error.status === 401 || (error instanceof Error && error.message.includes('status: 401'))) {
+        dispatch({ type: 'CLEAR_WISHLIST' });
+      } else {
+        console.error('Error loading wishlist:', error);
+        dispatch({ type: 'SET_ERROR', payload: 'Failed to load wishlist' });
+      }
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
       dispatch({ type: 'SET_INITIALIZED', payload: true });

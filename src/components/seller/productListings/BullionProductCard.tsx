@@ -116,7 +116,9 @@ const BullionProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
               <DropdownMenu.Separator className="h-px my-1" style={{ backgroundColor: 'var(--border)' }} />
               <DropdownMenu.Item
                 className="flex items-center gap-2 px-3 py-2 hover:bg-red-50 cursor-pointer text-red-600"
-                onSelect={() => setShowDelete(true)}
+                onSelect={() => {
+                  if (onDelete) onDelete(product);
+                }}
               >
                 <Trash2 className="w-4 h-4" />
                 Delete Product

@@ -21,6 +21,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "www.mariposakids.co.nz",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
   typescript: {

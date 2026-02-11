@@ -189,7 +189,10 @@ class BullionService {
       method: 'DELETE',
       headers: this.getHeaders(token),
     });
-    if (!response.ok) throw new Error('Failed to delete bullion');
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData?.message || 'Failed to delete bullion');
+    }
     return response.json();
   }
   async updateBullion(id: number, data: Partial<CreateBullionRequest>): Promise<any> {
