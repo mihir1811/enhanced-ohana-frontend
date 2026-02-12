@@ -146,6 +146,14 @@ class DiamondService {
     }
     return apiService.delete(`/diamond/${diamondId}`, token);
   }
+
+    async deleteMeleeDiamond(id: string | number, token?: string): Promise<ApiResponse<unknown>> {
+    const diamondId = typeof id === 'string' ? parseInt(id, 10) : id;
+    if (isNaN(diamondId)) {
+      throw new Error('Invalid diamond ID provided');
+    }
+    return apiService.delete(`/melee-diamond/${diamondId}`, token);
+  }
   // Update diamond by ID (with file upload)
   async updateDiamond(id: string | number, formData: FormData, token?: string): Promise<ApiResponse<DiamondData>> {
     // Ensure ID is properly formatted for the API endpoint

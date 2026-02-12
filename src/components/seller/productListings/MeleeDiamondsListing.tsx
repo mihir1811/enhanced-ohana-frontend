@@ -241,63 +241,70 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {diamonds.map((diamond) => (
-                <DiamondProductCard
-                  key={diamond.id}
-                  product={diamond}
-                  onDelete={() => setDeleteId(diamond.id)}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="mt-8 flex justify-center items-center gap-4">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="px-4 py-2 rounded-xl border font-medium disabled:opacity-50 disabled:cursor-not-allowed
-                         bg-card text-card-foreground border-border hover:bg-muted transition"
-              >
-                Previous
-              </button>
-              <span className="text-sm font-medium">
-                Page {page} of {totalPages}
-              </span>
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="px-4 py-2 rounded-xl border font-medium disabled:opacity-50 disabled:cursor-not-allowed
-                         bg-card text-card-foreground border-border hover:bg-muted transition"
-              >
-                Next
-              </button>
-            </div>
-          )}
-        </>
+            <DiamondProductCard
+              key={diamond.id}
+              product={diamond}
+              isMelee={true}
+              onDelete={(p) => {
+                setDiamonds((prev) => prev.filter((d) => d.id !== p.id));
+                setTotal((prev) => Math.max(0, prev - 1));
+              }}
+            />
+          ))}
+        </div>
       )}
 
-      <ConfirmModal
-        isOpen={deleteId !== null}
-        onClose={() => setDeleteId(null)}
-        onConfirm={async () => {
-          if (deleteId !== null) {
-            const idToDelete = deleteId;
-            setDeleteId(null);
-            try {
-              const token = typeof window !== 'undefined' ? (document.cookie.match(/token=([^;]+)/)?.[1] || '') : '';
-              await diamondService.deleteMeleeDiamond(idToDelete, token);
-              setDiamonds((prev) => prev.filter((d) => d.id !== idToDelete));
-              setTotal((prev) => Math.max(0, prev - 1));
-              toast.success('Melee parcel deleted successfully');
-            } catch (err) {
-              toast.error('Failed to delete melee parcel');
-            }
-          }
-        }}
-        title="Delete Melee Parcel"
-        description="Are you sure you want to delete this melee parcel? This action cannot be undone."
-      />
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-8 flex justify-center items-center gap-4">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-4 py-2 rounded-xl border font-medium disabled:opacity-50 disabled:cursor-not-allowed
+                     bg-card text-card-foreground border-border hover:bg-muted transition"
+          >
+            Previous
+          </button>
+          <span className="text-sm font-medium">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="px-4 py-2 rounded-xl border font-medium disabled:opacity-50 disabled:cursor-not-allowed
+                     bg-card text-card-foreground border-border hover:bg-muted transition"
+          >
+            Next
+          </button>
+        </div>
+      )}
+    </>
+  )}
+
+  <ConfirmModal
+    open={deleteId !== null}
+    onOpenChange={(open) => {
+      if (!open) setDeleteId(null);
+    }}
+    onYes={async () => {
+      if (deleteId !== null) {
+        const idToDelete = deleteId;
+        setDeleteId(null);
+        try {
+          const token = typeof window !== 'undefined' ? (document.cookie.match(/token=([^;]+)/)?.[1] || '') : '';
+          await diamondService.deleteMeleeDiamond(idToDelete, token);
+          setDiamonds((prev) => prev.filter((d) => d.id !== idToDelete));
+          setTotal((prev) => Math.max(0, prev - 1));
+          toast.success('Melee parcel deleted successfully');
+        } catch (err) {
+          toast.error('Failed to delete melee parcel');
+        }
+      }
+    }}
+    onNo={() => setDeleteId(null)}
+    title="Delete Melee Parcel"
+    description="Are you sure you want to delete this melee parcel? This action cannot be undone."
+  />
     </div>
   );
 };

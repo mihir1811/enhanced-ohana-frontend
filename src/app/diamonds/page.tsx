@@ -2951,7 +2951,7 @@ export default function DiamondsSearchPage() {
         <div className="flex flex-col md:flex-row gap-4 mt-8 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
           <button
             onClick={handleSearch}
-            className="group flex-1 px-6 py-4 rounded-2xl font-semibold text-base md:text-lg flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2"
+            className="group cursor-pointer flex-1 px-6 py-4 rounded-2xl font-semibold text-base md:text-lg flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2"
             style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--primary) 80%, currentColor 20%)' }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--primary)' }}
