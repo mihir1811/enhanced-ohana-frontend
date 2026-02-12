@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import { gemstoneService } from '@/services/gemstoneService';
@@ -6,6 +6,137 @@ import { auctionService } from '@/services/auctionService';
 import { getCookie } from '@/lib/cookie-utils';
 import { auctionProductTypes } from '@/config/sellerConfigData';
 import { certificateCompanies as certificateCompaniesIds } from '@/constants/diamondDropdowns';
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+// --- SearchableDropdown Component (Copied from AddDiamondForm for consistency) ---
+interface Option {
+  value: string;
+  label: string;
+}
+
+interface SearchableDropdownProps {
+  options: Option[];
+  value: string;
+  onChange: (value: string) => void;
+  name: string;
+  placeholder?: string;
+  required?: boolean;
+  disabled?: boolean;
+}
+
+const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
+  options,
+  value,
+  onChange,
+  name,
+  placeholder = "Select an option",
+  required = false,
+  disabled = false
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const filteredOptions = options.filter(option =>
+    option.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const selectedOption = options.find(opt => opt.value === value);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSelect = (option: Option) => {
+    if (disabled) return;
+    onChange(option.value);
+    setSearchTerm("");
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <div
+        className="relative cursor-pointer group"
+        onClick={() => {
+          if (disabled) return;
+          setIsOpen(!isOpen);
+          if (!isOpen && inputRef.current) {
+            inputRef.current.focus();
+          }
+        }}
+      >
+        <div className="relative">
+          <input
+            ref={inputRef}
+            type="text"
+            className={`flex h-10 w-full rounded-xl border bg-background px-3 pr-10 text-sm ring-offset-background file:border-0 file:bg-transparent 
+                       file:text-sm file:font-medium placeholder:text-muted-foreground 
+                       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 
+                       disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200
+                       ${isOpen ? 'border-primary ring-2 ring-primary/20' : 'border-input hover:border-primary/50'}`}
+            placeholder={selectedOption ? selectedOption.label : placeholder}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            required={required && !value}
+            disabled={disabled}
+          />
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-muted-foreground group-hover:text-primary transition-colors">
+            <svg
+              className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-2 bg-popover text-popover-foreground rounded-xl border shadow-xl animate-in fade-in zoom-in duration-200 origin-top">
+          <div className="max-h-60 overflow-auto p-1 custom-scrollbar">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((option) => (
+                <div
+                  key={option.value}
+                  className={`flex items-center justify-between px-3 py-2.5 text-sm rounded-lg cursor-pointer transition-colors
+                             ${value === option.value 
+                               ? 'bg-primary text-primary-foreground' 
+                               : 'hover:bg-accent hover:text-accent-foreground'}`}
+                  onClick={() => handleSelect(option)}
+                >
+                  <span className="font-medium">{option.label}</span>
+                  {value === option.value && (
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="px-3 py-4 text-sm text-center text-muted-foreground italic">
+                No options found for &quot;{searchTerm}&quot;
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 // --- Dropdown option arrays (copy from AddGemstoneForm) ---
 const GEM_SUBTYPES = {
