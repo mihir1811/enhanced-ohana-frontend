@@ -160,7 +160,13 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
     <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-8">
       {/* Breadcrumb */}
       <nav className="flex items-center space-x-2 text-sm" style={{ color: 'var(--muted-foreground)' }}>
-        <a href="#" className="hover:underline" style={{ color: 'var(--muted-foreground)' }}>Diamonds</a>
+        <a 
+          href={`/diamonds/${diamond.stoneType === 'labGrownDiamond' ? 'lab-grown' : 'natural'}/single`} 
+          className="hover:underline" 
+          style={{ color: 'var(--muted-foreground)' }}
+        >
+          {diamond.stoneType === 'labGrownDiamond' ? 'Lab Grown' : 'Natural'} Diamonds
+        </a>
         <span>/</span>
         <a href="#" className="hover:underline" style={{ color: 'var(--muted-foreground)' }}>{diamond.shape || 'Diamond'}</a>
         <span>/</span>
