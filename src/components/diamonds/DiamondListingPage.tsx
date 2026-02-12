@@ -100,7 +100,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
     const query = { 
       page: currentPage, 
       limit: pageSize, 
-      ...buildQueryFromFilters(filters),
+      // ...buildQueryFromFilters(filters), // Temporarily disabled as per user request
       ...(stoneType && { stoneType })
     };
 
