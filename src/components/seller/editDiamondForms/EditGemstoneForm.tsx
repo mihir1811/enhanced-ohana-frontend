@@ -2,9 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import { gemstoneService } from '@/services/gemstoneService';
-import { auctionService } from '@/services/auctionService';
 import { getCookie } from '@/lib/cookie-utils';
-import { auctionProductTypes } from '@/config/sellerConfigData';
 import { certificateCompanies as certificateCompaniesIds } from '@/constants/diamondDropdowns';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -254,11 +252,11 @@ interface GemstoneData {
   gemsType: string;
   subType: string;
   stockNumber: string;
-  sellerStockNumber: string;
   quantity: string;
   description: string;
   videoURL: string;
-  price: string;
+  totalPrice: string;
+  pricePerCarat?: string | number;
   carat: string;
   discount: string;
   qualityGrade: string;
@@ -278,11 +276,8 @@ interface GemstoneData {
   spacificGravity: string;
   certificateCompanyName: string;
   certificateCompanyId?: number;
+  certificateNumber: string;
   isOnAuction?: boolean;
-  productType: string;
-  startTime: string;
-  endTime: string;
-  enableAuction: boolean;
   image1?: string;
   image2?: string;
   image3?: string;
@@ -322,15 +317,13 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
 
     return {
       ...initialData,
+      totalPrice: initialData.totalPrice !== undefined ? String(initialData.totalPrice) : '',
+      pricePerCarat: initialData.pricePerCarat !== undefined ? String(initialData.pricePerCarat) : '',
       certificateCompanyId: certId,
       certificateCompanyName: certName,
+      certificateNumber: initialData.certificateNumber || '',
       isOnAuction: Boolean(initialData?.isOnAuction),
       images: [],
-      // Auction fields
-      productType: '',
-      startTime: '',
-      endTime: '',
-      enableAuction: false
     };
   });
   const [loading, setLoading] = useState(false);
@@ -412,56 +405,52 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
           formData.append(`image${i + 1}`, imagePreviews[i]);
         }
       }
-      // Always append 'name' field explicitly
-      formData.append('name', form.name ?? '');
-      // Attach all other fields (except name, images, id, image1-6, seller, auction, isOnAuction, isSold, isDeleted, and auction-related fields)
-      Object.entries(form).forEach(([key, value]) => {
-        if (
-          key !== 'images' &&
-          key !== 'id' &&
-          key !== 'certificateCompanyName' &&
-          key !== 'name' &&
-          key !== 'seller' &&
-          key !== 'auction' &&
-          key !== 'isOnAuction' &&
-          key !== 'isSold' &&
-          key !== 'isDeleted' &&
-          key !== 'enableAuction' &&
-          key !== 'productType' &&
-          key !== 'startTime' &&
-          key !== 'endTime' &&
-          !/^image[1-6]$/.test(key) &&
-          value !== undefined && value !== null && value !== ''
-        ) {
-          if (typeof value === 'boolean') {
-            formData.append(key, value ? 'true' : 'false');
-          } else {
-            formData.append(key, value as string);
-          }
+      // Explicit mapping for known fields to match UpdateGemsStoneRequestDto
+      if (form.name) formData.append('name', form.name);
+      if (form.gemsType) formData.append('gemsType', form.gemsType);
+      if (form.subType) formData.append('subType', form.subType);
+      if (form.composition) formData.append('composition', form.composition);
+      if (form.qualityGrade) formData.append('qualityGrade', form.qualityGrade);
+      if (form.quantity) formData.append('quantity', form.quantity);
+      if (form.videoURL) formData.append('videoURL', form.videoURL);
+      if (form.stockNumber) formData.append('stockNumber', form.stockNumber);
+      if (form.description) formData.append('description', form.description);
+      if (form.discount) formData.append('discount', form.discount);
+      
+      // Pricing mappings
+      if (form.totalPrice) formData.append('totalPrice', form.totalPrice);
+      if (form.pricePerCarat) formData.append('pricePerCarat', form.pricePerCarat);
+      
+      // Physical Properties
+      if (form.carat) formData.append('carat', form.carat);
+      if (form.shape) formData.append('shape', form.shape);
+      if (form.color) formData.append('color', form.color);
+      if (form.clarity) formData.append('clarity', form.clarity);
+      if (form.hardness) formData.append('hardness', form.hardness);
+      if (form.origin) formData.append('origin', form.origin);
+      if (form.fluoreScence) formData.append('fluoreScence', form.fluoreScence);
+      if (form.process) formData.append('process', form.process);
+      if (form.cut) formData.append('cut', form.cut);
+      if (form.dimension) formData.append('dimension', form.dimension);
+      if (form.refrectiveIndex) formData.append('refrectiveIndex', form.refrectiveIndex);
+      if (form.birefringence) formData.append('birefringence', form.birefringence);
+      if (form.spacificGravity) formData.append('spacificGravity', form.spacificGravity);
+      if (form.treatment) formData.append('treatment', form.treatment);
+      
+      // Certificate mapping
+      if (form.certificateCompanyId) {
+        const company = certificateCompaniesIds.find(c => c.value === String(form.certificateCompanyId));
+        if (company) {
+          formData.append('certificateCompanyName', company.label);
         }
-      });
+      }
+      if (form.certificateNumber) formData.append('certificateNumber', form.certificateNumber);
       const response = await gemstoneService.updateGemstone(form.id, formData, token);
       if (!response || response.success === false) {
         throw new Error(response?.message || 'Failed to update gemstone');
       }
 
-      // If auction is enabled, create auction
-      if (form.enableAuction && form.productType && form.startTime && form.endTime) {
-        const auctionData = {
-          productId: form.id,
-          productType: form.productType as 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond',
-          startTime: new Date(form.startTime).toISOString(),
-          endTime: new Date(form.endTime).toISOString()
-        };
-
-        const auctionResponse = await auctionService.createAuction(auctionData, token);
-
-        if (!auctionResponse || auctionResponse.success === false) {
-          throw new Error(auctionResponse?.message || 'Failed to create auction');
-        }
-      }
-
-      toast.success('Gemstone updated successfully!' + (form.enableAuction ? ' Auction created!' : ''));
+      toast.success('Gemstone updated successfully!');
       if (onCancel) onCancel();
     } catch (error) {
       const err = error as Error;
@@ -479,8 +468,12 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
         <h3 className="text-lg font-semibold mb-2">Basic Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block font-medium mb-1">Name *</label>
-            <input name="name" value={form.name} onChange={handleInput} required className="input" placeholder="e.g. Natural Ruby" />
+            <label className="block font-medium mb-1">Name</label>
+            <input name="name" value={form.name} onChange={handleInput} className="input" placeholder="e.g. Natural Ruby" />
+          </div>
+          <div>
+            <label className="block font-medium mb-1">Stock Number *</label>
+            <input name="stockNumber" value={form.stockNumber} onChange={handleInput} required className="input" placeholder="e.g. 12345" />
           </div>
           <div>
             <label className="block font-medium mb-1">Gem Type *</label>
@@ -493,8 +486,8 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-1">Sub Type *</label>
-            <select name="subType" value={form.subType} onChange={handleSelect} required className="input" disabled={!selectedGemsType}>
+            <label className="block font-medium mb-1">Sub Type</label>
+            <select name="subType" value={form.subType} onChange={handleSelect} className="input" disabled={!selectedGemsType}>
               <option value="">{selectedGemsType ? 'Select sub type' : 'Select gem type first'}</option>
               {selectedGemsType &&
                 GEM_SUBTYPES[selectedGemsType as keyof typeof GEM_SUBTYPES]?.map((sub: string) => (
@@ -504,21 +497,13 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-1">Stock Number *</label>
-            <input name="stockNumber" value={form.stockNumber} onChange={handleInput} required className="input" placeholder="e.g. 12345" />
-          </div>
-          <div>
-            <label className="block font-medium mb-1">Seller Stock Number *</label>
-            <input name="sellerStockNumber" value={form.sellerStockNumber} onChange={handleInput} required className="input" placeholder="e.g. 67890" />
-          </div>
-          <div>
             <label className="block font-medium mb-1">Quantity *</label>
             <input name="quantity" value={form.quantity} onChange={handleInput} required className="input" placeholder="e.g. 1" />
           </div>
         </div>
         <div className="mt-4">
-          <label className="block font-medium mb-1">Description *</label>
-          <textarea name="description" value={form.description} onChange={handleInput} required rows={3} className="input" />
+          <label className="block font-medium mb-1">Description</label>
+          <textarea name="description" value={form.description} onChange={handleInput} rows={3} className="input" />
         </div>
       </section>
 
@@ -565,8 +550,8 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
             )}
           </div>
           <div>
-            <label className="block font-medium mb-1">Video URL *</label>
-            <input name="videoURL" value={form.videoURL} onChange={handleInput} required className="input" placeholder="e.g. https://youtu.be/abcd1234" />
+            <label className="block font-medium mb-1">Video URL</label>
+            <input name="videoURL" value={form.videoURL} onChange={handleInput} className="input" placeholder="e.g. https://youtu.be/abcd1234" />
           </div>
         </div>
       </section>
@@ -574,18 +559,22 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
       {/* Pricing */}
       <section>
         <h3 className="text-lg font-semibold mb-2">Pricing</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block font-medium mb-1">Price *</label>
-            <input name="price" value={form.price} onChange={handleInput} required className="input" placeholder="e.g. 1000" />
+            <label className="block font-medium mb-1">Total Price *</label>
+            <input name="totalPrice" value={form.totalPrice} onChange={handleInput} required className="input" placeholder="e.g. 1000" />
+          </div>
+          <div>
+            <label className="block font-medium mb-1">Price Per Carat *</label>
+            <input name="pricePerCarat" value={form.pricePerCarat} onChange={handleInput} required className="input" placeholder="e.g. 500" />
           </div>
           <div>
             <label className="block font-medium mb-1">Carat *</label>
             <input name="carat" value={form.carat} onChange={handleInput} required className="input" placeholder="e.g. 2.5" />
           </div>
           <div>
-            <label className="block font-medium mb-1">Discount (%) *</label>
-            <input name="discount" value={form.discount} onChange={handleInput} required className="input" placeholder="e.g. 10" />
+            <label className="block font-medium mb-1">Discount (%)</label>
+            <input name="discount" value={form.discount} onChange={handleInput} className="input" placeholder="e.g. 10" />
           </div>
         </div>
       </section>
@@ -595,8 +584,8 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
         <h3 className="text-lg font-semibold mb-2">Gemstone Specifications</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block font-medium mb-1">Quality Grade *</label>
-            <select name="qualityGrade" value={form.qualityGrade} onChange={handleSelect} required className="input">
+            <label className="block font-medium mb-1">Quality Grade</label>
+            <select name="qualityGrade" value={form.qualityGrade} onChange={handleSelect} className="input">
               <option value="">Select quality grade</option>
               {QUALITY_GRADES.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -604,8 +593,8 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-1">Composition *</label>
-            <select name="composition" value={form.composition} onChange={handleSelect} required className="input">
+            <label className="block font-medium mb-1">Composition</label>
+            <select name="composition" value={form.composition} onChange={handleSelect} className="input">
               <option value="">Select composition</option>
               {COMPOSITIONS.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -622,8 +611,8 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-1">Color *</label>
-            <select name="color" value={form.color} onChange={handleSelect} required className="input">
+            <label className="block font-medium mb-1">Color</label>
+            <select name="color" value={form.color} onChange={handleSelect} className="input">
               <option value="">Select color</option>
               {COLORS.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -631,8 +620,8 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-1">Clarity *</label>
-            <select name="clarity" value={form.clarity} onChange={handleSelect} required className="input">
+            <label className="block font-medium mb-1">Clarity</label>
+            <select name="clarity" value={form.clarity} onChange={handleSelect} className="input">
               <option value="">Select clarity</option>
               {CLARITIES.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -640,8 +629,8 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-1">Hardness *</label>
-            <input name="hardness" value={form.hardness} onChange={handleInput} required className="input" placeholder="e.g. 9" />
+            <label className="block font-medium mb-1">Hardness</label>
+            <input name="hardness" value={form.hardness} onChange={handleInput} className="input" placeholder="e.g. 9" />
           </div>
           <div>
             <label className="block font-medium mb-1">Origin *</label>
@@ -653,8 +642,8 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-1">Fluorescence *</label>
-            <select name="fluoreScence" value={form.fluoreScence} onChange={handleSelect} required className="input">
+            <label className="block font-medium mb-1">Fluorescence</label>
+            <select name="fluoreScence" value={form.fluoreScence} onChange={handleSelect} className="input">
               <option value="">Select fluorescence</option>
               {FLUORESCENCES.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -662,8 +651,8 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-1">Treatment *</label>
-            <select name="treatment" value={form.treatment} onChange={handleSelect} required className="input">
+            <label className="block font-medium mb-1">Treatment</label>
+            <select name="treatment" value={form.treatment} onChange={handleSelect} className="input">
               <option value="">Select treatment</option>
               {TREATMENTS.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -671,16 +660,16 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-1">Refractive Index *</label>
-            <input name="refrectiveIndex" value={form.refrectiveIndex} onChange={handleInput} required className="input" placeholder="e.g. 1.76" />
+            <label className="block font-medium mb-1">Refractive Index</label>
+            <input name="refrectiveIndex" value={form.refrectiveIndex} onChange={handleInput} className="input" placeholder="e.g. 1.76" />
           </div>
           <div>
-            <label className="block font-medium mb-1">Birefringence *</label>
-            <input name="birefringence" value={form.birefringence} onChange={handleInput} required className="input" placeholder="e.g. 0.008" />
+            <label className="block font-medium mb-1">Birefringence</label>
+            <input name="birefringence" value={form.birefringence} onChange={handleInput} className="input" placeholder="e.g. 0.008" />
           </div>
           <div>
-            <label className="block font-medium mb-1">Process *</label>
-            <select name="process" value={form.process} onChange={handleSelect} required className="input">
+            <label className="block font-medium mb-1">Process</label>
+            <select name="process" value={form.process} onChange={handleSelect} className="input">
               <option value="">Select process</option>
               {PROCESSES.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -688,8 +677,8 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-1">Cut *</label>
-            <select name="cut" value={form.cut} onChange={handleSelect} required className="input">
+            <label className="block font-medium mb-1">Cut</label>
+            <select name="cut" value={form.cut} onChange={handleSelect} className="input">
               <option value="">Select cut</option>
               {CUTS.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -700,9 +689,19 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
             <label className="block font-medium mb-1">Dimension *</label>
             <input name="dimension" value={form.dimension} onChange={handleInput} required className="input" placeholder="e.g. 7.2 x 5.1 x 3.2 mm" />
           </div>
-          <div>
-            <label className="block font-medium mb-1">Specific Gravity *</label>
-            <input name="spacificGravity" value={form.spacificGravity} onChange={handleInput} required className="input" placeholder="e.g. 3.52" />
+          <div className="space-y-2">
+            <Label htmlFor="spacificGravity" className="font-medium">
+              Specific Gravity
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="spacificGravity"
+              name="spacificGravity"
+              value={form.spacificGravity}
+              onChange={handleInput}
+              placeholder="e.g. 3.52"
+              required
+            />
           </div>
         </div>
       </section>
@@ -732,130 +731,22 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
               required
             />
           </div>
-        </div>
-      </section>
-
-      {/* Auction Settings */}
-      <section>
-        <h3 className="text-lg font-semibold mb-2">Auction Settings</h3>
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="enableAuction"
-              name="enableAuction"
-              checked={form.enableAuction}
+          <div className="space-y-2">
+            <Label htmlFor="certificateNumber" className="font-medium">
+              Certificate Number
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Input
+              id="certificateNumber"
+              name="certificateNumber"
+              value={form.certificateNumber}
               onChange={handleInput}
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              placeholder="e.g. GIA-12345678"
+              required
             />
-            <label htmlFor="enableAuction" className="text-sm font-medium">
-              Enable Auction for this Gemstone
-            </label>
           </div>
-
-          {form.enableAuction && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-              <div>
-                <label className="block font-medium mb-1">
-                  Product Type *
-                </label>
-                <select
-                  name="productType"
-                  value={form.productType}
-                  onChange={handleSelect}
-                  required
-                  className="input"
-                >
-                  <option value="">Select Product Type</option>
-                  {auctionProductTypes.map((type) => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-medium mb-1">
-                  Auction Start Time *
-                </label>
-                <input
-                  type="datetime-local"
-                  name="startTime"
-                  value={form.startTime}
-                  onChange={handleInput}
-                  required
-                  className="input"
-                />
-              </div>
-
-              <div>
-                <label className="block font-medium mb-1">
-                  Auction End Time *
-                </label>
-                <input
-                  type="datetime-local"
-                  name="endTime"
-                  value={form.endTime}
-                  onChange={handleInput}
-                  required
-                  className="input"
-                />
-              </div>
-            </div>
-          )}
         </div>
       </section>
-
-      {/* Auction Fields */}
-      {(form.isOnAuction || form.auction) && (
-        <section>
-          <h3 className="text-lg font-semibold mb-2">Existing Auction Details (Legacy)</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <div className="col-span-3 text-sm text-yellow-700 mb-2">
-              ⚠️ This section shows existing auction data. Use &quot;Auction Settings&quot; above to create new auctions.
-            </div>
-            <div>
-              <label className="block font-medium mb-1">On Auction (Legacy)</label>
-              <span className="text-sm">{form.isOnAuction ? 'Yes' : 'No'}</span>
-            </div>
-            {form.auction && (
-              <>
-                <div>
-                  <label className="block font-medium mb-1">Legacy Start Time</label>
-                  <span className="text-sm">{form.auction?.startTime ? new Date(form.auction.startTime).toLocaleString() : 'Not set'}</span>
-                </div>
-                <div>
-                  <label className="block font-medium mb-1">Legacy End Time</label>
-                  <span className="text-sm">{form.auction?.endTime ? new Date(form.auction.endTime).toLocaleString() : 'Not set'}</span>
-                </div>
-                <div>
-                  <label className="block font-medium mb-1">Legacy Active Status</label>
-                  <span className="text-sm">{form.auction?.isActive ? 'Active' : 'Inactive'}</span>
-                </div>
-              </>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Auction Data Section */}
-      {initialData?.auction && (
-        <section className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-4">
-          <div className="flex items-center gap-3 mb-4">
-            <h3 className="text-lg font-semibold">Existing Auction Details</h3>
-            <div className="flex-1 border-b border-gray-300"></div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <div><span className="font-medium">Auction ID:</span> {initialData.auction.id}</div>
-            <div><span className="font-medium">Product Type:</span> {initialData.auction.productType}</div>
-            <div><span className="font-medium">Start Time:</span> {new Date(initialData.auction.startTime).toLocaleString()}</div>
-            <div><span className="font-medium">End Time:</span> {new Date(initialData.auction.endTime).toLocaleString()}</div>
-            <div><span className="font-medium">Is Active:</span> {initialData.auction.isActive ? 'Yes' : 'No'}</div>
-            <div><span className="font-medium">Created:</span> {new Date(initialData.auction.createdAt).toLocaleString()}</div>
-          </div>
-        </section>
-      )}
 
       <div className="flex justify-end gap-4 mt-4">
         <button type="button" className="btn-secondary" onClick={onCancel} disabled={loading}>Cancel</button>
