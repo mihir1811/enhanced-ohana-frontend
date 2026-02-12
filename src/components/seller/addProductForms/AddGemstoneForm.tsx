@@ -1,5 +1,6 @@
 // ...existing imports...
 import React, { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 import { gemstoneService } from '@/services/gemstoneService';
@@ -185,6 +186,7 @@ const initialForm: GemstoneFormState = {
 };
 
 function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
+  const router = useRouter();
   const [form, setForm] = useState<GemstoneFormState>(initialForm);
   const [loading, setLoading] = useState(false);
   const [selectedGemsType, setSelectedGemsType] = useState<string | undefined>(undefined);
@@ -334,6 +336,7 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
       }
       toast.success('Gemstone added successfully!');
       setForm(initialForm);
+      router.push('/seller/products');
       if (onCancel) onCancel();
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to add gemstone';

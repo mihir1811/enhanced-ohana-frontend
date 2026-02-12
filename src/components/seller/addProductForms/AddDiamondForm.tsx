@@ -1,5 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 import { diamondService } from '@/services/diamondService';
@@ -300,6 +301,7 @@ const initialState: DiamondFormState = {
 };
 
 function AddDiamondForm() {
+  const router = useRouter();
   const [form, setForm] = useState<DiamondFormState>(initialState);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -961,6 +963,7 @@ function AddDiamondForm() {
       }
 
       toast.success('Diamond added successfully!');
+      router.push('/seller/products');
 
       // Reset form but keep some defaults if needed, or clear all
       setForm(initialState);
