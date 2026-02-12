@@ -222,7 +222,7 @@ export default function GemstoneProductsPage() {
       <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
         <NavigationUser />
       
-      <div className="container mx-auto px-6 pb-8 pt-4">
+      <div className="max-w-[1380px] container mx-auto px-6 pb-8 pt-4">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>
