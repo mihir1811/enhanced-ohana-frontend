@@ -5,6 +5,7 @@ import { useCompare } from '@/hooks/useCompare'
 import { ArrowLeft, X, Heart, ShoppingCart, Eye, CheckCircle, Info, Grid, List, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { CompareProduct } from '@/features/compare/compareSlice'
+import { generateGemstoneName } from '@/utils/gemstoneUtils'
 
 // Define types for gemstone data structure
 interface GemstoneData {
@@ -281,7 +282,15 @@ const ModernGemstoneComparePage = () => {
                     <div className="aspect-square bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900 dark:to-pink-900 rounded-xl mb-4 overflow-hidden relative group">
                       <img
                         src={gemstone.image}
-                        alt={gemstone.name}
+                        alt={generateGemstoneName({
+                          process: (gemstone.data as any).process,
+                          color: (gemstone.data as any).color,
+                          shape: (gemstone.data as any).shape,
+                          gemsType: (gemstone.data as any).gemstoneType,
+                          subType: (gemstone.data as any).subType,
+                          carat: (gemstone.data as any).weight,
+                          quantity: (gemstone.data as any).quantity
+                        }) || gemstone.name}
                         className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement
@@ -293,7 +302,15 @@ const ModernGemstoneComparePage = () => {
 
                     {/* Product Info */}
                     <h3 className="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 text-sm">
-                      {gemstone.name}
+                      {generateGemstoneName({
+                        process: (gemstone.data as any).process,
+                        color: (gemstone.data as any).color,
+                        shape: (gemstone.data as any).shape,
+                        gemsType: (gemstone.data as any).gemstoneType,
+                        subType: (gemstone.data as any).subType,
+                        carat: (gemstone.data as any).weight,
+                        quantity: (gemstone.data as any).quantity
+                      }) || gemstone.name}
                     </h3>
                     <p className="text-xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent mb-4">
                       {formatPrice(gemstone.price)}

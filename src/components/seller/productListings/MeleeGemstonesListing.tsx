@@ -3,6 +3,7 @@ import Image from 'next/image';
 import BulkUploadModal from './BulkUploadModal';
 import { gemstoneService } from '@/services/gemstoneService';
 import GemstoneProductCard, { GemstoneProduct } from './GemstoneProductCard';
+import { generateGemstoneName } from '@/utils/gemstoneUtils';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { toast } from 'react-hot-toast';
@@ -149,13 +150,33 @@ const MeleeGemstonesListing = () => {
                       <td className="px-4 py-2">
                         <Image
                           src={gem.image1 || 'https://media.istockphoto.com/id/1493089752/vector/box-and-package-icon-concept.jpg'}
-                          alt={gem.name || gem.gemsType}
+                          alt={generateGemstoneName({
+                            process: gem.process,
+                            color: gem.color,
+                            shape: gem.shape,
+                            gemsType: gem.gemsType || gem.gemType,
+                            subType: gem.subType,
+                            carat: gem.carat || gem.caratWeight,
+                            quantity: gem.quantity,
+                            clarity: gem.clarity
+                          }) || gem.name || gem.gemsType || gem.gemType}
                           width={48}
                           height={48}
                           className="w-12 h-12 object-cover rounded"
                         />
                       </td>
-                      <td className="px-4 py-2 capitalize">{gem.name || `${gem.subType || ''} ${gem.gemsType}`}</td>
+                      <td className="px-4 py-2 capitalize">
+                        {generateGemstoneName({
+                          process: gem.process,
+                          color: gem.color,
+                          shape: gem.shape,
+                          gemsType: gem.gemsType || gem.gemType,
+                          subType: gem.subType,
+                          carat: gem.carat || gem.caratWeight,
+                          quantity: gem.quantity,
+                          clarity: gem.clarity
+                        }) || gem.name || `${gem.subType || ''} ${gem.gemsType || gem.gemType || ''}`.trim()}
+                      </td>
                       <td className="px-4 py-2" style={{ color: 'var(--primary)' }}>${(gem.totalPrice ? Number(gem.totalPrice) : gem.price)?.toLocaleString() || '-'}</td>
                       <td className="px-4 py-2">{gem.color}</td>
                       <td className="px-4 py-2">{gem.shape}</td>
@@ -182,7 +203,7 @@ const MeleeGemstonesListing = () => {
               </table>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
               {gemstones.map((gem) => (
                 <GemstoneProductCard
                   key={gem.id}

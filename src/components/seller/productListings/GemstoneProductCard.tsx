@@ -6,6 +6,7 @@ import { MoreVertical, Eye, Pencil, Trash2, Images, ChevronLeft, ChevronRight, C
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { gemstoneService } from '@/services/gemstoneService';
 import { getCookie } from '@/lib/cookie-utils';
+import { generateGemstoneName } from "@/utils/gemstoneUtils";
 
 const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
   const [timeLeft, setTimeLeft] = useState<{
@@ -118,10 +119,11 @@ const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
 
 export interface GemstoneProduct {
   id: string | number;
-  gemsType: string;
+  gemsType?: string;
+  gemType?: string; // API alias
   subType?: string;
-  name?: string; // Optional since API might not return it
-  price?: number; // Kept for backward compatibility
+  name?: string; 
+  price?: number; 
   totalPrice?: string | number;
   image1?: string | null;
   image2?: string | null;
@@ -138,7 +140,6 @@ export interface GemstoneProduct {
   isSold?: boolean;
   isOnAuction?: boolean;
   auctionEndTime?: string;
-  // Add other fields from API if needed for display
   composition?: string;
   qualityGrade?: string;
   quantity?: number;
@@ -147,6 +148,7 @@ export interface GemstoneProduct {
   discount?: string;
   pricePerCarat?: string;
   carat?: number;
+  caratWeight?: number | string; // API alias
   clarity?: string;
   hardness?: number;
   origin?: string;
@@ -220,7 +222,16 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
         ];
 
   // Construct display name if name is missing
-  const displayName = product.name || `${product.subType || ''} ${product.gemsType}`.trim() || 'Unnamed Gemstone';
+  const displayName = generateGemstoneName({
+    process: product.process,
+    color: product.color,
+    shape: product.shape,
+    gemsType: product.gemsType || product.gemType,
+    subType: product.subType,
+    carat: product.carat || product.caratWeight,
+    quantity: product.quantity,
+    clarity: product.clarity
+  }) || product.name || 'Unnamed Gemstone';
   
   // Handle price display (prefer totalPrice, fallback to price)
   const displayPrice = product.totalPrice 
@@ -237,7 +248,12 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
   };
 
   return (
-    <div className="relative rounded-2xl shadow-lg border hover:shadow-2xl transition-all flex flex-col overflow-hidden group" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
+    <div className="relative rounded-2xl shadow-lg border hover:shadow-2xl transition-all flex flex-col overflow-hidden group cursor-pointer" 
+      onClick={() => {
+        setShowQuickView(true);
+        if (onQuickView) onQuickView(product);
+      }}
+      style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
       {/* Dropdown at top right */}
       <div className="absolute top-3 right-3 z-10">
         <DropdownMenu.Root>
@@ -258,17 +274,6 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
               align="end"
               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
             >
-              <DropdownMenu.Item
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors"
-                onSelect={() => {
-                  setShowQuickView(true);
-                  if (onQuickView) onQuickView(product);
-                }}
-                style={{ color: 'var(--foreground)' }}
-              >
-                <Eye className="w-4 h-4" />
-                Quick View
-              </DropdownMenu.Item>
               <DropdownMenu.Item
                 className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors"
                 onSelect={() => {
@@ -363,14 +368,19 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
         </div>
         <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--muted-foreground)' }}>
           <span className="rounded-full px-2 py-1 font-semibold capitalize" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
-            {product.gemsType}
+            {product.gemsType || product.gemType}
           </span>
           {product.isOnAuction && (
             <span className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full px-2 py-1 font-semibold animate-pulse">
               🔥 Live Auction
             </span>
           )}
-          <span className="rounded-full px-2 py-1 font-semibold" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
+          {product.carat || product.caratWeight ? (
+            <span className="rounded-full px-2 py-1 font-semibold" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
+              {product.carat || product.caratWeight} ct
+            </span>
+          ) : null}
+          <span className="rounded-full px-2 py-1 font-semibold capitalize" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
             {product.shape}
           </span>
         </div>
@@ -424,11 +434,14 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
       </div>
       {/* Quick View Modal */}
       {showQuickView && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={(e) => e.stopPropagation()}>
           <div className="rounded-xl shadow-xl max-w-lg w-full p-6 relative" style={{ backgroundColor: 'var(--card)' }}>
             <button
               className="absolute top-2 right-2 hover:opacity-80"
-              onClick={() => setShowQuickView(false)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowQuickView(false);
+              }}
               aria-label="Close"
               style={{ color: 'var(--muted-foreground)' }}
             >
@@ -443,32 +456,111 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
                 {product.shape}
               </span>
             </div>
-            <Image
-              src={displayImages[imgIdx]}
-              alt={product.name || `${product.subType || ''} ${product.gemsType}`}
-              width={400}
-              height={256}
-              className="w-full h-64 object-cover rounded-lg mb-4"
-              style={{ backgroundColor: 'var(--muted)' }}
-            />
-            <div className="mb-4">
-              <span className="text-2xl font-extrabold" style={{ color: 'var(--primary)' }}>${product.price?.toLocaleString() || '-'}</span>
+            <div className="relative w-full h-64 flex items-center justify-center mb-4" style={{ backgroundColor: 'var(--muted)' }}>
+              <Image
+                src={displayImages[imgIdx]}
+                alt={displayName}
+                width={400}
+                height={300}
+                className={`object-cover w-full h-full rounded-lg transition-opacity duration-300 ${animating ? 'opacity-0' : 'opacity-100'}`}
+                style={{ pointerEvents: 'none' }}
+              />
+              {displayImages.length > 1 && (
+                <>
+                  {/* Prev Arrow */}
+                  <button
+                    className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full p-1 shadow flex items-center justify-center z-10"
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleImageChange(imgIdx === 0 ? displayImages.length - 1 : imgIdx - 1);
+                    }}
+                    aria-label="Previous image"
+                    type="button"
+                  >
+                    <ChevronLeft className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+                  </button>
+                  {/* Next Arrow */}
+                  <button
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 shadow flex items-center justify-center z-10"
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleImageChange(imgIdx === displayImages.length - 1 ? 0 : imgIdx + 1);
+                    }}
+                    aria-label="Next image"
+                    type="button"
+                  >
+                    <ChevronRight className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+                  </button>
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                    {displayImages.map((_, idx) => (
+                      <button
+                        key={idx}
+                        className="w-2 h-2 rounded-full border"
+                        style={{ backgroundColor: imgIdx === idx ? 'var(--primary)' : 'var(--border)', borderColor: 'var(--border)' }}
+                        onClick={e => {
+                          e.stopPropagation();
+                          handleImageChange(idx);
+                        }}
+                        aria-label={`Show image ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mb-4">
-              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>SKU:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.sellerSKU}</span></div>
-              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Stock #:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.stockNumber}</span></div>
-              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Color:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.color}</span></div>
-              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Shape:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.shape}</span></div>
-              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Updated:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.updatedAt ? new Date(product.updatedAt).toLocaleDateString() : '-'}</span></div>
-              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Sold:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.isSold ? 'Yes' : 'No'}</span></div>
+            <div className="flex flex-col gap-2">
+              <div className="flex justify-between items-center border-b pb-2" style={{ borderColor: 'var(--border)' }}>
+                <span className="text-sm font-semibold" style={{ color: 'var(--muted-foreground)' }}>Price:</span>
+                <span className="text-lg font-bold" style={{ color: 'var(--primary)' }}>${displayPrice?.toLocaleString() || '-'}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase font-bold" style={{ color: 'var(--muted-foreground)' }}>SKU</span>
+                  <span className="text-sm font-medium">{product.sellerSKU}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase font-bold" style={{ color: 'var(--muted-foreground)' }}>Stock #</span>
+                  <span className="text-sm font-medium">{product.stockNumber}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase font-bold" style={{ color: 'var(--muted-foreground)' }}>Color</span>
+                  <span className="text-sm font-medium">{product.color}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase font-bold" style={{ color: 'var(--muted-foreground)' }}>Shape</span>
+                  <span className="text-sm font-medium">{product.shape}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase font-bold" style={{ color: 'var(--muted-foreground)' }}>Type</span>
+                  <span className="text-sm font-medium capitalize">{product.gemsType || product.gemType}</span>
+                </div>
+                {product.carat || product.caratWeight ? (
+                  <div className="flex flex-col">
+                    <span className="text-[10px] uppercase font-bold" style={{ color: 'var(--muted-foreground)' }}>Carat</span>
+                    <span className="text-sm font-medium">{product.carat || product.caratWeight} ct</span>
+                  </div>
+                ) : null}
+              </div>
             </div>
-            <div className="flex justify-end">
+            <div className="mt-6 flex justify-end gap-3">
               <button
-                className="px-4 py-2 rounded"
-                style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-                onClick={() => setShowQuickView(false)}
+                className="px-4 py-2 rounded-lg text-sm font-semibold border hover:bg-muted transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowQuickView(false);
+                }}
+                style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
               >
                 Close
+              </button>
+              <button
+                className="px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.location.href = `/seller/products/${product.id}/edit`;
+                }}
+              >
+                Edit Product
               </button>
             </div>
           </div>

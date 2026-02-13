@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import Image from 'next/image';
 import { Pencil } from "lucide-react";
+import { generateGemstoneName } from "@/utils/gemstoneUtils";
 
 // Product interface for type safety
 interface Product {
@@ -30,9 +31,23 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({ open, onClose, product 
   }, [open]);
 
   if (!open) return null;
-
+  
+  const isGemstone = product.gemsType || product.gemType || product.carat || product.caratWeight || product.clarity;
+  
   // Handle both Jewelry and Watch products
-  const name = product.name || `${product.brand} ${product.model}`.trim();
+  const name = isGemstone 
+    ? generateGemstoneName({
+        process: product.process,
+        color: product.color,
+        shape: product.shape,
+        gemsType: product.gemsType || product.gemType,
+        subType: product.subType,
+        carat: product.carat || product.caratWeight,
+        quantity: product.quantity,
+        clarity: product.clarity
+      }) || product.name || 'Unnamed Gemstone'
+    : product.name || `${product.brand} ${product.model}`.trim();
+
   const price = product.totalPrice || product.price || 0;
   const description = product.description || product.movement || "No description available.";
   const stockNumber = product.stockNumber || "N/A";

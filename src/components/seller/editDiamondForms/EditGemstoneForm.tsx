@@ -248,7 +248,6 @@ const CUTS = [
 
 interface GemstoneData {
   id: string;
-  name: string;
   gemsType: string;
   subType: string;
   stockNumber: string;
@@ -406,7 +405,6 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
         }
       }
       // Explicit mapping for known fields to match UpdateGemsStoneRequestDto
-      if (form.name) formData.append('name', form.name);
       if (form.gemsType) formData.append('gemsType', form.gemsType);
       if (form.subType) formData.append('subType', form.subType);
       if (form.composition) formData.append('composition', form.composition);
@@ -467,10 +465,6 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
       <section>
         <h3 className="text-lg font-semibold mb-2">Basic Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block font-medium mb-1">Name</label>
-            <input name="name" value={form.name} onChange={handleInput} className="input" placeholder="e.g. Natural Ruby" />
-          </div>
           <div>
             <label className="block font-medium mb-1">Stock Number *</label>
             <input name="stockNumber" value={form.stockNumber} onChange={handleInput} required className="input" placeholder="e.g. 12345" />

@@ -1,3 +1,5 @@
+import { generateGemstoneName } from "@/utils/gemstoneUtils";
+
 export interface UnifiedProduct {
   // Base properties that all products should have
   id: string | number;
@@ -33,6 +35,9 @@ export interface UnifiedProduct {
   
   // Gemstone specific (optional)
   gemType?: string;
+  subType?: string;
+  quantity?: string | number;
+  process?: string;
   origin?: string;
   treatment?: string;
   
@@ -108,6 +113,9 @@ export interface RawGemstone {
   clarity?: string;
   shape?: string;
   gemType?: string;
+  subType?: string;
+  quantity?: string | number;
+  process?: string;
   origin?: string;
   treatment?: string;
   createdAt?: string;
@@ -202,7 +210,16 @@ export function transformJewelryToUnified(jewelry: RawJewelry): UnifiedProduct {
 export function transformGemstoneToUnified(gemstone: RawGemstone): UnifiedProduct {
   return {
     id: gemstone.id,
-    name: gemstone.name,
+    name: generateGemstoneName({
+      process: gemstone.process,
+      color: gemstone.color,
+      shape: gemstone.shape,
+      gemsType: gemstone.gemType,
+      subType: gemstone.subType,
+      carat: gemstone.caratWeight,
+      quantity: gemstone.quantity,
+      clarity: gemstone.clarity
+    }) || gemstone.name,
     description: gemstone.description,
     price: Number(gemstone.price) || 0,
     sellerId: gemstone.sellerId,

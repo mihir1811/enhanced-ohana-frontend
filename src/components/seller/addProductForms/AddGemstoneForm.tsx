@@ -122,7 +122,6 @@ const CUTS = [
 ];
 
 interface GemstoneFormState {
-  name: string;
   gemsType: string;
   subType: string;
   composition: string;
@@ -154,7 +153,6 @@ interface GemstoneFormState {
 }
 
 const initialForm: GemstoneFormState = {
-  name: '',
   gemsType: '',
   subType: '',
   composition: '',
@@ -209,7 +207,6 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
     const randomPricePerCarat = (randomPrice / parseFloat(randomCarat)).toFixed(2);
 
     const newData: GemstoneFormState = {
-      name: `${randomGemType.charAt(0).toUpperCase() + randomGemType.slice(1)} Gemstone`,
       gemsType: randomGemType,
       subType: randomSubType,
       composition: getRandomElement(COMPOSITIONS),
@@ -280,7 +277,6 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
       const formData = new FormData();
       
       // Explicit mapping to match CreateGemStoneDto
-      if (form.name) formData.append('name', form.name);
       if (form.gemsType) formData.append('gemsType', form.gemsType);
       if (form.subType) formData.append('subType', form.subType);
       if (form.composition) formData.append('composition', form.composition);
@@ -362,10 +358,6 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
       <section>
         <h3 className="text-lg font-semibold mb-2">Basic Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block font-medium mb-1">Name</label>
-            <input name="name" value={form.name} onChange={handleInput} className="input" placeholder="e.g. Natural Ruby" />
-          </div>
           <div>
             <label className="block font-medium mb-1">Gem Type *</label>
             <select name="gemsType" value={form.gemsType} onChange={handleSelect} required className="input">
