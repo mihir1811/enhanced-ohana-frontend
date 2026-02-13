@@ -219,6 +219,15 @@ class DiamondService {
     return apiService.get<DiamondData>(`/diamond/${diamondId}`);
   }
 
+  // Get melee diamond by ID
+  async getMeleeDiamondById(id: string | number): Promise<ApiResponse<DiamondData>> {
+    const diamondId = typeof id === 'string' ? parseInt(id, 10) : id;
+    if (isNaN(diamondId)) {
+      throw new Error('Invalid diamond ID provided');
+    }
+    return apiService.get<DiamondData>(`/melee-diamond/${diamondId}`);
+  }
+
   // Search diamonds
   async searchDiamonds(query: string, params?: SearchParams): Promise<ApiResponse<DiamondData[]>> {
     return apiService.get<DiamondData[]>('/diamond/search', sanitizeParams({ search: query, ...params }));

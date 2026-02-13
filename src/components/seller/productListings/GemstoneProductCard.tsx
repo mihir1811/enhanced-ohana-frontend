@@ -402,6 +402,12 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
             <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Shape:</span>
             <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.shape}</span>
           </div>
+          {product.quantity && product.quantity > 1 && (
+            <div className="flex items-center gap-1 col-span-2">
+              <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Parcel Quantity:</span>
+              <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.quantity} stones</span>
+            </div>
+          )}
         </div>
         <div className="flex items-center justify-between text-xs mt-auto" style={{ color: 'var(--muted-foreground)' }}>
           <div className="flex items-center gap-1">

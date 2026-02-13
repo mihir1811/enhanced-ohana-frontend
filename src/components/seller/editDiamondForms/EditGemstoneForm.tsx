@@ -499,6 +499,9 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
           <div>
             <label className="block font-medium mb-1">Quantity *</label>
             <input name="quantity" value={form.quantity} onChange={handleInput} required className="input" placeholder="e.g. 1" />
+            <p className="text-[10px] text-muted-foreground mt-1">
+              * Use 1 for Single Gemstone, {'>'}1 for Melee Parcels
+            </p>
           </div>
         </div>
         <div className="mt-4">

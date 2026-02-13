@@ -1,14 +1,13 @@
-
-
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import BulkUploadModal from './BulkUploadModal';
 import { gemstoneService } from '@/services/gemstoneService';
 import GemstoneProductCard, { GemstoneProduct } from './GemstoneProductCard';
-
-// API response type
-import { ApiResponse } from '@/services/api';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { toast } from 'react-hot-toast';
 import { useSelector } from 'react-redux';
+import { ApiResponse } from '@/services/api';
 
 // Redux state interface
 interface RootState {
@@ -27,9 +26,7 @@ type GemstoneApiResponse = {
   };
 };
 
-
-
-const GemstonesListing = () => {
+const MeleeGemstonesListing = () => {
   const [gemstones, setGemstones] = useState<GemstoneProduct[]>([]);
   const [view, setView] = useState<'list' | 'grid'>('grid');
   const [loading, setLoading] = useState(true);
@@ -39,15 +36,18 @@ const GemstonesListing = () => {
   const [total, setTotal] = useState(0);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [deleteId, setDeleteId] = useState<string | number | null>(null);
+
+  const sellerId = useSelector((state: RootState) => state.seller.profile?.id) || 'default-seller-id';
+
   const handleBulkFileSelect = () => {
     setBulkModalOpen(false);
     setRefreshKey((k) => k + 1);
   };
-  const sellerId = useSelector((state: RootState) => state.seller.profile?.id) || 'default-seller-id';
 
   useEffect(() => {
     setLoading(true);
-    gemstoneService.getSingleGemstonesBySeller({ sellerId, page, limit })
+    gemstoneService.getMeleeGemstonesBySeller({ sellerId, page, limit })
       .then((res: ApiResponse<GemstoneApiResponse>) => {
         const gems = res?.data?.data || [];
         setGemstones(gems);
@@ -56,7 +56,7 @@ const GemstonesListing = () => {
         setError(null);
       })
       .catch(() => {
-        setError('Failed to load gemstones');
+        setError('Failed to load melee gemstones');
         setGemstones([]);
       })
       .finally(() => setLoading(false));
@@ -67,9 +67,8 @@ const GemstonesListing = () => {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold">Single Gemstones</h2>
+        <h2 className="text-xl font-bold">Melee Gemstone Parcels</h2>
         <div className="flex gap-2 items-center relative">
-          {/* Bulk Upload Button */}
           <button
             className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 transition"
             onClick={() => setBulkModalOpen(true)}
@@ -81,7 +80,7 @@ const GemstonesListing = () => {
             open={bulkModalOpen}
             onClose={() => setBulkModalOpen(false)}
             onFileSelect={handleBulkFileSelect}
-            productType="gemstone"
+            productType="melee-gemstone"
           />
           <button
             className={"cursor-pointer relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
@@ -121,12 +120,16 @@ const GemstonesListing = () => {
           </button>
         </div>
       </div>
+
       {loading && <p>Loading...</p>}
       {error && <p className="text-red-500">{error}</p>}
+      
       {!loading && !error && (
         <>
           {gemstones.length === 0 ? (
-            <div>No gemstones found.</div>
+            <div className="rounded-xl border p-8 text-center" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <p className="text-muted-foreground">No melee gemstone parcels found.</p>
+            </div>
           ) : view === 'list' ? (
             <div className="overflow-x-auto">
               <table className="min-w-full rounded-lg shadow border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
@@ -137,6 +140,7 @@ const GemstonesListing = () => {
                     <th className="px-4 py-2 text-left">Price</th>
                     <th className="px-4 py-2 text-left">Color</th>
                     <th className="px-4 py-2 text-left">Shape</th>
+                    <th className="px-4 py-2 text-left">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -146,15 +150,32 @@ const GemstonesListing = () => {
                         <Image
                           src={gem.image1 || 'https://media.istockphoto.com/id/1493089752/vector/box-and-package-icon-concept.jpg'}
                           alt={gem.name || gem.gemsType}
-                          width={64}
-                          height={64}
-                          className="w-16 h-16 object-cover rounded"
+                          width={48}
+                          height={48}
+                          className="w-12 h-12 object-cover rounded"
                         />
                       </td>
                       <td className="px-4 py-2 capitalize">{gem.name || `${gem.subType || ''} ${gem.gemsType}`}</td>
                       <td className="px-4 py-2" style={{ color: 'var(--primary)' }}>${(gem.totalPrice ? Number(gem.totalPrice) : gem.price)?.toLocaleString() || '-'}</td>
                       <td className="px-4 py-2">{gem.color}</td>
                       <td className="px-4 py-2">{gem.shape}</td>
+                      <td className="px-4 py-2">
+                        <div className="flex gap-2">
+                          <button className="p-1 hover:text-blue-500 transition-colors" title="View">
+                            <Eye className="w-5 h-5" />
+                          </button>
+                          <button className="p-1 hover:text-green-500 transition-colors" title="Edit">
+                            <Pencil className="w-5 h-5" />
+                          </button>
+                          <button 
+                            className="p-1 hover:text-red-500 transition-colors" 
+                            title="Delete"
+                            onClick={() => setDeleteId(gem.id)}
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -174,28 +195,56 @@ const GemstonesListing = () => {
               ))}
             </div>
           )}
+
           {/* Pagination Controls */}
-          <div className="flex gap-2 mt-4">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="px-3 py-1 border rounded disabled:opacity-50"
-            >
-              Prev
-            </button>
-            <span>Page {page} of {totalPages}</span>
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="px-3 py-1 border rounded disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
+          {totalPages > 1 && (
+            <div className="flex gap-2 mt-4 justify-center items-center">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-muted transition"
+              >
+                Prev
+              </button>
+              <span className="text-sm font-medium">Page {page} of {totalPages}</span>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-muted transition"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </>
       )}
+
+      <ConfirmModal
+        open={deleteId !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteId(null);
+        }}
+        onYes={async () => {
+          if (deleteId !== null) {
+            const idToDelete = deleteId;
+            setDeleteId(null);
+            try {
+              const token = typeof window !== 'undefined' ? (document.cookie.match(/token=([^;]+)/)?.[1] || '') : '';
+              await gemstoneService.deleteGemstone(idToDelete, token);
+              setGemstones((prev) => prev.filter((g) => g.id !== idToDelete));
+              setTotal((prev) => Math.max(0, prev - 1));
+              toast.success('Melee gemstone parcel deleted successfully');
+            } catch (err) {
+              toast.error('Failed to delete melee gemstone parcel');
+            }
+          }
+        }}
+        onNo={() => setDeleteId(null)}
+        title="Delete Melee Gemstone Parcel"
+        description="Are you sure you want to delete this melee gemstone parcel? This action cannot be undone."
+      />
     </div>
   );
 };
 
-export default GemstonesListing;
+export default MeleeGemstonesListing;

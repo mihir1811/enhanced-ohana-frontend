@@ -9,33 +9,37 @@ interface BulkUploadModalProps {
   open: boolean;
   onClose: () => void;
   onFileSelect: (file: File) => void;
+  productType?: string;
 }
 
 const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   open,
   onClose,
   onFileSelect,
+  productType: overrideProductType,
 }) => {
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const sellerType = useSelector((state: RootState) => state.seller.profile?.sellerType);
   // Determine productType based on sellerType (switch/case style)
-  let productType = 'diamond';
-  switch (sellerType) {
-    case 'naturalDiamond':
-      productType = 'diamond';
-      break;
-    case 'labGrownDiamond':
-      productType = 'lab-grown-diamond';
-      break;
-    case 'gemstone':
-      productType = 'gemstone';
-      break;
-    case 'jewellery':
-      productType = 'jewellery';
-      break;
-    default:
-      productType = 'diamond';
+  let productType = overrideProductType || 'diamond';
+  if (!overrideProductType) {
+    switch (sellerType) {
+      case 'naturalDiamond':
+        productType = 'diamond';
+        break;
+      case 'labGrownDiamond':
+        productType = 'lab-grown-diamond';
+        break;
+      case 'gemstone':
+        productType = 'gemstone';
+        break;
+      case 'jewellery':
+        productType = 'jewellery';
+        break;
+      default:
+        productType = 'diamond';
+    }
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -163,7 +167,9 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
           </svg>
         </button>
 
-        <h3 className="text-lg font-semibold mb-4">Bulk Upload Diamonds</h3>
+        <h3 className="text-lg font-semibold mb-4">
+          Bulk Upload {productType === 'gemstone' || productType === 'melee-gemstone' ? 'Gemstones' : 'Diamonds'}
+        </h3>
         <div className="flex flex-col items-center gap-4">
           <input
             type="file"
