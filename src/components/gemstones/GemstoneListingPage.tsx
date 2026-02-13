@@ -192,9 +192,9 @@ const GemstoneListingPage: React.FC<GemstoneListingPageProps> = ({
   useEffect(() => {
     setLoading(true);
     fetchGemstones({
-      category: gemstoneType,
       page: currentPage,
       limit: pageSize,
+      ...(gemstoneType === 'single' ? { quantity: 1 } : { quantity: { gt: 1 } }),
       ...buildQueryFromFilters(filters),
     })
       .then((res) => {

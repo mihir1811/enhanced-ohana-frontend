@@ -1,5 +1,4 @@
-import api from './api';
-import { ApiResponse } from './api';
+import { apiService as api, ApiResponse } from './api';
 
 // Gemstone interfaces
 export interface GemstoneAuctionBid {
@@ -257,6 +256,23 @@ export interface GemstoneApiResponse {
   };
 }
 
+const sanitizeParams = (params: Record<string, any> | undefined): Record<string, string | number | boolean> => {
+  if (!params) return {};
+  const sanitized: Record<string, string | number | boolean> = {};
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      if (Array.isArray(value)) {
+        sanitized[key] = value.join(',');
+      } else if (typeof value === 'object') {
+        sanitized[key] = JSON.stringify(value);
+      } else {
+        sanitized[key] = String(value);
+      }
+    }
+  });
+  return sanitized;
+}
+
 export const gemstoneService = {
   getAllGemstones: async (params: GemstoneQueryParams = {}): Promise<ApiResponse<{
     data: GemstonItem[];
@@ -269,93 +285,6 @@ export const gemstoneService = {
       next: number | null;
     };
   }>> => {
-    const queryParams = new URLSearchParams();
-    
-    // Add basic params
-    if (params.page) queryParams.append('page', String(params.page));
-    if (params.limit) queryParams.append('limit', String(params.limit));
-    if (params.sellerId) queryParams.append('sellerId', params.sellerId);
-    if (params.sort) queryParams.append('sort', params.sort);
-    if (params.search) queryParams.append('search', params.search);
-    
-    // Add search fields
-    if (params.searchBy?.length) {
-      params.searchBy.forEach(field => queryParams.append('searchBy', field));
-    } else if (params.search) {
-      // Default search fields when search is provided but no specific searchBy
-      ['name', 'skuCode', 'gemType', 'origin'].forEach(field => 
-        queryParams.append('searchBy', field)
-      );
-    }
-    
-    // Add filter params
-    if (params.priceMin) queryParams.append('priceMin', String(params.priceMin));
-    if (params.priceMax) queryParams.append('priceMax', String(params.priceMax));
-    if (params.caratMin) queryParams.append('caratMin', String(params.caratMin));
-    if (params.caratMax) queryParams.append('caratMax', String(params.caratMax));
-    
-    // Add array filters
-    if (params.gemType?.length) {
-      params.gemType.forEach(type => queryParams.append('gemType', type));
-    }
-    if (params.shape?.length) {
-      params.shape.forEach(shape => queryParams.append('shape', shape));
-    }
-    if (params.color?.length) {
-      params.color.forEach(color => queryParams.append('color', color));
-    }
-    if (params.clarity?.length) {
-      params.clarity.forEach(clarity => queryParams.append('clarity', clarity));
-    }
-    if (params.cut?.length) {
-      params.cut.forEach(cut => queryParams.append('cut', cut));
-    }
-    if (params.origin?.length) {
-      params.origin.forEach(origin => queryParams.append('origin', origin));
-    }
-    if (params.treatment?.length) {
-      params.treatment.forEach(treatment => queryParams.append('treatment', treatment));
-    }
-    if (params.certification?.length) {
-      params.certification.forEach(cert => queryParams.append('certification', cert));
-    }
-    
-    // Add new array filters
-    if (params.enhancement?.length) {
-      params.enhancement.forEach(val => queryParams.append('enhancement', val));
-    }
-    if (params.transparency?.length) {
-      params.transparency.forEach(val => queryParams.append('transparency', val));
-    }
-    if (params.luster?.length) {
-      params.luster.forEach(val => queryParams.append('luster', val));
-    }
-    if (params.phenomena?.length) {
-      params.phenomena.forEach(val => queryParams.append('phenomena', val));
-    }
-    if (params.minerals?.length) {
-      params.minerals.forEach(val => queryParams.append('minerals', val));
-    }
-    if (params.birthstones?.length) {
-      params.birthstones.forEach(val => queryParams.append('birthstones', val));
-    }
-    if (params.location?.length) {
-      params.location.forEach(val => queryParams.append('location', val));
-    }
-
-    // Add new string filters
-    if (params.companyName) queryParams.append('companyName', params.companyName);
-    if (params.vendorLocation) queryParams.append('vendorLocation', params.vendorLocation);
-    if (params.reportNumber) queryParams.append('reportNumber', params.reportNumber);
-
-    // Add new range filters
-    if (params.lengthMin) queryParams.append('lengthMin', String(params.lengthMin));
-    if (params.lengthMax) queryParams.append('lengthMax', String(params.lengthMax));
-    if (params.widthMin) queryParams.append('widthMin', String(params.widthMin));
-    if (params.widthMax) queryParams.append('widthMax', String(params.widthMax));
-    if (params.heightMin) queryParams.append('heightMin', String(params.heightMin));
-    if (params.heightMax) queryParams.append('heightMax', String(params.heightMax));
-    
     return api.get<{
       data: GemstonItem[];
       meta: {
@@ -366,25 +295,27 @@ export const gemstoneService = {
         prev: number | null;
         next: number | null;
       };
-    }>(`/gem-stone?${queryParams.toString()}`);
+    }>(`/gem-stone`, sanitizeParams(params));
   },
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getGemstonesBySeller: async <T = any>({ sellerId, page = 1, limit = 10 }: { sellerId: string, page?: number, limit?: number }) => {
-    return api.get<T>(`/gem-stone?sellerId=${sellerId}&page=${page}&limit=${limit}`);
+    return api.get<T>(`/gem-stone`, sanitizeParams({ sellerId, page, limit }));
+  },
+
+  // Get single gemstones by seller
+  getSingleGemstonesBySeller: async <T = any>({ sellerId, page = 1, limit = 10 }: { sellerId: string, page?: number, limit?: number }) => {
+    return api.get<T>(`/gem-stone`, sanitizeParams({ sellerId, page, limit, quantity: 1 }));
+  },
+
+  // Get melee gemstones by seller
+  getMeleeGemstonesBySeller: async <T = any>({ sellerId, page = 1, limit = 10 }: { sellerId: string, page?: number, limit?: number }) => {
+    return api.get<T>(`/gem-stone`, sanitizeParams({ sellerId, page, limit, quantity: { gt: 1 } }));
   },
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   searchGemstones: async <T = any>(search: string) => {
-    const params = new URLSearchParams();
-    if (search) {
-      params.append('search', search);
-      params.append('searchBy', 'name');
-      params.append('searchBy', 'skuCode');
-      params.append('searchBy', 'gemType');
-      params.append('searchBy', 'origin');
-    }
-    return api.get<T>(`/gem-stone?${params.toString()}`);
+    return api.get<T>(`/gem-stone`, sanitizeParams({ search, searchBy: 'name,skuCode,gemType,origin' }));
   },
 
   addGemstone: async (formData: FormData, token: string) => {
