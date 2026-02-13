@@ -24,6 +24,10 @@ export interface GemstonItem {
   image6?: string | null;
   sellerId: string;
   caratWeight?: number;
+  quantity?: number;
+  length?: number;
+  width?: number;
+  height?: number;
   cut?: string;
   color?: string;
   clarity?: string;
@@ -238,6 +242,7 @@ export interface GemstoneQueryParams {
   widthMax?: number;
   heightMin?: number;
   heightMax?: number;
+  quantity?: number | { gt?: number; lt?: number; gte?: number; lte?: number };
 }
 
 export interface GemstoneApiResponse {

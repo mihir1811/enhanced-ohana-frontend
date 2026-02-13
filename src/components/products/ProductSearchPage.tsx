@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
-import { Search, Filter } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Search, Filter, Diamond, Gem } from 'lucide-react'
 import NavigationUser from '@/components/Navigation/NavigationUser'
 import Footer from '@/components/Footer'
 import { ProductConfig, FilterConfig } from '@/types/products'
@@ -37,6 +37,9 @@ export default function ProductSearchPage({
   heroSubtitle 
 }: ProductSearchPageProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const initialCategory = searchParams.get('category') || 'single'
+  
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
   const [selectedGemstones, setSelectedGemstones] = useState<string[]>([])
   
@@ -336,8 +339,37 @@ export default function ProductSearchPage({
           <GemstoneFilters 
             filters={gemstoneFilters}
             onFiltersChange={handleGemstoneFiltersChange}
-            onSearch={() => router.push('/gemstones/products')}
-            gemstoneType="single"
+            onSearch={() => {
+              const params = new URLSearchParams();
+              
+              // Add common gemstone filters
+              if (gemstoneFilters.gemstoneType.length > 0) params.set('gemType', gemstoneFilters.gemstoneType.join(','));
+              if (gemstoneFilters.shape.length > 0) params.set('shape', gemstoneFilters.shape.join(','));
+              if (gemstoneFilters.color.length > 0) params.set('color', gemstoneFilters.color.join(','));
+              if (gemstoneFilters.clarity.length > 0) params.set('clarity', gemstoneFilters.clarity.join(','));
+              if (gemstoneFilters.cut.length > 0) params.set('cut', gemstoneFilters.cut.join(','));
+              if (gemstoneFilters.certification.length > 0) params.set('certification', gemstoneFilters.certification.join(','));
+              if (gemstoneFilters.origin.length > 0) params.set('origin', gemstoneFilters.origin.join(','));
+              if (gemstoneFilters.treatment.length > 0) params.set('treatment', gemstoneFilters.treatment.join(','));
+              
+              // Ranges
+              if (gemstoneFilters.priceRange.min > 0) params.set('priceMin', gemstoneFilters.priceRange.min.toString());
+              if (gemstoneFilters.priceRange.max < 1000000) params.set('priceMax', gemstoneFilters.priceRange.max.toString());
+              if (gemstoneFilters.caratWeight.min > 0) params.set('caratMin', gemstoneFilters.caratWeight.min.toString());
+              if (gemstoneFilters.caratWeight.max < 50) params.set('caratMax', gemstoneFilters.caratWeight.max.toString());
+              
+              // Dimensions
+              if (gemstoneFilters.length.min > 0) params.set('lengthMin', gemstoneFilters.length.min.toString());
+              if (gemstoneFilters.length.max < 100) params.set('lengthMax', gemstoneFilters.length.max.toString());
+              if (gemstoneFilters.width.min > 0) params.set('widthMin', gemstoneFilters.width.min.toString());
+              if (gemstoneFilters.width.max < 100) params.set('widthMax', gemstoneFilters.width.max.toString());
+              if (gemstoneFilters.height.min > 0) params.set('heightMin', gemstoneFilters.height.min.toString());
+              if (gemstoneFilters.height.max < 100) params.set('heightMax', gemstoneFilters.height.max.toString());
+
+              const path = initialCategory === 'melee' ? '/gemstones/melee' : '/gemstones/products';
+              router.push(`${path}?${params.toString()}`);
+            }}
+            gemstoneType={initialCategory === 'melee' ? 'melee' : 'single'}
           />
         ) : (
           <div className="bg-white rounded-2xl shadow-2xl border p-8" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>

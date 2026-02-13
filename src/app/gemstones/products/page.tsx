@@ -42,7 +42,7 @@ export default function GemstoneProductsPage() {
 
   // Gemstone filters
   const [filters, setFilters] = useState<GemstoneFilterValues>({
-    gemstoneType: category !== 'all' ? [category] : [],
+    gemstoneType: [],
     shape: [],
     caratWeight: { min: 0.1, max: 50 },
     color: [],
@@ -59,6 +59,65 @@ export default function GemstoneProductsPage() {
     height: { min: 0, max: 100 },
     searchTerm: ''
   });
+
+  // Effect to sync filters from URL search params
+  useEffect(() => {
+    if (searchParams) {
+      const newFilters = { ...filters };
+      
+      const gemType = searchParams.get('gemType');
+      if (gemType) newFilters.gemstoneType = gemType.split(',');
+      
+      const shape = searchParams.get('shape');
+      if (shape) newFilters.shape = shape.split(',');
+      
+      const color = searchParams.get('color');
+      if (color) newFilters.color = color.split(',');
+      
+      const clarity = searchParams.get('clarity');
+      if (clarity) newFilters.clarity = clarity.split(',');
+      
+      const cut = searchParams.get('cut');
+      if (cut) newFilters.cut = cut.split(',');
+      
+      const certification = searchParams.get('certification');
+      if (certification) newFilters.certification = certification.split(',');
+      
+      const origin = searchParams.get('origin');
+      if (origin) newFilters.origin = origin.split(',');
+      
+      const treatment = searchParams.get('treatment');
+      if (treatment) newFilters.treatment = treatment.split(',');
+
+      // Ranges
+      const priceMin = searchParams.get('priceMin');
+      const priceMax = searchParams.get('priceMax');
+      if (priceMin) newFilters.priceRange.min = parseFloat(priceMin);
+      if (priceMax) newFilters.priceRange.max = parseFloat(priceMax);
+
+      const caratMin = searchParams.get('caratMin');
+      const caratMax = searchParams.get('caratMax');
+      if (caratMin) newFilters.caratWeight.min = parseFloat(caratMin);
+      if (caratMax) newFilters.caratWeight.max = parseFloat(caratMax);
+
+      const lengthMin = searchParams.get('lengthMin');
+      const lengthMax = searchParams.get('lengthMax');
+      if (lengthMin) newFilters.length.min = parseFloat(lengthMin);
+      if (lengthMax) newFilters.length.max = parseFloat(lengthMax);
+
+      const widthMin = searchParams.get('widthMin');
+      const widthMax = searchParams.get('widthMax');
+      if (widthMin) newFilters.width.min = parseFloat(widthMin);
+      if (widthMax) newFilters.width.max = parseFloat(widthMax);
+
+      const heightMin = searchParams.get('heightMin');
+      const heightMax = searchParams.get('heightMax');
+      if (heightMin) newFilters.height.min = parseFloat(heightMin);
+      if (heightMax) newFilters.height.max = parseFloat(heightMax);
+
+      setFilters(newFilters);
+    }
+  }, [searchParams]);
 
   // Clear filters function
   const clearFilters = () => {
@@ -92,11 +151,33 @@ export default function GemstoneProductsPage() {
       setError(null);
 
       const queryParams = {
+        quantity: 1, // Single gemstones
         category: category !== 'all' ? category : undefined,
         search: searchQuery || undefined,
         page: pagination.page,
         limit: pagination.limit,
-        sort: sortBy
+        sort: sortBy,
+        // Map filters to API parameters
+        gemType: filters.gemstoneType.length > 0 ? filters.gemstoneType : undefined,
+        shape: filters.shape.length > 0 ? filters.shape : undefined,
+        color: filters.color.length > 0 ? filters.color : undefined,
+        clarity: filters.clarity.length > 0 ? filters.clarity : undefined,
+        cut: filters.cut.length > 0 ? filters.cut : undefined,
+        certification: filters.certification.length > 0 ? filters.certification : undefined,
+        origin: filters.origin.length > 0 ? filters.origin : undefined,
+        treatment: filters.treatment.length > 0 ? filters.treatment : undefined,
+        minerals: filters.minerals.length > 0 ? filters.minerals : undefined,
+        birthstones: filters.birthstones.length > 0 ? filters.birthstones : undefined,
+        priceMin: filters.priceRange.min > 0 ? filters.priceRange.min : undefined,
+        priceMax: filters.priceRange.max < 100000 ? filters.priceRange.max : undefined,
+        caratMin: filters.caratWeight.min > 0.1 ? filters.caratWeight.min : undefined,
+        caratMax: filters.caratWeight.max < 50 ? filters.caratWeight.max : undefined,
+        lengthMin: filters.length.min > 0 ? filters.length.min : undefined,
+        lengthMax: filters.length.max < 100 ? filters.length.max : undefined,
+        widthMin: filters.width.min > 0 ? filters.width.min : undefined,
+        widthMax: filters.width.max < 100 ? filters.width.max : undefined,
+        heightMin: filters.height.min > 0 ? filters.height.min : undefined,
+        heightMax: filters.height.max < 100 ? filters.height.max : undefined,
       };
 
       const response = await gemstoneService.getAllGemstones(queryParams);
@@ -116,7 +197,7 @@ export default function GemstoneProductsPage() {
     } finally {
       setLoading(false);
     }
-  }, [category, searchQuery, pagination.page, pagination.limit, sortBy]);
+  }, [category, searchQuery, pagination.page, pagination.limit, sortBy, filters]);
 
   // Load data on mount and changes
   useEffect(() => {
