@@ -853,13 +853,32 @@ export default function AuctionsPage() {
             {loading && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <div className="aspect-square bg-gray-100 dark:bg-gray-700 rounded-t-lg animate-pulse"></div>
+                  <div 
+                    key={i} 
+                    className="rounded-lg border"
+                    style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+                  >
+                    <div 
+                      className="aspect-square rounded-t-lg animate-pulse"
+                      style={{ backgroundColor: 'var(--muted)' }}
+                    ></div>
                     <div className="p-4 space-y-3">
-                      <div className="h-4 bg-gray-100 dark:bg-gray-700 rounded animate-pulse"></div>
-                      <div className="h-6 bg-gray-100 dark:bg-gray-700 rounded animate-pulse"></div>
-                      <div className="h-4 bg-gray-100 dark:bg-gray-700 rounded animate-pulse w-2/3"></div>
-                      <div className="h-10 bg-gray-100 dark:bg-gray-700 rounded animate-pulse"></div>
+                      <div 
+                        className="h-4 rounded animate-pulse"
+                        style={{ backgroundColor: 'var(--muted)' }}
+                      ></div>
+                      <div 
+                        className="h-6 rounded animate-pulse"
+                        style={{ backgroundColor: 'var(--muted)' }}
+                      ></div>
+                      <div 
+                        className="h-4 rounded animate-pulse w-2/3"
+                        style={{ backgroundColor: 'var(--muted)' }}
+                      ></div>
+                      <div 
+                        className="h-10 rounded animate-pulse"
+                        style={{ backgroundColor: 'var(--muted)' }}
+                      ></div>
                     </div>
                   </div>
                 ))}
@@ -868,14 +887,17 @@ export default function AuctionsPage() {
 
             {/* Error */}
             {error && !loading && (
-              <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div 
+                className="text-center py-20 rounded-lg border"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+              >
                 <div className="text-6xl mb-4">⚠️</div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
                   {error}
                 </h3>
                 <button
                   onClick={fetchAuctions}
-                  className="mt-4 px-6 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors"
+                  className="mt-4 px-6 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:opacity-90 transition-colors border border-gray-200 dark:border-gray-800"
                 >
                   Try Again
                 </button>
@@ -907,12 +929,15 @@ export default function AuctionsPage() {
 
             {/* Empty State */}
             {!loading && !error && auctions.length === 0 && (
-              <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div 
+                className="text-center py-20 rounded-lg border"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+              >
                 <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
                   No auctions found
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                <p className="mb-6" style={{ color: 'var(--muted-foreground)' }}>
                   Check back later for new auctions
                 </p>
                 <button
@@ -921,7 +946,7 @@ export default function AuctionsPage() {
                     setSearchQuery('');
                     fetchAuctions();
                   }}
-                  className="px-6 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors"
+                  className="px-6 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:opacity-90 transition-colors border border-gray-200 dark:border-gray-800"
                 >
                   Clear Filters
                 </button>
