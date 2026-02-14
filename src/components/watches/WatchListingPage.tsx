@@ -556,7 +556,7 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
             className={`w-4 h-4 text-gray-400 group-hover:text-primary transition-all duration-300 ${expandedSections.includes('brand') ? 'rotate-180' : ''}`}
           />
         </button>
-        {expandedSections.includes('brand') && (
+        {/* {expandedSections.includes('brand') && (
           <div className="px-4 pb-4 pt-2" style={{ backgroundColor: 'var(--muted)' }}>
             <div className="grid grid-cols-3 gap-2 mt-2">
               {brandOptions.map(opt => {
@@ -593,7 +593,7 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
               })}
             </div>
           </div>
-        )}
+        )} */}
       </div>
 
       <FilterSection 

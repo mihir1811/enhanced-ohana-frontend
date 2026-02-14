@@ -11,7 +11,7 @@ interface CompareButtonProps {
     price: string | number;
     images: string[];
   }
-  productType: 'diamond' | 'gemstone' | 'jewelry'
+  productType: 'diamond' | 'gemstone' | 'jewelry' | 'watch'
   className?: string
   size?: 'sm' | 'md' | 'lg'
   variant?: 'icon' | 'full'

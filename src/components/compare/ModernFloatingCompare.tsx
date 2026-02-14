@@ -43,7 +43,14 @@ const ModernFloatingCompare = () => {
   const handleViewComparison = () => {
     const firstProductType = products[0]?.type
     if (firstProductType) {
-      router.push(`/compare/${firstProductType}s`)
+      const pluralMap: Record<string, string> = {
+        diamond: 'diamonds',
+        gemstone: 'gemstones',
+        jewelry: 'jewelry',
+        watch: 'watches'
+      }
+      const path = pluralMap[firstProductType] || `${firstProductType}s`
+      router.push(`/compare/${path}`)
     }
   }
 

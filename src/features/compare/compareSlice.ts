@@ -20,11 +20,11 @@ interface Jewelry {
 
 export interface CompareProduct {
   id: string
-  type: 'diamond' | 'gemstone' | 'jewelry'
+  type: 'diamond' | 'gemstone' | 'jewelry' | 'watch'
   name: string
   price: number | string
   image: string
-  data: Diamond | Gemstone | Jewelry // Properly typed union instead of any
+  data: Diamond | Gemstone | Jewelry | Record<string, unknown>
   addedAt: number
 }
 
