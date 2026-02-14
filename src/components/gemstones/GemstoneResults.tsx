@@ -5,6 +5,7 @@ import Pagination from '../ui/Pagination';
 import { Heart, ShoppingCart, Share2, Download, Star, Award, Shield, Eye, Grid, List, ArrowUpDown, ChevronDown, Filter as FilterIcon} from 'lucide-react'
 import WishlistButton from '@/components/shared/WishlistButton'
 import { GemstonItem } from '@/services/gemstoneService';
+import CompareButton from '@/components/compare/CompareButton'
 
 export interface GemstoneResultsProps {
   gemstones: GemstonItem[];
@@ -249,6 +250,18 @@ const GemstoneCard: React.FC<GemstoneCardProps> = ({ gemstone, onSelect, onAddTo
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group">
       <div className="relative aspect-square bg-gray-100">
+        <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
+          <CompareButton
+            product={{
+              id: gemstone.id,
+              name: gemstone.name,
+              price: gemstone.totalPrice ?? 0,
+              images: [gemstone.image1, gemstone.image2, gemstone.image3, gemstone.image4, gemstone.image5, gemstone.image6].filter(Boolean) as string[],
+            }}
+            productType="gemstone"
+            size="md"
+          />
+        </div>
         {gemstone.image1 ? (
           <img 
             src={gemstone.image1} 
@@ -346,6 +359,18 @@ const GemstoneListItem: React.FC<GemstoneCardProps> = ({ gemstone, onSelect, onA
               <Star className="w-8 h-8" />
             </div>
           )}
+          <div className="absolute top-2 left-2 z-10">
+            <CompareButton
+              product={{
+                id: gemstone.id,
+                name: gemstone.name,
+                price: gemstone.totalPrice ?? 0,
+                images: [gemstone.image1, gemstone.image2, gemstone.image3, gemstone.image4, gemstone.image5, gemstone.image6].filter(Boolean) as string[],
+              }}
+              productType="gemstone"
+              size="sm"
+            />
+          </div>
         </div>
         
         <div className="flex-1">
