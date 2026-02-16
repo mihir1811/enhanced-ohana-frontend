@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useLayoutEffect, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Search, Filter, Grid, List, Loader2, Eye, ShoppingCart, MapPin, Star, X, ChevronDown, Package, Layers } from 'lucide-react';
 import NavigationUser from '@/components/Navigation/NavigationUser';
 import Footer from '@/components/Footer';
@@ -17,8 +18,28 @@ const SORT_OPTIONS = [
   { value: '-totalPrice', label: 'Price: High to Low' },
   { value: 'name', label: 'Name: A to Z' },
   { value: '-name', label: 'Name: Z to A' },
-  { value: 'caratWeight', label: 'Carat: Low to High' },
+  { value: 'caratWeight', label: 'Carat: Low to High' },  
   { value: '-caratWeight', label: 'Carat: High to Low' }
+];
+
+const GEMSTONE_TYPES = [
+  { title: 'Alexandrite', img: '/images/gemstones/Alexandrite.png', alt: 'Alexandrite gemstone' },
+  { title: 'Amber', img: '/images/gemstones/Amber.png', alt: 'Amber gemstone' },
+  { title: 'Amethyst', img: '/images/gemstones/Amethyst.png', alt: 'Amethyst gemstone' },
+  { title: 'Aquamarine', img: '/images/gemstones/Aquamarine.png', alt: 'Aquamarine gemstone' },
+  { title: 'Citrine', img: '/images/gemstones/Citrine.png', alt: 'Citrine gemstone' },
+  { title: 'Emerald', img: '/images/gemstones/Emerald.png', alt: 'Emerald gemstone' },
+  { title: 'Garnet', img: '/images/gemstones/Garnet.png', alt: 'Garnet gemstone' },
+  { title: 'Jade', img: '/images/gemstones/Jade.png', alt: 'Jade gemstone' },
+  { title: 'Jasper', img: '/images/gemstones/Jasper.png', alt: 'Jasper gemstone' },
+  { title: 'Lapis Lazuli', img: '/images/gemstones/Lapis Lazuli.png', alt: 'Lapis Lazuli gemstone' },
+  { title: 'Moonstone', img: '/images/gemstones/Moonstone.png', alt: 'Moonstone gemstone' },
+  { title: 'Onyx', img: '/images/gemstones/Onyx.png', alt: 'Onyx gemstone' },
+  { title: 'Pearl', img: '/images/gemstones/Pearl.png', alt: 'Pearl gemstone' },
+  { title: 'Rose Quartz', img: '/images/gemstones/Rose Quartz.png', alt: 'Rose Quartz gemstone' },
+  { title: 'Sunstone', img: '/images/gemstones/Sunstone.png', alt: 'Sunstone gemstone' },
+  { title: 'Tiger Eye', img: '/images/gemstones/Tiger Eye.png', alt: 'Tiger Eye gemstone' },
+  { title: 'Zircon', img: '/images/gemstones/Zircon.png', alt: 'Zircon gemstone' }
 ];
 
 export default function MeleeGemstonesPage() {
@@ -316,64 +337,86 @@ export default function MeleeGemstonesPage() {
         </div>
 
         {/* Search and Controls */}
-        <div className=" rounded-lg p-3 mb-8 shadow-sm">
-          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+        <div className="rounded-lg p-4 mb-8 shadow-sm border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             {/* Search */}
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
               <input
                 type="text"
                 placeholder="Search melee gemstones..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2"
-                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)', color: 'var(--foreground)', borderWidth: 1, borderStyle: 'solid' }}
               />
             </div>
 
             {/* Controls */}
-            <div className="flex items-center gap-4">
-              {/* Sort */}
-              <select
-                value={sortBy}
-                onChange={(e) => handleSortChange(e.target.value)}
-                className="px-4 py-2 rounded-lg focus:outline-none focus:ring-2"
-                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
-              >
-                {SORT_OPTIONS.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+            <div className="flex items-center gap-3 justify-between lg:justify-end w-full lg:w-auto">
+              {/* Desktop controls */}
+              <div className="hidden sm:flex items-center gap-3">
+                <select
+                  value={sortBy}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                  className="px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2"
+                  style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)', color: 'var(--foreground)', borderWidth: 1, borderStyle: 'solid' }}
+                >
+                  {SORT_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
 
-              {/* Filter Toggle */}
+                <button
+                  onClick={() => setShowFilters(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm"
+                  style={{ borderColor: 'var(--border)', color: 'var(--foreground)', borderStyle: 'solid', borderWidth: 1, backgroundColor: 'var(--background)' }}
+                >
+                  <Filter className="w-4 h-4" />
+                  Filters
+                  {totalAppliedFilters > 0 && (
+                    <span className="ml-1 text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
+                      {totalAppliedFilters}
+                    </span>
+                  )}
+                </button>
+
+                <div className="flex rounded-lg overflow-hidden" style={{ borderColor: 'var(--border)', borderStyle: 'solid', borderWidth: 1 }}>
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className="p-2"
+                    style={viewMode === 'grid' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { backgroundColor: 'var(--background)', color: 'var(--muted-foreground)' }}
+                    aria-label="Grid view"
+                  >
+                    <Grid className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className="p-2"
+                    style={viewMode === 'list' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { backgroundColor: 'var(--background)', color: 'var(--muted-foreground)' }}
+                    aria-label="List view"
+                  >
+                    <List className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Mobile filters button */}
               <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg"
-                style={{ borderColor: 'var(--border)', color: 'var(--foreground)', borderStyle: 'solid', borderWidth: 1 }}
+                onClick={() => setShowFilters(true)}
+                className="sm:hidden flex items-center gap-2 px-3 py-2 rounded-lg border text-sm"
+                style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
               >
                 <Filter className="w-4 h-4" />
                 Filters
+                {totalAppliedFilters > 0 && (
+                  <span className="ml-1 text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
+                    {totalAppliedFilters}
+                  </span>
+                )}
               </button>
-
-              {/* View Mode */}
-              <div className="flex rounded-lg overflow-hidden" style={{ borderColor: 'var(--border)', borderStyle: 'solid', borderWidth: 1 }}>
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2 ${viewMode === 'grid' ? '' : ''}`}
-                  style={viewMode === 'grid' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { backgroundColor: 'var(--card)', color: 'var(--muted-foreground)' }}
-                >
-                  <Grid className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-2 ${viewMode === 'list' ? '' : ''}`}
-                  style={viewMode === 'list' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { backgroundColor: 'var(--card)', color: 'var(--muted-foreground)' }}
-                >
-                  <List className="w-4 h-4" />
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -811,11 +854,43 @@ export default function MeleeGemstonesPage() {
           )}
 
           {/* Product Grid/List */}
-          <div className="flex-1">
+          <div className="flex-1 w-full min-w-0 z-0 relative">
             <div className="flex items-center justify-between mb-6">
               <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                 Showing <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{(pagination.page - 1) * pagination.limit + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)}</span> of <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{pagination.total}</span> melee gemstones
               </p>
+            </div>
+
+            {/* Gemstone Type Filter Bar */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-4 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-thumb-muted-foreground/30">
+              {GEMSTONE_TYPES.map(type => {
+                const isSelected = filters.gemstoneType.includes(type.title);
+                return (
+                  <button
+                    key={type.title}
+                    onClick={() => {
+                      const next = isSelected
+                        ? filters.gemstoneType.filter(t => t !== type.title)
+                        : [...filters.gemstoneType, type.title];
+                      handleFiltersChange({ ...filters, gemstoneType: next });
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-colors"
+                    style={isSelected ? { background: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { background: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
+                    type="button"
+                  >
+                    <span className="relative w-6 h-6 rounded-full overflow-hidden bg-white">
+                      <Image
+                        src={type.img}
+                        alt={type.alt}
+                        fill
+                        sizes="24px"
+                        style={{ objectFit: 'contain' }}
+                      />
+                    </span>
+                    {type.title}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Loading State */}
@@ -854,11 +929,13 @@ export default function MeleeGemstonesPage() {
             {/* Product Grid/List */}
             {!loading && !error && gemstones.length > 0 && (
               <>
-                <div className={
-                  viewMode === 'grid' 
-                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6' 
-                    : 'space-y-4'
-                }>
+                <div
+                  className={
+                    viewMode === 'grid'
+                      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6'
+                      : 'space-y-4'
+                  }
+                >
                   {gemstones.map(item => (
                     <GemstoneCard key={item.id} item={item} viewMode={viewMode} />
                   ))}
@@ -930,98 +1007,113 @@ function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
   };
 
   const pricePerCarat = item.totalPrice && item.caratWeight ? Math.round(item.totalPrice / item.caratWeight) : null;
-  
+
   if (viewMode === 'list') {
     return (
-      <div className="group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-        <div className="flex flex-col md:flex-row gap-6 p-5">
-          {/* Image Container */}
-          <div className="relative w-full md:w-64 aspect-[4/3] md:aspect-square rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
+      <div className="rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+        <div className="flex gap-6">
+          <div className="w-32 h-32 rounded-lg flex-shrink-0 overflow-hidden relative" style={{ backgroundColor: 'var(--card)' }}>
             {item.image1 ? (
               <Link href={`/gemstones/melee/${item.id}`}>
-                <img 
-                  src={item.image1} 
+                <img
+                  src={item.image1}
                   alt={item.name}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  className="w-full h-full object-cover rounded-lg"
                 />
               </Link>
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-slate-300">
-                <Package className="w-12 h-12" />
+              <div className="w-full h-full flex items-center justify-center text-slate-400">
+                <Package className="w-8 h-8" />
               </div>
             )}
-            
-            {/* Parcel Badge */}
-            {(item.quantity && item.quantity > 1) && (
-              <div className="absolute top-3 left-3 px-2.5 py-1 bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg shadow-lg flex items-center gap-1.5">
+            {item.quantity && item.quantity > 1 && (
+              <div className="absolute top-2 left-2 px-2 py-1 bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-md flex items-center gap-1.5">
                 <Layers className="w-3 h-3" />
                 Parcel
               </div>
             )}
           </div>
-          
-          {/* Content */}
-          <div className="flex-1 flex flex-col justify-between py-1">
-            <div>
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <Link href={`/gemstones/melee/${item.id}`} className="text-xl font-bold hover:text-amber-600 transition-colors" style={{ color: 'var(--foreground)' }}>
-                    {item.name}
-                  </Link>
-                  <p className="text-xs mt-1 font-medium tracking-wide uppercase" style={{ color: 'var(--muted-foreground)' }}>{item.skuCode}</p>
-                </div>
-                <WishlistButton productId={Number(item.id)} productType="gemstone" />
+
+          <div className="flex-1">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <Link href={`/gemstones/melee/${item.id}`} className="text-lg font-medium" style={{ color: 'var(--foreground)' }}>
+                  {item.name}
+                </Link>
+                <p className="text-xs mt-1 font-medium tracking-wide uppercase" style={{ color: 'var(--muted-foreground)' }}>
+                  {item.skuCode}
+                </p>
               </div>
-              
-              {/* Specs Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 my-4 p-4 rounded-xl" style={{ backgroundColor: 'var(--muted)' }}>
-                <div className="space-y-1">
-                  <p className="text-[10px] uppercase font-bold tracking-wider" style={{ color: 'var(--muted-foreground)' }}>Total Weight</p>
-                  <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>{item.caratWeight} ct</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] uppercase font-bold tracking-wider" style={{ color: 'var(--muted-foreground)' }}>Pieces</p>
-                  <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>{item.quantity || '--'} pcs</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] uppercase font-bold tracking-wider" style={{ color: 'var(--muted-foreground)' }}>Shape</p>
-                  <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>{item.shape || '--'}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] uppercase font-bold tracking-wider" style={{ color: 'var(--muted-foreground)' }}>Color/Clarity</p>
-                  <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>{item.color || '--'}/{item.clarity || '--'}</p>
-                </div>
+              <WishlistButton productId={Number(item.id)} productType="gemstone" />
+            </div>
+
+            <div className="flex flex-wrap gap-2 mb-3">
+              {item.gemType && (
+                <span className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
+                  {item.gemType}
+                </span>
+              )}
+              {item.shape && (
+                <span className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
+                  {item.shape}
+                </span>
+              )}
+              {item.caratWeight && (
+                <span className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
+                  {item.caratWeight}ct
+                </span>
+              )}
+              {item.quantity && (
+                <span className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
+                  {item.quantity} pcs
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3 text-xs" style={{ color: 'var(--muted-foreground)' }}>
+              <div>
+                <p className="uppercase tracking-wide text-[10px]">Color</p>
+                <p className="font-medium" style={{ color: 'var(--foreground)' }}>{item.color || '--'}</p>
+              </div>
+              <div>
+                <p className="uppercase tracking-wide text-[10px]">Clarity</p>
+                <p className="font-medium" style={{ color: 'var(--foreground)' }}>{item.clarity || '--'}</p>
+              </div>
+              <div>
+                <p className="uppercase tracking-wide text-[10px]">Origin</p>
+                <p className="font-medium" style={{ color: 'var(--foreground)' }}>{item.origin || '--'}</p>
+              </div>
+              <div>
+                <p className="uppercase tracking-wide text-[10px]">Treatment</p>
+                <p className="font-medium" style={{ color: 'var(--foreground)' }}>{item.treatment || '--'}</p>
               </div>
             </div>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
-              <div className="flex flex-col">
+
+            <div className="flex items-center justify-between mt-3">
+              <div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-amber-600 dark:text-amber-500">
+                  <span className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
                     ${item.totalPrice?.toLocaleString() || 'N/A'}
                   </span>
-                  <span className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>Total Lot Price</span>
+                  <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Total lot price</span>
                 </div>
                 {pricePerCarat && (
-                  <p className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-                    ${pricePerCarat.toLocaleString()} / carat
+                  <p className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>
+                    ${pricePerCarat.toLocaleString()} / ct
                   </p>
                 )}
               </div>
-              
-              <div className="flex items-center gap-3 w-full sm:w-auto">
+
+              <div className="flex items-center gap-2">
                 <button
                   onClick={goToDetails}
-                  className="flex-1 sm:flex-none p-3 rounded-xl border hover:bg-slate-50 transition-all"
+                  className="p-2 rounded-lg border"
                   style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
                 >
-                  <Eye className="w-5 h-5" />
+                  <Eye className="w-4 h-4" />
                 </button>
-                <button
-                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold shadow-lg shadow-amber-600/20 transition-all active:scale-95"
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                  Buy Parcel
+                <button className="p-2 rounded-lg" style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}>
+                  <ShoppingCart className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -1032,98 +1124,106 @@ function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
   }
 
   return (
-    <div 
-      className="group flex flex-col h-full rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 border border-transparent hover:border-amber-200"
-      style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
-    >
-      {/* Image Container */}
-      <div className="relative aspect-square overflow-hidden bg-slate-50 flex-shrink-0">
+    <div className="rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+      <div className="relative aspect-square" style={{ backgroundColor: 'var(--card)' }}>
         {item.image1 ? (
-          <img 
-            src={item.image1} 
-            alt={item.name}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-          />
+          <Link href={`/gemstones/melee/${item.id}`}>
+            <img
+              src={item.image1}
+              alt={item.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          </Link>
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-300">
-            <Package className="w-16 h-16" />
-          </div>
-        )}
-        
-        {/* Parcel Badge */}
-        {(item.quantity && item.quantity > 1) && (
-          <div className="absolute top-4 left-4 px-3 py-1.5 bg-amber-500 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg shadow-xl flex items-center gap-2 z-10">
-            <Layers className="w-3.5 h-3.5" />
-            Parcel Lot
+          <div className="w-full h-full flex items-center justify-center text-slate-400">
+            <Package className="w-10 h-10" />
           </div>
         )}
 
-        {/* Quick Actions Overlay */}
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4 z-20">
-          <button 
-            onClick={goToDetails}
-            className="p-3.5 bg-white rounded-2xl text-slate-900 hover:bg-amber-500 hover:text-white transition-all transform translate-y-8 group-hover:translate-y-0 duration-500 shadow-xl"
-          >
-            <Eye className="w-6 h-6" />
-          </button>
-          <button className="p-3.5 bg-white rounded-2xl text-slate-900 hover:bg-amber-500 hover:text-white transition-all transform translate-y-8 group-hover:translate-y-0 duration-500 delay-100 shadow-xl">
-            <ShoppingCart className="w-6 h-6" />
-          </button>
-        </div>
-
-        {/* Wishlist Button */}
-        <div className="absolute top-4 right-4 z-30">
+        <div className="absolute top-3 right-3">
           <WishlistButton productId={Number(item.id)} productType="gemstone" />
         </div>
+
+        {item.quantity && item.quantity > 1 && (
+          <div className="absolute top-3 left-3 px-2 py-1 bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-md flex items-center gap-1.5">
+            <Layers className="w-3 h-3" />
+            Parcel
+          </div>
+        )}
       </div>
 
-      {/* Content */}
-      <div className="p-5 flex flex-col flex-1">
-        <div className="mb-4">
-          <div className="flex items-center justify-between gap-2 mb-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-500">
-              {item.gemType || 'Gemstone'}
-            </span>
-            <span className="text-[10px] font-medium tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
-              SKU: {item.skuCode?.slice(-6) || 'N/A'}
-            </span>
-          </div>
-          <h3 className="font-bold text-base line-clamp-1 group-hover:text-amber-600 transition-colors" style={{ color: 'var(--foreground)' }}>
+      <div className="p-4 flex flex-col flex-1" style={{ color: 'var(--foreground)' }}>
+        <div className="mb-2">
+          <Link href={`/gemstones/melee/${item.id}`} className="font-medium mb-1 line-clamp-1" style={{ color: 'var(--foreground)' }}>
             {item.name}
-          </h3>
+          </Link>
+          <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+            {item.skuCode}
+          </p>
         </div>
 
-        {/* Specs Pills */}
-        <div className="flex flex-wrap gap-1.5 mb-5">
-          <div className="px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1.5" style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}>
-            <Layers className="w-3 h-3 text-amber-500" />
-            {item.caratWeight} ct
-          </div>
-          <div className="px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1.5" style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}>
-            <Package className="w-3 h-3 text-amber-500" />
-            {item.quantity || '--'} pcs
-          </div>
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {item.gemType && (
+            <span className="px-2 py-1 text-[11px] rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
+              {item.gemType}
+            </span>
+          )}
           {item.shape && (
-            <div className="px-2.5 py-1 rounded-lg text-[10px] font-bold" style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}>
+            <span className="px-2 py-1 text-[11px] rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
               {item.shape}
-            </div>
+            </span>
+          )}
+          {item.caratWeight && (
+            <span className="px-2 py-1 text-[11px] rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
+              {item.caratWeight}ct
+            </span>
+          )}
+          {item.quantity && (
+            <span className="px-2 py-1 text-[11px] rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
+              {item.quantity} pcs
+            </span>
           )}
         </div>
 
-        {/* Price Section */}
-        <div className="mt-auto pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-baseline justify-between">
-              <span className="text-xl font-black text-amber-600 dark:text-amber-500">
-                ${item.totalPrice?.toLocaleString() || 'N/A'}
+        <div className="flex items-center justify-between mb-3 text-sm" style={{ color: 'var(--muted-foreground)' }}>
+          <div className="flex flex-col">
+            <span>
+              Color: <span style={{ color: 'var(--foreground)' }}>{item.color || '--'}</span>
+            </span>
+            <span>
+              Clarity: <span style={{ color: 'var(--foreground)' }}>{item.clarity || '--'}</span>
+            </span>
+          </div>
+          <div className="text-right text-xs">
+            {item.origin && <div>{item.origin}</div>}
+            {item.treatment && <div>{item.treatment}</div>}
+          </div>
+        </div>
+
+        <div className="mt-auto">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>
+              ${item.totalPrice?.toLocaleString() || 'N/A'}
+            </span>
+            {pricePerCarat && (
+              <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                ${pricePerCarat.toLocaleString()}/ct
               </span>
-              {pricePerCarat && (
-                <span className="text-[10px] font-bold" style={{ color: 'var(--muted-foreground)' }}>
-                  ${pricePerCarat.toLocaleString()}/ct
-                </span>
-              )}
-            </div>
-            <p className="text-[10px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Total Lot Price</p>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button className="flex-1 px-3 py-2 text-sm rounded flex items-center justify-center gap-2" style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}>
+              <ShoppingCart className="w-4 h-4" />
+              Add to Cart
+            </button>
+            <button
+              onClick={goToDetails}
+              className="p-2 rounded border"
+              style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+            >
+              <Eye className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>

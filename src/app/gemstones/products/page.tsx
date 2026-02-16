@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useLayoutEffect, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Search, Filter, Grid, List, Loader2, Eye, ShoppingCart, MapPin, Star, X, ChevronDown } from 'lucide-react';
 import NavigationUser from '@/components/Navigation/NavigationUser';
 import Footer from '@/components/Footer';
@@ -19,6 +20,26 @@ const SORT_OPTIONS = [
   { value: '-name', label: 'Name: Z to A' },
   { value: 'caratWeight', label: 'Carat: Low to High' },
   { value: '-caratWeight', label: 'Carat: High to Low' }
+];
+
+const GEMSTONE_TYPES = [
+  { title: 'Alexandrite', img: '/images/gemstones/Alexandrite.png', alt: 'Alexandrite gemstone' },
+  { title: 'Amber', img: '/images/gemstones/Amber.png', alt: 'Amber gemstone' },
+  { title: 'Amethyst', img: '/images/gemstones/Amethyst.png', alt: 'Amethyst gemstone' },
+  { title: 'Aquamarine', img: '/images/gemstones/Aquamarine.png', alt: 'Aquamarine gemstone' },
+  { title: 'Citrine', img: '/images/gemstones/Citrine.png', alt: 'Citrine gemstone' },
+  { title: 'Emerald', img: '/images/gemstones/Emerald.png', alt: 'Emerald gemstone' },
+  { title: 'Garnet', img: '/images/gemstones/Garnet.png', alt: 'Garnet gemstone' },
+  { title: 'Jade', img: '/images/gemstones/Jade.png', alt: 'Jade gemstone' },
+  { title: 'Jasper', img: '/images/gemstones/Jasper.png', alt: 'Jasper gemstone' },
+  { title: 'Lapis Lazuli', img: '/images/gemstones/Lapis Lazuli.png', alt: 'Lapis Lazuli gemstone' },
+  { title: 'Moonstone', img: '/images/gemstones/Moonstone.png', alt: 'Moonstone gemstone' },
+  { title: 'Onyx', img: '/images/gemstones/Onyx.png', alt: 'Onyx gemstone' },
+  { title: 'Pearl', img: '/images/gemstones/Pearl.png', alt: 'Pearl gemstone' },
+  { title: 'Rose Quartz', img: '/images/gemstones/Rose Quartz.png', alt: 'Rose Quartz gemstone' },
+  { title: 'Sunstone', img: '/images/gemstones/Sunstone.png', alt: 'Sunstone gemstone' },
+  { title: 'Tiger Eye', img: '/images/gemstones/Tiger Eye.png', alt: 'Tiger Eye gemstone' },
+  { title: 'Zircon', img: '/images/gemstones/Zircon.png', alt: 'Zircon gemstone' }
 ];
 
 export default function GemstoneProductsPage() {
@@ -314,8 +335,8 @@ export default function GemstoneProductsPage() {
           </p>
         </div>
 
-        {/* Search and Controls */}
-        <div className=" rounded-lg p-3 mb-8 shadow-sm">
+        {/* Search */}
+        <div className="rounded-lg p-4 mb-8 shadow-sm border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
           <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
             {/* Search */}
             <div className="relative flex-1 max-w-md">
@@ -328,51 +349,6 @@ export default function GemstoneProductsPage() {
                 className="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2"
                 style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
               />
-            </div>
-
-            {/* Controls */}
-            <div className="flex items-center gap-4">
-              {/* Sort */}
-              <select
-                value={sortBy}
-                onChange={(e) => handleSortChange(e.target.value)}
-                className="px-4 py-2 rounded-lg focus:outline-none focus:ring-2"
-                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
-              >
-                {SORT_OPTIONS.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-
-              {/* Filter Toggle */}
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg"
-                style={{ borderColor: 'var(--border)', color: 'var(--foreground)', borderStyle: 'solid', borderWidth: 1 }}
-              >
-                <Filter className="w-4 h-4" />
-                Filters
-              </button>
-
-              {/* View Mode */}
-              <div className="flex rounded-lg overflow-hidden" style={{ borderColor: 'var(--border)', borderStyle: 'solid', borderWidth: 1 }}>
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2 ${viewMode === 'grid' ? '' : ''}`}
-                  style={viewMode === 'grid' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { backgroundColor: 'var(--card)', color: 'var(--muted-foreground)' }}
-                >
-                  <Grid className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-2 ${viewMode === 'list' ? '' : ''}`}
-                  style={viewMode === 'list' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { backgroundColor: 'var(--card)', color: 'var(--muted-foreground)' }}
-                >
-                  <List className="w-4 h-4" />
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -1273,15 +1249,142 @@ export default function GemstoneProductsPage() {
 
           {/* Results */}
           <div className="flex-1 w-full min-w-0 z-0 relative">
-            {/* Results Header */}
-            <div className="flex items-center justify-between mb-6">
-              <p style={{ color: 'var(--muted-foreground)' }}>
-                {loading ? (
-                  'Loading...'
-                ) : (
-                  `Showing ${gemstones.length} of ${pagination.total} results`
-                )}
-              </p>
+            {/* Results Header - Desktop */}
+            <div className="hidden sm:flex items-center justify-between mb-6 p-4 border rounded-lg" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <div>
+                <h2 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>
+                  {pagination.total.toLocaleString()} Gemstones Found
+                </h2>
+                <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                  {loading
+                    ? 'Loading results...'
+                    : `Showing ${(pagination.page - 1) * pagination.limit + 1}-${Math.min(pagination.page * pagination.limit, pagination.total)} of ${pagination.total.toLocaleString()}`}
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                <select
+                  value={sortBy}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                  className="px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2"
+                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)', borderWidth: 1, borderStyle: 'solid' }}
+                >
+                  {SORT_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => setShowFilters(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm"
+                  style={{ borderColor: 'var(--border)', color: 'var(--foreground)', borderStyle: 'solid', borderWidth: 1, backgroundColor: 'var(--card)' }}
+                >
+                  <Filter className="w-4 h-4" />
+                  Filters
+                </button>
+                <div className="flex rounded-lg overflow-hidden" style={{ borderColor: 'var(--border)', borderStyle: 'solid', borderWidth: 1 }}>
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className="p-2"
+                    style={viewMode === 'grid' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { backgroundColor: 'var(--card)', color: 'var(--muted-foreground)' }}
+                    aria-label="Grid view"
+                  >
+                    <Grid className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className="p-2"
+                    style={viewMode === 'list' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { backgroundColor: 'var(--card)', color: 'var(--muted-foreground)' }}
+                    aria-label="List view"
+                  >
+                    <List className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Results Header - Mobile */}
+            <div className="sm:hidden flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+                  {pagination.total.toLocaleString()} gemstones
+                </p>
+                <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                  {loading ? 'Loading...' : `Page ${pagination.page} of ${pagination.totalPages || 1}`}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowFilters(true)}
+                  className="flex items-center justify-center w-9 h-9 rounded-lg border"
+                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                  aria-label="Open filters"
+                >
+                  <Filter className="w-4 h-4" />
+                </button>
+                <select
+                  value={sortBy}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                  className="h-9 px-2 rounded-lg text-xs border"
+                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                >
+                  {SORT_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="flex items-center rounded-lg border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className="w-8 h-8 flex items-center justify-center rounded-l-lg"
+                    style={viewMode === 'grid' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { color: 'var(--muted-foreground)' }}
+                    aria-label="Grid view"
+                  >
+                    <Grid className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className="w-8 h-8 flex items-center justify-center rounded-r-lg"
+                    style={viewMode === 'list' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { color: 'var(--muted-foreground)' }}
+                    aria-label="List view"
+                  >
+                    <List className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Gemstone Type Filter Bar */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-4 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-thumb-muted-foreground/30">
+              {GEMSTONE_TYPES.map(type => {
+                const isSelected = filters.gemstoneType.includes(type.title);
+                return (
+                  <button
+                    key={type.title}
+                    onClick={() => {
+                      const next = isSelected
+                        ? filters.gemstoneType.filter(t => t !== type.title)
+                        : [...filters.gemstoneType, type.title];
+                      handleFiltersChange({ ...filters, gemstoneType: next });
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-colors"
+                    style={isSelected ? { background: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { background: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
+                    type="button"
+                  >
+                    <span className="relative w-6 h-6 rounded-full overflow-hidden bg-white">
+                      <Image
+                        src={type.img}
+                        alt={type.alt}
+                        fill
+                        sizes="24px"
+                        style={{ objectFit: 'contain' }}
+                      />
+                    </span>
+                    {type.title}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Loading State */}
