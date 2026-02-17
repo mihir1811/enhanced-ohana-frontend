@@ -839,15 +839,14 @@ const DiamondShapesCarousel = ({
 
   return (
     <div className="relative">
-      <div className='flex justify-between items-center'>
-        <h2 className="text-3xl font-bold text-left mb-8" style={{ color: 'var(--foreground)' }}>
+      <div className='flex justify-between items-center mb-6'>
+        <h2 className="text-3xl font-bold text-left" style={{ color: 'var(--foreground)' }}>
           {title}
         </h2>
-        <div className="flex gap-2">
+        <div className="flex gap-2 ">
           <button
             onClick={handlePrev}
             className="p-2 rounded-full transition-colors border border-gray-200 dark:border-slate-600"
-            style={{ transform: 'translate(-50%, -50%)' }}
             aria-label="Previous slide"
           >
             <MoveLeft className="w-6 h-6" style={{ color: 'var(--foreground)' }} />
@@ -856,7 +855,6 @@ const DiamondShapesCarousel = ({
           <button
             onClick={handleNext}
             className="p-2 rounded-full transition-colors border border-gray-200 dark:border-slate-600"
-            style={{ transform: 'translate(50%, -50%)' }}
             aria-label="Next slide"
           >
             <MoveRight className="w-6 h-6" style={{ color: 'var(--foreground)' }} />
