@@ -81,6 +81,15 @@ export default function GemstoneProductsPage() {
     searchTerm: ''
   });
 
+  const [gemstoneTypeSearch, setGemstoneTypeSearch] = useState('');
+  const [shapeSearch, setShapeSearch] = useState('');
+  const [colorSearch, setColorSearch] = useState('');
+  const [claritySearch, setClaritySearch] = useState('');
+  const [originSearch, setOriginSearch] = useState('');
+  const [certificationSearch, setCertificationSearch] = useState('');
+  const [cutSearch, setCutSearch] = useState('');
+  const [treatmentSearch, setTreatmentSearch] = useState('');
+
   // Effect to sync filters from URL search params
   useEffect(() => {
     if (searchParams) {
@@ -524,22 +533,18 @@ export default function GemstoneProductsPage() {
                                 placeholder="Search gemstone..."
                                 className="w-full px-3 py-2 pl-9 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                                 style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                                value={gemstoneTypeSearch}
                                 onChange={(e) => {
-                                  const searchValue = e.target.value.toLowerCase();
-                                  const options = document.querySelectorAll(`[data-filter-section="gemstoneType"] label`);
-                                  options.forEach((option: Element) => {
-                                    const text = option.textContent?.toLowerCase() || '';
-                                    if (option instanceof HTMLElement) {
-                                      option.style.display = text.includes(searchValue) ? 'flex' : 'none';
-                                    }
-                                  });
+                                  setGemstoneTypeSearch(e.target.value.toLowerCase());
                                 }}
                               />
                               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--muted-foreground)' }} />
                             </div>
                           </div>
                           <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1 custom-scrollbar" data-filter-section="gemstoneType">
-                            {['Ruby', 'Sapphire', 'Emerald', 'Diamond', 'Tanzanite', 'Aquamarine', 'Topaz', 'Amethyst', 'Garnet', 'Opal', 'Tourmaline', 'Peridot'].map(type => {
+                            {['Ruby', 'Sapphire', 'Emerald', 'Diamond', 'Tanzanite', 'Aquamarine', 'Topaz', 'Amethyst', 'Garnet', 'Opal', 'Tourmaline', 'Peridot']
+                              .filter(type => type.toLowerCase().includes(gemstoneTypeSearch))
+                              .map(type => {
                               const isSelected = filters.gemstoneType.includes(type);
                               return (
                                 <label
@@ -603,22 +608,18 @@ export default function GemstoneProductsPage() {
                                 placeholder="Search shape..."
                                 className="w-full px-3 py-2 pl-9 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                                 style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                                value={shapeSearch}
                                 onChange={(e) => {
-                                  const searchValue = e.target.value.toLowerCase();
-                                  const options = document.querySelectorAll(`[data-filter-section="shape"] label`);
-                                  options.forEach((option: Element) => {
-                                    const text = option.textContent?.toLowerCase() || '';
-                                    if (option instanceof HTMLElement) {
-                                      option.style.display = text.includes(searchValue) ? 'flex' : 'none';
-                                    }
-                                  });
+                                  setShapeSearch(e.target.value.toLowerCase());
                                 }}
                               />
                               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--muted-foreground)' }} />
                             </div>
                           </div>
                           <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1 custom-scrollbar" data-filter-section="shape">
-                            {['Round', 'Oval', 'Cushion', 'Emerald', 'Pear', 'Marquise', 'Princess', 'Heart', 'Radiant'].map(shape => {
+                            {['Round', 'Oval', 'Cushion', 'Emerald', 'Pear', 'Marquise', 'Princess', 'Heart', 'Radiant']
+                              .filter(shape => shape.toLowerCase().includes(shapeSearch))
+                              .map(shape => {
                               const isSelected = filters.shape.includes(shape);
                               return (
                                 <label
@@ -735,20 +736,16 @@ export default function GemstoneProductsPage() {
                               placeholder="Search color..."
                               className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
                               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                              value={colorSearch}
                               onChange={(e) => {
-                                const searchValue = e.target.value.toLowerCase();
-                                const options = document.querySelectorAll(`[data-filter-section="color"] label`);
-                                options.forEach((option: Element) => {
-                                  const text = option.textContent?.toLowerCase() || '';
-                                  if (option instanceof HTMLElement) {
-                                    option.style.display = text.includes(searchValue) ? 'flex' : 'none';
-                                  }
-                                });
+                                setColorSearch(e.target.value.toLowerCase());
                               }}
                             />
                           </div>
                           <div className="space-y-2.5 max-h-48 overflow-y-auto" data-filter-section="color">
-                            {['Red', 'Blue', 'Green', 'Yellow', 'Pink', 'Purple', 'Orange', 'Brown', 'White', 'Black', 'Multi-Color'].map(color => {
+                            {['Red', 'Blue', 'Green', 'Yellow', 'Pink', 'Purple', 'Orange', 'Brown', 'White', 'Black', 'Multi-Color']
+                              .filter(color => color.toLowerCase().includes(colorSearch))
+                              .map(color => {
                               const isSelected = filters.color.includes(color);
                               return (
                                 <label
@@ -803,20 +800,16 @@ export default function GemstoneProductsPage() {
                               placeholder="Search clarity..."
                               className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
                               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                              value={claritySearch}
                               onChange={(e) => {
-                                const searchValue = e.target.value.toLowerCase();
-                                const options = document.querySelectorAll(`[data-filter-section="clarity"] label`);
-                                options.forEach((option: Element) => {
-                                  const text = option.textContent?.toLowerCase() || '';
-                                  if (option instanceof HTMLElement) {
-                                    option.style.display = text.includes(searchValue) ? 'flex' : 'none';
-                                  }
-                                });
+                                setClaritySearch(e.target.value.toLowerCase());
                               }}
                             />
                           </div>
                           <div className="space-y-2.5 max-h-48 overflow-y-auto" data-filter-section="clarity">
-                            {['FL', 'IF', 'VVS', 'VS', 'SI', 'I', 'Eye Clean', 'Slightly Included', 'Moderately Included'].map(clarity => {
+                            {['FL', 'IF', 'VVS', 'VS', 'SI', 'I', 'Eye Clean', 'Slightly Included', 'Moderately Included']
+                              .filter(clarity => clarity.toLowerCase().includes(claritySearch))
+                              .map(clarity => {
                               const isSelected = filters.clarity.includes(clarity);
                               return (
                                 <label
@@ -870,20 +863,16 @@ export default function GemstoneProductsPage() {
                               placeholder="Search origin..."
                               className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
                               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                              value={originSearch}
                               onChange={(e) => {
-                                const searchValue = e.target.value.toLowerCase();
-                                const options = document.querySelectorAll(`[data-filter-section="origin"] label`);
-                                options.forEach((option: Element) => {
-                                  const text = option.textContent?.toLowerCase() || '';
-                                  if (option instanceof HTMLElement) {
-                                    option.style.display = text.includes(searchValue) ? 'flex' : 'none';
-                                  }
-                                });
+                                setOriginSearch(e.target.value.toLowerCase());
                               }}
                             />
                           </div>
                           <div className="space-y-2.5 max-h-48 overflow-y-auto" data-filter-section="origin">
-                            {['Myanmar', 'Sri Lanka', 'Thailand', 'Madagascar', 'Tanzania', 'Brazil', 'Colombia', 'Zambia', 'India', 'Australia'].map(origin => {
+                            {['Myanmar', 'Sri Lanka', 'Thailand', 'Madagascar', 'Tanzania', 'Brazil', 'Colombia', 'Zambia', 'India', 'Australia']
+                              .filter(origin => origin.toLowerCase().includes(originSearch))
+                              .map(origin => {
                               const isSelected = filters.origin.includes(origin);
                               return (
                                 <label
@@ -937,20 +926,16 @@ export default function GemstoneProductsPage() {
                               placeholder="Search certification..."
                               className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
                               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                              value={certificationSearch}
                               onChange={(e) => {
-                                const searchValue = e.target.value.toLowerCase();
-                                const options = document.querySelectorAll(`[data-filter-section="certification"] label`);
-                                options.forEach((option: Element) => {
-                                  const text = option.textContent?.toLowerCase() || '';
-                                  if (option instanceof HTMLElement) {
-                                    option.style.display = text.includes(searchValue) ? 'flex' : 'none';
-                                  }
-                                });
+                                setCertificationSearch(e.target.value.toLowerCase());
                               }}
                             />
                           </div>
                           <div className="space-y-2.5 max-h-48 overflow-y-auto" data-filter-section="certification">
-                            {['GIA', 'IGI', 'AGS', 'GRS', 'Gubelin', 'SSEF', 'AGL', 'Lotus', 'GIT', 'ICA', 'GAGTL', 'EGL', 'HRD', 'None'].map(cert => {
+                            {['GIA', 'IGI', 'AGS', 'GRS', 'Gubelin', 'SSEF', 'AGL', 'Lotus', 'GIT', 'ICA', 'GAGTL', 'EGL', 'HRD', 'None']
+                              .filter(cert => cert.toLowerCase().includes(certificationSearch))
+                              .map(cert => {
                               const isSelected = filters.certification.includes(cert);
                               return (
                                 <label
@@ -1004,20 +989,16 @@ export default function GemstoneProductsPage() {
                               placeholder="Search cut quality..."
                               className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
                               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                              value={cutSearch}
                               onChange={(e) => {
-                                const searchValue = e.target.value.toLowerCase();
-                                const options = document.querySelectorAll(`[data-filter-section="cut"] label`);
-                                options.forEach((option: Element) => {
-                                  const text = option.textContent?.toLowerCase() || '';
-                                  if (option instanceof HTMLElement) {
-                                    option.style.display = text.includes(searchValue) ? 'flex' : 'none';
-                                  }
-                                });
+                                setCutSearch(e.target.value.toLowerCase());
                               }}
                             />
                           </div>
                           <div className="space-y-2.5 max-h-48 overflow-y-auto" data-filter-section="cut">
-                            {['Ideal', 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor', 'Custom', 'Native'].map(cut => {
+                            {['Ideal', 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor', 'Custom', 'Native']
+                              .filter(cut => cut.toLowerCase().includes(cutSearch))
+                              .map(cut => {
                               const isSelected = filters.cut.includes(cut);
                               return (
                                 <label
@@ -1071,20 +1052,16 @@ export default function GemstoneProductsPage() {
                               placeholder="Search treatment..."
                               className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
                               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                              value={treatmentSearch}
                               onChange={(e) => {
-                                const searchValue = e.target.value.toLowerCase();
-                                const options = document.querySelectorAll(`[data-filter-section="treatment"] label`);
-                                options.forEach((option: Element) => {
-                                  const text = option.textContent?.toLowerCase() || '';
-                                  if (option instanceof HTMLElement) {
-                                    option.style.display = text.includes(searchValue) ? 'flex' : 'none';
-                                  }
-                                });
+                                setTreatmentSearch(e.target.value.toLowerCase());
                               }}
                             />
                           </div>
                           <div className="space-y-2.5 max-h-48 overflow-y-auto" data-filter-section="treatment">
-                            {['None (Natural)', 'Heat Treated', 'No Heat', 'Diffusion', 'Irradiation', 'Oil/Resin', 'Fracture Filling', 'Dyeing', 'HPHT', 'Surface Coating', 'Clarity Enhanced', 'Color Enhanced'].map(treatment => {
+                            {['None (Natural)', 'Heat Treated', 'No Heat', 'Diffusion', 'Irradiation', 'Oil/Resin', 'Fracture Filling', 'Dyeing', 'HPHT', 'Surface Coating', 'Clarity Enhanced', 'Color Enhanced']
+                              .filter(treatment => treatment.toLowerCase().includes(treatmentSearch))
+                              .map(treatment => {
                               const isSelected = filters.treatment.includes(treatment);
                               return (
                                 <label
@@ -1501,12 +1478,14 @@ function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
     return (
       <div className="rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
         <div className="flex gap-6">
-          <div className="w-32 h-32 rounded-lg flex-shrink-0" style={{ backgroundColor: 'var(--card)' }}>
+          <div className="w-32 h-32 rounded-lg flex-shrink-0 overflow-hidden relative" style={{ backgroundColor: 'var(--card)' }}>
             {item.image1 ? (
               <Link href={`/gemstones/single/${item.id}`}>
-                <img 
-                  src={item.image1} 
+                <Image
+                  src={item.image1}
                   alt={item.name}
+                  width={128}
+                  height={128}
                   className="w-full h-full object-cover rounded-lg"
                 />
               </Link>
@@ -1577,9 +1556,11 @@ function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
       <div className="relative aspect-square" style={{ backgroundColor: 'var(--card)' }}>
         {item.image1 ? (
           <Link href={`/gemstones/single/${item.id}`}>
-            <img 
-              src={item.image1} 
+            <Image
+              src={item.image1}
               alt={item.name}
+              width={400}
+              height={400}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           </Link>

@@ -1015,9 +1015,11 @@ function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
           <div className="w-32 h-32 rounded-lg flex-shrink-0 overflow-hidden relative" style={{ backgroundColor: 'var(--card)' }}>
             {item.image1 ? (
               <Link href={`/gemstones/melee/${item.id}`}>
-                <img
+                <Image
                   src={item.image1}
                   alt={item.name}
+                  width={128}
+                  height={128}
                   className="w-full h-full object-cover rounded-lg"
                 />
               </Link>
@@ -1128,9 +1130,11 @@ function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
       <div className="relative aspect-square" style={{ backgroundColor: 'var(--card)' }}>
         {item.image1 ? (
           <Link href={`/gemstones/melee/${item.id}`}>
-            <img
+            <Image
               src={item.image1}
               alt={item.name}
+              width={400}
+              height={400}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           </Link>
