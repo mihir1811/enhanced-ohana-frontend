@@ -9,8 +9,14 @@ import { Input } from '@/components/ui/input'
 import { auctionService } from '@/services/auctionService'
 
 export default async function HomePage() {
-  const liveRes = await auctionService.getLiveAuctions<{ data: { data: any[]; meta: any } }>({ limit: 4 })
-  const liveAuctions = Array.isArray(liveRes?.data?.data) ? liveRes.data.data : []
+  let liveAuctions: any[] = []
+
+  try {
+    const liveRes = await auctionService.getLiveAuctions<{ data: { data: any[]; meta: any } }>({ limit: 4 })
+    liveAuctions = Array.isArray(liveRes?.data?.data) ? liveRes.data.data : []
+  } catch (error) {
+    liveAuctions = []
+  }
 
   const formatEndsIn = (endTime?: string | Date) => {
     if (!endTime) return ''
