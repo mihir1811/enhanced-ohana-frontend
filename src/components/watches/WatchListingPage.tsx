@@ -695,6 +695,10 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
     </div>
   );
 
+  const totalCount = meta?.total || products.length;
+  const startItem = totalCount > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+  const endItem = totalCount > 0 ? Math.min(currentPage * pageSize, totalCount) : 0;
+
   return (
     <>
       <style jsx global>{`
@@ -828,85 +832,60 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
             </>
           )}
 
-          {/* Mobile Filter Toggle */}
-          <button
-            onClick={() => setShowFilters(true)}
-            className="lg:hidden flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold shadow-sm mb-6 transition-colors"
-            style={{ 
-              backgroundColor: 'var(--card)', 
-              borderColor: 'var(--border)',
-              color: 'var(--foreground)',
-              borderWidth: '1px'
-            }}
-          >
-            <Filter size={20} />
-            {totalAppliedFilters > 0 ? `Filters (${totalAppliedFilters})` : 'Show Filters'}
-          </button>
-
-          {/* Sidebar - Desktop */}
-          <aside className="hidden lg:block w-80 shrink-0">
-            <div className="sticky top-24 space-y-8">
-              <div className="rounded-3xl border shadow-sm overflow-hidden" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-                <div className="px-5 pt-6 pb-3">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>Filters</h2>
-                    <button
-                      onClick={() => setFilters({
-                        brand: [],
-                        movementType: [],
-                        gender: [],
-                        condition: [],
-                        caseMaterial: [],
-                        dialColor: [],
-                        priceMin: 0,
-                        priceMax: 1000000,
-                      })}
-                      className="text-sm font-medium text-amber-600 hover:text-amber-700 dark:text-amber-500 dark:hover:text-amber-400 transition-colors"
-                    >
-                      Reset All
-                    </button>
-                  </div>
-                </div>
-                <div className="custom-scrollbar overflow-y-auto max-h-[calc(100vh-250px)]">
-                  <FilterSections />
-                </div>
-              </div>
-            </div>
-          </aside>
-
           {/* Main Content */}
           <main className="flex-1 min-w-0">
-            {/* Results Header */}
+            {/* Results Header - aligned with diamond listing layout */}
             <div className="rounded-2xl border p-4 mb-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
               <div>
-                <h1 className="text-2xl font-black tracking-tight" style={{ color: 'var(--foreground)' }}>{title}</h1>
+                <h2 className="text-xl md:text-2xl font-black tracking-tight" style={{ color: 'var(--foreground)' }}>
+                  {totalCount > 0 ? `${totalCount.toLocaleString()} Watches Found` : title}
+                </h2>
                 <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-                  {loading ? 'Searching...' : `Showing ${products.length} of ${meta?.total || 0} timepieces`}
+                  {loading
+                    ? 'Searching...'
+                    : totalCount > 0
+                      ? `Showing ${startItem}-${endItem} of ${totalCount.toLocaleString()}`
+                      : 'We could not find any watches matching your filters.'}
                 </p>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
+                {/* Filters button (small icon, like diamond listing) */}
+                <button
+                  className="w-8 h-8 flex items-center justify-center rounded-lg shadow border active:scale-95 transition"
+                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+                  onClick={() => setShowFilters(true)}
+                  aria-label="Open filters"
+                >
+                  <Filter className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
+                </button>
+
+                {/* View mode toggle */}
                 <div className="flex items-center gap-2 p-1 rounded-xl border" style={{ backgroundColor: 'var(--muted)', borderColor: 'var(--border)' }}>
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-gray-700 shadow-sm text-primary' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-gray-700 shadow-sm text-primary' : 'text-gray-400 hover:text-gray-600'}`}
+                    aria-label="Grid view"
                   >
-                    <Grid size={20} />
+                    <Grid size={18} />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 shadow-sm text-primary' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 shadow-sm text-primary' : 'text-gray-400 hover:text-gray-600'}`}
+                    aria-label="List view"
                   >
-                    <List size={20} />
+                    <List size={18} />
                   </button>
                 </div>
 
-                <div className="relative flex-1 md:w-48">
+                {/* Sort select */}
+                <div className="relative md:w-48">
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                     className="w-full appearance-none border rounded-xl px-4 py-2.5 text-sm font-bold pr-10 outline-none focus:ring-1 focus:ring-primary"
                     style={{ backgroundColor: 'var(--muted)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                    aria-label="Sort watches"
                   >
                     <option value="newest">Newest</option>
                     <option value="price_low">Price: Low to High</option>
@@ -920,16 +899,19 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
 
             {/* Brand Filter Bar (Horizontal) */}
             <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-8 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
-              <button
-                onClick={() => setFilters({ ...filters, brand: [] })}
-                className={`flex items-center px-4 sm:px-6 py-2 sm:py-3 h-[38px] sm:h-[50px] rounded-full border text-sm sm:text-base font-bold whitespace-nowrap transition-all ${
-                  filters.brand.length === 0 
-                    ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' 
-                    : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-100 dark:border-gray-800 hover:border-primary hover:text-primary dark:hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800'
-                }`}
-              >
-                All Brands
-              </button>
+            <button
+              onClick={() => setFilters({ ...filters, brand: [] })}
+              className={`flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 h-[38px] sm:h-[44px] rounded-full border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all ${
+                filters.brand.length === 0 
+                  ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' 
+                  : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-100 dark:border-gray-800 hover:border-primary hover:text-primary dark:hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800'
+              }`}
+            >
+              <span className="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white dark:bg-gray-900 text-[11px] font-bold border border-white/40 dark:border-gray-700/60">
+                All
+              </span>
+              <span>All Brands</span>
+            </button>
               {brandOptions.map(opt => {
                 const isSelected = filters.brand.includes(opt.value);
                 return (
@@ -941,35 +923,45 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
                         : [...filters.brand, opt.value];
                       setFilters({ ...filters, brand: next });
                     }}
-                    className={`flex items-center gap-2 sm:gap-3 pl-1 pr-3 sm:pl-1 sm:pr-4 py-1 rounded-full border text-sm sm:text-base font-bold whitespace-nowrap transition-all ${
+                    className={`flex items-center gap-2 sm:gap-3 pl-1 pr-3 sm:pl-1 sm:pr-4 py-1.5 rounded-full border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all ${
                       isSelected 
                         ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' 
                         : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-100 dark:border-gray-800 hover:border-primary hover:text-primary dark:hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                   >
                     {opt.logo ? (
-                      <span className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center overflow-hidden rounded-full shrink-0 transition-colors ${
-                        isSelected 
-                          ? 'bg-white/10' 
-                          : 'bg-white dark:bg-gray-100'
-                      }`}>
-                        <div className="relative w-6 h-6 sm:w-8 sm:h-8">
+                      <span
+                        className={`w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center overflow-hidden rounded-full shrink-0 transition-colors ${
+                          isSelected 
+                            ? 'bg-white/10' 
+                            : 'bg-white dark:bg-gray-100'
+                        }`}
+                      >
+                        <div className="relative w-5 h-5 sm:w-6 sm:h-6">
                           <Image
                             src={opt.logo}
                             alt={opt.label}
                             fill
-                            className={`object-contain transition-all duration-300 ${isSelected ? 'brightness-0 invert' : ''}`}
+                            className="object-contain"
                           />
                         </div>
                       </span>
                     ) : (
-                      <span className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full shrink-0 ${
-                        isSelected ? 'bg-white/10' : 'bg-gray-50 dark:bg-gray-800'
-                      }`}>
-                        <MoreHorizontal className={isSelected ? 'text-white' : 'text-gray-400'} size={14} />
+                      <span
+                        className={`w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full shrink-0 ${
+                          isSelected ? 'bg-white/10' : 'bg-gray-50 dark:bg-gray-800'
+                        }`}
+                      >
+                        <span className={`text-[10px] font-semibold ${isSelected ? 'text-white' : 'text-gray-500 dark:text-gray-300'}`}>
+                          {opt.label
+                            .split(' ')
+                            .map(word => word.charAt(0))
+                            .join('')
+                            .slice(0, 3)}
+                        </span>
                       </span>
                     )}
-                    <span>{opt.label}</span>
+                    <span className="leading-none">{opt.label}</span>
                   </button>
                 );
               })}

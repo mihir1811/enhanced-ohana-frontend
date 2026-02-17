@@ -4,22 +4,19 @@ import NavigationUser from '@/components/Navigation/NavigationUser'
 import Footer from '@/components/Footer'
 import WatchListingPage from '@/components/watches/WatchListingPage'
 import { watchService } from '@/services/watch.service'
-
-const SECTION_WIDTH = 1400
+import { SECTION_WIDTH } from '@/lib/constants'
 
 export default function WatchesPage() {
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       <NavigationUser />
-      <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-2 sm:px-6 lg:px-6`}>
+      <div className="mx-auto px-4 sm:px-6 lg:px-8" style={{ maxWidth: SECTION_WIDTH }}>
         <WatchListingPage
           fetchWatches={(params) => watchService.getWatches(params)}
           title="Luxury Watches"
         />
       </div>
-      <div className="mt-12">
-        <Footer />
-      </div>
+      <Footer />
     </div>
   )
 }
