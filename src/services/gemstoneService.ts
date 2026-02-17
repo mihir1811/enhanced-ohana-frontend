@@ -215,7 +215,7 @@ export interface GemstoneQueryParams {
   sort?: string;
   priceMin?: number;
   priceMax?: number;
-  gemType?: string[];
+  gemsType?: string[];
   shape?: string[];
   color?: string[];
   clarity?: string[];

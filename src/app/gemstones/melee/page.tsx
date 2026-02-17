@@ -180,7 +180,7 @@ export default function MeleeGemstonesPage() {
         limit: pagination.limit,
         sort: sortBy,
         // Map filters to API parameters
-        gemType: filters.gemstoneType.length > 0 ? filters.gemstoneType : undefined,
+        gemsType: filters.gemstoneType.length > 0 ? filters.gemstoneType.map(v => v.toLowerCase()) : undefined,
         shape: filters.shape.length > 0 ? filters.shape : undefined,
         color: filters.color.length > 0 ? filters.color : undefined,
         clarity: filters.clarity.length > 0 ? filters.clarity : undefined,

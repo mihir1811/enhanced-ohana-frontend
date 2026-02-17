@@ -152,7 +152,7 @@ const GemstoneListingPage: React.FC<GemstoneListingPageProps> = ({
 
   const buildQueryFromFilters = (f: GemstoneFilterValues) => {
     const params: Record<string, any> = {
-      gemType: f.gemstoneType,
+      gemsType: f.gemstoneType.map(v => v.toLowerCase()),
       shape: f.shape,
       color: f.color,
       clarity: f.clarity,
