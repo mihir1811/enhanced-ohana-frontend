@@ -92,21 +92,30 @@ interface AuctionItem {
   product: GemsProduct | JewelryProduct;
 }
 
-// Minimalist countdown timer
-const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
+// Minimalist countdown timer with status badge
+const AuctionStatusBadge: React.FC<{ endTime: string; isActive: boolean; className?: string }> = ({ endTime, isActive, className }) => {
   const [timeLeft, setTimeLeft] = useState('');
+  const [isEnded, setIsEnded] = useState(!isActive);
 
   useEffect(() => {
-    const timer = setInterval(() => {
+    if (!isActive) {
+      setTimeLeft('Ended');
+      setIsEnded(true);
+      return;
+    }
+
+    const calculateTime = () => {
       const now = new Date().getTime();
       const end = new Date(endTime).getTime();
       const diff = end - now;
 
       if (diff <= 0) {
         setTimeLeft('Ended');
+        setIsEnded(true);
         return;
       }
 
+      setIsEnded(false);
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -118,13 +127,23 @@ const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
       } else {
         setTimeLeft(`${minutes}m`);
       }
-    }, 1000);
+    };
+
+    calculateTime();
+    const timer = setInterval(calculateTime, 1000);
 
     return () => clearInterval(timer);
-  }, [endTime]);
+  }, [endTime, isActive]);
 
   return (
-    <div className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
+    <div 
+      className={`absolute z-10 backdrop-blur-sm rounded-lg px-2.5 py-1.5 shadow-sm border flex items-center gap-1 ${className}`}
+      style={{ 
+        backgroundColor: isEnded ? 'rgba(239, 68, 68, 0.1)' : 'var(--card)', 
+        borderColor: isEnded ? 'rgba(239, 68, 68, 0.5)' : 'var(--border)', 
+        color: isEnded ? 'rgb(239, 68, 68)' : 'var(--foreground)'
+      }}
+    >
       <Clock className="w-3.5 h-3.5" />
       <span className="text-xs font-medium">{timeLeft}</span>
     </div>
@@ -133,7 +152,7 @@ const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
 
 // Enhanced auction card with detailed information
 const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }> = ({ auction, viewMode }) => {
-  const { product, bids, endTime, seller, productType } = auction;
+  const { product, bids, endTime, seller, productType, isActive } = auction;
   
   // Get current bid (highest bid from bids array)
   const currentBid = bids.length > 0 ? Math.max(...bids.map(bid => bid.amount)) : null;
@@ -151,6 +170,11 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
   };
   
   const displayPrice = getDisplayPrice();
+  
+  // Get starting price safely
+  const startingPrice = 'totalPrice' in product 
+    ? (product.basePrice ?? product.totalPrice ?? 0)
+    : (product.price ?? 0);
   
   const getProductTypeDisplay = () => {
     switch (productType) {
@@ -179,9 +203,7 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
             style={{ backgroundColor: 'var(--card)' }}
           >
             {/* Timer Badge */}
-            <div className="absolute top-2 left-2 z-10 backdrop-blur-sm rounded-lg px-2.5 py-1.5 shadow-sm border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
-              <CountdownTimer endTime={endTime} />
-            </div>
+            <AuctionStatusBadge endTime={endTime} isActive={isActive} className="top-2 left-2" />
 
             {/* Product Type Badge */}
             <div className="absolute top-2 right-2 z-10 text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
@@ -299,7 +321,7 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
                         ${currentBid.toLocaleString()}
                       </div>
                       <div className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
-                        Started at: ${('totalPrice' in product ? product.basePrice : product.price).toLocaleString()}
+                        Started at: ${startingPrice.toLocaleString()}
                       </div>
                     </div>
                   ) : (
@@ -373,9 +395,7 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
       {/* Image Section */}
       <div className="relative aspect-square overflow-hidden" style={{ backgroundColor: 'var(--card)' }}>
         {/* Timer Badge */}
-        <div className="absolute top-3 left-3 z-10 backdrop-blur-sm rounded-lg px-2.5 py-1.5 shadow-sm border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
-          <CountdownTimer endTime={endTime} />
-        </div>
+        <AuctionStatusBadge endTime={endTime} isActive={isActive} className="top-3 left-3" />
 
         {/* Product Type Badge */}
         <div className="absolute top-3 right-3 z-10 text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
@@ -470,7 +490,7 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
                 ${currentBid.toLocaleString()}
               </div>
               <div className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                Starting: ${('totalPrice' in product ? product.basePrice : product.price).toLocaleString()}
+                Starting: ${startingPrice.toLocaleString()}
               </div>
             </div>
           ) : (
@@ -833,13 +853,32 @@ export default function AuctionsPage() {
             {loading && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <div className="aspect-square bg-gray-100 dark:bg-gray-700 rounded-t-lg animate-pulse"></div>
+                  <div 
+                    key={i} 
+                    className="rounded-lg border"
+                    style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+                  >
+                    <div 
+                      className="aspect-square rounded-t-lg animate-pulse"
+                      style={{ backgroundColor: 'var(--muted)' }}
+                    ></div>
                     <div className="p-4 space-y-3">
-                      <div className="h-4 bg-gray-100 dark:bg-gray-700 rounded animate-pulse"></div>
-                      <div className="h-6 bg-gray-100 dark:bg-gray-700 rounded animate-pulse"></div>
-                      <div className="h-4 bg-gray-100 dark:bg-gray-700 rounded animate-pulse w-2/3"></div>
-                      <div className="h-10 bg-gray-100 dark:bg-gray-700 rounded animate-pulse"></div>
+                      <div 
+                        className="h-4 rounded animate-pulse"
+                        style={{ backgroundColor: 'var(--muted)' }}
+                      ></div>
+                      <div 
+                        className="h-6 rounded animate-pulse"
+                        style={{ backgroundColor: 'var(--muted)' }}
+                      ></div>
+                      <div 
+                        className="h-4 rounded animate-pulse w-2/3"
+                        style={{ backgroundColor: 'var(--muted)' }}
+                      ></div>
+                      <div 
+                        className="h-10 rounded animate-pulse"
+                        style={{ backgroundColor: 'var(--muted)' }}
+                      ></div>
                     </div>
                   </div>
                 ))}
@@ -848,14 +887,17 @@ export default function AuctionsPage() {
 
             {/* Error */}
             {error && !loading && (
-              <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div 
+                className="text-center py-20 rounded-lg border"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+              >
                 <div className="text-6xl mb-4">⚠️</div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
                   {error}
                 </h3>
                 <button
                   onClick={fetchAuctions}
-                  className="mt-4 px-6 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors"
+                  className="mt-4 px-6 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:opacity-90 transition-colors border border-gray-200 dark:border-gray-800"
                 >
                   Try Again
                 </button>
@@ -887,12 +929,15 @@ export default function AuctionsPage() {
 
             {/* Empty State */}
             {!loading && !error && auctions.length === 0 && (
-              <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div 
+                className="text-center py-20 rounded-lg border"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+              >
                 <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
                   No auctions found
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                <p className="mb-6" style={{ color: 'var(--muted-foreground)' }}>
                   Check back later for new auctions
                 </p>
                 <button
@@ -901,7 +946,7 @@ export default function AuctionsPage() {
                     setSearchQuery('');
                     fetchAuctions();
                   }}
-                  className="px-6 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors"
+                  className="px-6 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg hover:opacity-90 transition-colors border border-gray-200 dark:border-gray-800"
                 >
                   Clear Filters
                 </button>

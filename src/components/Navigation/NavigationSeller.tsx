@@ -6,7 +6,7 @@ export default function NavigationSeller() {
       <Link href="/seller/dashboard">Seller Dashboard</Link>
       <Link href="/seller/products">Products</Link>
       <Link href="/seller/orders">Orders</Link>
-      <Link href="/seller/messages">Messages</Link>
+      <Link href="/seller/chat">Chat</Link>
     </nav>
   )
 }

@@ -59,8 +59,37 @@ export interface ApiDiamondData {
   updatedAt?: string;
   auctionStartTime?: string | null;
   auctionEndTime?: string | null;
+  colorFrom?: string;
+  colorTo?: string;
+  clarityMin?: string;
+  clarityMax?: string;
+  totalPcs?: string | number;
+  caratWeightPerpcs?: string | number;
+  totalCaratWeight?: string | number;
+  pricePerCarat?: string | number;
+  pricePerPcs?: string | number;
+  totalPrice?: string | number;
+  sieveSizeMin?: string | number;
+  sieveSizeMax?: string | number;
+  measurementMin?: string | number;
+  measurementMax?: string | number;
+  fluoreScenceFrom?: string;
+  fluoreScenceTo?: string;
+  shadeFrom?: string;
+  shadeTo?: string;
+  cutFrom?: string;
+  cutTo?: string;
+  symmetryFrom?: string;
+  symmetryTo?: string;
+  polishFrom?: string;
+  polishTo?: string;
+  fancyColorFrom?: string;
+  fancyColorTo?: string;
+  fancyIntencityFrom?: string;
+  fancyIntencityTo?: string;
   seller?: {
     id: string | number;
+    userId?: string;
     sellerType?: string;
     companyName?: string;
     companyLogo?: string;
@@ -166,9 +195,39 @@ export function transformApiDiamond(apiDiamond: ApiDiamondData): Diamond {
     updatedAt: apiDiamond.updatedAt || new Date().toISOString(),
     auctionStartTime: apiDiamond.auctionStartTime,
     auctionEndTime: apiDiamond.auctionEndTime,
+    // Melee specific fields
+    colorFrom: apiDiamond.colorFrom,
+    colorTo: apiDiamond.colorTo,
+    clarityMin: apiDiamond.clarityMin,
+    clarityMax: apiDiamond.clarityMax,
+    totalPcs: apiDiamond.totalPcs,
+    caratWeightPerpcs: apiDiamond.caratWeightPerpcs,
+    totalCaratWeight: apiDiamond.totalCaratWeight,
+    pricePerCarat: apiDiamond.pricePerCarat,
+    pricePerPcs: apiDiamond.pricePerPcs,
+    totalPrice: apiDiamond.totalPrice,
+    sieveSizeMin: apiDiamond.sieveSizeMin,
+    sieveSizeMax: apiDiamond.sieveSizeMax,
+    measurementMin: apiDiamond.measurementMin,
+    measurementMax: apiDiamond.measurementMax,
+    fluoreScenceFrom: apiDiamond.fluoreScenceFrom,
+    fluoreScenceTo: apiDiamond.fluoreScenceTo,
+    shadeFrom: apiDiamond.shadeFrom,
+    shadeTo: apiDiamond.shadeTo,
+    cutFrom: apiDiamond.cutFrom,
+    cutTo: apiDiamond.cutTo,
+    symmetryFrom: apiDiamond.symmetryFrom,
+    symmetryTo: apiDiamond.symmetryTo,
+    polishFrom: apiDiamond.polishFrom,
+    polishTo: apiDiamond.polishTo,
+    fancyColorFrom: apiDiamond.fancyColorFrom,
+    fancyColorTo: apiDiamond.fancyColorTo,
+    fancyIntencityFrom: apiDiamond.fancyIntencityFrom,
+    fancyIntencityTo: apiDiamond.fancyIntencityTo,
     seller: apiDiamond.seller
       ? {
           id: String(apiDiamond.seller.id),
+          userId: apiDiamond.seller.userId,
           sellerType: apiDiamond.seller.sellerType,
           companyName: apiDiamond.seller.companyName,
           companyLogo: apiDiamond.seller.companyLogo,

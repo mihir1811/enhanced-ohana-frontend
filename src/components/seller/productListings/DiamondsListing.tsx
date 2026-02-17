@@ -7,7 +7,7 @@ import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { toast } from 'react-hot-toast';
 
-const DiamondsListing = () => {
+const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType?: string }) => {
   const [diamonds, setDiamonds] = useState<DiamondProduct[]>([]);
   const [view, setView] = useState<'list' | 'grid'>('grid');
   const [loading, setLoading] = useState(true);
@@ -18,6 +18,7 @@ const DiamondsListing = () => {
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+
   const handleBulkFileSelect = () => {
     // Called after successful upload in modal
     setBulkModalOpen(false);
@@ -27,7 +28,19 @@ const DiamondsListing = () => {
   useEffect(() => {
     console.log(page, limit, "page, limit")
     setLoading(true);
-    diamondService.getDiamonds({ page, limit })
+    
+    let fetchPromise;
+    if (stoneType === 'labGrownDiamond') {
+      fetchPromise = diamondService.getLabDiamonds({ page, limit, sellerId });
+    } else if (stoneType === 'naturalDiamond') {
+      fetchPromise = diamondService.getNaturalDiamonds({ page, limit, sellerId });
+    } else {
+      fetchPromise = sellerId 
+        ? diamondService.getDiamondsBySeller(sellerId, { page, limit })
+        : diamondService.getDiamonds({ page, limit });
+    }
+
+    fetchPromise
       .then((res) => {
         const topLevel = res as unknown;
 
@@ -256,7 +269,7 @@ const DiamondsListing = () => {
               </table>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
               {diamonds.map((diamond) => (
                 <DiamondProductCard
                   key={diamond.id}

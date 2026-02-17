@@ -66,7 +66,8 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
 
   const handleChatWithSeller = async () => {
     // Try to get seller ID from multiple possible locations
-    const sellerId = diamond?.seller?.id || diamond?.sellerId
+    // We prioritize seller.userId because the chat system works between Users (not Seller entities)
+    const sellerId = diamond?.seller?.userId || diamond?.seller?.id || diamond?.sellerId
     
     if (!sellerId) {
       console.warn('No seller information available', { 
@@ -84,13 +85,15 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
     }
 
     try {
+
+      console.log(diamond.seller , "diamond.seller","Navigating to chat:", diamond)
       // Try to create or get existing chat with seller
       const productId = diamond.id
       const productName = diamond.name || `${diamond.caratWeight}ct ${diamond.shape} Diamond`
       
       // Navigate to main chat page with seller pre-selected
       const chatUrl = `/user/chat?sellerId=${sellerId}&productId=${productId}&productType=diamond&productName=${encodeURIComponent(productName)}`
-      console.log('Navigating to chat:', { sellerId, productId, productName, chatUrl })
+      console.log('Navigating to chat:', "diamond user id" ,diamond.seller?.userId, { sellerId, productId, productName, chatUrl })
       router.push(chatUrl)
     } catch (error) {
       console.error('Failed to initiate chat:', error)
@@ -157,7 +160,13 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
     <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-8">
       {/* Breadcrumb */}
       <nav className="flex items-center space-x-2 text-sm" style={{ color: 'var(--muted-foreground)' }}>
-        <a href="#" className="hover:underline" style={{ color: 'var(--muted-foreground)' }}>Diamonds</a>
+        <a 
+          href={`/diamonds/${diamond.stoneType === 'labGrownDiamond' ? 'lab-grown' : 'natural'}/single`} 
+          className="hover:underline" 
+          style={{ color: 'var(--muted-foreground)' }}
+        >
+          {diamond.stoneType === 'labGrownDiamond' ? 'Lab Grown' : 'Natural'} Diamonds
+        </a>
         <span>/</span>
         <a href="#" className="hover:underline" style={{ color: 'var(--muted-foreground)' }}>{diamond.shape || 'Diamond'}</a>
         <span>/</span>
@@ -217,7 +226,7 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
             {/* Quick Actions */}
             <div className="absolute top-4 left-4 flex gap-2">
               <WishlistButton
-                productId={typeof diamond?.id === 'string' ? parseInt(diamond.id) : (diamond?.id || 0)}
+                productId={typeof diamond?.id === 'string' ? parseInt(diamond?.id) : (diamond?.id || 0)}
                 productType="diamond"
                 className="p-3 rounded-full shadow-lg transition-all duration-200 border backdrop-blur-sm"
                 style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}

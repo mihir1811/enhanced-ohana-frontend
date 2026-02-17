@@ -1039,7 +1039,7 @@ export default function JewelryCategoryPage() {
       <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
         <NavigationUser />
 
-        <div className="container mx-auto px-6 pb-8 pt-4">
+        <div className="max-w-[1380px] container mx-auto px-6 pb-8 pt-4">
           {/* Search and Controls */}
         <div className="rounded-lg p-3 mb-2 shadow-sm border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
           <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">

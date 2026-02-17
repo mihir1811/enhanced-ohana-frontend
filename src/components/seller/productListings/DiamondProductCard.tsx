@@ -31,6 +31,7 @@ interface Props {
   product: DiamondProduct;
   onQuickView?: (product: DiamondProduct) => void;
   onDelete?: (product: DiamondProduct) => void;
+  isMelee?: boolean;
 }
 
 const getStatusTag = (isDeleted: boolean, stockNumber: number) => {
@@ -168,7 +169,7 @@ const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
   );
 };
 
-const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }) => {
+const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, isMelee = false }) => {
   const [showDelete, setShowDelete] = useState(false);
   const [showQuickView, setShowQuickView] = useState(false);
   const [imgIdx, setImgIdx] = useState(0);
@@ -510,7 +511,12 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete })
           setShowDelete(false);
           try {
             const token = typeof window !== 'undefined' ? (document.cookie.match(/token=([^;]+)/)?.[1] || '') : '';
-            await import('@/services/diamondService').then(m => m.diamondService.deleteDiamond(product.id, token));
+            const service = await import('@/services/diamondService').then(m => m.diamondService);
+            if (isMelee) {
+              await service.deleteMeleeDiamond(product.id, token);
+            } else {
+              await service.deleteDiamond(product.id, token);
+            }
             toast.success('Product deleted successfully!');
             if (onDelete) onDelete(product);
           } catch (err) {

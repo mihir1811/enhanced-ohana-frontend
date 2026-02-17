@@ -9,8 +9,8 @@ export interface AuctionData {
 }
 
 export interface BidData {
-  auctionId: string;
-  bidAmount: number;
+  auctionId: number;
+  amount: number;
   [key: string]: unknown;
 }
 

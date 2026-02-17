@@ -5,6 +5,7 @@ import Image from 'next/image';
 import BulkUploadModal from './BulkUploadModal';
 import { gemstoneService } from '@/services/gemstoneService';
 import GemstoneProductCard, { GemstoneProduct } from './GemstoneProductCard';
+import { generateGemstoneName } from '@/utils/gemstoneUtils';
 
 // API response type
 import { ApiResponse } from '@/services/api';
@@ -43,13 +44,11 @@ const GemstonesListing = () => {
     setBulkModalOpen(false);
     setRefreshKey((k) => k + 1);
   };
-  const sellerId = useSelector((state: RootState) => state.seller.profile?.id) || 'default-seller-id'; // Replace with actual sellerId from auth/user context
-
-  // TODO: Replace with actual sellerId from auth/user context
+  const sellerId = useSelector((state: RootState) => state.seller.profile?.id) || 'default-seller-id';
 
   useEffect(() => {
     setLoading(true);
-    gemstoneService.getGemstonesBySeller({ sellerId, page, limit })
+    gemstoneService.getSingleGemstonesBySeller({ sellerId, page, limit })
       .then((res: ApiResponse<GemstoneApiResponse>) => {
         const gems = res?.data?.data || [];
         setGemstones(gems);
@@ -69,7 +68,7 @@ const GemstonesListing = () => {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold">Gemstones</h2>
+        <h2 className="text-xl font-bold">Single Gemstones</h2>
         <div className="flex gap-2 items-center relative">
           {/* Bulk Upload Button */}
           <button
@@ -83,6 +82,7 @@ const GemstonesListing = () => {
             open={bulkModalOpen}
             onClose={() => setBulkModalOpen(false)}
             onFileSelect={handleBulkFileSelect}
+            productType="gemstone"
           />
           <button
             className={"cursor-pointer relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
@@ -146,13 +146,33 @@ const GemstonesListing = () => {
                       <td className="px-4 py-2">
                         <Image
                           src={gem.image1 || 'https://media.istockphoto.com/id/1493089752/vector/box-and-package-icon-concept.jpg'}
-                          alt={gem.name || gem.gemsType}
+                          alt={generateGemstoneName({
+                            process: gem.process,
+                            color: gem.color,
+                            shape: gem.shape,
+                            gemsType: gem.gemsType || gem.gemType,
+                            subType: gem.subType,
+                            carat: gem.carat || gem.caratWeight,
+                            quantity: gem.quantity,
+                            clarity: gem.clarity
+                          }) || gem.name || gem.gemsType || gem.gemType}
                           width={64}
                           height={64}
                           className="w-16 h-16 object-cover rounded"
                         />
                       </td>
-                      <td className="px-4 py-2 capitalize">{gem.name || `${gem.subType || ''} ${gem.gemsType}`}</td>
+                      <td className="px-4 py-2 capitalize">
+                        {generateGemstoneName({
+                          process: gem.process,
+                          color: gem.color,
+                          shape: gem.shape,
+                          gemsType: gem.gemsType || gem.gemType,
+                          subType: gem.subType,
+                          carat: gem.carat || gem.caratWeight,
+                          quantity: gem.quantity,
+                          clarity: gem.clarity
+                        }) || gem.name || 'Unnamed Gemstone'}
+                      </td>
                       <td className="px-4 py-2" style={{ color: 'var(--primary)' }}>${(gem.totalPrice ? Number(gem.totalPrice) : gem.price)?.toLocaleString() || '-'}</td>
                       <td className="px-4 py-2">{gem.color}</td>
                       <td className="px-4 py-2">{gem.shape}</td>
@@ -162,7 +182,7 @@ const GemstonesListing = () => {
               </table>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
               {gemstones.map((gem) => (
                 <GemstoneProductCard
                   key={gem.id}

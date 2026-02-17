@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { X, Menu } from 'lucide-react'
+import { Drawer } from '@/components/ui/drawer'
 
 interface SellerSidebarProps {
   sidebarOpen: boolean
@@ -56,8 +57,8 @@ const navigation = [
     ),
   },
   {
-    name: 'Messages',
-    href: '/seller/messages',
+    name: 'Chat',
+    href: '/seller/chat',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -80,91 +81,67 @@ export default function SellerSidebar({ sidebarOpen, setSidebarOpen }: SellerSid
 
   return (
     <>
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Mobile sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-72 transform transition-transform duration-300 ease-in-out lg:hidden ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
-        <div 
-          className="flex h-full flex-col border-r"
-          style={{ 
-            backgroundColor: 'var(--sidebar)',
-            borderColor: 'var(--sidebar-border)'
-          }}
-        >
-          {/* Mobile sidebar header */}
-          <div className="flex h-16 items-center justify-between px-6">
-            <Link href="/seller/dashboard" className="flex items-center space-x-3">
-              <div 
-                className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{ backgroundColor: 'var(--sidebar-primary)' }}
-              >
-                <svg 
-                  className="w-5 h-5" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                  style={{ color: 'var(--sidebar-primary-foreground)' }}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
-                </svg>
-              </div>
-              <div>
-                <h1 
-                  className="text-lg font-bold"
-                  style={{ color: 'var(--sidebar-foreground)' }}
-                >
-                  Ohana Gems
-                </h1>
-              </div>
-            </Link>
-            <button
-              type="button"
-              className="p-2 rounded-md transition-colors"
-              style={{ color: 'var(--sidebar-foreground)' }}
-              onClick={() => setSidebarOpen(false)}
+      {/* Mobile sidebar using Drawer */}
+      <Drawer
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        position="left"
+        width="w-72"
+        title={
+          <Link href="/seller/dashboard" className="flex items-center space-x-3">
+            <div 
+              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: 'var(--sidebar-primary)' }}
             >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-
-          {/* Mobile navigation */}
-          <nav className="flex-1 px-4 py-4">
-            <ul className="space-y-2">
-              {navigation.map((item) => {
-                const isActive = pathname === item.href
-                return (
-                  <li key={item.name}>
-                    <Link
-                      href={item.href}
-                      className={`group flex items-center gap-x-3 rounded-lg p-3 text-sm font-medium transition-all duration-200 ${
-                        isActive 
-                          ? 'shadow-sm' 
-                          : 'hover:bg-opacity-10'
-                      }`}
-                      style={{
-                        backgroundColor: isActive ? 'var(--sidebar-accent)' : 'transparent',
-                        color: isActive ? 'var(--sidebar-accent-foreground)' : 'var(--sidebar-foreground)',
-                      }}
-                      onClick={() => setSidebarOpen(false)}
-                    >
-                      {item.icon}
-                      {item.name}
-                    </Link>
-                  </li>
-                )
-              })}
-            </ul>
-          </nav>
-        </div>
-      </div>
+              <svg 
+                className="w-5 h-5" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+                style={{ color: 'var(--sidebar-primary-foreground)' }}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+              </svg>
+            </div>
+            <div>
+              <h1 
+                className="text-lg font-bold"
+                style={{ color: 'var(--sidebar-foreground)' }}
+              >
+                Ohana Gems
+              </h1>
+            </div>
+          </Link>
+        }
+      >
+        <nav className="flex-1 py-4">
+          <ul className="space-y-2">
+            {navigation.map((item) => {
+              const isActive = pathname === item.href
+              return (
+                <li key={item.name}>
+                  <Link
+                    href={item.href}
+                    className={`group flex items-center gap-x-3 rounded-lg p-3 text-sm font-medium transition-all duration-200 ${
+                      isActive 
+                        ? 'shadow-sm' 
+                        : 'hover:bg-opacity-10'
+                    }`}
+                    style={{
+                      backgroundColor: isActive ? 'var(--sidebar-accent)' : 'transparent',
+                      color: isActive ? 'var(--sidebar-accent-foreground)' : 'var(--sidebar-foreground)',
+                    }}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    {item.icon}
+                    {item.name}
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+        </nav>
+      </Drawer>
 
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">

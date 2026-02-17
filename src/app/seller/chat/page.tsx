@@ -9,7 +9,7 @@ import { MessageSquare, Search, Wifi, User, Send } from 'lucide-react'
 import { useSocket } from '@/components/chat/SocketProvider'
 import { formatMessageTime } from '@/services/chat.utils'
 
-export default function SellerMessagesPage() {
+export default function SellerChatPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { token, user } = useAppSelector((s) => s.auth)
@@ -58,59 +58,58 @@ export default function SellerMessagesPage() {
     
     try {
       register(user.id)
-      console.log('✅ [SellerMessages] Socket registered for seller:', user.id)
+      console.log('✅ [SellerChat] Socket registered for seller:', user.id)
     } catch (e) {
-      console.error('❌ [SellerMessages] Registration error:', e)
+      console.error('❌ [SellerChat] Registration error:', e)
     }
   }, [socket, connected, user?.id, register])
 
   // Load conversations function
   const loadConversations = useCallback(async () => {
     if (!isSeller || !token) {
-      console.log('⚠️ [SellerMessages] No seller access or token, skipping conversation load')
+      console.log('⚠️ [SellerChat] No seller access or token, skipping conversation load')
       return
     }
     
-    console.log('🔄 [SellerMessages] Starting to load conversations...', { userId: user?.id, userRole: user?.role })
+    console.log('🔄 [SellerChat] Starting to load conversations...', { userId: user?.id, userRole: user?.role })
     setLoading(true)
     setError(null)
     
     try {
       const response = await chatService.getConversations({ limit: 50, page: 1 }, token, user?.id)
       
-      console.log('📡 [SellerMessages] getConversations response:', response)
+      console.log('📡 [SellerChat] getConversations response:', response)
       
       if (response.data) {
-        console.log(`📊 [SellerMessages] Processing ${response.data.length} conversations`)
+        console.log(`📊 [SellerChat] Processing ${response.data.length} conversations`)
         
-        // Filter conversations to show only user-to-seller chats (where participant is user)
-        const userConversations = response.data.filter(conv => 
-          conv.participantRole.toLowerCase() === 'user'
-        )
+        // Show all conversations for the seller
+        const userConversations = response.data
         
-        console.log(`🎯 [SellerMessages] Filtered user conversations: ${userConversations.length}`, userConversations)
+        console.log(`🎯 [SellerChat] Loaded conversations: ${userConversations.length}`, userConversations)
         
         setConversations(userConversations)
         
         // Auto-select conversation if userId provided in URL
         if (preSelectedUserId) {
-          console.log(`🔍 [SellerMessages] Looking for preselected user: ${preSelectedUserId}`)
+          console.log(`🔍 [SellerChat] Looking for preselected user: ${preSelectedUserId}`)
           const preSelected = userConversations.find(conv => 
             conv.participantId === preSelectedUserId
           )
+          
           if (preSelected) {
-            console.log('✅ [SellerMessages] Found and selecting preselected conversation:', preSelected)
+            console.log('✅ [SellerChat] Found and selecting preselected conversation:', preSelected)
             setSelectedConversation(preSelected)
             setMessages(preSelected.messages || [])
           } else {
-            console.log('❌ [SellerMessages] Preselected user not found in conversations')
+            console.log('❌ [SellerChat] Preselected user not found in conversations')
           }
         }
       } else {
-        console.log('⚠️ [SellerMessages] No conversation data received')
+        console.log('⚠️ [SellerChat] No conversation data received')
       }
     } catch (err) {
-      console.error('❌ [SellerMessages] Failed to load conversations:', err)
+      console.error('❌ [SellerChat] Failed to load conversations:', err)
       setError('Failed to load conversations')
     } finally {
       setLoading(false)
@@ -125,16 +124,16 @@ export default function SellerMessagesPage() {
   // Handle incoming messages via WebSocket through SocketProvider
   useEffect(() => {
     if (!connected || !onMessage) {
-      console.log('⚠️ [SellerMessages] Message listener not set up:', { connected, hasOnMessage: !!onMessage })
+      console.log('⚠️ [SellerChat] Message listener not set up:', { connected, hasOnMessage: !!onMessage })
       return
     }
     
-    console.log('✅ [SellerMessages] Setting up message listener')
+    console.log('✅ [SellerChat] Setting up message listener')
 
     const handleNewMessage = (message: ChatMessageDto) => {
-      console.log('📨 [SellerMessages] Received new message:', message)
-      console.log('🔍 [SellerMessages] Current user ID:', user?.id)
-      console.log('🔍 [SellerMessages] Selected conversation:', selectedConversation?.participantId)
+      console.log('📨 [SellerChat] Received new message:', message)
+      console.log('🔍 [SellerChat] Current user ID:', user?.id)
+      console.log('🔍 [SellerChat] Selected conversation:', selectedConversation?.participantId)
       
       // Handle different possible message structures from backend
       const fromId = String(message.fromId || message.from?.id || '')
@@ -143,7 +142,7 @@ export default function SellerMessagesPage() {
       
       // Safety check for message structure
       if (!fromId || !toId || !messageText) {
-        console.warn('⚠️ [SellerMessages] Invalid message structure received:', {
+        console.warn('⚠️ [SellerChat] Invalid message structure received:', {
           message,
           extractedFromId: fromId,
           extractedToId: toId,
@@ -188,7 +187,7 @@ export default function SellerMessagesPage() {
           ((messageFromId === selectedParticipant && messageToId === currentUserId) ||
            (messageFromId === currentUserId && messageToId === selectedParticipant))
       
-      console.log('🔍 [SellerMessages] Message filtering:', {
+      console.log('🔍 [SellerChat] Message filtering:', {
         shouldAdd: shouldAddToCurrentConversation,
         isFromCurrentUser,
         selectedConversationId: selectedParticipant,
@@ -205,7 +204,7 @@ export default function SellerMessagesPage() {
       const wasAlreadyProcessed = processedMessagesRef.current.has(messageKey)
       
       // Debug logging for message processing
-      console.log('🔍 [SellerMessages] Message processing decision:', {
+      console.log('🔍 [SellerChat] Message processing decision:', {
         shouldAddToCurrentConversation,
         isFromCurrentUser,
         wasAddedLocally,
@@ -219,13 +218,13 @@ export default function SellerMessagesPage() {
       
       // Only add messages that we haven't already processed
       if (shouldAddToCurrentConversation && !wasAlreadyProcessed) {
-        console.log('✅ [SellerMessages] Adding message to current conversation')
+        console.log('✅ [SellerChat] Adding message to current conversation')
         
         // Mark as processed immediately to prevent duplicates
         processedMessagesRef.current.add(messageKey)
         
         setMessages(prev => {
-          console.log('🔍 [SellerMessages] Current messages count before adding:', prev.length)
+          console.log('🔍 [SellerChat] Current messages count before adding:', prev.length)
           
           // Additional duplicate check based on ID and content (backup check)
           const isDuplicate = prev.some(existingMsg => 
@@ -237,11 +236,11 @@ export default function SellerMessagesPage() {
           )
           
           if (isDuplicate) {
-            console.log('🔄 [SellerMessages] Skipping duplicate message (backup check - ID or content match)')
+            console.log('🔄 [SellerChat] Skipping duplicate message (backup check - ID or content match)')
             return prev
           }
           
-          console.log('✅ [SellerMessages] Adding new message, count will be:', prev.length + 1)
+          console.log('✅ [SellerChat] Adding new message, count will be:', prev.length + 1)
           
           // Update total messages count when adding new messages
           setTotalMessages(prevTotal => prevTotal + 1)
@@ -249,13 +248,13 @@ export default function SellerMessagesPage() {
           return [...prev, safeMessage]
         })
       } else if (wasAlreadyProcessed) {
-        console.log('🔄 [SellerMessages] Skipping message (already processed)')
+        console.log('🔄 [SellerChat] Skipping message (already processed)')
       } else if (wasAddedLocally) {
-        console.log('🔄 [SellerMessages] Skipping message (already added locally)', {
+        console.log('🔄 [SellerChat] Skipping message (already added locally)', {
           messageContent: safeMessage.message.substring(0, 20) + '...'
         })
       } else {
-        console.log('❌ [SellerMessages] Message not added to current conversation')
+        console.log('❌ [SellerChat] Message not added to current conversation')
       }      // Update conversations list
       setConversations(prev => {
         let conversationUpdated = false
@@ -267,7 +266,7 @@ export default function SellerMessagesPage() {
                
           if (shouldUpdate) {
             conversationUpdated = true
-            console.log('✅ [SellerMessages] Updating conversation:', conv.participantId)
+            console.log('✅ [SellerChat] Updating conversation:', conv.participantId)
             return {
               ...conv,
               lastMessage: safeMessage,
@@ -279,7 +278,7 @@ export default function SellerMessagesPage() {
         })
         
         if (!conversationUpdated) {
-          console.log('❌ [SellerMessages] No conversation updated for message')
+          console.log('❌ [SellerChat] No conversation updated for message')
         }
         
         return updated
@@ -288,10 +287,10 @@ export default function SellerMessagesPage() {
 
     // Subscribe to messages through SocketProvider
     const unsubscribe = onMessage(handleNewMessage)
-    console.log('📡 [SellerMessages] Message listener subscribed')
+    console.log('📡 [SellerChat] Message listener subscribed')
     
     return () => {
-      console.log('🔌 [SellerMessages] Message listener unsubscribed')
+      console.log('🔌 [SellerChat] Message listener unsubscribed')
       unsubscribe()
     }
   }, [connected, selectedConversation, onMessage, user?.id])
@@ -303,7 +302,7 @@ export default function SellerMessagesPage() {
     setSendingMessage(true)
     
     try {
-      console.log('🔍 [SellerMessages] Send message attempt:', {
+      console.log('🔍 [SellerChat] Send message attempt:', {
         hasSocket: !!socket,
         reactConnected: connected,
         socketConnected: socket?.connected,
@@ -345,7 +344,7 @@ export default function SellerMessagesPage() {
           }
         }
         
-        console.log('📝 [SellerMessages] Adding message locally when sending:', {
+        console.log('📝 [SellerChat] Adding message locally when sending:', {
           messageId: tempMessage.id,
           fromId: tempMessage.fromId,
           message: tempMessage.message.substring(0, 20) + '...',
@@ -370,7 +369,7 @@ export default function SellerMessagesPage() {
         }
         
         setMessages(prev => {
-          console.log('📝 [SellerMessages] Local add - before:', prev.length, 'after will be:', prev.length + 1)
+          console.log('📝 [SellerChat] Local add - before:', prev.length, 'after will be:', prev.length + 1)
           
           // Update total messages count when sending messages
           setTotalMessages(prevTotal => prevTotal + 1)
@@ -380,7 +379,7 @@ export default function SellerMessagesPage() {
         setMessageText('')
       } else {
         // Socket not connected, show error instead of fallback
-        console.log('⚠️ [SellerMessages] Socket not connected, cannot send message')
+        console.log('⚠️ [SellerChat] Socket not connected, cannot send message')
         setError('Connection lost. Please refresh the page and try again.')
       }
     } catch (error) {
@@ -399,7 +398,7 @@ export default function SellerMessagesPage() {
       setLoadingMessages(!append)
       setLoadingMoreMessages(append)
       
-      console.log(`📥 [SellerMessages] Loading messages for conversation with ${conversation.participantName}`, {
+      console.log(`📥 [SellerChat] Loading messages for conversation with ${conversation.participantName}`, {
         page,
         limit: messagesLimit,
         append
@@ -415,7 +414,7 @@ export default function SellerMessagesPage() {
         const allMessages = response.data.data
         const meta = response.data.meta
         
-        console.log('📊 [SellerMessages] API Meta data:', meta)
+        console.log('📊 [SellerChat] API Meta data:', meta)
         
         // Filter messages for this specific conversation
         const conversationMessages = allMessages.filter(msg => 
@@ -448,7 +447,7 @@ export default function SellerMessagesPage() {
           setMessagesPage(1)
         }
         
-        console.log(`✅ [SellerMessages] Loaded ${sortedMessages.length} messages for conversation`, {
+        console.log(`✅ [SellerChat] Loaded ${sortedMessages.length} messages for conversation`, {
           totalFromMeta: meta && typeof meta === 'object' ? (meta as { total?: number }).total : undefined,
           currentPage: meta && typeof meta === 'object' ? (meta as { currentPage?: number }).currentPage : undefined,
           lastPage: meta && typeof meta === 'object' ? (meta as { lastPage?: number }).lastPage : undefined,
@@ -456,7 +455,7 @@ export default function SellerMessagesPage() {
         })
       }
     } catch (error) {
-      console.error('❌ [SellerMessages] Failed to load conversation messages:', error)
+      console.error('❌ [SellerChat] Failed to load conversation messages:', error)
       setError('Failed to load messages')
     } finally {
       setLoadingMessages(false)
@@ -466,7 +465,7 @@ export default function SellerMessagesPage() {
 
   // Handle conversation selection
   const selectConversation = useCallback((conversation: ChatConversation) => {
-    console.log('🔄 [SellerMessages] Switching to conversation:', conversation.participantName)
+    console.log('🔄 [SellerChat] Switching to conversation:', conversation.participantName)
     
     // Reset all chat states for new conversation
     setSelectedConversation(conversation)
@@ -485,7 +484,7 @@ export default function SellerMessagesPage() {
     // Clear message tracking for duplicate prevention
     processedMessagesRef.current.clear()
     locallyAddedMessagesRef.current.clear()
-    console.log('🔄 [SellerMessages] Cleared all tracking and states for new conversation')
+    console.log('🔄 [SellerChat] Cleared all tracking and states for new conversation')
     
     // Load messages with pagination for new conversation
     loadConversationMessages(conversation, 1, false)
@@ -557,7 +556,7 @@ export default function SellerMessagesPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <MessageSquare className="w-5 h-5" />
-          <h1 className="text-xl font-semibold">Customer Messages</h1>
+          <h1 className="text-xl font-semibold">Customer Chat</h1>
           <span className={`inline-flex items-center gap-1 text-sm ${connected ? 'text-green-600' : 'text-gray-500'}`}>
             <Wifi className="w-4 h-4" />
             {connected ? 'Online' : 'Offline'}

@@ -261,7 +261,7 @@ export default function SellerChatWithUserPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => router.push('/seller/messages')}
+            onClick={() => router.push('/seller/chat')}
             className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 bg-white text-gray-800 hover:bg-gray-50"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -298,48 +298,42 @@ export default function SellerChatWithUserPage() {
             <div key={m.id} className={`flex ${m.from === 'me' ? 'justify-end' : 'justify-start'}`}>
               <div
                 className={`max-w-[85%] md:max-w-[75%] px-3 py-2 rounded-2xl text-sm shadow-sm ${
-                  m.from === 'me' 
-                    ? 'rounded-br-sm bg-blue-600 text-white' 
-                    : 'rounded-bl-sm bg-gray-100 text-gray-800'
+                  m.from === 'me'
+                    ? 'bg-blue-600 text-white rounded-br-sm'
+                    : 'bg-gray-100 text-gray-900 rounded-bl-sm'
                 }`}
               >
-                {m.senderName && (
-                  <div className="text-xs opacity-75 mb-1">{m.senderName}</div>
-                )}
-                <p>{m.text}</p>
-                <p className="text-[11px] mt-1 opacity-70">
-                  {formatMessageTime(m.timestamp)}
-                </p>
+                <div className="font-medium text-xs opacity-90 mb-0.5">
+                  {m.senderName || (m.from === 'me' ? 'You' : 'Customer')}
+                </div>
+                <div>{m.text}</div>
+                <div className={`text-[10px] mt-1 text-right ${m.from === 'me' ? 'text-blue-100' : 'text-gray-400'}`}>
+                  {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </div>
               </div>
             </div>
           ))}
         </div>
 
         {/* Input area */}
-        <div className="border-t border-gray-200 p-4">
-          <div className="flex items-center gap-3">
+        <div className="p-3 border-t border-gray-100 bg-gray-50 rounded-b-xl">
+          <div className="flex gap-2">
             <input
+              type="text"
+              className="flex-1 px-4 py-2.5 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              placeholder="Type your message..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={`Message ${userName || 'customer'}...`}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              disabled={!connected}
             />
             <button
               onClick={handleSend}
-              disabled={!input.trim() || !connected}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              disabled={!input.trim()}
+              className="p-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              <Send className="w-4 h-4" />
-              Send
+              <Send className="w-5 h-5" />
             </button>
           </div>
-          {!connected && (
-            <p className="text-xs text-red-500 mt-1">
-              Connection lost. Messages will be sent when reconnected.
-            </p>
-          )}
         </div>
       </div>
     </div>

@@ -23,12 +23,18 @@ export const useCompare = () => {
   const maxProducts = compareState?.maxProducts || 6
   const isVisible = compareState?.isVisible || false
 
-  const addProduct = useCallback((product: ComparableProduct, type: 'diamond' | 'gemstone' | 'jewelry') => {
+  const addProduct = useCallback((product: ComparableProduct, type: 'diamond' | 'gemstone' | 'jewelry' | 'watch') => {
     const typedProduct = product as Record<string, unknown>;
     const compareProduct: CompareProduct = {
       id: typedProduct.id as string,
       type,
-      name: (typedProduct.name as string) || `${typedProduct.caratWeight || typedProduct.weight || ''}ct ${typedProduct.shape || typedProduct.cut || type}`,
+      name:
+        (typedProduct.name as string) ||
+        (
+          ((typedProduct.brand as string) || '') +
+          (typedProduct.model ? ` ${String(typedProduct.model)}` : '')
+        ).trim() ||
+        `${typedProduct.caratWeight || typedProduct.weight || ''}ct ${typedProduct.shape || typedProduct.cut || type}`,
       price: typedProduct.price as number | string,
       image: (typedProduct.images as string[])?.[0] || (typedProduct.image1 as string) || 'https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg',
       data: product as unknown as Diamond | { id: string; name: string; [key: string]: unknown },

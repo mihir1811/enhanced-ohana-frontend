@@ -209,7 +209,7 @@ export default function SellerDashboardPage() {
               { name: 'Add Product', icon: <Package className="w-5 h-5" />, href: '/seller/add-product' },
               { name: 'View Orders', icon: <ShoppingCart className="w-5 h-5" />, href: '/seller/orders' },
               { name: 'Analytics', icon: <TrendingUp className="w-5 h-5" />, href: '/seller/analytics' },
-              { name: 'Messages', icon: <MessageSquare className="w-5 h-5" />, href: '/seller/messages' },
+              { name: 'Chat', icon: <MessageSquare className="w-5 h-5" />, href: '/seller/chat' },
             ].map((action) => (
               <button
                 key={action.name}

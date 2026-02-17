@@ -100,7 +100,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
     const query = { 
       page: currentPage, 
       limit: pageSize, 
-      ...buildQueryFromFilters(filters),
+      // ...buildQueryFromFilters(filters), // Temporarily disabled as per user request
       ...(stoneType && { stoneType })
     };
 
@@ -946,7 +946,8 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
           onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
           onDiamondSelect={(diamond) => {
             if (diamond?.id) {
-              window.location.href = `/diamonds/${diamond.id}`;
+              const isMelee = diamondType.includes('melee');
+              window.location.href = isMelee ? `/diamonds/melee/${diamond.id}` : `/diamonds/${diamond.id}`;
             }
           } }
             diamondType={diamondType}

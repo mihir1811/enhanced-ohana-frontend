@@ -1,7 +1,7 @@
 "use client";
 
-// Socket functionality removed as requested
-// Keeping types and constants to avoid breaking imports during refactor
+import { io, Socket as ClientSocket } from "socket.io-client";
+import { API_CONFIG } from "@/lib/constants";
 
 export const CHAT_EVENTS = {
   CLIENT: {
@@ -23,12 +23,43 @@ type CreateSocketOptions = {
   userId?: string | number;
 };
 
-// Mock Socket type to satisfy TypeScript
-export type Socket = any;
+// Export the Socket type
+export type Socket = ClientSocket;
 
-export const createSocket = ({ token }: CreateSocketOptions): Socket => {
-  console.log('🔧 [socket] Socket connection disabled');
-  return null;
+export const createSocket = ({ token }: CreateSocketOptions): Socket | null => {
+  if (typeof window === "undefined") return null;
+
+  // Extract base URL (remove /api/v1)
+  // If BASE_URL is http://localhost:3000/api/v1, we want http://localhost:3000
+  // Note: Backend might be on a different port (3001), ensure env var is correct.
+  // Using simple logic to strip the path.
+  let baseUrl = API_CONFIG.BASE_URL;
+  try {
+    const url = new URL(API_CONFIG.BASE_URL);
+    baseUrl = url.origin;
+  } catch (e) {
+    console.error('Invalid API URL:', API_CONFIG.BASE_URL);
+  }
+
+  console.log('🔧 [socket] Connecting to:', baseUrl);
+
+  const socket = io(baseUrl, {
+    auth: { token },
+    transports: ["websocket"],
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+  });
+
+  socket.on("connect", () => {
+    console.log("✅ [socket] Connected:", socket.id);
+  });
+
+  socket.on("connect_error", (err) => {
+    console.error("❌ [socket] Connection error:", err.message);
+  });
+
+  return socket;
 };
 
 export type OutgoingMessagePayload = {
@@ -49,5 +80,11 @@ export const wrapChatEvent = (type: string, data: unknown) => {
 };
 
 export const sendChatEvent = (socket: Socket, type: string, data: unknown) => {
-  console.warn('⚠️ [socket] sendChatEvent disabled');
+  if (!socket || !socket.connected) {
+    console.warn("⚠️ [socket] Cannot send event: Socket not connected");
+    return;
+  }
+  
+  const payload = wrapChatEvent(type, data);
+  socket.emit(CHAT_EVENTS.CLIENT.CHAT_EVENT, payload);
 };

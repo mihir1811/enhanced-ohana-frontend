@@ -444,7 +444,8 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
 }
 
 export interface SellerInfo {
-  id?: string;
+  id: string;
+  userId?: string;
   sellerType?: string;
   companyName?: string;
   companyLogo?: string;
@@ -509,6 +510,35 @@ export interface Diamond {
   updatedAt: string;
   auctionStartTime?: string | null;
   auctionEndTime?: string | null;
+  // Melee specific fields
+  colorFrom?: string;
+  colorTo?: string;
+  clarityMin?: string;
+  clarityMax?: string;
+  totalPcs?: number;
+  caratWeightPerpcs?: number;
+  totalCaratWeight?: number;
+  pricePerCarat?: number;
+  pricePerPcs?: number;
+  totalPrice?: number;
+  sieveSizeMin?: string;
+  sieveSizeMax?: string;
+  measurementMin?: string;
+  measurementMax?: string;
+  fluoreScenceFrom?: string;
+  fluoreScenceTo?: string;
+  shadeFrom?: string;
+  shadeTo?: string;
+  cutFrom?: string;
+  cutTo?: string;
+  symmetryFrom?: string;
+  symmetryTo?: string;
+  polishFrom?: string;
+  polishTo?: string;
+  fancyColorFrom?: string;
+  fancyColorTo?: string;
+  fancyIntencityFrom?: string;
+  fancyIntencityTo?: string;
 }
 
 interface DiamondResultsProps {

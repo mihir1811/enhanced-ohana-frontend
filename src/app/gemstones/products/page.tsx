@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useLayoutEffect, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Search, Filter, Grid, List, Loader2, Eye, ShoppingCart, MapPin, Star, X, ChevronDown } from 'lucide-react';
 import NavigationUser from '@/components/Navigation/NavigationUser';
 import Footer from '@/components/Footer';
@@ -19,6 +20,26 @@ const SORT_OPTIONS = [
   { value: '-name', label: 'Name: Z to A' },
   { value: 'caratWeight', label: 'Carat: Low to High' },
   { value: '-caratWeight', label: 'Carat: High to Low' }
+];
+
+const GEMSTONE_TYPES = [
+  { title: 'Alexandrite', img: '/images/gemstones/Alexandrite.png', alt: 'Alexandrite gemstone' },
+  { title: 'Amber', img: '/images/gemstones/Amber.png', alt: 'Amber gemstone' },
+  { title: 'Amethyst', img: '/images/gemstones/Amethyst.png', alt: 'Amethyst gemstone' },
+  { title: 'Aquamarine', img: '/images/gemstones/Aquamarine.png', alt: 'Aquamarine gemstone' },
+  { title: 'Citrine', img: '/images/gemstones/Citrine.png', alt: 'Citrine gemstone' },
+  { title: 'Emerald', img: '/images/gemstones/Emerald.png', alt: 'Emerald gemstone' },
+  { title: 'Garnet', img: '/images/gemstones/Garnet.png', alt: 'Garnet gemstone' },
+  { title: 'Jade', img: '/images/gemstones/Jade.png', alt: 'Jade gemstone' },
+  { title: 'Jasper', img: '/images/gemstones/Jasper.png', alt: 'Jasper gemstone' },
+  { title: 'Lapis Lazuli', img: '/images/gemstones/Lapis Lazuli.png', alt: 'Lapis Lazuli gemstone' },
+  { title: 'Moonstone', img: '/images/gemstones/Moonstone.png', alt: 'Moonstone gemstone' },
+  { title: 'Onyx', img: '/images/gemstones/Onyx.png', alt: 'Onyx gemstone' },
+  { title: 'Pearl', img: '/images/gemstones/Pearl.png', alt: 'Pearl gemstone' },
+  { title: 'Rose Quartz', img: '/images/gemstones/Rose Quartz.png', alt: 'Rose Quartz gemstone' },
+  { title: 'Sunstone', img: '/images/gemstones/Sunstone.png', alt: 'Sunstone gemstone' },
+  { title: 'Tiger Eye', img: '/images/gemstones/Tiger Eye.png', alt: 'Tiger Eye gemstone' },
+  { title: 'Zircon', img: '/images/gemstones/Zircon.png', alt: 'Zircon gemstone' }
 ];
 
 export default function GemstoneProductsPage() {
@@ -42,7 +63,7 @@ export default function GemstoneProductsPage() {
 
   // Gemstone filters
   const [filters, setFilters] = useState<GemstoneFilterValues>({
-    gemstoneType: category !== 'all' ? [category] : [],
+    gemstoneType: [],
     shape: [],
     caratWeight: { min: 0.1, max: 50 },
     color: [],
@@ -59,6 +80,74 @@ export default function GemstoneProductsPage() {
     height: { min: 0, max: 100 },
     searchTerm: ''
   });
+
+  const [gemstoneTypeSearch, setGemstoneTypeSearch] = useState('');
+  const [shapeSearch, setShapeSearch] = useState('');
+  const [colorSearch, setColorSearch] = useState('');
+  const [claritySearch, setClaritySearch] = useState('');
+  const [originSearch, setOriginSearch] = useState('');
+  const [certificationSearch, setCertificationSearch] = useState('');
+  const [cutSearch, setCutSearch] = useState('');
+  const [treatmentSearch, setTreatmentSearch] = useState('');
+
+  // Effect to sync filters from URL search params
+  useEffect(() => {
+    if (searchParams) {
+      const newFilters = { ...filters };
+      
+      const gemType = searchParams.get('gemType');
+      if (gemType) newFilters.gemstoneType = gemType.split(',');
+      
+      const shape = searchParams.get('shape');
+      if (shape) newFilters.shape = shape.split(',');
+      
+      const color = searchParams.get('color');
+      if (color) newFilters.color = color.split(',');
+      
+      const clarity = searchParams.get('clarity');
+      if (clarity) newFilters.clarity = clarity.split(',');
+      
+      const cut = searchParams.get('cut');
+      if (cut) newFilters.cut = cut.split(',');
+      
+      const certification = searchParams.get('certification');
+      if (certification) newFilters.certification = certification.split(',');
+      
+      const origin = searchParams.get('origin');
+      if (origin) newFilters.origin = origin.split(',');
+      
+      const treatment = searchParams.get('treatment');
+      if (treatment) newFilters.treatment = treatment.split(',');
+
+      // Ranges
+      const priceMin = searchParams.get('priceMin');
+      const priceMax = searchParams.get('priceMax');
+      if (priceMin) newFilters.priceRange.min = parseFloat(priceMin);
+      if (priceMax) newFilters.priceRange.max = parseFloat(priceMax);
+
+      const caratMin = searchParams.get('caratMin');
+      const caratMax = searchParams.get('caratMax');
+      if (caratMin) newFilters.caratWeight.min = parseFloat(caratMin);
+      if (caratMax) newFilters.caratWeight.max = parseFloat(caratMax);
+
+      const lengthMin = searchParams.get('lengthMin');
+      const lengthMax = searchParams.get('lengthMax');
+      if (lengthMin) newFilters.length.min = parseFloat(lengthMin);
+      if (lengthMax) newFilters.length.max = parseFloat(lengthMax);
+
+      const widthMin = searchParams.get('widthMin');
+      const widthMax = searchParams.get('widthMax');
+      if (widthMin) newFilters.width.min = parseFloat(widthMin);
+      if (widthMax) newFilters.width.max = parseFloat(widthMax);
+
+      const heightMin = searchParams.get('heightMin');
+      const heightMax = searchParams.get('heightMax');
+      if (heightMin) newFilters.height.min = parseFloat(heightMin);
+      if (heightMax) newFilters.height.max = parseFloat(heightMax);
+
+      setFilters(newFilters);
+    }
+  }, [searchParams]);
 
   // Clear filters function
   const clearFilters = () => {
@@ -92,11 +181,33 @@ export default function GemstoneProductsPage() {
       setError(null);
 
       const queryParams = {
+        quantity: 1, // Single gemstones
         category: category !== 'all' ? category : undefined,
         search: searchQuery || undefined,
         page: pagination.page,
         limit: pagination.limit,
-        sort: sortBy
+        sort: sortBy,
+        // Map filters to API parameters
+        gemsType: filters.gemstoneType.length > 0 ? filters.gemstoneType.map(v => v.toLowerCase()) : undefined,
+        shape: filters.shape.length > 0 ? filters.shape : undefined,
+        color: filters.color.length > 0 ? filters.color : undefined,
+        clarity: filters.clarity.length > 0 ? filters.clarity : undefined,
+        cut: filters.cut.length > 0 ? filters.cut : undefined,
+        certification: filters.certification.length > 0 ? filters.certification : undefined,
+        origin: filters.origin.length > 0 ? filters.origin : undefined,
+        treatment: filters.treatment.length > 0 ? filters.treatment : undefined,
+        minerals: filters.minerals.length > 0 ? filters.minerals : undefined,
+        birthstones: filters.birthstones.length > 0 ? filters.birthstones : undefined,
+        priceMin: filters.priceRange.min > 0 ? filters.priceRange.min : undefined,
+        priceMax: filters.priceRange.max < 100000 ? filters.priceRange.max : undefined,
+        caratMin: filters.caratWeight.min > 0.1 ? filters.caratWeight.min : undefined,
+        caratMax: filters.caratWeight.max < 50 ? filters.caratWeight.max : undefined,
+        lengthMin: filters.length.min > 0 ? filters.length.min : undefined,
+        lengthMax: filters.length.max < 100 ? filters.length.max : undefined,
+        widthMin: filters.width.min > 0 ? filters.width.min : undefined,
+        widthMax: filters.width.max < 100 ? filters.width.max : undefined,
+        heightMin: filters.height.min > 0 ? filters.height.min : undefined,
+        heightMax: filters.height.max < 100 ? filters.height.max : undefined,
       };
 
       const response = await gemstoneService.getAllGemstones(queryParams);
@@ -116,7 +227,7 @@ export default function GemstoneProductsPage() {
     } finally {
       setLoading(false);
     }
-  }, [category, searchQuery, pagination.page, pagination.limit, sortBy]);
+  }, [category, searchQuery, pagination.page, pagination.limit, sortBy, filters]);
 
   // Load data on mount and changes
   useEffect(() => {
@@ -222,7 +333,7 @@ export default function GemstoneProductsPage() {
       <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
         <NavigationUser />
       
-      <div className="container mx-auto px-6 pb-8 pt-4">
+      <div className="max-w-[1380px] container mx-auto px-6 pb-8 pt-4">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>
@@ -233,8 +344,8 @@ export default function GemstoneProductsPage() {
           </p>
         </div>
 
-        {/* Search and Controls */}
-        <div className=" rounded-lg p-3 mb-8 shadow-sm">
+        {/* Search */}
+        <div className="rounded-lg p-4 mb-8 shadow-sm border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
           <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
             {/* Search */}
             <div className="relative flex-1 max-w-md">
@@ -247,51 +358,6 @@ export default function GemstoneProductsPage() {
                 className="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2"
                 style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
               />
-            </div>
-
-            {/* Controls */}
-            <div className="flex items-center gap-4">
-              {/* Sort */}
-              <select
-                value={sortBy}
-                onChange={(e) => handleSortChange(e.target.value)}
-                className="px-4 py-2 rounded-lg focus:outline-none focus:ring-2"
-                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
-              >
-                {SORT_OPTIONS.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-
-              {/* Filter Toggle */}
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg"
-                style={{ borderColor: 'var(--border)', color: 'var(--foreground)', borderStyle: 'solid', borderWidth: 1 }}
-              >
-                <Filter className="w-4 h-4" />
-                Filters
-              </button>
-
-              {/* View Mode */}
-              <div className="flex rounded-lg overflow-hidden" style={{ borderColor: 'var(--border)', borderStyle: 'solid', borderWidth: 1 }}>
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2 ${viewMode === 'grid' ? '' : ''}`}
-                  style={viewMode === 'grid' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { backgroundColor: 'var(--card)', color: 'var(--muted-foreground)' }}
-                >
-                  <Grid className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-2 ${viewMode === 'list' ? '' : ''}`}
-                  style={viewMode === 'list' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { backgroundColor: 'var(--card)', color: 'var(--muted-foreground)' }}
-                >
-                  <List className="w-4 h-4" />
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -467,22 +533,18 @@ export default function GemstoneProductsPage() {
                                 placeholder="Search gemstone..."
                                 className="w-full px-3 py-2 pl-9 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                                 style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                                value={gemstoneTypeSearch}
                                 onChange={(e) => {
-                                  const searchValue = e.target.value.toLowerCase();
-                                  const options = document.querySelectorAll(`[data-filter-section="gemstoneType"] label`);
-                                  options.forEach((option: Element) => {
-                                    const text = option.textContent?.toLowerCase() || '';
-                                    if (option instanceof HTMLElement) {
-                                      option.style.display = text.includes(searchValue) ? 'flex' : 'none';
-                                    }
-                                  });
+                                  setGemstoneTypeSearch(e.target.value.toLowerCase());
                                 }}
                               />
                               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--muted-foreground)' }} />
                             </div>
                           </div>
                           <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1 custom-scrollbar" data-filter-section="gemstoneType">
-                            {['Ruby', 'Sapphire', 'Emerald', 'Diamond', 'Tanzanite', 'Aquamarine', 'Topaz', 'Amethyst', 'Garnet', 'Opal', 'Tourmaline', 'Peridot'].map(type => {
+                            {['Ruby', 'Sapphire', 'Emerald', 'Diamond', 'Tanzanite', 'Aquamarine', 'Topaz', 'Amethyst', 'Garnet', 'Opal', 'Tourmaline', 'Peridot']
+                              .filter(type => type.toLowerCase().includes(gemstoneTypeSearch))
+                              .map(type => {
                               const isSelected = filters.gemstoneType.includes(type);
                               return (
                                 <label
@@ -546,22 +608,18 @@ export default function GemstoneProductsPage() {
                                 placeholder="Search shape..."
                                 className="w-full px-3 py-2 pl-9 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                                 style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                                value={shapeSearch}
                                 onChange={(e) => {
-                                  const searchValue = e.target.value.toLowerCase();
-                                  const options = document.querySelectorAll(`[data-filter-section="shape"] label`);
-                                  options.forEach((option: Element) => {
-                                    const text = option.textContent?.toLowerCase() || '';
-                                    if (option instanceof HTMLElement) {
-                                      option.style.display = text.includes(searchValue) ? 'flex' : 'none';
-                                    }
-                                  });
+                                  setShapeSearch(e.target.value.toLowerCase());
                                 }}
                               />
                               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--muted-foreground)' }} />
                             </div>
                           </div>
                           <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1 custom-scrollbar" data-filter-section="shape">
-                            {['Round', 'Oval', 'Cushion', 'Emerald', 'Pear', 'Marquise', 'Princess', 'Heart', 'Radiant'].map(shape => {
+                            {['Round', 'Oval', 'Cushion', 'Emerald', 'Pear', 'Marquise', 'Princess', 'Heart', 'Radiant']
+                              .filter(shape => shape.toLowerCase().includes(shapeSearch))
+                              .map(shape => {
                               const isSelected = filters.shape.includes(shape);
                               return (
                                 <label
@@ -678,20 +736,16 @@ export default function GemstoneProductsPage() {
                               placeholder="Search color..."
                               className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
                               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                              value={colorSearch}
                               onChange={(e) => {
-                                const searchValue = e.target.value.toLowerCase();
-                                const options = document.querySelectorAll(`[data-filter-section="color"] label`);
-                                options.forEach((option: Element) => {
-                                  const text = option.textContent?.toLowerCase() || '';
-                                  if (option instanceof HTMLElement) {
-                                    option.style.display = text.includes(searchValue) ? 'flex' : 'none';
-                                  }
-                                });
+                                setColorSearch(e.target.value.toLowerCase());
                               }}
                             />
                           </div>
                           <div className="space-y-2.5 max-h-48 overflow-y-auto" data-filter-section="color">
-                            {['Red', 'Blue', 'Green', 'Yellow', 'Pink', 'Purple', 'Orange', 'Brown', 'White', 'Black', 'Multi-Color'].map(color => {
+                            {['Red', 'Blue', 'Green', 'Yellow', 'Pink', 'Purple', 'Orange', 'Brown', 'White', 'Black', 'Multi-Color']
+                              .filter(color => color.toLowerCase().includes(colorSearch))
+                              .map(color => {
                               const isSelected = filters.color.includes(color);
                               return (
                                 <label
@@ -746,20 +800,16 @@ export default function GemstoneProductsPage() {
                               placeholder="Search clarity..."
                               className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
                               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                              value={claritySearch}
                               onChange={(e) => {
-                                const searchValue = e.target.value.toLowerCase();
-                                const options = document.querySelectorAll(`[data-filter-section="clarity"] label`);
-                                options.forEach((option: Element) => {
-                                  const text = option.textContent?.toLowerCase() || '';
-                                  if (option instanceof HTMLElement) {
-                                    option.style.display = text.includes(searchValue) ? 'flex' : 'none';
-                                  }
-                                });
+                                setClaritySearch(e.target.value.toLowerCase());
                               }}
                             />
                           </div>
                           <div className="space-y-2.5 max-h-48 overflow-y-auto" data-filter-section="clarity">
-                            {['FL', 'IF', 'VVS', 'VS', 'SI', 'I', 'Eye Clean', 'Slightly Included', 'Moderately Included'].map(clarity => {
+                            {['FL', 'IF', 'VVS', 'VS', 'SI', 'I', 'Eye Clean', 'Slightly Included', 'Moderately Included']
+                              .filter(clarity => clarity.toLowerCase().includes(claritySearch))
+                              .map(clarity => {
                               const isSelected = filters.clarity.includes(clarity);
                               return (
                                 <label
@@ -813,20 +863,16 @@ export default function GemstoneProductsPage() {
                               placeholder="Search origin..."
                               className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
                               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                              value={originSearch}
                               onChange={(e) => {
-                                const searchValue = e.target.value.toLowerCase();
-                                const options = document.querySelectorAll(`[data-filter-section="origin"] label`);
-                                options.forEach((option: Element) => {
-                                  const text = option.textContent?.toLowerCase() || '';
-                                  if (option instanceof HTMLElement) {
-                                    option.style.display = text.includes(searchValue) ? 'flex' : 'none';
-                                  }
-                                });
+                                setOriginSearch(e.target.value.toLowerCase());
                               }}
                             />
                           </div>
                           <div className="space-y-2.5 max-h-48 overflow-y-auto" data-filter-section="origin">
-                            {['Myanmar', 'Sri Lanka', 'Thailand', 'Madagascar', 'Tanzania', 'Brazil', 'Colombia', 'Zambia', 'India', 'Australia'].map(origin => {
+                            {['Myanmar', 'Sri Lanka', 'Thailand', 'Madagascar', 'Tanzania', 'Brazil', 'Colombia', 'Zambia', 'India', 'Australia']
+                              .filter(origin => origin.toLowerCase().includes(originSearch))
+                              .map(origin => {
                               const isSelected = filters.origin.includes(origin);
                               return (
                                 <label
@@ -880,20 +926,16 @@ export default function GemstoneProductsPage() {
                               placeholder="Search certification..."
                               className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
                               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                              value={certificationSearch}
                               onChange={(e) => {
-                                const searchValue = e.target.value.toLowerCase();
-                                const options = document.querySelectorAll(`[data-filter-section="certification"] label`);
-                                options.forEach((option: Element) => {
-                                  const text = option.textContent?.toLowerCase() || '';
-                                  if (option instanceof HTMLElement) {
-                                    option.style.display = text.includes(searchValue) ? 'flex' : 'none';
-                                  }
-                                });
+                                setCertificationSearch(e.target.value.toLowerCase());
                               }}
                             />
                           </div>
                           <div className="space-y-2.5 max-h-48 overflow-y-auto" data-filter-section="certification">
-                            {['GIA', 'IGI', 'AGS', 'GRS', 'Gubelin', 'SSEF', 'AGL', 'Lotus', 'GIT', 'ICA', 'GAGTL', 'EGL', 'HRD', 'None'].map(cert => {
+                            {['GIA', 'IGI', 'AGS', 'GRS', 'Gubelin', 'SSEF', 'AGL', 'Lotus', 'GIT', 'ICA', 'GAGTL', 'EGL', 'HRD', 'None']
+                              .filter(cert => cert.toLowerCase().includes(certificationSearch))
+                              .map(cert => {
                               const isSelected = filters.certification.includes(cert);
                               return (
                                 <label
@@ -947,20 +989,16 @@ export default function GemstoneProductsPage() {
                               placeholder="Search cut quality..."
                               className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
                               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                              value={cutSearch}
                               onChange={(e) => {
-                                const searchValue = e.target.value.toLowerCase();
-                                const options = document.querySelectorAll(`[data-filter-section="cut"] label`);
-                                options.forEach((option: Element) => {
-                                  const text = option.textContent?.toLowerCase() || '';
-                                  if (option instanceof HTMLElement) {
-                                    option.style.display = text.includes(searchValue) ? 'flex' : 'none';
-                                  }
-                                });
+                                setCutSearch(e.target.value.toLowerCase());
                               }}
                             />
                           </div>
                           <div className="space-y-2.5 max-h-48 overflow-y-auto" data-filter-section="cut">
-                            {['Ideal', 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor', 'Custom', 'Native'].map(cut => {
+                            {['Ideal', 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor', 'Custom', 'Native']
+                              .filter(cut => cut.toLowerCase().includes(cutSearch))
+                              .map(cut => {
                               const isSelected = filters.cut.includes(cut);
                               return (
                                 <label
@@ -1014,20 +1052,16 @@ export default function GemstoneProductsPage() {
                               placeholder="Search treatment..."
                               className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500"
                               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                              value={treatmentSearch}
                               onChange={(e) => {
-                                const searchValue = e.target.value.toLowerCase();
-                                const options = document.querySelectorAll(`[data-filter-section="treatment"] label`);
-                                options.forEach((option: Element) => {
-                                  const text = option.textContent?.toLowerCase() || '';
-                                  if (option instanceof HTMLElement) {
-                                    option.style.display = text.includes(searchValue) ? 'flex' : 'none';
-                                  }
-                                });
+                                setTreatmentSearch(e.target.value.toLowerCase());
                               }}
                             />
                           </div>
                           <div className="space-y-2.5 max-h-48 overflow-y-auto" data-filter-section="treatment">
-                            {['None (Natural)', 'Heat Treated', 'No Heat', 'Diffusion', 'Irradiation', 'Oil/Resin', 'Fracture Filling', 'Dyeing', 'HPHT', 'Surface Coating', 'Clarity Enhanced', 'Color Enhanced'].map(treatment => {
+                            {['None (Natural)', 'Heat Treated', 'No Heat', 'Diffusion', 'Irradiation', 'Oil/Resin', 'Fracture Filling', 'Dyeing', 'HPHT', 'Surface Coating', 'Clarity Enhanced', 'Color Enhanced']
+                              .filter(treatment => treatment.toLowerCase().includes(treatmentSearch))
+                              .map(treatment => {
                               const isSelected = filters.treatment.includes(treatment);
                               return (
                                 <label
@@ -1192,15 +1226,142 @@ export default function GemstoneProductsPage() {
 
           {/* Results */}
           <div className="flex-1 w-full min-w-0 z-0 relative">
-            {/* Results Header */}
-            <div className="flex items-center justify-between mb-6">
-              <p style={{ color: 'var(--muted-foreground)' }}>
-                {loading ? (
-                  'Loading...'
-                ) : (
-                  `Showing ${gemstones.length} of ${pagination.total} results`
-                )}
-              </p>
+            {/* Results Header - Desktop */}
+            <div className="hidden sm:flex items-center justify-between mb-6 p-4 border rounded-lg" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <div>
+                <h2 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>
+                  {pagination.total.toLocaleString()} Gemstones Found
+                </h2>
+                <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                  {loading
+                    ? 'Loading results...'
+                    : `Showing ${(pagination.page - 1) * pagination.limit + 1}-${Math.min(pagination.page * pagination.limit, pagination.total)} of ${pagination.total.toLocaleString()}`}
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                <select
+                  value={sortBy}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                  className="px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2"
+                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)', borderWidth: 1, borderStyle: 'solid' }}
+                >
+                  {SORT_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => setShowFilters(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm"
+                  style={{ borderColor: 'var(--border)', color: 'var(--foreground)', borderStyle: 'solid', borderWidth: 1, backgroundColor: 'var(--card)' }}
+                >
+                  <Filter className="w-4 h-4" />
+                  Filters
+                </button>
+                <div className="flex rounded-lg overflow-hidden" style={{ borderColor: 'var(--border)', borderStyle: 'solid', borderWidth: 1 }}>
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className="p-2"
+                    style={viewMode === 'grid' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { backgroundColor: 'var(--card)', color: 'var(--muted-foreground)' }}
+                    aria-label="Grid view"
+                  >
+                    <Grid className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className="p-2"
+                    style={viewMode === 'list' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { backgroundColor: 'var(--card)', color: 'var(--muted-foreground)' }}
+                    aria-label="List view"
+                  >
+                    <List className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Results Header - Mobile */}
+            <div className="sm:hidden flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+                  {pagination.total.toLocaleString()} gemstones
+                </p>
+                <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                  {loading ? 'Loading...' : `Page ${pagination.page} of ${pagination.totalPages || 1}`}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowFilters(true)}
+                  className="flex items-center justify-center w-9 h-9 rounded-lg border"
+                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                  aria-label="Open filters"
+                >
+                  <Filter className="w-4 h-4" />
+                </button>
+                <select
+                  value={sortBy}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                  className="h-9 px-2 rounded-lg text-xs border"
+                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                >
+                  {SORT_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="flex items-center rounded-lg border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className="w-8 h-8 flex items-center justify-center rounded-l-lg"
+                    style={viewMode === 'grid' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { color: 'var(--muted-foreground)' }}
+                    aria-label="Grid view"
+                  >
+                    <Grid className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className="w-8 h-8 flex items-center justify-center rounded-r-lg"
+                    style={viewMode === 'list' ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } : { color: 'var(--muted-foreground)' }}
+                    aria-label="List view"
+                  >
+                    <List className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Gemstone Type Filter Bar */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-4 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-thumb-muted-foreground/30">
+              {GEMSTONE_TYPES.map(type => {
+                const isSelected = filters.gemstoneType.includes(type.title);
+                return (
+                  <button
+                    key={type.title}
+                    onClick={() => {
+                      const next = isSelected
+                        ? filters.gemstoneType.filter(t => t !== type.title)
+                        : [...filters.gemstoneType, type.title];
+                      handleFiltersChange({ ...filters, gemstoneType: next });
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-colors"
+                    style={isSelected ? { background: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { background: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
+                    type="button"
+                  >
+                    <span className="relative w-6 h-6 rounded-full overflow-hidden bg-white">
+                      <Image
+                        src={type.img}
+                        alt={type.alt}
+                        fill
+                        sizes="24px"
+                        style={{ objectFit: 'contain' }}
+                      />
+                    </span>
+                    {type.title}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Loading State */}
@@ -1241,7 +1402,7 @@ export default function GemstoneProductsPage() {
               <>
                 <div className={
                   viewMode === 'grid' 
-                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6' 
+                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6' 
                     : 'space-y-4'
                 }>
                   {gemstones.map(item => (
@@ -1317,12 +1478,14 @@ function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
     return (
       <div className="rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
         <div className="flex gap-6">
-          <div className="w-32 h-32 rounded-lg flex-shrink-0" style={{ backgroundColor: 'var(--card)' }}>
+          <div className="w-32 h-32 rounded-lg flex-shrink-0 overflow-hidden relative" style={{ backgroundColor: 'var(--card)' }}>
             {item.image1 ? (
               <Link href={`/gemstones/single/${item.id}`}>
-                <img 
-                  src={item.image1} 
+                <Image
+                  src={item.image1}
                   alt={item.name}
+                  width={128}
+                  height={128}
                   className="w-full h-full object-cover rounded-lg"
                 />
               </Link>
@@ -1393,9 +1556,11 @@ function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
       <div className="relative aspect-square" style={{ backgroundColor: 'var(--card)' }}>
         {item.image1 ? (
           <Link href={`/gemstones/single/${item.id}`}>
-            <img 
-              src={item.image1} 
+            <Image
+              src={item.image1}
               alt={item.name}
+              width={400}
+              height={400}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           </Link>

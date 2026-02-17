@@ -1,5 +1,3 @@
-'use client'
-
 import React from 'react'
 import Link from 'next/link'
 import NavigationUser from '@/components/Navigation/NavigationUser'
@@ -8,8 +6,28 @@ import { ArrowRight, Shield, Award, Globe, ShoppingBag, Gem, CreditCard, Trendin
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { auctionService } from '@/services/auctionService'
 
-export default function HomePage() {
+export default async function HomePage() {
+  let liveAuctions: any[] = []
+
+  try {
+    const liveRes = await auctionService.getLiveAuctions<{ data: { data: any[]; meta: any } }>({ limit: 4 })
+    liveAuctions = Array.isArray(liveRes?.data?.data) ? liveRes.data.data : []
+  } catch (error) {
+    liveAuctions = []
+  }
+
+  const formatEndsIn = (endTime?: string | Date) => {
+    if (!endTime) return ''
+    const end = new Date(endTime)
+    const now = new Date()
+    const diffMs = Math.max(0, end.getTime() - now.getTime())
+    const hours = Math.floor(diffMs / (1000 * 60 * 60))
+    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
+    return `Ends in ${hours}h ${minutes}m`
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <NavigationUser />
@@ -58,6 +76,43 @@ export default function HomePage() {
                 Become a Seller
               </Button>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Live Auctions */}
+      <section className="py-20 border-t" style={{ borderColor: 'var(--border)' }}>
+        <div className="container px-4 md:px-6 mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold">Live Auctions</h2>
+            <Link href="/auctions" className="px-5 py-2.5 rounded-full font-bold transition-all border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
+              View All
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {liveAuctions.map((a: any) => {
+              const topBid = Array.isArray(a.bids) && a.bids.length ? a.bids.reduce((max: any, b: any) => (b.amount > (max?.amount ?? 0) ? b : max), null) : null
+              const title = a.product?.name ?? `${String(a.productType).charAt(0).toUpperCase() + String(a.productType).slice(1)} #${a.productId}`
+              const price = topBid?.amount ? Number(topBid.amount).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) : 'No bids yet'
+              const endsIn = formatEndsIn(a.endTime)
+              return (
+                <Link key={`${a.id}-${a.productId}`} href={`/auctions/${a.id}`} className="block">
+                  <div className="rounded-2xl border p-5 transition-all hover:shadow-xl" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                    <div className="aspect-video rounded-xl mb-4" style={{ backgroundColor: 'var(--muted)' }} />
+                    <div className="font-semibold mb-1" style={{ color: 'var(--card-foreground)' }}>{title}</div>
+                    <div className="text-sm mb-3" style={{ color: 'var(--muted-foreground)' }}>{price}</div>
+                    <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
+                      {endsIn}
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
+            {liveAuctions.length === 0 && (
+              <div className="rounded-2xl border p-8 text-center" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                <div className="text-lg" style={{ color: 'var(--muted-foreground)' }}>No live auctions at the moment</div>
+              </div>
+            )}
           </div>
         </div>
       </section>

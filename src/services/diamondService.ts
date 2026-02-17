@@ -26,6 +26,13 @@ export interface DiamondData {
   certification?: string;
   images?: string[];
   sellerId: string;
+  seller?: {
+    id: string | number;
+    userId?: string;
+    companyName?: string;
+    companyLogo?: string;
+    [key: string]: unknown;
+  };
   [key: string]: unknown;
 }
 
@@ -73,6 +80,7 @@ export interface GemstoneData {
 export interface ProductsBySellerResponse {
   data: {
     diamonds: DiamondData[];
+    meleeDiamonds: DiamondData[];
     jewelry: JewelryData[];
     gemstones: GemstoneData[];
     all: (DiamondData | JewelryData | GemstoneData)[];
@@ -138,6 +146,14 @@ class DiamondService {
     }
     return apiService.delete(`/diamond/${diamondId}`, token);
   }
+
+    async deleteMeleeDiamond(id: string | number, token?: string): Promise<ApiResponse<unknown>> {
+    const diamondId = typeof id === 'string' ? parseInt(id, 10) : id;
+    if (isNaN(diamondId)) {
+      throw new Error('Invalid diamond ID provided');
+    }
+    return apiService.delete(`/melee-diamond/${diamondId}`, token);
+  }
   // Update diamond by ID (with file upload)
   async updateDiamond(id: string | number, formData: FormData, token?: string): Promise<ApiResponse<DiamondData>> {
     // Ensure ID is properly formatted for the API endpoint
@@ -166,12 +182,32 @@ class DiamondService {
   }
   // Get all diamonds with filters
   async getDiamonds(params?: DiamondFilters): Promise<ApiResponse<DiamondData[]>> {
-    return apiService.get<DiamondData[]>('/diamond');
+    return apiService.get<DiamondData[]>('/diamond', sanitizeParams(params));
   }
 
   // Get all melee diamonds with filters
   async getMeleeDiamonds(params?: DiamondFilters): Promise<ApiResponse<DiamondData[]>> {
-    return apiService.get<DiamondData[]>('/melee-diamond');
+    return apiService.get<DiamondData[]>('/melee-diamond', sanitizeParams(params));
+  }
+
+  // Get lab grown diamonds with filters
+  async getLabDiamonds(params?: DiamondFilters): Promise<ApiResponse<DiamondData[]>> {
+    return apiService.get<DiamondData[]>('/diamond', sanitizeParams({ ...params, stoneType: 'labGrownDiamond' }));
+  }
+
+  // Get melee lab grown diamonds with filters
+  async getMeleeLabDiamonds(params?: DiamondFilters): Promise<ApiResponse<DiamondData[]>> {
+    return apiService.get<DiamondData[]>('/melee-diamond', sanitizeParams({ ...params, stoneType: 'labGrownDiamond' }));
+  }
+
+  // Get natural diamonds with filters
+  async getNaturalDiamonds(params?: DiamondFilters): Promise<ApiResponse<DiamondData[]>> {
+    return apiService.get<DiamondData[]>('/diamond', sanitizeParams({ ...params, stoneType: 'naturalDiamond' }));
+  }
+
+  // Get melee natural diamonds with filters
+  async getMeleeNaturalDiamonds(params?: DiamondFilters): Promise<ApiResponse<DiamondData[]>> {
+    return apiService.get<DiamondData[]>('/melee-diamond', sanitizeParams({ ...params, stoneType: 'naturalDiamond' }));
   }
 
   // Get single diamond by ID
@@ -183,6 +219,15 @@ class DiamondService {
     return apiService.get<DiamondData>(`/diamond/${diamondId}`);
   }
 
+  // Get melee diamond by ID
+  async getMeleeDiamondById(id: string | number): Promise<ApiResponse<DiamondData>> {
+    const diamondId = typeof id === 'string' ? parseInt(id, 10) : id;
+    if (isNaN(diamondId)) {
+      throw new Error('Invalid diamond ID provided');
+    }
+    return apiService.get<DiamondData>(`/melee-diamond/${diamondId}`);
+  }
+
   // Search diamonds
   async searchDiamonds(query: string, params?: SearchParams): Promise<ApiResponse<DiamondData[]>> {
     return apiService.get<DiamondData[]>('/diamond/search', sanitizeParams({ search: query, ...params }));
@@ -191,6 +236,11 @@ class DiamondService {
   // Get diamonds by seller
   async getDiamondsBySeller(sellerId: string, params?: SearchParams): Promise<ApiResponse<DiamondData[]>> {
     return apiService.get<DiamondData[]>(`/diamond/seller/${sellerId}`, sanitizeParams(params));
+  }
+
+  // Get melee diamonds by seller
+  async getMeleeDiamondsBySeller(sellerId: string, params?: SearchParams): Promise<ApiResponse<DiamondData[]>> {
+    return apiService.get<DiamondData[]>(`/melee-diamond/seller/${sellerId}`, sanitizeParams(params));
   }
 
   // Get jewelry by seller
@@ -207,52 +257,49 @@ class DiamondService {
 
   // Get all products by seller based on seller type
   async getProductsBySeller(sellerId: string, sellerType?: string, params?: SearchParams): Promise<ProductsBySellerResponse> {
-    const promises: Promise<ApiResponse<any>>[] = [];
+    const results = {
+      diamonds: [] as DiamondData[],
+      meleeDiamonds: [] as DiamondData[],
+      jewelry: [] as JewelryData[],
+      gemstones: [] as GemstoneData[]
+    };
 
-    // Based on seller type, fetch relevant products
+    const promises: Promise<void>[] = [];
+
+    const fetchDiamonds = () => this.getDiamondsBySeller(sellerId, params).then(res => { results.diamonds = res.data || []; });
+    const fetchMelee = () => this.getMeleeDiamondsBySeller(sellerId, params).then(res => { results.meleeDiamonds = res.data || []; });
+    const fetchJewelry = () => this.getJewelryBySeller(sellerId, params).then(res => { results.jewelry = res.data || []; });
+    const fetchGemstones = () => this.getGemstonesBySeller(sellerId, params).then(res => { results.gemstones = res.data || []; });
+
     if (!sellerType) {
-      // If no seller type specified, fetch all product types
-      promises.push(
-        this.getDiamondsBySeller(sellerId, params),
-        this.getJewelryBySeller(sellerId, params),
-        this.getGemstonesBySeller(sellerId, params)
-      );
+      promises.push(fetchDiamonds(), fetchJewelry(), fetchGemstones());
     } else {
       switch (sellerType) {
         case 'naturalDiamond':
+          promises.push(fetchDiamonds());
+          break;
         case 'labGrownDiamond':
-          promises.push(this.getDiamondsBySeller(sellerId, params));
+          promises.push(fetchDiamonds(), fetchMelee());
           break;
         case 'jewellery':
-          promises.push(this.getJewelryBySeller(sellerId, params));
+          promises.push(fetchJewelry());
           break;
         case 'gemstone':
-          promises.push(this.getGemstonesBySeller(sellerId, params));
+          promises.push(fetchGemstones());
           break;
         default:
-          // For unknown types, try to fetch all
-          promises.push(
-            this.getDiamondsBySeller(sellerId, params),
-            this.getJewelryBySeller(sellerId, params),
-            this.getGemstonesBySeller(sellerId, params)
-          );
+          promises.push(fetchDiamonds(), fetchJewelry(), fetchGemstones());
       }
     }
 
-    return Promise.allSettled(promises).then((results) => {
-      const diamonds = results[0]?.status === 'fulfilled' ? (results[0].value?.data || []) as DiamondData[] : [];
-      const jewelry = results[1]?.status === 'fulfilled' ? (results[1].value?.data || []) as JewelryData[] : [];
-      const gemstones = results[2]?.status === 'fulfilled' ? (results[2].value?.data || []) as GemstoneData[] : [];
+    await Promise.allSettled(promises);
 
-      return {
-        data: {
-          diamonds,
-          jewelry,
-          gemstones,
-          all: [...diamonds, ...jewelry, ...gemstones]
-        }
-      };
-    });
+    return {
+      data: {
+        ...results,
+        all: [...results.diamonds, ...results.meleeDiamonds, ...results.jewelry, ...results.gemstones] as (DiamondData | JewelryData | GemstoneData)[]
+      }
+    };
   }
 
   // Get all products (diamonds + jewelry) by seller - keeping for backward compatibility

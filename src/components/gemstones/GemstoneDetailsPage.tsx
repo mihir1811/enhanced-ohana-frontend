@@ -23,6 +23,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { GemstonItem } from "@/services/gemstoneService";
+import { generateGemstoneName } from "@/utils/gemstoneUtils";
 import WishlistButton from "@/components/shared/WishlistButton";
 import { cartService } from "@/services/cartService";
 import { useSelector } from 'react-redux'
@@ -83,7 +84,8 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
     })
     
     // Try to get seller ID from multiple possible locations
-    const sellerId = gemstone?.seller?.id || gemstone?.sellerId
+    // We prioritize seller.userId because the chat system works between Users (not Seller entities)
+    const sellerId = gemstone?.seller?.userId || gemstone?.seller?.id || gemstone?.sellerId
     
     console.log('🔍 [GemstoneChat] Resolved seller ID:', sellerId)
     
@@ -108,7 +110,15 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
     try {
       // Navigate to main chat page with seller pre-selected
       const productId = gemstone.id
-      const productName = gemstone.name || `${gemstone.caratWeight}ct ${gemstone.shape} ${gemstone.gemType}`
+      const productName = generateGemstoneName({
+        process: gemstone.process,
+        color: gemstone.color,
+        shape: gemstone.shape,
+        gemsType: gemstone.gemType,
+        subType: gemstone.subType,
+        carat: gemstone.caratWeight,
+        quantity: gemstone.quantity
+      }) || gemstone.name || `${gemstone.caratWeight}ct ${gemstone.shape} ${gemstone.gemType}`
       
       const chatUrl = `/user/chat?sellerId=${sellerId}&productId=${productId}&productType=gemstone&productName=${encodeURIComponent(productName)}`
       console.log('🚀 [GemstoneChat] Navigating to chat:', { 
@@ -124,7 +134,15 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
       console.error('❌ [GemstoneChat] Failed to initiate gemstone chat:', error)
       // Still navigate to chat page, let it handle the error
       const productId = gemstone.id
-      const productName = gemstone.name || `${gemstone.caratWeight}ct ${gemstone.shape} ${gemstone.gemType}`
+      const productName = generateGemstoneName({
+        process: gemstone.process,
+        color: gemstone.color,
+        shape: gemstone.shape,
+        gemsType: gemstone.gemType,
+        subType: gemstone.subType,
+        carat: gemstone.caratWeight,
+        quantity: gemstone.quantity
+      }) || gemstone.name || `${gemstone.caratWeight}ct ${gemstone.shape} ${gemstone.gemType}`
       const chatUrl = `/user/chat?sellerId=${sellerId}&productId=${productId}&productType=gemstone&productName=${encodeURIComponent(productName)}`
       console.log('🔄 [GemstoneChat] Fallback navigation:', chatUrl)
       router.push(chatUrl)
@@ -314,7 +332,15 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
                   </a>
                 )}
                 <h1 className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>
-                  {gemstone.name}
+                  {generateGemstoneName({
+                    process: gemstone.process,
+                    color: gemstone.color,
+                    shape: gemstone.shape,
+                    gemsType: gemstone.gemType,
+                    subType: gemstone.subType,
+                    carat: gemstone.caratWeight,
+                    quantity: gemstone.quantity
+                  }) || gemstone.name}
                 </h1>
                 <p className="mt-1" style={{ color: 'var(--muted-foreground)' }}>SKU: {gemstone.skuCode}</p>
               </div>

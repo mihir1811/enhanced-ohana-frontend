@@ -2,19 +2,44 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Package, ShoppingCart, Heart, Star, TrendingUp, Eye, Clock, CreditCard } from 'lucide-react'
+import { Package, ShoppingCart, Heart, Star, TrendingUp, Eye, Clock, CreditCard, Gem, Award, ShoppingBag } from 'lucide-react'
+import { auctionService } from '@/services/auctionService'
 
 export default function UserDashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
+  const [liveAuctions, setLiveAuctions] = useState<any[]>([])
 
   useEffect(() => {
-    // Simulate loading user data
     const timer = setTimeout(() => {
       setIsLoading(false)
     }, 1200)
 
     return () => clearTimeout(timer)
   }, [])
+
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      try {
+        const res = await auctionService.getLiveAuctions<{ data: { data: any[] } }>({ limit: 4 })
+        const data = Array.isArray(res?.data?.data) ? res.data.data : []
+        if (mounted) setLiveAuctions(data)
+      } catch {}
+    })()
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  const formatEndsIn = (endTime?: string | Date) => {
+    if (!endTime) return ''
+    const end = new Date(endTime)
+    const now = new Date()
+    const diffMs = Math.max(0, end.getTime() - now.getTime())
+    const hours = Math.floor(diffMs / (1000 * 60 * 60))
+    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
+    return `Ends in ${hours}h ${minutes}m`
+  }
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
@@ -110,21 +135,21 @@ export default function UserDashboardPage() {
                 {
                   name: 'Diamonds',
                   description: 'Premium certified diamonds',
-                  image: '💎',
+                  icon: <Gem className="w-10 h-10" />,
                   href: '/products/diamonds',
                   color: 'var(--chart-1)'
                 },
                 {
                   name: 'Gemstones',
                   description: 'Rare and precious gemstones',
-                  image: '💍',
+                  icon: <Award className="w-10 h-10" />,
                   href: '/products/gemstones',
                   color: 'var(--chart-2)'
                 },
                 {
                   name: 'Jewelry',
                   description: 'Handcrafted luxury jewelry',
-                  image: '👑',
+                  icon: <ShoppingBag className="w-10 h-10" />,
                   href: '/products/jewelry',
                   color: 'var(--chart-3)'
                 }
@@ -137,8 +162,11 @@ export default function UserDashboardPage() {
                       borderColor: 'var(--border)'
                     }}
                   >
-                    <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-300">
-                      {category.image}
+                    <div 
+                      className="w-20 h-20 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300"
+                      style={{ backgroundColor: 'var(--muted)', color: 'var(--card-foreground)' }}
+                    >
+                      {category.icon}
                     </div>
                     <h3 
                       className="text-xl font-bold mb-2"
@@ -164,6 +192,41 @@ export default function UserDashboardPage() {
                   </div>
                 </Link>
               ))}
+            </div>
+          </div>
+
+          {/* Live Auctions */}
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>Live Auctions</h2>
+              <Link href="/auctions" className="text-sm font-medium px-3 py-1.5 rounded-lg border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
+                View All
+              </Link>
+            </div>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {liveAuctions.map((a: any) => {
+                const topBid = Array.isArray(a.bids) && a.bids.length ? a.bids.reduce((max: any, b: any) => (b.amount > (max?.amount ?? 0) ? b : max), null) : null
+                const title = a.product?.name ?? `${String(a.productType).charAt(0).toUpperCase() + String(a.productType).slice(1)} #${a.productId}`
+                const price = topBid?.amount ? Number(topBid.amount).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) : 'No bids yet'
+                const endsIn = formatEndsIn(a.endTime)
+                return (
+                  <Link key={`${a.id}-${a.productId}`} href={`/auctions/${a.id}`}>
+                    <div className="rounded-xl border p-4 transition-all hover:shadow-lg" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                      <div className="aspect-video rounded-lg mb-3" style={{ backgroundColor: 'var(--muted)' }} />
+                      <div className="font-semibold mb-1" style={{ color: 'var(--card-foreground)' }}>{title}</div>
+                      <div className="text-sm mb-3" style={{ color: 'var(--muted-foreground)' }}>{price}</div>
+                      <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
+                        {endsIn}
+                      </div>
+                    </div>
+                  </Link>
+                )
+              })}
+              {liveAuctions.length === 0 && (
+                <div className="rounded-xl border p-8 text-center" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                  <div style={{ color: 'var(--muted-foreground)' }}>No live auctions at the moment</div>
+                </div>
+              )}
             </div>
           </div>
 

@@ -199,6 +199,7 @@ export interface JewelryDetailsItem {
   user_id?: string;
   seller?: {
     id: string;
+    userId?: string;
     companyName?: string;
     companyLogo?: string;
   };
@@ -256,7 +257,8 @@ const JewelryDetailsPage: React.FC<JewelryDetailsPageProps> = ({ jewelry }) => {
 
   const handleChatWithSeller = () => {
     // Try to get seller ID from multiple possible locations
-    const sellerId = jewelry?.user_id || jewelry?.seller?.id || jewelry?.sellerId
+    // We prioritize seller.userId because the chat system works between Users (not Seller entities)
+    const sellerId = jewelry?.seller?.userId || jewelry?.user_id || jewelry?.seller?.id || jewelry?.sellerId
     
     if (!sellerId) {
       console.warn('No seller information available', { 

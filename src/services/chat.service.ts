@@ -184,6 +184,7 @@ export const chatService = {
 
     // Group messages by participant pairs
     const conversationsMap = new Map<string, ChatConversation>()
+    const safeCurrentUserId = currentUserId ? String(currentUserId) : undefined
     
     messagesResponse.data.data.forEach((message: ChatMessageDto, index: number) => {
       // Safety check for message structure
@@ -201,10 +202,11 @@ export const chatService = {
       
       // Determine the other participant (not the current user)
       let otherParticipant
-      if (currentUserId) {
+      if (safeCurrentUserId) {
         // If we know the current user, find the other participant
-        otherParticipant = message.fromId === currentUserId ? message.to : message.from
-        console.log(`👤 [ChatService] Current user: ${currentUserId}, Other participant: ${otherParticipant?.name || 'Unknown'} (${otherParticipant?.role || 'unknown'})`)
+        // Ensure strictly string comparison
+        otherParticipant = message.fromId === safeCurrentUserId ? message.to : message.from
+        console.log(`👤 [ChatService] Current user: ${safeCurrentUserId}, Other participant: ${otherParticipant?.name || 'Unknown'} (${otherParticipant?.role || 'unknown'})`)
       } else {
         // Fallback: assume we want to show all unique participants
         // Create conversations for both directions
@@ -218,8 +220,8 @@ export const chatService = {
         return
       }
       
-      const conversationKey = currentUserId ? 
-        [currentUserId, otherParticipant.id].sort().join('-') : 
+      const conversationKey = safeCurrentUserId ? 
+        [safeCurrentUserId, otherParticipant.id].sort().join('-') : 
         [message.fromId, message.toId].sort().join('-')
       
       if (!conversationsMap.has(conversationKey)) {
@@ -284,23 +286,46 @@ export const chatService = {
     return apiService.delete(API_CONFIG.ENDPOINTS.CHAT.DELETE_MESSAGE.replace(':messageId', messageId), token)
   },
 
-  // WebSocket methods removed/disabled
-  /*
+  // WebSocket methods
   sendMessageViaSocket(fromId: string, toId: string, message: string, socket: any): void {
-    console.warn('Socket disabled');
+    if (!socket || !socket.connected) {
+      console.warn('⚠️ [ChatService] Cannot send message: Socket disconnected');
+      return;
+    }
+
+    const payload = JSON.stringify({
+      type: 'SEND_MESSAGE',
+      data: {
+        fromId,
+        toId,
+        message,
+        messageType: 'TEXT'
+      }
+    });
+
+    socket.emit('CHAT_EVENT', payload);
   },
-  */
 
   // Enhanced WebSocket message sending (socket-only, no API fallback)
-  /*
   async sendMessageWithInit(fromId: string, toId: string, message: string, socket: any): Promise<void> {
+    if (!socket || !socket.connected) {
+      throw new Error('Socket not connected');
+    }
+
+    this.sendMessageViaSocket(fromId, toId, message, socket);
     return Promise.resolve();
   },
 
   registerSocket(userId: string, socket: any): void {
-    // no-op
+    if (!socket || !socket.connected) return;
+    
+    const payload = JSON.stringify({
+      type: 'REGISTER_SOCKET',
+      data: { userId }
+    });
+    
+    socket.emit('CHAT_EVENT', payload);
   }
-  */
 }
 
 export default chatService

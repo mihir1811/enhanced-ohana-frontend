@@ -1,5 +1,6 @@
 // ...existing imports...
 import React, { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 import { gemstoneService } from '@/services/gemstoneService';
@@ -121,7 +122,6 @@ const CUTS = [
 ];
 
 interface GemstoneFormState {
-  name: string;
   gemsType: string;
   subType: string;
   composition: string;
@@ -131,7 +131,7 @@ interface GemstoneFormState {
   stockNumber: string;
   description: string;
   discount: string;
-  price: string;
+  totalPrice: string;
   carat: string;
   shape: string;
   color: string;
@@ -153,17 +153,16 @@ interface GemstoneFormState {
 }
 
 const initialForm: GemstoneFormState = {
-  name: '',
   gemsType: '',
   subType: '',
   composition: '',
   qualityGrade: '',
-  quantity: '',
+  quantity: '1',
   videoURL: '',
   stockNumber: '',
   description: '',
   discount: '',
-  price: '',
+  totalPrice: '',
   pricePerCarat: '',
   carat: '',
   shape: '',
@@ -185,6 +184,7 @@ const initialForm: GemstoneFormState = {
 };
 
 function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
+  const router = useRouter();
   const [form, setForm] = useState<GemstoneFormState>(initialForm);
   const [loading, setLoading] = useState(false);
   const [selectedGemsType, setSelectedGemsType] = useState<string | undefined>(undefined);
@@ -207,7 +207,6 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
     const randomPricePerCarat = (randomPrice / parseFloat(randomCarat)).toFixed(2);
 
     const newData: GemstoneFormState = {
-      name: `${randomGemType.charAt(0).toUpperCase() + randomGemType.slice(1)} Gemstone`,
       gemsType: randomGemType,
       subType: randomSubType,
       composition: getRandomElement(COMPOSITIONS),
@@ -217,7 +216,7 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
       stockNumber: Math.floor(Math.random() * 100000 + 1000).toString(),
       description: 'This is a randomly generated gemstone description for testing purposes.',
       discount: Math.floor(Math.random() * 20).toString(),
-      price: randomPrice.toString(),
+      totalPrice: randomPrice.toString(),
       pricePerCarat: randomPricePerCarat,
       carat: randomCarat,
       shape: getRandomElement(SHAPES),
@@ -293,10 +292,11 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
       
       if (form.videoURL) formData.append('videoURL', form.videoURL);
       if (form.stockNumber) formData.append('stockNumber', form.stockNumber);
+      if (form.description) formData.append('description', form.description);
       if (form.discount) formData.append('discount', form.discount);
       
       // Pricing mappings
-      if (form.price) formData.append('totalPrice', form.price);
+      if (form.totalPrice) formData.append('totalPrice', form.totalPrice);
       if (form.pricePerCarat) formData.append('pricePerCarat', form.pricePerCarat);
       
       // Physical Properties
@@ -332,6 +332,7 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
       }
       toast.success('Gemstone added successfully!');
       setForm(initialForm);
+      router.push('/seller/products');
       if (onCancel) onCancel();
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to add gemstone';
@@ -358,10 +359,6 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
         <h3 className="text-lg font-semibold mb-2">Basic Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block font-medium mb-1">Name *</label>
-            <input name="name" value={form.name} onChange={handleInput} required className="input" placeholder="e.g. Natural Ruby" />
-          </div>
-          <div>
             <label className="block font-medium mb-1">Gem Type *</label>
             <select name="gemsType" value={form.gemsType} onChange={handleSelect} required className="input">
               <option value="">Select gem type</option>
@@ -372,8 +369,8 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-1">Sub Type *</label>
-            <select name="subType" value={form.subType} onChange={handleSelect} required className="input" disabled={!selectedGemsType}>
+            <label className="block font-medium mb-1">Sub Type</label>
+            <select name="subType" value={form.subType} onChange={handleSelect} className="input" disabled={!selectedGemsType}>
               <option value="">{selectedGemsType ? 'Select sub type' : 'Select gem type first'}</option>
               {selectedGemsType && GEM_SUBTYPES[selectedGemsType]?.map(sub => (
                 <option key={sub} value={sub}>{sub}</option>
@@ -389,11 +386,14 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
           <div>
             <label className="block font-medium mb-1">Quantity *</label>
             <input name="quantity" value={form.quantity} onChange={handleInput} required className="input" placeholder="e.g. 1" />
+            <p className="text-[10px] text-muted-foreground mt-1">
+              * Use 1 for Single Gemstone, {'>'}1 for Melee Parcels
+            </p>
           </div>
         </div>
         <div className="mt-4">
-          <label className="block font-medium mb-1">Description *</label>
-          <textarea name="description" value={form.description} onChange={handleInput} required rows={3} className="input" />
+          <label className="block font-medium mb-1">Description</label>
+          <textarea name="description" value={form.description} onChange={handleInput} rows={3} className="input" />
         </div>
       </section>
 
@@ -402,7 +402,7 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
         <h3 className="text-lg font-semibold mb-2">Media</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block font-medium mb-1">Product Images *</label>
+            <label className="block font-medium mb-1">Product Images</label>
             <input
               name="images"
               type="file"
@@ -444,8 +444,8 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
             )}
           </div>
           <div>
-            <label className="block font-medium mb-1">Video URL *</label>
-            <input name="videoURL" value={form.videoURL} onChange={handleInput} required className="input" placeholder="e.g. https://youtu.be/abcd1234" />
+            <label className="block font-medium mb-1">Video URL</label>
+            <input name="videoURL" value={form.videoURL} onChange={handleInput} className="input" placeholder="e.g. https://youtu.be/abcd1234" />
           </div>
         </div>
       </section>
@@ -456,7 +456,7 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block font-medium mb-1">Total Price *</label>
-            <input name="price" value={form.price} onChange={handleInput} required className="input" placeholder="e.g. 1000" />
+            <input name="totalPrice" value={form.totalPrice} onChange={handleInput} required className="input" placeholder="e.g. 1000" />
           </div>
           <div>
             <label className="block font-medium mb-1">Price Per Carat *</label>
@@ -467,8 +467,8 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
             <input name="carat" value={form.carat} onChange={handleInput} required className="input" placeholder="e.g. 2.5" />
           </div>
           <div>
-            <label className="block font-medium mb-1">Discount (%) *</label>
-            <input name="discount" value={form.discount} onChange={handleInput} required className="input" placeholder="e.g. 10" />
+            <label className="block font-medium mb-1">Discount (%)</label>
+            <input name="discount" value={form.discount} onChange={handleInput} className="input" placeholder="e.g. 10" />
           </div>
         </div>
       </section>
@@ -478,8 +478,8 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
         <h3 className="text-lg font-semibold mb-2">Gemstone Specifications</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block font-medium mb-1">Quality Grade *</label>
-            <select name="qualityGrade" value={form.qualityGrade} onChange={handleSelect} required className="input">
+            <label className="block font-medium mb-1">Quality Grade</label>
+            <select name="qualityGrade" value={form.qualityGrade} onChange={handleSelect} className="input">
               <option value="">Select quality grade</option>
               {QUALITY_GRADES.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -487,8 +487,8 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-1">Composition *</label>
-            <select name="composition" value={form.composition} onChange={handleSelect} required className="input">
+            <label className="block font-medium mb-1">Composition</label>
+            <select name="composition" value={form.composition} onChange={handleSelect} className="input">
               <option value="">Select composition</option>
               {COMPOSITIONS.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -505,8 +505,8 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-1">Color *</label>
-            <select name="color" value={form.color} onChange={handleSelect} required className="input">
+            <label className="block font-medium mb-1">Color</label>
+            <select name="color" value={form.color} onChange={handleSelect} className="input">
               <option value="">Select color</option>
               {COLORS.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -514,8 +514,8 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-1">Clarity *</label>
-            <select name="clarity" value={form.clarity} onChange={handleSelect} required className="input">
+            <label className="block font-medium mb-1">Clarity</label>
+            <select name="clarity" value={form.clarity} onChange={handleSelect} className="input">
               <option value="">Select clarity</option>
               {CLARITIES.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -523,8 +523,8 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-1">Hardness *</label>
-            <input name="hardness" value={form.hardness} onChange={handleInput} required className="input" placeholder="e.g. 9" />
+            <label className="block font-medium mb-1">Hardness</label>
+            <input name="hardness" value={form.hardness} onChange={handleInput} className="input" placeholder="e.g. 9" />
           </div>
           <div>
             <label className="block font-medium mb-1">Origin *</label>
@@ -536,8 +536,8 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-1">Fluorescence *</label>
-            <select name="fluoreScence" value={form.fluoreScence} onChange={handleSelect} required className="input">
+            <label className="block font-medium mb-1">Fluorescence</label>
+            <select name="fluoreScence" value={form.fluoreScence} onChange={handleSelect} className="input">
               <option value="">Select fluorescence</option>
               {FLUORESCENCES.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -546,8 +546,8 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
           </div>
           {/* Newly added fields for API compliance */}
           <div>
-            <label className="block font-medium mb-1">Treatment *</label>
-            <select name="treatment" value={form.treatment} onChange={handleSelect} required className="input">
+            <label className="block font-medium mb-1">Treatment</label>
+            <select name="treatment" value={form.treatment} onChange={handleSelect} className="input">
               <option value="">Select treatment</option>
               {TREATMENTS.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -555,16 +555,16 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-1">Refractive Index *</label>
-            <input name="refrectiveIndex" value={form.refrectiveIndex} onChange={handleInput} required className="input" placeholder="e.g. 1.76" />
+            <label className="block font-medium mb-1">Refractive Index</label>
+            <input name="refrectiveIndex" value={form.refrectiveIndex} onChange={handleInput} className="input" placeholder="e.g. 1.76" />
           </div>
           <div>
-            <label className="block font-medium mb-1">Birefringence *</label>
-            <input name="birefringence" value={form.birefringence} onChange={handleInput} required className="input" placeholder="e.g. 0.008" />
+            <label className="block font-medium mb-1">Birefringence</label>
+            <input name="birefringence" value={form.birefringence} onChange={handleInput} className="input" placeholder="e.g. 0.008" />
           </div>
           <div>
-            <label className="block font-medium mb-1">Process *</label>
-            <select name="process" value={form.process} onChange={handleSelect} required className="input">
+            <label className="block font-medium mb-1">Process</label>
+            <select name="process" value={form.process} onChange={handleSelect} className="input">
               <option value="">Select process</option>
               {PROCESSES.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -572,8 +572,8 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-1">Cut *</label>
-            <select name="cut" value={form.cut} onChange={handleSelect} required className="input">
+            <label className="block font-medium mb-1">Cut</label>
+            <select name="cut" value={form.cut} onChange={handleSelect} className="input">
               <option value="">Select cut</option>
               {CUTS.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -596,8 +596,8 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
         <h3 className="text-lg font-semibold mb-2">Certificate</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block font-medium mb-1">Certificate Company *</label>
-            <select name="certificateCompanyId" value={form.certificateCompanyId} onChange={handleSelect} required className="input">
+            <label className="block font-medium mb-1">Certificate Company</label>
+            <select name="certificateCompanyId" value={form.certificateCompanyId} onChange={handleSelect} className="input">
               <option value="">Select certificate company</option>
               {certificateCompaniesIds.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -605,8 +605,8 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-1">Certificate Number *</label>
-            <input name="certificateNumber" value={form.certificateNumber} onChange={handleInput} required className="input" placeholder="e.g. GIA-12345678" />
+            <label className="block font-medium mb-1">Certificate Number</label>
+            <input name="certificateNumber" value={form.certificateNumber} onChange={handleInput} className="input" placeholder="e.g. GIA-12345678" />
           </div>
         </div>
       </section>

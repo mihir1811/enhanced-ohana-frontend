@@ -63,7 +63,9 @@ const BecomeSellerForm: React.FC<BecomeSellerFormProps> = ({ onSuccess }) => {
     { value: SellerType.naturalDiamond, label: 'Natural Diamonds', desc: 'Certified natural diamond dealer' },
     { value: SellerType.labGrownDiamond, label: 'Lab-Grown Diamonds', desc: 'Synthetic diamond specialist' },
     { value: SellerType.jewellery, label: 'Jewelry', desc: 'Fine jewelry and accessories' },
-    { value: SellerType.gemstone, label: 'Gemstones', desc: 'Precious and semi-precious stones' }
+    { value: SellerType.gemstone, label: 'Gemstones', desc: 'Precious and semi-precious stones' },
+    { value: SellerType.bullion, label: 'Bullion', desc: 'Gold, silver, and other precious metals' },
+    { value: SellerType.watch, label: 'Watch', desc: 'Luxury and premium watches' }
   ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -294,6 +296,11 @@ const BecomeSellerForm: React.FC<BecomeSellerFormProps> = ({ onSuccess }) => {
                         );
                       })}
                     </div>
+                  </div>
+                  <div className="mt-4 rounded-xl border border-border bg-muted/40 p-4">
+                    <p className="text-sm text-muted-foreground">
+                      Jewelry sellers can add watch products. Watch sellers cannot list jewelry products.
+                    </p>
                   </div>
                 </div>
               </div>
