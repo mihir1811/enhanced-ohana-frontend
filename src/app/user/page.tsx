@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Package, ShoppingCart, Heart, Star, TrendingUp, Eye, Clock, CreditCard, Gem, Award, ShoppingBag } from 'lucide-react'
 import { auctionService } from '@/services/auctionService'
+import { SECTION_WIDTH } from '@/lib/constants'
 
 export default function UserDashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
@@ -43,7 +44,7 @@ export default function UserDashboardPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 sm:px-6 lg:px-8 py-8`}>
         <div className="space-y-8">
           {/* Welcome Section */}
           <div className="text-center">

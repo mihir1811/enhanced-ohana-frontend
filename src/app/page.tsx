@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { auctionService } from '@/services/auctionService'
+import { SECTION_WIDTH } from '@/lib/constants'
 
 export default async function HomePage() {
   let liveAuctions: any[] = []
@@ -82,7 +83,7 @@ export default async function HomePage() {
 
       {/* Live Auctions */}
       <section className="py-20 border-t" style={{ borderColor: 'var(--border)' }}>
-        <div className="container px-4 md:px-6 mx-auto">
+        <div className={`container px-4 md:px-6 mx-auto max-w-[${SECTION_WIDTH}px]`}>
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-3xl md:text-4xl font-bold">Live Auctions</h2>
             <Link href="/auctions" className="px-5 py-2.5 rounded-full font-bold transition-all border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
@@ -239,7 +240,7 @@ export default async function HomePage() {
         className="py-32 transition-colors duration-300 border-y border-border"
         style={{ backgroundColor: 'var(--trust-bg)' }}
       >
-        <div className="container px-4 md:px-6 mx-auto">
+        <div className={`container px-4 md:px-6 mx-auto max-w-[${SECTION_WIDTH}px]`}>
           <div className="text-center mb-16">
             <span className="text-amber-500 font-bold tracking-widest uppercase text-sm">Why Choose Ohana</span>
             <h2 className="text-3xl md:text-5xl font-bold mt-3 text-foreground">Built on Trust & Transparency</h2>
@@ -281,7 +282,7 @@ export default async function HomePage() {
 
       {/* Newsletter Section - Vibrant Gradient */}
       <section className="py-24 bg-background transition-colors duration-300">
-        <div className="container px-4 md:px-6 mx-auto">
+        <div className={`container px-4 md:px-6 mx-auto max-w-[${SECTION_WIDTH}px]`}>
           <div
             className="max-w-6xl mx-auto rounded-[3rem] p-12 md:p-24 overflow-hidden relative text-center shadow-2xl transition-all duration-300"
             style={{

@@ -391,7 +391,7 @@ export default function NavigationUser() {
       {/* Main Navigation Header */}
       <header className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 shadow-lg w-full" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)' }}>
         <nav className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 sm:px-6 lg:px-8 w-full`}>
-          <div className="flex items-center justify-between h-16 lg:h-20 w-full min-w-0 gap-4">
+          <div className="flex items-center justify-between lg:py-2 w-full min-w-0 gap-4">
             {/* Brand Logo */}
             <div className="flex items-center space-x-3 flex-shrink-0 min-w-fit">
               <Link href="/user" className="flex items-center space-x-2 group">
@@ -407,7 +407,7 @@ export default function NavigationUser() {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center space-x-2 flex-1 justify-center min-w-0 overflow-hidden">
+            <div className="hidden lg:hidden items-center space-x-2 flex-1 justify-center min-w-0 overflow-hidden">
               <div className="flex items-center space-x-2 max-w-fit">
                 {navigationItems.map((item) => (
                   <div
@@ -896,7 +896,7 @@ export default function NavigationUser() {
           </div>
 
           {/* Tablet Navigation - Below Header */}
-          <div className="hidden md:flex lg:hidden items-center justify-center py-3 border-t overflow-visible relative" style={{ borderColor: 'var(--border)' }}>
+          <div className="md:flex items-center justify-center py-2 border-t overflow-visible relative" style={{ borderColor: 'var(--border)' }}>
             <div className="flex items-center space-x-6 overflow-x-auto scrollbar-hide px-4 max-w-full">
               {navigationItems.map((item) => (
                 <div

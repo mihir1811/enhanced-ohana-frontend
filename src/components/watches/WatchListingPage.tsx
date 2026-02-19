@@ -343,33 +343,33 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
           </div>
 
           {/* Quick Actions */}
-          <div className="absolute top-3 right-3 flex flex-col gap-2 translate-x-12 group-hover:translate-x-0 transition-transform duration-300">
+          <div className="absolute top-3 right-2 flex flex-col gap-2 translate-x-12 group-hover:translate-x-0 transition-transform duration-300">
             <WishlistButton
               productId={product.id}
               productType="watch"
-              className="p-2 shadow-lg rounded-full hover:bg-primary hover:text-white transition-colors"
+              className="h-[40px] w-[40px] p-2 shadow-lg rounded-full hover:bg-primary hover:text-white transition-colors"
               style={{ backgroundColor: 'var(--card)' }}
             />
             <CompareButton
               product={product}
               productType="watch"
-              className="p-2 shadow-lg rounded-full hover:bg-primary hover:text-white transition-colors"
+              className="h-[40px] w-[40px] flex items-center justify-center p-2 shadow-lg rounded-full hover:bg-primary  transition-colors"
               style={{ backgroundColor: 'var(--card)' }}
             />
             <button 
-              className="p-2 shadow-lg rounded-full hover:bg-primary hover:text-white transition-colors"
+              className="cursor-pointer h-[40px] w-[40px] p-2 shadow-lg rounded-full hover:bg-primary hover:text-white transition-colors"
               style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
               onClick={(e) => {
                 e.stopPropagation();
                 // Quick view logic
               }}
             >
-              <Eye size={18} />
+              <Eye size={22} />
             </button>
           </div>
 
           {/* Bottom Info Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+          {/* <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-300">
             <button 
               className="w-full py-2.5 bg-white text-gray-900 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-colors"
               onClick={(e) => {
@@ -380,7 +380,7 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
               <ShoppingCart size={16} />
               Add to Cart
             </button>
-          </div>
+          </div> */}
         </div>
 
         {/* Content */}
@@ -723,7 +723,7 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
         }
       `}</style>
       <div className="min-h-screen transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12`}>
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Mobile Filter Drawer */}
           {drawerVisible && (
@@ -864,14 +864,14 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
                 <div className="flex items-center gap-2 p-1 rounded-xl border" style={{ backgroundColor: 'var(--muted)', borderColor: 'var(--border)' }}>
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-gray-700 shadow-sm text-primary' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`cursor-pointer w-8 h-8 flex items-center justify-center rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-gray-700 shadow-sm text-black' : 'dark:text-white hover:text-gray-600'}`}
                     aria-label="Grid view"
                   >
                     <Grid size={18} />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 shadow-sm text-primary' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`cursor-pointer w-8 h-8 flex items-center justify-center rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 shadow-sm text-black' : 'dark:text-white hover:text-gray-600'}`}
                     aria-label="List view"
                   >
                     <List size={18} />

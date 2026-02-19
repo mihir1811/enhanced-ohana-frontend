@@ -47,7 +47,7 @@ import {
 } from '../../../public/icons'
 
 // Constants
-const SECTION_WIDTH = 1400
+import { SECTION_WIDTH } from '@/lib/constants'
 
 // Sieve size data for melee diamonds
 const SIEVE_DATA = [
@@ -1954,7 +1954,7 @@ export default function DiamondsSearchPage() {
       </div>
 
       <div className="w-full py-12 ">
-        <div className="max-w-[1400px] mx-auto px-4">
+        <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4`}>
 
           <DiamondShapesCarousel 
             title="Select Diamond Shapes" 

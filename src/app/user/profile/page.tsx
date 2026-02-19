@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { User, Mail, Phone, MapPin, Calendar, Shield, Star, Edit3, Save, X, Building, Award, TrendingUp, Loader2, Camera } from 'lucide-react'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { updateUserProfile, updateUserProfileAsync, updateProfilePictureAsync, setCredentials } from '@/features/auth/authSlice'
+import { SECTION_WIDTH } from '@/lib/constants'
 
 export default function UserProfilePage() {
   const dispatch = useAppDispatch()
@@ -271,7 +272,7 @@ export default function UserProfilePage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 sm:px-6 lg:px-8 py-8`}>
         <div className="space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">

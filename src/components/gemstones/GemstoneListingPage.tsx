@@ -275,7 +275,7 @@ const GemstoneListingPage: React.FC<GemstoneListingPageProps> = ({
         }
       `}</style>
       <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
-      <div className="max-w-[1400px] mx-auto px-4 py-12">
+      <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 py-12`}>
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Desktop Sidebar */}
           <div className="hidden lg:block w-80 shrink-0">
