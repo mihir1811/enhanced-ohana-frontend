@@ -7,6 +7,7 @@ import { transformWishlistItemToUnified, UnifiedProduct, WishlistUnifiedProduct 
 import WishlistProductCard from '@/components/user/WishlistProductCard';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
+import { SECTION_WIDTH } from '@/lib/constants';
 
 type ViewMode = 'grid' | 'list';
 type FilterType = 'all' | 'diamond' | 'gemstone' | 'jewellery';
