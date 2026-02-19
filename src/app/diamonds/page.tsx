@@ -1953,7 +1953,7 @@ export default function DiamondsSearchPage() {
         <NavigationUser />
       </div>
 
-      <div className="w-full py-12 ">
+      <div className="w-full py-7 ">
         <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4`}>
 
           <DiamondShapesCarousel 
@@ -2949,7 +2949,7 @@ export default function DiamondsSearchPage() {
         <div className="flex flex-col md:flex-row gap-4 mt-8 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
           <button
             onClick={handleSearch}
-            className="group cursor-pointer flex-1 px-6 py-4 rounded-2xl font-semibold text-base md:text-lg flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2"
+            className="group cursor-pointer px-5 py-0 rounded-2xl font-semibold text-base md:text-lg flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2"
             style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--primary) 80%, currentColor 20%)' }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--primary)' }}
@@ -2960,7 +2960,7 @@ export default function DiamondsSearchPage() {
           <button
             onClick={resetFilters}
             disabled={isDefaultFilters}
-            className="group md:w-auto px-6 py-4 rounded-2xl font-semibold text-base md:text-lg flex items-center justify-center transition-all duration-200 border disabled:opacity-50 disabled:cursor-not-allowed"
+            className="group md:w-auto px-6 py-2 rounded-2xl font-semibold text-base md:text-lg flex items-center justify-center transition-all duration-200 border disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ borderColor: 'var(--border)', color: 'var(--foreground)', background: 'transparent' }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, currentColor 40%, transparent)' }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
