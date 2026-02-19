@@ -926,16 +926,6 @@ export default function DiamondResults({
   )
 
 
-  if (loading) {
-    return (
-      <div className={`space-y-4 ${className}`}>
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: 'var(--primary)' }}></div>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Results Header - Desktop/Tablet */}
@@ -1099,10 +1089,23 @@ export default function DiamondResults({
       </div>
 
       {/* Results Grid/List */}
-      {filteredDiamonds.length === 0 ? (
-        <div className="text-center py-12 border rounded-lg" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div
+            className="animate-spin rounded-full h-12 w-12 border-b-2"
+            style={{ borderColor: 'var(--primary)' }}
+          ></div>
+        </div>
+      ) : filteredDiamonds.length === 0 ? (
+        <div
+          className="text-center py-12 border rounded-lg"
+          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+        >
           <div className="text-6xl mb-4">💎</div>
-          <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
+          <h3
+            className="text-xl font-semibold mb-2"
+            style={{ color: 'var(--foreground)' }}
+          >
             No diamonds found
           </h3>
           <p style={{ color: 'var(--muted-foreground)' }}>
