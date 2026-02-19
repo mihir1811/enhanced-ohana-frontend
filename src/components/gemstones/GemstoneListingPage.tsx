@@ -7,6 +7,7 @@ import GemstoneFilters, { type GemstoneFilterValues } from './GemstoneFilters';
 import { ApiResponse } from '@/services/api';
 import * as ShapeIcons from '../../../public/icons';
 import { ChevronDown, X, Filter } from 'lucide-react';
+import { SECTION_WIDTH } from '@/lib/constants';
 
 interface GemstoneSearchParams {
   [key: string]: string | number | boolean | string[] | { min: number; max: number } | undefined;
