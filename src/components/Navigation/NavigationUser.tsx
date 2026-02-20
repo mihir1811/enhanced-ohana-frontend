@@ -6,6 +6,7 @@ import { useSelector } from "react-redux"
 import { RootState } from "@/store"
 import { Menu, Search, ShoppingCart, Heart, ChevronDown } from "lucide-react"
 import ThemeSwitcher from "../ThemeSwitcher"
+import { SECTION_WIDTH } from "../../lib/constants"
 
 type NavChild = {
   label: string
@@ -114,7 +115,7 @@ const NavigationUser = () => {
       className="sticky top-0 z-50 border-b backdrop-blur"
       style={{ backgroundColor: "var(--background)", borderColor: "var(--border)" }}
     >
-      <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+      <div className={`mx-auto flex max-w-[${SECTION_WIDTH}px] items-center justify-between gap-3 px-4 py-3 sm:px-4 lg:px-4`}>
         <div className="flex items-center gap-2">
           <button
             type="button"
