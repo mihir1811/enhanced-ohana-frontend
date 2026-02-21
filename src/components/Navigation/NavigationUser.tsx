@@ -21,6 +21,16 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   {
+    label: "Education",
+    href: "/education",
+    children: [
+      { label: "Diamonds", href: "/education/diamond" },
+      { label: "Gemstones", href: "/education/gemstones" },
+      { label: "Jewelry", href: "/education/jewelry" },
+      { label: "Metals", href: "/education/metals" }
+    ]
+  },
+  {
     label: "Diamonds",
     href: "/diamonds",
     children: [
