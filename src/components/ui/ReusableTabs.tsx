@@ -75,7 +75,7 @@ function TabButton({
         <span
           key={rippleKey}
           style={rippleStyle}
-          className="pointer-events-none absolute z-10 rounded-full bg-blue-500/40 opacity-75 animate-ping"
+          className="pointer-events-none absolute z-10 rounded-full bg-blue-500/40 dark:bg-blue-400/30 opacity-75 animate-ping"
         />
       )}
       {label}
@@ -133,11 +133,11 @@ export function ReusableTabs({
   const getTabsContainerStyles = () => {
     switch (variant) {
       case "underline":
-        return "flex gap-4 border-b border-border bg-white";
+        return "flex gap-4 border-b border-border bg-background";
       case "pills":
         return "flex gap-2 p-1 bg-muted rounded-lg";
       default:
-        return "flex gap-2 bg-white";
+        return "flex gap-2 bg-background";
     }
   };
 
