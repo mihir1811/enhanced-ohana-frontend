@@ -178,14 +178,33 @@ export default function SellerProductsPage() {
           size="md"
         />
       ) : (
-        <div className="rounded-xl border p-8 text-center"
-          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+        <div
+          className="rounded-xl border p-8 text-center space-y-4"
+          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+        >
           <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--card-foreground)' }}>
             No Products Found
           </h3>
           <p className="text-base" style={{ color: 'var(--muted-foreground)' }}>
-            You haven&apos;t added any products yet. Click &ldquo;Add New Product&rdquo; to get started.
+            You haven&apos;t added any products yet. Click &ldquo;Add Product&rdquo; to create your first listing.
           </p>
+          <button
+            onClick={handleAddProduct}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium shadow-sm 
+                 bg-primary text-primary-foreground hover:bg-primary/90 transition cursor-pointer"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Product
+          </button>
         </div>
       )}
     </div>

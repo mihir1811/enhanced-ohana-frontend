@@ -1,9 +1,70 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, CSSProperties, MouseEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { TrendingUp, Package, ShoppingCart, DollarSign, Eye, Heart, MessageSquare, Star } from 'lucide-react'
 import { CardLoader } from '@/components/seller/Loader'
+
+type RippleButtonProps = {
+  children: React.ReactNode
+  onClick?: () => void
+  disabled?: boolean
+  className?: string
+  style?: React.CSSProperties
+}
+
+function RippleButton({ children, onClick, disabled, className = '', style }: RippleButtonProps) {
+  const [rippleStyle, setRippleStyle] = useState<CSSProperties>({})
+  const [rippleKey, setRippleKey] = useState(0)
+  const [showRipple, setShowRipple] = useState(false)
+
+  const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
+    if (disabled) {
+      return
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect()
+    const size = Math.max(rect.width, rect.height) * 2.4
+    const x = event.clientX - rect.left - size / 2
+    const y = event.clientY - rect.top - size / 2
+
+    setRippleStyle({
+      width: size,
+      height: size,
+      left: x,
+      top: y
+    })
+    setRippleKey(Date.now())
+    setShowRipple(true)
+
+    setTimeout(() => {
+      setShowRipple(false)
+    }, 400)
+
+    onClick?.()
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      disabled={disabled}
+      className={`relative overflow-hidden ${className}`}
+      style={style}
+    >
+      {showRipple && (
+        <span
+          key={rippleKey}
+          style={rippleStyle}
+          className="pointer-events-none absolute z-10 rounded-full bg-blue-500/40 dark:bg-blue-400/30 opacity-75 animate-ping"
+        />
+      )}
+      <span className="relative z-20">
+        {children}
+      </span>
+    </button>
+  )
+}
 
 export default function SellerDashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
@@ -41,7 +102,7 @@ export default function SellerDashboardPage() {
           </p>
         </div>
         <div className="flex items-center space-x-3">
-          <button 
+          <RippleButton 
             className="px-4 py-2 rounded-lg font-medium transition-colors border disabled:opacity-50"
             style={{ 
               borderColor: 'var(--border)',
@@ -51,8 +112,8 @@ export default function SellerDashboardPage() {
             disabled={isLoading}
           >
             Export Data
-          </button>
-          <button 
+          </RippleButton>
+          <RippleButton 
             onClick={handleAddProduct}
             className="px-4 py-2 rounded-lg font-medium transition-colors hover:opacity-90 disabled:opacity-50"
             style={{ 
@@ -62,7 +123,7 @@ export default function SellerDashboardPage() {
             disabled={isLoading}
           >
             Add Product
-          </button>
+          </RippleButton>
         </div>
       </div>
 
@@ -121,13 +182,13 @@ export default function SellerDashboardPage() {
             >
               Recent Orders
             </h3>
-            <button 
-              className="text-sm font-medium hover:underline disabled:opacity-50"
-              style={{ color: 'var(--primary)' }}
-              disabled={isLoading}
-            >
+              <RippleButton 
+                className="text-sm font-medium hover:underline disabled:opacity-50"
+                style={{ color: 'var(--primary)' }}
+                disabled={isLoading}
+              >
               View all
-            </button>
+              </RippleButton>
           </div>
           
           {isLoading ? (
@@ -211,7 +272,7 @@ export default function SellerDashboardPage() {
               { name: 'Analytics', icon: <TrendingUp className="w-5 h-5" />, href: '/seller/analytics' },
               { name: 'Chat', icon: <MessageSquare className="w-5 h-5" />, href: '/seller/chat' },
             ].map((action) => (
-              <button
+              <RippleButton
                 key={action.name}
                 onClick={() => router.push(action.href)}
                 className="flex flex-col items-center p-4 rounded-lg border transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
@@ -226,7 +287,7 @@ export default function SellerDashboardPage() {
                   {action.icon}
                 </div>
                 <span className="text-sm font-medium">{action.name}</span>
-              </button>
+              </RippleButton>
             ))}
           </div>
         </div>

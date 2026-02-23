@@ -67,14 +67,14 @@ export default function SellerHeader({ setSidebarOpen }: SellerHeaderProps) {
             <label htmlFor="search-field" className="sr-only">
               Search
             </label>
-            <div className="relative max-w-2xl">
+            <div className="relative max-w-2xl w-full">
               <Search 
                 className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4"
                 style={{ color: 'var(--muted-foreground)' }}
               />
               <input
                 id="search-field"
-                className="block w-full pl-10 pr-3 py-2 rounded-full border border-gray-200 bg-white dark:bg-[#23272f] shadow-sm placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary text-sm transition hover:border-gray-400"
+                className="block w-full pl-10 pr-3 py-2 rounded-full border shadow-sm placeholder:text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/70 text-sm transition-colors"
                 placeholder="Search products, orders..."
                 type="search"
                 name="search"
