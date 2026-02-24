@@ -19,6 +19,7 @@ export default function RegisterPage() {
   const [file, setFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -29,8 +30,27 @@ export default function RegisterPage() {
     setFile(file || null)
   }
 
+  const isPasswordValid = (password: string) => {
+    const minLength = 8
+    const hasUpperCase = /[A-Z]/.test(password)
+    const hasNumber = /\d/.test(password)
+    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+
+    return (
+      password.length >= minLength &&
+      hasUpperCase &&
+      hasNumber &&
+      hasSpecialChar
+    )
+  }
+
+  const canSubmit = form.name && form.userName && form.email && isPasswordValid(form.password)
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!canSubmit) return
+
     setLoading(true)
     setError('')
 
@@ -69,7 +89,7 @@ export default function RegisterPage() {
       className="min-h-screen relative overflow-hidden"
       style={{
         background:
-          'radial-gradient(circle at top, color-mix(in srgb, var(--chart-3) 16%, transparent), transparent 60%), radial-gradient(circle at bottom, color-mix(in srgb, var(--chart-5) 14%, transparent), transparent 60%), var(--background)'
+          'radial-gradient(circle at top right, color-mix(in srgb, var(--status-warning) 15%, transparent), transparent 70%), radial-gradient(circle at bottom left, color-mix(in srgb, var(--primary) 10%, transparent), transparent 70%), var(--background)'
       }}
     >
       {/* Background Elements */}
@@ -77,15 +97,15 @@ export default function RegisterPage() {
         {/* Animated gradient orbs */}
         <div
           className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl animate-float"
-          style={{ background: 'color-mix(in srgb, var(--chart-5) 22%, transparent)' }}
+          style={{ background: 'color-mix(in srgb, var(--status-warning) 20%, transparent)' }}
         ></div>
         <div
           className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full blur-3xl animate-float delay-1000"
-          style={{ background: 'color-mix(in srgb, var(--chart-1) 18%, transparent)' }}
+          style={{ background: 'color-mix(in srgb, var(--status-warning) 12%, transparent)' }}
         ></div>
         <div
           className="absolute top-1/2 right-1/3 w-64 h-64 rounded-full blur-3xl animate-float delay-500"
-          style={{ background: 'color-mix(in srgb, var(--chart-3) 16%, transparent)' }}
+          style={{ background: 'color-mix(in srgb, var(--primary) 10%, transparent)' }}
         ></div>
         
         {/* Grid pattern */}
@@ -94,7 +114,7 @@ export default function RegisterPage() {
         {/* Sparkle effects */}
         <div
           className="absolute top-1/5 left-1/5 w-1 h-1 rounded-full animate-ping"
-          style={{ backgroundColor: 'var(--chart-5)' }}
+          style={{ backgroundColor: 'var(--status-warning)' }}
         ></div>
         <div
           className="absolute top-2/3 left-2/3 w-1.5 h-1.5 rounded-full animate-ping delay-700"
@@ -117,7 +137,7 @@ export default function RegisterPage() {
                   className="w-12 h-12 rounded-xl flex items-center justify-center shadow-2xl"
                   style={{
                     backgroundImage:
-                      'linear-gradient(to bottom right, var(--chart-5), color-mix(in srgb, var(--chart-5) 70%, var(--chart-1) 30%))'
+                      'linear-gradient(to bottom right, var(--status-warning), color-mix(in srgb, var(--status-warning) 70%, black))'
                   }}
                 >
                   <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -129,27 +149,27 @@ export default function RegisterPage() {
                     className="text-2xl font-bold bg-clip-text text-transparent"
                     style={{
                       backgroundImage:
-                        'linear-gradient(to right, color-mix(in srgb, var(--chart-5) 80%, white 20%), color-mix(in srgb, var(--chart-4) 80%, white 20%))'
+                        'linear-gradient(to right, var(--status-warning), var(--primary))'
                     }}
                   >
                     Gem World
                   </h1>
-                  <p className="text-slate-400 text-sm">Premium Marketplace</p>
+                  <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Premium Marketplace</p>
                 </div>
               </div>
 
               <div className="space-y-4">
-                <h2 className="text-4xl font-bold text-white leading-tight">
+                <h2 className="text-4xl font-bold leading-tight" style={{ color: 'var(--foreground)' }}>
                   Join the World&apos;s
                   <br />
                   <span
                     className="bg-clip-text text-transparent"
                     style={{
                       backgroundImage:
-                        'linear-gradient(to right, color-mix(in srgb, var(--chart-5) 80%, white 20%), color-mix(in srgb, var(--chart-1) 80%, white 20%))'
+                        'linear-gradient(to right, var(--status-warning), var(--primary))'
                     }}
                   >
-                    Premier Jewelry Marketplace
+                    Premier Gemstone Marketplace
                   </span>
                 </h2>
                 <p
@@ -184,12 +204,12 @@ export default function RegisterPage() {
                 </div>
                 <div className="space-y-1">
                   <h3
-                    className="font-semibold transition-colors group-hover:text-emerald-300"
+                    className="font-semibold transition-colors group-hover:opacity-80"
                     style={{ color: 'var(--foreground)' }}
                   >
                     Verified Platform
                   </h3>
-                  <p className="text-slate-400 text-sm leading-relaxed">Join our secure, authenticated marketplace</p>
+                  <p className="text-sm leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>Join our secure, authenticated marketplace</p>
                 </div>
               </div>
               
@@ -213,12 +233,12 @@ export default function RegisterPage() {
                 </div>
                 <div className="space-y-1">
                   <h3
-                    className="font-semibold transition-colors group-hover:text-blue-300"
+                    className="font-semibold transition-colors group-hover:opacity-80"
                     style={{ color: 'var(--foreground)' }}
                   >
                     Exclusive Access
                   </h3>
-                  <p className="text-slate-400 text-sm leading-relaxed">Access premium collections and early listings</p>
+                  <p className="text-sm leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>Access premium collections and early listings</p>
                 </div>
               </div>
               
@@ -241,8 +261,8 @@ export default function RegisterPage() {
                   </svg>
                 </div>
                 <div className="space-y-1">
-                  <h3 className="font-semibold text-white group-hover:text-purple-300 transition-colors">Global Community</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed">Connect with collectors and dealers worldwide</p>
+                  <h3 className="font-semibold transition-colors group-hover:opacity-80" style={{ color: 'var(--foreground)' }}>Global Community</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>Connect with collectors and dealers worldwide</p>
                 </div>
               </div>
             </div>
@@ -260,7 +280,7 @@ export default function RegisterPage() {
                   className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto shadow-2xl"
                   style={{
                     backgroundImage:
-                      'linear-gradient(to bottom right, var(--chart-5), color-mix(in srgb, var(--chart-4) 70%, var(--chart-5) 30%))'
+                      'linear-gradient(to bottom right, var(--status-warning), color-mix(in srgb, var(--status-warning) 70%, black))'
                   }}
                 >
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -268,9 +288,9 @@ export default function RegisterPage() {
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold text-white">Create Account</h2>
+                  <h2 className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>Create Account</h2>
                   <p
-                    className="text-slate-400 mt-2"
+                    className="text-sm mt-2"
                     style={{ color: 'var(--muted-foreground)' }}
                   >
                     Join our exclusive marketplace
@@ -287,11 +307,11 @@ export default function RegisterPage() {
                       backgroundColor:
                         'color-mix(in srgb, var(--destructive) 10%, transparent)',
                       borderColor: 'color-mix(in srgb, var(--destructive) 40%, transparent)',
-                      color: 'color-mix(in srgb, var(--destructive) 85%, white 15%)'
+                      color: 'var(--destructive)'
                     }}
                   >
                     <div className="flex items-center space-x-2">
-                      <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--destructive)' }}>
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z" />
                       </svg>
                       <span>{error}</span>
@@ -313,7 +333,7 @@ export default function RegisterPage() {
                       className="absolute inset-0 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity"
                       style={{
                         background:
-                          'linear-gradient(to right, color-mix(in srgb, var(--chart-5) 20%, transparent), color-mix(in srgb, var(--chart-1) 20%, transparent))'
+                          'linear-gradient(to right, color-mix(in srgb, var(--status-warning) 20%, transparent), color-mix(in srgb, var(--primary) 20%, transparent))'
                       }}
                     ></div>
                     <input
@@ -323,10 +343,11 @@ export default function RegisterPage() {
                       required
                       value={form.name}
                       onChange={handleChange}
-                      className="relative w-full px-4 py-3 rounded-xl text-white placeholder-slate-400 focus:ring-2 transition-all duration-300 backdrop-blur-sm border"
+                      className="relative w-full px-4 py-3 rounded-xl placeholder-slate-400 focus:ring-2 transition-all duration-300 backdrop-blur-sm border outline-none"
                       style={{
                         backgroundColor: 'color-mix(in srgb, var(--card) 10%, transparent)',
                         borderColor: 'color-mix(in srgb, var(--border) 80%, transparent)',
+                        color: 'var(--foreground)',
                         boxShadow: '0 0 0 1px color-mix(in srgb, var(--border) 40%, transparent)'
                       }}
                       placeholder="Enter your full name"
@@ -348,7 +369,7 @@ export default function RegisterPage() {
                       className="absolute inset-0 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity"
                       style={{
                         background:
-                          'linear-gradient(to right, color-mix(in srgb, var(--chart-5) 20%, transparent), color-mix(in srgb, var(--chart-1) 20%, transparent))'
+                          'linear-gradient(to right, color-mix(in srgb, var(--status-warning) 20%, transparent), color-mix(in srgb, var(--primary) 20%, transparent))'
                       }}
                     ></div>
                     <input
@@ -358,10 +379,11 @@ export default function RegisterPage() {
                       required
                       value={form.userName}
                       onChange={handleChange}
-                      className="relative w-full px-4 py-3 rounded-xl text-white placeholder-slate-400 focus:ring-2 transition-all duration-300 backdrop-blur-sm border"
+                      className="relative w-full px-4 py-3 rounded-xl placeholder-slate-400 focus:ring-2 transition-all duration-300 backdrop-blur-sm border outline-none"
                       style={{
                         backgroundColor: 'color-mix(in srgb, var(--card) 10%, transparent)',
                         borderColor: 'color-mix(in srgb, var(--border) 80%, transparent)',
+                        color: 'var(--foreground)',
                         boxShadow: '0 0 0 1px color-mix(in srgb, var(--border) 40%, transparent)'
                       }}
                       placeholder="Choose a username"
@@ -383,7 +405,7 @@ export default function RegisterPage() {
                       className="absolute inset-0 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity"
                       style={{
                         background:
-                          'linear-gradient(to right, color-mix(in srgb, var(--chart-5) 20%, transparent), color-mix(in srgb, var(--chart-1) 20%, transparent))'
+                          'linear-gradient(to right, color-mix(in srgb, var(--status-warning) 20%, transparent), color-mix(in srgb, var(--primary) 20%, transparent))'
                       }}
                     ></div>
                     <input
@@ -393,10 +415,11 @@ export default function RegisterPage() {
                       required
                       value={form.email}
                       onChange={handleChange}
-                      className="relative w-full px-4 py-3 rounded-xl text-white placeholder-slate-400 focus:ring-2 transition-all duration-300 backdrop-blur-sm border"
+                      className="relative w-full px-4 py-3 rounded-xl placeholder-slate-400 focus:ring-2 transition-all duration-300 backdrop-blur-sm border outline-none"
                       style={{
                         backgroundColor: 'color-mix(in srgb, var(--card) 10%, transparent)',
                         borderColor: 'color-mix(in srgb, var(--border) 80%, transparent)',
+                        color: 'var(--foreground)',
                         boxShadow: '0 0 0 1px color-mix(in srgb, var(--border) 40%, transparent)'
                       }}
                       placeholder="Enter your email"
@@ -406,36 +429,61 @@ export default function RegisterPage() {
 
                 {/* Password Field */}
                 <div className="space-y-2">
-                  <label
-                    htmlFor="password"
-                    className="text-sm font-medium"
-                    style={{ color: 'var(--muted-foreground)' }}
-                  >
-                    Password
-                  </label>
+                  <div className="flex justify-between items-center">
+                    <label
+                      htmlFor="password"
+                      className="text-sm font-medium"
+                      style={{ color: 'var(--muted-foreground)' }}
+                    >
+                      Password
+                    </label>
+                    {form.password && !isPasswordValid(form.password) && (
+                      <span className="text-[10px] animate-pulse" style={{ color: 'var(--status-warning)' }}>
+                        Min 8 chars, 1 Upper, 1 Number, 1 Special
+                      </span>
+                    )}
+                  </div>
                   <div className="relative group">
                     <div
                       className="absolute inset-0 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity"
                       style={{
                         background:
-                          'linear-gradient(to right, color-mix(in srgb, var(--chart-5) 20%, transparent), color-mix(in srgb, var(--chart-1) 20%, transparent))'
+                          'linear-gradient(to right, color-mix(in srgb, var(--status-warning) 20%, transparent), color-mix(in srgb, var(--primary) 20%, transparent))'
                       }}
                     ></div>
                     <input
                       id="password"
                       name="password"
-                      type="password"
+                      type={showPassword ? 'text' : 'password'}
                       required
                       value={form.password}
                       onChange={handleChange}
-                      className="relative w-full px-4 py-3 rounded-xl text-white placeholder-slate-400 focus:ring-2 transition-all duration-300 backdrop-blur-sm border"
+                      className="relative w-full px-4 py-3 pr-12 rounded-xl placeholder-slate-400 focus:ring-2 transition-all duration-300 backdrop-blur-sm border outline-none"
                       style={{
                         backgroundColor: 'color-mix(in srgb, var(--card) 10%, transparent)',
                         borderColor: 'color-mix(in srgb, var(--border) 80%, transparent)',
+                        color: 'var(--foreground)',
                         boxShadow: '0 0 0 1px color-mix(in srgb, var(--border) 40%, transparent)'
                       }}
                       placeholder="Create a strong password"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:opacity-70 transition-opacity"
+                      style={{ color: 'var(--muted-foreground)' }}
+                    >
+                      {showPassword ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                        </svg>
+                      )}
+                    </button>
                   </div>
                 </div>
 
@@ -456,7 +504,7 @@ export default function RegisterPage() {
                       className="absolute inset-0 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity"
                       style={{
                         background:
-                          'linear-gradient(to right, color-mix(in srgb, var(--chart-5) 20%, transparent), color-mix(in srgb, var(--chart-1) 20%, transparent))'
+                          'linear-gradient(to right, color-mix(in srgb, var(--status-warning) 20%, transparent), color-mix(in srgb, var(--primary) 20%, transparent))'
                       }}
                     ></div>
                     <input
@@ -465,10 +513,11 @@ export default function RegisterPage() {
                       type="file"
                       accept="image/*"
                       onChange={handleFileChange}
-                      className="relative w-full px-4 py-3 rounded-xl text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium hover:file:opacity-90 focus:ring-2 transition-all duration-300 backdrop-blur-sm border"
+                      className="relative w-full px-4 py-3 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium hover:file:opacity-90 focus:ring-2 transition-all duration-300 backdrop-blur-sm border outline-none"
                       style={{
                         backgroundColor: 'color-mix(in srgb, var(--card) 10%, transparent)',
                         borderColor: 'color-mix(in srgb, var(--border) 80%, transparent)',
+                        color: 'var(--foreground)',
                         boxShadow: '0 0 0 1px color-mix(in srgb, var(--border) 40%, transparent)'
                       }}
                     />
@@ -478,17 +527,17 @@ export default function RegisterPage() {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={loading}
-                      className="w-full py-4 px-6 text-white rounded-xl font-semibold focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl transform hover:-translate-y-0.5 disabled:transform-none"
+                  disabled={loading || !canSubmit}
+                      className="w-full py-4 px-6 rounded-xl font-semibold focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale shadow-2xl transform hover:-translate-y-0.5 disabled:transform-none"
                       style={{
-                        backgroundImage:
-                          'linear-gradient(to right, var(--primary), color-mix(in srgb, var(--primary) 70%, var(--chart-5) 30%))',
-                        boxShadow: '0 18px 45px color-mix(in srgb, var(--primary) 32%, transparent)'
+                        backgroundColor: '#d97706',
+                        color: 'white',
+                        boxShadow: canSubmit ? '0 18px 45px color-mix(in srgb, #d97706 32%, transparent)' : 'none'
                       }}
                 >
                   {loading ? (
                     <div className="flex items-center justify-center space-x-3">
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" style={{ borderTopColor: 'var(--primary-foreground)' }}></div>
                       <span>Creating your account...</span>
                     </div>
                   ) : (
@@ -518,9 +567,9 @@ export default function RegisterPage() {
                     href="/login" 
                     className="block w-full py-3 px-6 rounded-xl font-medium transition-all duration-300 transform hover:-translate-y-0.5 border-2"
                     style={{
-                      borderColor: 'color-mix(in srgb, var(--chart-5) 60%, transparent)',
-                      color: 'var(--chart-5)',
-                      backgroundColor: 'color-mix(in srgb, var(--chart-5) 8%, transparent)'
+                      borderColor: 'color-mix(in srgb, var(--status-warning) 60%, transparent)',
+                      color: 'var(--status-warning)',
+                      backgroundColor: 'color-mix(in srgb, var(--status-warning) 8%, transparent)'
                     }}
                   >
                     Sign In
