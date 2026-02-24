@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import SellerLayoutWrapper from '../../components/seller/SellerLayoutWrapper'
 
 export const metadata: Metadata = {
-  title: 'Seller Dashboard - Ohana Gems',
-  description: 'Manage your jewelry listings, orders, and seller profile on Ohana Gems marketplace.',
+  title: 'Seller Dashboard - Gem World',
+  description: 'Manage your jewelry listings, orders, and seller profile on Gem World marketplace.',
 }
 
 export default function SellerLayout({

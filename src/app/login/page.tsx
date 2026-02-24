@@ -114,7 +114,7 @@ export default function LoginPage() {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-300 to-yellow-400 bg-clip-text text-transparent">
-                    Ohana Gems
+                    Gem World
                   </h1>
                   <p className="text-slate-400 text-sm">Premium Marketplace</p>
                 </div>

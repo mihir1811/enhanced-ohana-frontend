@@ -112,7 +112,7 @@ export default function SellerSidebar({ sidebarOpen, setSidebarOpen }: SellerSid
                 className="text-lg font-semibold"
                 style={{ color: 'var(--sidebar-foreground)' }}
               >
-                Ohana Gems
+                Gem World
               </h1>
             </div>
           </Link>
@@ -254,7 +254,7 @@ export default function SellerSidebar({ sidebarOpen, setSidebarOpen }: SellerSid
                       className="text-lg font-semibold"
                       style={{ color: 'var(--sidebar-foreground)' }}
                     >
-                      Ohana Gems
+                      Gem World
                     </h1>
                     <p 
                       className="text-xs"

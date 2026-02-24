@@ -89,7 +89,7 @@ export default function Navigation() {
               </svg>
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-amber-300 to-yellow-400 bg-clip-text text-transparent">
-              Ohana Gems
+              Gem World
             </span>
           </Link>
 

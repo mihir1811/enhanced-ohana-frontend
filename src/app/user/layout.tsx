@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import NavigationUser from '../../components/Navigation/NavigationUser'
 
 export const metadata: Metadata = {
-  title: 'Ohana Gems - Premium Jewelry Marketplace',
+  title: 'Gem World - Premium Jewelry Marketplace',
   description: 'Discover and purchase premium diamonds, gemstones, and luxury jewelry from verified sellers worldwide.',
 }
 

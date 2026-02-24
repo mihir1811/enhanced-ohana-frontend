@@ -43,7 +43,7 @@ export default function SellerLayoutWrapper({ children }: SellerLayoutWrapperPro
           </div>
           <div className="text-center">
             <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>
-              Ohana Gems
+              Gem World
             </h2>
             <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
               Loading seller dashboard...

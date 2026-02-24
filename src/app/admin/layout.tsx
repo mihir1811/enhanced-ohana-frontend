@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import NavigationAdmin from '../../components/Navigation/NavigationAdmin'
 
 export const metadata: Metadata = {
-  title: 'Admin Dashboard - Ohana Gems',
-  description: 'Manage the Ohana Gems marketplace, users, and system settings.',
+  title: 'Admin Dashboard - Gem World',
+  description: 'Manage the Gem World marketplace, users, and system settings.',
 }
 
 export default function AdminLayout({
