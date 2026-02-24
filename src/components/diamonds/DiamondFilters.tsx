@@ -7,10 +7,10 @@ import { ChevronDown, ChevronUp } from 'lucide-react'
 function Expand({ label, children, defaultOpen = true }: { label: string; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-gray-200 last:border-b-0">
+    <div className="border-b last:border-b-0" style={{ borderColor: 'var(--border)' }}>
       <button
         type="button"
-        className="w-full flex items-center justify-between py-2 text-left font-medium text-sm focus:outline-none bg-transparent"
+        className="w-full flex items-center justify-between py-2 text-left font-medium text-sm focus:outline-none bg-transparent transition-colors hover:opacity-80"
         style={{ color: 'var(--foreground)', paddingLeft: 0, paddingRight: 0 }}
         onClick={() => setOpen(o => !o)}
       >
@@ -243,14 +243,22 @@ export default function DiamondFilters({
                     key={shape}
                     onClick={() => toggleShape(shape)}
                     className={`flex items-center gap-2 text-xs p-2 rounded border transition-all text-left ${
-                      selected.includes(shape)
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 hover:border-gray-300'
+                      selected.includes(shape) ? 'shadow-sm' : ''
                     }`}
                     style={{
-                      backgroundColor: selected.includes(shape) ? 'var(--primary)/10' : 'var(--card)',
+                      backgroundColor: selected.includes(shape) ? 'color-mix(in srgb, var(--primary) 10%, transparent)' : 'var(--card)',
                       borderColor: selected.includes(shape) ? 'var(--primary)' : 'var(--border)',
                       color: selected.includes(shape) ? 'var(--primary)' : 'var(--foreground)'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!selected.includes(shape)) {
+                        e.currentTarget.style.borderColor = 'var(--primary)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!selected.includes(shape)) {
+                        e.currentTarget.style.borderColor = 'var(--border)';
+                      }
                     }}
                   >
                     <span className="w-5 h-5 flex items-center justify-center">
@@ -293,8 +301,11 @@ export default function DiamondFilters({
     <div className="space-y-3">
       {/* Selected Count & Clear */}
       {selected.length > 0 && (
-        <div className="flex items-center justify-between p-3 rounded-lg" 
-          style={{ backgroundColor: 'var(--primary)/5', borderColor: 'var(--primary)/20' }}
+        <div className="flex items-center justify-between p-3 rounded-lg border" 
+          style={{ 
+            backgroundColor: 'color-mix(in srgb, var(--primary) 5%, transparent)', 
+            borderColor: 'color-mix(in srgb, var(--primary) 20%, transparent)' 
+          }}
         >
           <span className="text-sm font-medium" style={{ color: 'var(--primary)' }}>
             {selected.length} selected
@@ -310,12 +321,25 @@ export default function DiamondFilters({
       )}
       
       {/* Options */}
-  <div className={`${layout === 'grid' ? 'grid grid-cols-2 gap-2' : 'flex flex-wrap gap-2'} max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-full scrollbar-thumb-amber-200`}>
+      <div className={`${layout === 'grid' ? 'grid grid-cols-2 gap-2' : 'flex flex-wrap gap-2'} max-h-80 overflow-y-auto custom-scrollbar`}>
         {options.map((option) => (
           <label
             key={option}
-            className={`flex items-center gap-2 p-2 rounded-md cursor-pointer border transition-all duration-75 group focus-within:ring-0 ${selected.includes(option) ? 'border-amber-500 bg-amber-50' : 'border-gray-200 bg-gray-50 hover:border-amber-300'}
-            `}
+            className={`flex items-center gap-2 p-2 rounded-md cursor-pointer border transition-all duration-75 group focus-within:ring-0 ${selected.includes(option) ? 'shadow-sm' : ''}`}
+            style={{
+              backgroundColor: selected.includes(option) ? 'color-mix(in srgb, var(--status-warning) 10%, transparent)' : 'var(--card)',
+              borderColor: selected.includes(option) ? 'var(--status-warning)' : 'var(--border)',
+            }}
+            onMouseEnter={(e) => {
+              if (!selected.includes(option)) {
+                e.currentTarget.style.borderColor = 'var(--status-warning)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!selected.includes(option)) {
+                e.currentTarget.style.borderColor = 'var(--border)';
+              }
+            }}
             tabIndex={0}
           >
             <span className="relative flex items-center justify-center">
@@ -329,12 +353,21 @@ export default function DiamondFilters({
                     onChange(selected.filter(v => v !== option))
                   }
                 }}
-                className="peer appearance-none w-4 h-4 border-2 border-gray-300 rounded focus:outline-none checked:bg-amber-500 checked:border-amber-500 focus:ring-2 focus:ring-amber-300 transition-all duration-75"
-                style={{ minWidth: 16, minHeight: 16 }}
+                className="peer appearance-none w-4 h-4 border rounded focus:outline-none transition-all duration-75"
+                style={{ 
+                  minWidth: 16, 
+                  minHeight: 16,
+                  borderColor: 'var(--border)',
+                  backgroundColor: 'var(--card)'
+                }}
                 tabIndex={-1}
               />
+              <div 
+                className="absolute inset-0 rounded pointer-events-none transition-all duration-75 scale-0 peer-checked:scale-100"
+                style={{ backgroundColor: 'var(--status-warning)' }}
+              />
               <svg
-                className="pointer-events-none absolute left-0 top-0 w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-75"
+                className="pointer-events-none absolute left-0 top-0 w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-75 z-10"
                 viewBox="0 0 20 20"
                 fill="none"
                 stroke="currentColor"
@@ -345,7 +378,9 @@ export default function DiamondFilters({
                 <polyline points="5 11 9 15 15 7" />
               </svg>
             </span>
-            <span className={`text-sm font-medium transition-colors duration-150 ${selected.includes(option) ? 'text-amber-700 font-semibold' : 'text-gray-700 group-hover:text-amber-700'}`}>
+            <span className={`text-sm font-medium transition-colors duration-150 ${selected.includes(option) ? 'font-semibold' : ''}`}
+              style={{ color: selected.includes(option) ? 'var(--status-warning)' : 'var(--foreground)' }}
+            >
               {option}
             </span>
           </label>
@@ -399,8 +434,8 @@ export default function DiamondFilters({
             min={min}
             max={max}
             step={step}
-            className="w-full px-2 py-2 text-xs border rounded-md focus:ring-1 focus:ring-blue-400 focus:border-blue-400 bg-white transition-all"
-            style={{ color: 'var(--foreground)' }}
+            className="w-full px-2 py-2 text-xs border rounded-md focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-all outline-none"
+            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
             placeholder={`Min ${unit}`}
           />
         </div>
@@ -415,13 +450,13 @@ export default function DiamondFilters({
             min={min}
             max={max}
             step={step}
-            className="w-full px-2 py-2 text-xs border rounded-md focus:ring-1 focus:ring-blue-400 focus:border-blue-400 bg-white transition-all"
-            style={{ color: 'var(--foreground)' }}
+            className="w-full px-2 py-2 text-xs border rounded-md focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-all outline-none"
+            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
             placeholder={`Max ${unit}`}
           />
         </div>
       </div>
-      {/* Quick Presets */}
+          {/* Quick Presets */}
       {unit === 'USD' && (
         <div className="flex flex-wrap gap-1 items-center mt-1">
           <span className="text-xs font-medium mr-1" style={{ color: 'var(--muted-foreground)' }}>
@@ -436,8 +471,22 @@ export default function DiamondFilters({
             <button
               key={preset.label}
               onClick={() => onChange({ min: preset.min, max: preset.max })}
-              className="px-2 py-0.5 text-xs rounded-full border border-gray-300 bg-white hover:bg-blue-50 transition-all"
-              style={{ color: 'var(--muted-foreground)' }}
+              className="px-2 py-0.5 text-xs rounded-full border transition-all"
+              style={{ 
+                backgroundColor: 'var(--card)', 
+                borderColor: 'var(--border)', 
+                color: 'var(--muted-foreground)' 
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--primary)';
+                e.currentTarget.style.color = 'var(--primary)';
+                e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--primary) 5%, transparent)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border)';
+                e.currentTarget.style.color = 'var(--muted-foreground)';
+                e.currentTarget.style.backgroundColor = 'var(--card)';
+              }}
             >
               {preset.label}
             </button>
@@ -458,8 +507,22 @@ export default function DiamondFilters({
             <button
               key={preset.label}
               onClick={() => onChange({ min: preset.min, max: preset.max })}
-              className="px-2 py-0.5 text-xs rounded-full border border-gray-300 bg-white hover:bg-blue-50 transition-all"
-              style={{ color: 'var(--muted-foreground)' }}
+              className="px-2 py-0.5 text-xs rounded-full border transition-all"
+              style={{ 
+                backgroundColor: 'var(--card)', 
+                borderColor: 'var(--border)', 
+                color: 'var(--muted-foreground)' 
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--primary)';
+                e.currentTarget.style.color = 'var(--primary)';
+                e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--primary) 5%, transparent)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border)';
+                e.currentTarget.style.color = 'var(--muted-foreground)';
+                e.currentTarget.style.backgroundColor = 'var(--card)';
+              }}
             >
               {preset.label}
             </button>

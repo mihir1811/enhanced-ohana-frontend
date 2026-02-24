@@ -1045,13 +1045,13 @@ export default function JewelryCategoryPage() {
           <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
             {/* Search */}
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
               <input
                 type="text"
                 placeholder="Search jewelry..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2"
+                className="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-ring"
                 style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
               />
             </div>
@@ -1063,7 +1063,7 @@ export default function JewelryCategoryPage() {
                 className="w-8 h-8 flex items-center justify-center rounded-lg shadow border active:scale-95 transition"
                 aria-label="Sort"
                 style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, currentColor 12%, transparent)' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--foreground) 12%, transparent)' }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--card)' }}
               >
                 <ArrowUpDown className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
@@ -1075,13 +1075,13 @@ export default function JewelryCategoryPage() {
                 onClick={() => setShowFilters(true)}
                 aria-label="Open filters"
                 style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, currentColor 12%, transparent)' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--foreground) 12%, transparent)' }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--card)' }}
               >
                 <Filter className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
                 <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>Filters</span>
                 {getTotalAppliedFilters() > 0 && (
-                  <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">
+                  <span className="px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 15%, transparent)', color: 'var(--status-warning)' }}>
                     {getTotalAppliedFilters()}
                   </span>
                 )}
@@ -1122,12 +1122,15 @@ export default function JewelryCategoryPage() {
           {(filters.metalType.length > 0 || filters.style.length > 0 ||
             filters.certification.length > 0 || filters.priceRange.min > 0 || filters.priceRange.max < 50000 ||
             (filters.ringTypes && filters.ringTypes.length > 0)) && (
-              <div className="mt-4 pt-4 border-t border-slate-200">
+              <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-slate-700">Active Filters:</span>
+                  <span className="text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>Active Filters:</span>
                   <button
                     onClick={clearFilters}
-                    className="text-sm text-blue-600 hover:text-blue-800"
+                    className="text-sm transition-colors"
+                    style={{ color: 'var(--primary)' }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'color-mix(in srgb, var(--primary) 80%, black)' }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--primary)' }}
                   >
                     Clear All
                   </button>
@@ -1137,7 +1140,7 @@ export default function JewelryCategoryPage() {
                   {(filters.ringTypes || []).map(ringType => {
                     const ringTypeLabel = (categoryFilters.ringTypes as Array<{ value: string; label: string }> | undefined)?.find(r => r.value === ringType)?.label || ringType
                     return (
-                      <span key={ringType} className="inline-flex items-center gap-1 px-3 py-1 bg-rose-100 text-rose-800 text-sm rounded-full">
+                      <span key={ringType} className="inline-flex items-center gap-1 px-3 py-1 text-sm rounded-full border" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 15%, transparent)', color: 'var(--status-warning)', borderColor: 'color-mix(in srgb, var(--status-warning) 30%, transparent)' }}>
                         Ring: {ringTypeLabel}
                         <X
                           className="w-3 h-3 cursor-pointer"
@@ -1147,7 +1150,7 @@ export default function JewelryCategoryPage() {
                     )
                   })}
                   {filters.metalType.map(metal => (
-                    <span key={metal} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                    <span key={metal} className="inline-flex items-center gap-1 px-3 py-1 text-sm rounded-full border" style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 15%, transparent)', color: 'var(--primary)', borderColor: 'color-mix(in srgb, var(--primary) 30%, transparent)' }}>
                       Metal: {metal.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                       <X
                         className="w-3 h-3 cursor-pointer"
@@ -1156,7 +1159,7 @@ export default function JewelryCategoryPage() {
                     </span>
                   ))}
                   {filters.style.map(style => (
-                    <span key={style} className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">
+                    <span key={style} className="inline-flex items-center gap-1 px-3 py-1 text-sm rounded-full border" style={{ backgroundColor: 'color-mix(in srgb, var(--status-success) 15%, transparent)', color: 'var(--status-success)', borderColor: 'color-mix(in srgb, var(--status-success) 30%, transparent)' }}>
                       Style: {style}
                       <X
                         className="w-3 h-3 cursor-pointer"
@@ -1165,7 +1168,7 @@ export default function JewelryCategoryPage() {
                     </span>
                   ))}
                   {(filters.priceRange.min > 0 || filters.priceRange.max < 50000) && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 text-sm rounded-full border" style={{ backgroundColor: 'color-mix(in srgb, var(--chart-3) 15%, transparent)', color: 'var(--chart-3)', borderColor: 'color-mix(in srgb, var(--chart-3) 30%, transparent)' }}>
                       Price: ${filters.priceRange.min.toLocaleString()} - ${filters.priceRange.max.toLocaleString()}
                       <X
                         className="w-3 h-3 cursor-pointer"
@@ -1406,7 +1409,7 @@ export default function JewelryCategoryPage() {
 
         {/* Bracelet Chain Types Filter Bar - For bracelets category */}
         {category === 'bracelets' && Array.isArray(categoryFilters.chainTypes) && categoryFilters.chainTypes.length > 0 && (
-          <div className="mb-2 bg-white rounded-lg shadow-sm p-2">
+          <div className="mb-2 rounded-lg shadow-sm p-2 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="flex items-center">
                 <span className="text-sm font-medium mr-3 whitespace-nowrap">Filter by Chain Type:</span>
@@ -1415,11 +1418,8 @@ export default function JewelryCategoryPage() {
                 {/* All Chain Types Button */}
                 <button
                   onClick={() => handleFilterChange('chainTypes', [])}
-                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200 ${
-                    (!filters.chainTypes || filters.chainTypes.length === 0)
-                      ? 'bg-gray-700 border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-800' 
-                      : 'border border-slate-300 text-slate-700 hover:border-gray-500 hover:text-gray-700 bg-white'
-                  }`}
+                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200 border`}
+                  style={(!filters.chainTypes || filters.chainTypes.length === 0) ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
                 >
                   All Chain Types
                 </button>
@@ -1438,11 +1438,8 @@ export default function JewelryCategoryPage() {
                           : [...currentChainTypes, chainType.value]
                         handleFilterChange('chainTypes', newChainTypes)
                       }}
-                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap ${
-                        isSelected
-                          ? 'bg-teal-600 border-teal-600 text-white hover:bg-teal-700'
-                          : 'bg-white border-slate-300 text-slate-700 hover:border-teal-400 hover:text-teal-600'
-                      }`}
+                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap`}
+                      style={isSelected ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
                     >
                       {/* Bracelet Chain Type Icon */}
                       <span className="text-lg" role="img" aria-label={chainType.label}>
@@ -1462,7 +1459,7 @@ export default function JewelryCategoryPage() {
 
         {/* Chain Styles Filter Bar - For chains category */}
         {category === 'chains' && Array.isArray(categoryFilters.styles) && categoryFilters.styles.length > 0 && (
-          <div className="mb-2 bg-white rounded-lg shadow-sm p-2">
+          <div className="mb-2 rounded-lg shadow-sm p-2 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="flex items-center">
                 <span className="text-sm font-medium mr-3 whitespace-nowrap">Filter by Chain Style:</span>
@@ -1471,11 +1468,8 @@ export default function JewelryCategoryPage() {
                 {/* All Chain Styles Button */}
                 <button
                   onClick={() => handleFilterChange('style', [])}
-                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200 ${
-                    (!filters.style || filters.style.length === 0)
-                      ? 'bg-gray-700 border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-800' 
-                      : 'border border-slate-300 text-slate-700 hover:border-gray-500 hover:text-gray-700 bg-white'
-                  }`}
+                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200 border`}
+                  style={(!filters.style || filters.style.length === 0) ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
                 >
                   All Styles
                 </button>
@@ -1494,11 +1488,8 @@ export default function JewelryCategoryPage() {
                           : [...currentStyles, style.value]
                         handleFilterChange('style', newStyles)
                       }}
-                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap ${
-                        isSelected
-                          ? 'bg-indigo-600 border-indigo-600 text-white hover:bg-indigo-700'
-                          : 'bg-white border-slate-300 text-slate-700 hover:border-indigo-400 hover:text-indigo-600'
-                      }`}
+                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap`}
+                      style={isSelected ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
                     >
                       {/* Chain Style Icon */}
                       <span className="text-lg" role="img" aria-label={style.label}>
@@ -1518,7 +1509,7 @@ export default function JewelryCategoryPage() {
 
         {/* Accessory Types Filter Bar - For accessories category */}
         {category === 'accessories' && Array.isArray(categoryFilters.accessoryTypes) && categoryFilters.accessoryTypes.length > 0 && (
-          <div className="mb-2 bg-white rounded-lg shadow-sm p-2">
+          <div className="mb-2 rounded-lg shadow-sm p-2 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="flex items-center">
                 <span className="text-sm font-medium mr-3 whitespace-nowrap">Filter by Accessory Type:</span>
@@ -1527,11 +1518,8 @@ export default function JewelryCategoryPage() {
                 {/* All Accessory Types Button */}
                 <button
                   onClick={() => handleFilterChange('accessoryTypes', [])}
-                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200 ${
-                    (!filters.accessoryTypes || filters.accessoryTypes.length === 0)
-                      ? 'bg-gray-700 border border-gray-700 text-white hover:bg-gray-800 hover:border-gray-800' 
-                      : 'border border-slate-300 text-slate-700 hover:border-gray-500 hover:text-gray-700 bg-white'
-                  }`}
+                  className={`rounded-lg whitespace-nowrap px-4 py-2 h-auto transition-all duration-200 border`}
+                  style={(!filters.accessoryTypes || filters.accessoryTypes.length === 0) ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
                 >
                   All Types
                 </button>
@@ -1550,11 +1538,8 @@ export default function JewelryCategoryPage() {
                           : [...currentAccessoryTypes, accessoryType.value]
                         handleFilterChange('accessoryTypes', newAccessoryTypes)
                       }}
-                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap ${
-                        isSelected
-                          ? 'bg-rose-600 border-rose-600 text-white hover:bg-rose-700'
-                          : 'bg-white border-slate-300 text-slate-700 hover:border-rose-400 hover:text-rose-600'
-                      }`}
+                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 whitespace-nowrap`}
+                      style={isSelected ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' } : { backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
                     >
                       {/* Accessory Type Icon */}
                       <span className="text-lg" role="img" aria-label={accessoryType.label}>
@@ -1587,17 +1572,20 @@ export default function JewelryCategoryPage() {
             {/* Loading State */}
             {loading && (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--primary)' }} />
               </div>
             )}
 
             {/* Error State */}
             {error && (
               <div className="text-center py-12">
-                <p className="text-red-600 mb-4">{error}</p>
+                <p className="mb-4" style={{ color: 'var(--destructive)' }}>{error}</p>
                 <button
                   onClick={() => fetchJewelry(buildQueryParams())}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                  className="px-6 py-2.5 font-bold rounded-xl shadow-md transition-all active:scale-[0.98]"
+                  style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--primary) 85%, black)' }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--primary)' }}
                 >
                   Try Again
                 </button>
@@ -1610,7 +1598,10 @@ export default function JewelryCategoryPage() {
                 <p className="mb-4" style={{ color: 'var(--muted-foreground)' }}>No jewelry found matching your criteria.</p>
                 <button
                   onClick={clearFilters}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                  className="px-4 py-2 rounded-lg transition-colors"
+                  style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--primary) 85%, black)' }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--primary)' }}
                 >
                   Clear Filters
                 </button>
@@ -1689,20 +1680,23 @@ export default function JewelryCategoryPage() {
         />
         {/* Drawer */}
         <div
-          className={`fixed top-0 right-0 w-full max-w-md h-full bg-white dark:bg-gray-900 z-[110] shadow-2xl p-0 flex flex-col transition-transform duration-300 ease-out ${drawerOpen ? 'translate-x-0' : 'translate-x-full'}`}
-          style={{ minHeight: '100vh' }}
+          className={`fixed top-0 right-0 w-full max-w-md h-full z-[110] shadow-2xl p-0 flex flex-col transition-transform duration-300 ease-out ${drawerOpen ? 'translate-x-0' : 'translate-x-full'}`}
+          style={{ minHeight: '100vh', backgroundColor: 'var(--background)' }}
           onTransitionEnd={() => {
             if (!drawerOpen) setDrawerVisible(false);
           }}
         >
           {/* Header */}
-          <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-5 sticky top-0 z-10">
+          <div className="border-b px-6 py-5 sticky top-0 z-10" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Filters</h2>
+              <h2 className="text-xl font-semibold" style={{ color: 'var(--foreground)' }}>Filters</h2>
               <button
-                className="p-1.5 rounded-full hover:bg-white dark:hover:bg-gray-800 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-all"
+                className="p-1.5 rounded-full transition-all"
+                style={{ color: 'var(--muted-foreground)' }}
                 onClick={() => setShowFilters(false)}
                 aria-label="Close filters"
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--foreground) 10%, transparent)' }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1710,18 +1704,21 @@ export default function JewelryCategoryPage() {
             <div className="flex items-center justify-between">
               {getTotalAppliedFilters() > 0 ? (
                 <>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                  <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                     {getTotalAppliedFilters()} {getTotalAppliedFilters() === 1 ? 'filter' : 'filters'} applied
                   </span>
                   <button
                     onClick={clearFilters}
-                    className="text-sm font-medium text-amber-600 hover:text-amber-700 dark:text-amber-500 dark:hover:text-amber-400 transition-colors"
+                    className="text-sm font-medium transition-colors"
+                    style={{ color: 'var(--primary)' }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'color-mix(in srgb, var(--primary) 80%, black)' }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--primary)' }}
                   >
                     Clear all
                   </button>
                 </>
               ) : (
-                <span className="text-sm text-gray-500 dark:text-gray-500">No filters applied</span>
+                <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>No filters applied</span>
               )}
             </div>
           </div>
@@ -1735,17 +1732,11 @@ export default function JewelryCategoryPage() {
               background: transparent;
             }
             .filter-scroll::-webkit-scrollbar-thumb {
-              background: #d1d5db;
+              background: var(--border);
               border-radius: 3px;
             }
             .filter-scroll::-webkit-scrollbar-thumb:hover {
-              background: #9ca3af;
-            }
-            .dark .filter-scroll::-webkit-scrollbar-thumb {
-              background: #4b5563;
-            }
-            .dark .filter-scroll::-webkit-scrollbar-thumb:hover {
-              background: #6b7280;
+              background: var(--muted-foreground);
             }
           `}</style>
 
@@ -1758,7 +1749,7 @@ export default function JewelryCategoryPage() {
                 count={filters.priceRange.min > 0 || filters.priceRange.max < 50000 ? 1 : 0}
               >
                 <div className="px-6 py-4">
-                  <div className="mb-4 flex justify-between text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <div className="mb-4 flex justify-between text-sm font-medium" style={{ color: 'var(--foreground)' }}>
                     <span>${filters.priceRange.min.toLocaleString()}</span>
                     <span>${filters.priceRange.max.toLocaleString()}</span>
                   </div>
@@ -1776,12 +1767,12 @@ export default function JewelryCategoryPage() {
                         })
                       }
                     }}
-                    trackStyle={[{ backgroundColor: '#f59e0b', height: '4px' }]}
+                    trackStyle={[{ backgroundColor: 'var(--status-warning)', height: '4px' }]}
                     handleStyle={[
-                      { backgroundColor: '#f59e0b', borderColor: '#f59e0b', width: '16px', height: '16px', marginTop: '-6px' },
-                      { backgroundColor: '#f59e0b', borderColor: '#f59e0b', width: '16px', height: '16px', marginTop: '-6px' }
+                      { backgroundColor: 'var(--status-warning)', borderColor: 'var(--status-warning)', width: '16px', height: '16px', marginTop: '-6px' },
+                      { backgroundColor: 'var(--status-warning)', borderColor: 'var(--status-warning)', width: '16px', height: '16px', marginTop: '-6px' }
                     ]}
-                    railStyle={{ backgroundColor: '#e5e7eb', height: '4px' }}
+                    railStyle={{ backgroundColor: 'var(--border)', height: '4px' }}
                   />
                 </div>
               </FilterSection>
@@ -2181,10 +2172,13 @@ export default function JewelryCategoryPage() {
           </div>
 
           {/* Footer - Show Results Button */}
-          <div className="sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-4">
+          <div className="sticky bottom-0 border-t p-4" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <button
               onClick={() => setShowFilters(false)}
-              className="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg transition-colors"
+              className="w-full py-3.5 font-bold rounded-xl shadow-lg transition-all active:scale-[0.98]"
+              style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--primary) 85%, black)' }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--primary)' }}
             >
               Show Results
             </button>
@@ -2211,25 +2205,28 @@ const FilterSection: React.FC<FilterSectionProps> = ({ title, isOpen = false, ch
     <div>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
+        className="w-full flex items-center justify-between px-6 py-4 transition-colors group"
+        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--foreground) 5%, transparent)' }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
       >
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors">
+        <h3 className="text-sm font-semibold transition-colors group-hover:text-[var(--primary)]" style={{ color: 'var(--foreground)' }}>
           {title}
           {count !== undefined && count > 0 && (
-            <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+            <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 15%, transparent)', color: 'var(--status-warning)' }}>
               {count}
             </span>
           )}
         </h3>
         <ChevronDown
-          className={`w-4 h-4 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-all ${
+          className={`w-4 h-4 transition-all group-hover:text-[var(--primary)] ${
             isExpanded ? 'rotate-180' : ''
           }`}
+          style={{ color: 'var(--muted-foreground)' }}
         />
       </button>
 
       {isExpanded && (
-        <div className="px-6 pb-5 pt-3 bg-gray-50/50 dark:bg-gray-800/20">
+        <div className="px-6 pb-5 pt-3" style={{ backgroundColor: 'color-mix(in srgb, var(--foreground) 3%, transparent)' }}>
           {children}
         </div>
       )}
@@ -2273,67 +2270,88 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
     <div className="space-y-3">
       {/* Search Input */}
       {searchable && options.length > 5 && (
-        <div className="mb-3">
+        <div className="mb-3 px-6">
           <div className="relative">
             <input
               type="text"
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-3 py-2 pl-9 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+              className="w-full px-3 py-2 pl-9 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+              style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
             />
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--muted-foreground)' }} />
           </div>
         </div>
       )}
 
       {/* Options Container */}
       <div
-        className="space-y-1 max-h-64 overflow-y-auto"
+        className="space-y-1 max-h-64 overflow-y-auto px-6"
         style={{ maxHeight: showAll ? maxHeight : 'auto' }}
       >
-        {displayOptions.map((option) => (
-          <label
-            key={option.value}
-            className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50 cursor-pointer transition-colors group"
-          >
-            <input
-              type="checkbox"
-              checked={selectedValues.includes(option.value)}
-              onChange={() => handleToggle(option.value)}
-              className="w-4 h-4 text-amber-600 bg-gray-100 border-gray-300 rounded focus:ring-amber-500 dark:focus:ring-amber-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
-            />
-            <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors flex-1">{option.label}</span>
-            {selectedValues.includes(option.value) && (
-              <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                ✓
-              </span>
-            )}
-          </label>
-        ))}
+        {displayOptions.map((option) => {
+          const isSelected = selectedValues.includes(option.value);
+          return (
+            <label
+              key={option.value}
+              className="flex items-center gap-2.5 p-2 rounded-lg transition-colors group cursor-pointer"
+              onMouseEnter={(e) => { (e.currentTarget as HTMLLabelElement).style.backgroundColor = 'color-mix(in srgb, var(--foreground) 8%, transparent)' }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLLabelElement).style.backgroundColor = 'transparent' }}
+            >
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={() => handleToggle(option.value)}
+                className="w-4 h-4 rounded focus:ring-ring focus:ring-2 cursor-pointer transition-all"
+                style={{
+                  accentColor: 'var(--primary)',
+                  borderColor: isSelected ? 'var(--primary)' : 'var(--border)'
+                }}
+              />
+              <span className="text-sm transition-colors flex-1" style={{ color: isSelected ? 'var(--foreground)' : 'var(--muted-foreground)' }}>{option.label}</span>
+              {isSelected && (
+                <span className="text-xs px-2 py-1 rounded" style={{ color: 'var(--primary)', backgroundColor: 'color-mix(in srgb, var(--primary) 10%, transparent)' }}>
+                  ✓
+                </span>
+              )}
+            </label>
+          );
+        })}
       </div>
 
       {/* Show More/Less Button */}
       {hasMoreOptions && !searchQuery && (
-        <button
-          onClick={() => setShowAll(!showAll)}
-          className="w-full text-sm text-blue-600 hover:text-blue-800 py-2 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
-        >
-          {showAll ? 'Show Less' : `Show All (${filteredOptions.length})`}
-        </button>
+        <div className="px-6">
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="w-full text-sm py-2 border rounded-lg transition-colors"
+            style={{ 
+              color: 'var(--primary)', 
+              borderColor: 'color-mix(in srgb, var(--primary) 20%, transparent)',
+              backgroundColor: 'transparent'
+            }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--primary) 5%, transparent)' }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
+          >
+            {showAll ? 'Show Less' : `Show All (${filteredOptions.length})`}
+          </button>
+        </div>
       )}
 
       {/* No Results */}
       {searchQuery && filteredOptions.length === 0 && (
-        <div className="text-center py-4 text-slate-500 text-sm">
+        <div className="text-center py-4 text-sm px-6" style={{ color: 'var(--muted-foreground)' }}>
           No options found for &quot;{searchQuery}&quot;
         </div>
       )}
 
       {/* Selected Count */}
       {selectedValues.length > 0 && (
-        <div className="text-xs text-slate-600 bg-slate-50 px-3 py-2 rounded-lg">
-          {selectedValues.length} selected
+        <div className="px-6">
+          <div className="text-xs px-3 py-2 rounded-lg" style={{ color: 'var(--muted-foreground)', backgroundColor: 'color-mix(in srgb, var(--foreground) 5%, transparent)' }}>
+            {selectedValues.length} selected
+          </div>
         </div>
       )}
     </div>
@@ -2504,13 +2522,13 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
               </span>
 
               {item.metalType && (
-                <span className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 text-amber-700 text-sm font-medium rounded-full">
+                <span className="inline-flex items-center px-3 py-1.5 rounded-full border text-sm font-medium" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--status-warning) 45%, transparent)', color: 'var(--status-warning)' }}>
                   {item.metalType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </span>
               )}
 
               {item.stones && item.stones.length > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-full">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm" style={{ backgroundColor: 'var(--muted)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}>
                   <div className="w-2 h-2 rounded-full bg-amber-400"></div>
                   {item.stones.length} {item.stones.length === 1 ? 'Stone' : 'Stones'}
                 </span>
@@ -2541,7 +2559,10 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
                     e.stopPropagation()
                     // Add to cart logic
                   }}
-                  className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium rounded-lg transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg active:scale-95"
+                  className="px-6 py-2.5 font-medium rounded-lg transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg active:scale-95"
+                  style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--primary) 85%, black)' }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--primary)' }}
                 >
                   <ShoppingCart className="w-4 h-4" />
                   Add to Cart
@@ -2602,7 +2623,7 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
         {/* Metal Type Badge */}
         {item.metalType && (
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-2.5 py-1 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 text-amber-700 text-xs font-medium rounded-full">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full border text-xs font-medium" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--status-warning) 45%, transparent)', color: 'var(--status-warning)' }}>
               {item.metalType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </span>
           </div>
@@ -2638,7 +2659,10 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
                 e.stopPropagation()
                 // Add to cart logic
               }}
-              className="flex-1 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-95"
+              className="flex-1 px-4 py-2.5 font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-95"
+              style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--primary) 85%, black)' }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--primary)' }}
             >
               <ShoppingCart className="w-4 h-4" />
               Add to Cart

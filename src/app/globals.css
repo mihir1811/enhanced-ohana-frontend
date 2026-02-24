@@ -76,6 +76,11 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
+  /* Semantic status aliases */
+  --status-success: var(--chart-2);
+  --status-warning: var(--chart-5);
+  --status-info: var(--chart-3);
+
   /* Custom Colorful Theme - Light */
   --hero-gradient-start: #eff6ff;
   --hero-gradient-via: #ffffff;
@@ -145,6 +150,11 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* Semantic status aliases */
+  --status-success: var(--chart-2);
+  --status-warning: var(--chart-5);
+  --status-info: var(--chart-3);
 
   /* Custom Colorful Theme - Dark */
   --hero-gradient-start: #0f172a;

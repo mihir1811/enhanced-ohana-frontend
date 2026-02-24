@@ -2946,7 +2946,7 @@ export default function DiamondsSearchPage() {
 
 
         {/* Action Buttons */}
-        <div className="flex flex-col md:flex-row gap-4 mt-8 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex justify-center flex-col md:flex-row gap-4 mt-8 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
           <button
             onClick={handleSearch}
             className="group cursor-pointer px-5 py-0 rounded-2xl font-semibold text-base md:text-lg flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2"

@@ -279,17 +279,17 @@ const MeleeDiamondDetailsPage: React.FC<MeleeDiamondDetailsPageProps> = ({ diamo
           {/* Key Melee Features Cards */}
           <div className="grid grid-cols-2 gap-4">
             {[
-              { label: 'Total Carat Weight', value: `${diamond.totalCaratWeight} ct`, icon: '⚖️', color: 'from-blue-500 to-blue-600', description: 'Total parcel weight' },
-              { label: 'Total Pieces', value: diamond.totalPcs, icon: '🔢', color: 'from-purple-500 to-purple-600', description: 'Approximate piece count' },
-              { label: 'Weight per Piece', value: diamond.caratWeightPerpcs ? `${diamond.caratWeightPerpcs} ct` : null, icon: '📦', color: 'from-emerald-500 to-emerald-600', description: 'Average weight per stone' },
-              { label: 'Shape', value: diamond.shape, icon: '💎', color: 'from-amber-500 to-amber-600', description: 'Parcel diamond shape' },
-              { label: 'Color Range', value: diamond.colorFrom && diamond.colorTo ? `${diamond.colorFrom} - ${diamond.colorTo}` : diamond.color, icon: '🎨', color: 'from-pink-500 to-pink-600', description: 'Color classification range' },
-              { label: 'Clarity Range', value: diamond.clarityMin && diamond.clarityMax ? `${diamond.clarityMin} - ${diamond.clarityMax}` : diamond.clarity, icon: '🔍', color: 'from-indigo-500 to-indigo-600', description: 'Clarity classification range' },
-              { label: 'Cut Range', value: diamond.cutFrom && diamond.cutTo ? `${diamond.cutFrom} - ${diamond.cutTo}` : diamond.cutFrom || diamond.cut, icon: '✂️', color: 'from-blue-400 to-blue-500', description: 'Light performance range' },
-              { label: 'Sieve Size', value: diamond.sieveSizeMin && diamond.sieveSizeMax ? `${diamond.sieveSizeMin} - ${diamond.sieveSizeMax}` : null, icon: '📏', color: 'from-orange-500 to-orange-600', description: 'Sieve measurement range' },
+              { label: 'Total Carat Weight', value: `${diamond.totalCaratWeight} ct`, icon: '⚖️', color: 'var(--chart-1)', description: 'Total parcel weight' },
+              { label: 'Total Pieces', value: diamond.totalPcs, icon: '🔢', color: 'var(--chart-2)', description: 'Approximate piece count' },
+              { label: 'Weight per Piece', value: diamond.caratWeightPerpcs ? `${diamond.caratWeightPerpcs} ct` : null, icon: '📦', color: 'var(--chart-3)', description: 'Average weight per stone' },
+              { label: 'Shape', value: diamond.shape, icon: '💎', color: 'var(--chart-4)', description: 'Parcel diamond shape' },
+              { label: 'Color Range', value: diamond.colorFrom && diamond.colorTo ? `${diamond.colorFrom} - ${diamond.colorTo}` : diamond.color, icon: '🎨', color: 'var(--chart-5)', description: 'Color classification range' },
+              { label: 'Clarity Range', value: diamond.clarityMin && diamond.clarityMax ? `${diamond.clarityMin} - ${diamond.clarityMax}` : diamond.clarity, icon: '🔍', color: 'var(--chart-1)', description: 'Clarity classification range' },
+              { label: 'Cut Range', value: diamond.cutFrom && diamond.cutTo ? `${diamond.cutFrom} - ${diamond.cutTo}` : diamond.cutFrom || diamond.cut, icon: '✂️', color: 'var(--chart-2)', description: 'Light performance range' },
+              { label: 'Sieve Size', value: diamond.sieveSizeMin && diamond.sieveSizeMax ? `${diamond.sieveSizeMin} - ${diamond.sieveSizeMax}` : null, icon: '📏', color: 'var(--chart-3)', description: 'Sieve measurement range' },
             ].filter(f => f.value).map((feature, i) => (
               <div key={i} className="rounded-2xl border p-4 hover:shadow-md transition-shadow duration-200" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${feature.color} flex items-center justify-center text-2xl mb-3`}>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-3`} style={{ backgroundColor: `color-mix(in srgb, ${feature.color} 15%, transparent)` }}>
                   {feature.icon}
                 </div>
                 <h3 className="font-semibold mb-1" style={{ color: 'var(--foreground)' }}>{feature.label}</h3>

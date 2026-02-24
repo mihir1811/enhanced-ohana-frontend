@@ -318,7 +318,10 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                       </span>
                       <button
                         onClick={() => handleFiltersChange(getDefaultDiamondFilters(diamondType))}
-                        className="text-sm font-medium text-amber-600 hover:text-amber-700 dark:text-amber-500 dark:hover:text-amber-400 transition-colors"
+                        className="text-sm font-medium transition-colors"
+                        style={{ color: 'var(--primary)' }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'color-mix(in srgb, var(--primary) 80%, black)' }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--primary)' }}
                       >
                         Clear all
                       </button>
@@ -334,22 +337,24 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
               <div className="flex-1 overflow-y-auto" style={{ backgroundColor: 'var(--card)' }}>
                 <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
                   {/* Shape Section */}
-                  <div>
                     <button
                       onClick={() => toggleSection('shape')}
                       className="w-full flex items-center justify-between px-6 py-4 transition-colors group"
                       style={{ color: 'var(--foreground)' }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--foreground) 5%, transparent)' }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
                     >
-                      <h3 className="text-sm font-semibold group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors" style={{ color: 'var(--foreground)' }}>
+                      <h3 className="text-sm font-semibold transition-colors group-hover:text-[var(--primary)]" style={{ color: 'var(--foreground)' }}>
                         Shape
                         {filters.shape.length > 0 && (
-                          <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                          <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 15%, transparent)', color: 'var(--status-warning)' }}>
                             {filters.shape.length}
                           </span>
                         )}
                       </h3>
                       <ChevronDown 
-                        className={`w-4 h-4 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-all ${expandedSections.includes('shape') ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 transition-all group-hover:text-[var(--primary)] ${expandedSections.includes('shape') ? 'rotate-180' : ''}`}
+                        style={{ color: 'var(--muted-foreground)' }}
                       />
                     </button>
                     {expandedSections.includes('shape') && (
@@ -374,8 +379,13 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                                 <button
                                   key={shape}
                                   type="button"
-                                  className={`flex flex-col items-center justify-center border rounded-full p-2 transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white border-yellow-600' : 'hover:border-yellow-300'}`}
-                                  style={isSelected ? undefined : { backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+                                  className={`flex flex-col items-center justify-center border rounded-full p-2 transition-all ${isSelected ? 'shadow-md' : ''}`}
+                                  style={isSelected 
+                                    ? { backgroundColor: 'var(--primary)', borderColor: 'var(--primary)', color: 'var(--primary-foreground)' } 
+                                    : { backgroundColor: 'var(--card)', borderColor: 'var(--border)' }
+                                  }
+                                  onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--primary)'; }}
+                                  onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
                                   onClick={() => {
                                     const next = isSelected
                                       ? filters.shape.filter(s => s !== shape)
@@ -383,10 +393,10 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                                     handleFiltersChange({ ...filters, shape: next });
                                   }}
                                 >
-                                  <span className={`w-8 h-8 mb-1 flex items-center justify-center ${isSelected ? 'text-white' : 'text-yellow-600 dark:text-yellow-500'}`}>
+                                  <span className={`w-8 h-8 mb-1 flex items-center justify-center transition-colors`} style={{ color: isSelected ? 'var(--primary-foreground)' : 'var(--primary)' }}>
                                     <Icon width={24} height={24} />
                                   </span>
-                                  <span className={`text-xs font-medium text-center ${isSelected ? 'text-white' : ''}`} style={isSelected ? undefined : { color: 'var(--muted-foreground)' }}>{shape}</span>
+                                  <span className={`text-xs font-medium text-center transition-colors`} style={{ color: isSelected ? 'var(--primary-foreground)' : 'var(--muted-foreground)' }}>{shape}</span>
                                 </button>
                               );
                             });
@@ -410,28 +420,31 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                   <div>
                     <button
                       onClick={() => toggleSection('caratWeight')}
-                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
+                      className="w-full flex items-center justify-between px-6 py-4 transition-colors group"
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--foreground) 5%, transparent)' }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
                     >
-                      <h3 className="text-sm font-semibold group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors" style={{ color: 'var(--foreground)' }}>
+                      <h3 className="text-sm font-semibold transition-colors group-hover:text-[var(--primary)]" style={{ color: 'var(--foreground)' }}>
                         Carat Weight
                         {(filters.caratWeight.min > 0 || filters.caratWeight.max > 0) && (
-                          <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                          <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 15%, transparent)', color: 'var(--status-warning)' }}>
                             {filters.caratWeight.min}-{filters.caratWeight.max}ct
                           </span>
                         )}
                       </h3>
                       <ChevronDown 
-                        className={`w-4 h-4 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-all ${expandedSections.includes('caratWeight') ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 transition-all group-hover:text-[var(--primary)] ${expandedSections.includes('caratWeight') ? 'rotate-180' : ''}`}
+                        style={{ color: 'var(--muted-foreground)' }}
                       />
                     </button>
                     {expandedSections.includes('caratWeight') && (
-                      <div className="px-6 pb-5 pt-3" style={{ backgroundColor: 'var(--muted)' }}>
+                      <div className="px-6 pb-5 pt-3" style={{ backgroundColor: 'color-mix(in srgb, var(--foreground) 3%, transparent)' }}>
                         <div className="flex gap-3">
                           <div className="flex-1">
                             <label className="block text-xs font-medium mb-2" style={{ color: 'var(--muted-foreground)' }}>Min Carat</label>
                             <input
                               type="number"
-                              className="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                              className="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                               placeholder="0.00"
                               min={0}
@@ -444,7 +457,7 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                             <label className="block text-xs font-medium mb-2" style={{ color: 'var(--muted-foreground)' }}>Max Carat</label>
                             <input
                               type="number"
-                              className="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                              className="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                               placeholder="No limit"
                               min={0}
@@ -462,44 +475,45 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                   <div>
                     <button
                       onClick={() => toggleSection('color')}
-                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
+                      className="w-full flex items-center justify-between px-6 py-4 transition-colors group"
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--foreground) 5%, transparent)' }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
                     >
-                      <h3 className="text-sm font-semibold group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors" style={{ color: 'var(--foreground)' }}>
+                      <h3 className="text-sm font-semibold transition-colors group-hover:text-[var(--primary)]" style={{ color: 'var(--foreground)' }}>
                         Color
                         {((filters.color && filters.color.length > 0) || (filters.fancyColor && filters.fancyColor.length > 0)) && (
-                          <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                          <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 15%, transparent)', color: 'var(--status-warning)' }}>
                             {(filters.color?.length || 0) + (filters.fancyColor?.length || 0)}
                           </span>
                         )}
                       </h3>
                       <ChevronDown 
-                        className={`w-4 h-4 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-all ${expandedSections.includes('color') ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 transition-all group-hover:text-[var(--primary)] ${expandedSections.includes('color') ? 'rotate-180' : ''}`}
+                        style={{ color: 'var(--muted-foreground)' }}
                       />
                     </button>
                     {expandedSections.includes('color') && (
-                      <div className="px-6 pb-5 pt-3" style={{ backgroundColor: 'var(--muted)' }}>
+                      <div className="px-6 pb-5 pt-3" style={{ backgroundColor: 'color-mix(in srgb, var(--foreground) 3%, transparent)' }}>
                         {/* Color Type Toggle */}
                         <div className="flex gap-2 mb-4">
                           <button
                             type="button"
-                            className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                              colorType === 'standard'
-                                ? 'bg-amber-600 text-white'
-                                : ''
-                            }`}
-                            style={colorType === 'standard' ? undefined : { backgroundColor: 'var(--card)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                            className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all`}
+                            style={colorType === 'standard' 
+                              ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } 
+                              : { backgroundColor: 'var(--card)', color: 'var(--foreground)', border: '1px solid var(--border)' }
+                            }
                             onClick={() => setColorType('standard')}
                           >
                             Standard
                           </button>
                           <button
                             type="button"
-                            className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                              colorType === 'fancy'
-                                ? 'bg-amber-600 text-white'
-                                : ''
-                            }`}
-                            style={colorType === 'fancy' ? undefined : { backgroundColor: 'var(--card)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                            className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all`}
+                            style={colorType === 'fancy' 
+                              ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } 
+                              : { backgroundColor: 'var(--card)', color: 'var(--foreground)', border: '1px solid var(--border)' }
+                            }
                             onClick={() => setColorType('fancy')}
                           >
                             Fancy
@@ -515,8 +529,13 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                                 <button
                                   key={color}
                                   type="button"
-                                  className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'hover:border-yellow-300'}`}
-                                  style={isSelected ? undefined : { backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }}
+                                  className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all`}
+                                  style={isSelected 
+                                    ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } 
+                                    : { backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }
+                                  }
+                                  onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--primary)'; }}
+                                  onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
                                   onClick={() => {
                                     const currentColors = filters.color || [];
                                     const next = isSelected
@@ -559,8 +578,13 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                                     <button
                                       key={name}
                                       type="button"
-                                      className={`px-2 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'hover:border-yellow-300'}`}
-                                      style={isSelected ? undefined : { backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }}
+                                      className={`px-2 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2`}
+                                      style={isSelected 
+                                        ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } 
+                                        : { backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }
+                                      }
+                                      onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--primary)'; }}
+                                      onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
                                       onClick={() => {
                                         const currentFancyColors = filters.fancyColor || [];
                                         const next = isSelected
@@ -593,8 +617,13 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                                     <button
                                       key={intensity}
                                       type="button"
-                                      className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'hover:border-yellow-300'}`}
-                                      style={isSelected ? undefined : { backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }}
+                                      className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all`}
+                                      style={isSelected 
+                                        ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } 
+                                        : { backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }
+                                      }
+                                      onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--primary)'; }}
+                                      onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
                                       onClick={() => {
                                         const currentIntensity = filters.fancyIntensity || [];
                                         const next = isSelected
@@ -620,8 +649,13 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                                     <button
                                       key={overtone}
                                       type="button"
-                                      className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'hover:border-yellow-300'}`}
-                                      style={isSelected ? undefined : { backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }}
+                                      className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all`}
+                                      style={isSelected 
+                                        ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } 
+                                        : { backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }
+                                      }
+                                      onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--primary)'; }}
+                                      onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
                                       onClick={() => {
                                         const currentOvertone = filters.fancyOvertone || [];
                                         const next = isSelected
@@ -646,22 +680,25 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                   <div>
                     <button
                       onClick={() => toggleSection('clarity')}
-                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
+                      className="w-full flex items-center justify-between px-6 py-4 transition-colors group"
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--foreground) 5%, transparent)' }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
                     >
-                      <h3 className="text-sm font-semibold group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors" style={{ color: 'var(--foreground)' }}>
+                      <h3 className="text-sm font-semibold transition-colors group-hover:text-[var(--primary)]" style={{ color: 'var(--foreground)' }}>
                         Clarity
                         {filters.clarity.length > 0 && (
-                          <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                          <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 15%, transparent)', color: 'var(--status-warning)' }}>
                             {filters.clarity.length}
                           </span>
                         )}
                       </h3>
                       <ChevronDown 
-                        className={`w-4 h-4 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-all ${expandedSections.includes('clarity') ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 transition-all group-hover:text-[var(--primary)] ${expandedSections.includes('clarity') ? 'rotate-180' : ''}`}
+                        style={{ color: 'var(--muted-foreground)' }}
                       />
                     </button>
                     {expandedSections.includes('clarity') && (
-                      <div className="px-6 pb-5 pt-3" style={{ backgroundColor: 'var(--muted)' }}>
+                      <div className="px-6 pb-5 pt-3" style={{ backgroundColor: 'color-mix(in srgb, var(--foreground) 3%, transparent)' }}>
                         <div className="grid grid-cols-3 gap-2 mt-2">
                           {['FL','IF','VVS1','VVS2','VS1','VS2','SI1','SI2','SI3','I1','I2','I3'].map(clarity => {
                             const isSelected = filters.clarity.includes(clarity);
@@ -669,8 +706,13 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                               <button
                                 key={clarity}
                                 type="button"
-                                className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'hover:border-yellow-300'}`}
-                                style={isSelected ? undefined : { backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }}
+                                className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all`}
+                                style={isSelected 
+                                  ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } 
+                                  : { backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }
+                                }
+                                onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--primary)'; }}
+                                onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
                                 onClick={() => {
                                   const next = isSelected
                                     ? filters.clarity.filter(c => c !== clarity)
@@ -691,22 +733,25 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                   <div>
                     <button
                       onClick={() => toggleSection('cut')}
-                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
+                      className="w-full flex items-center justify-between px-6 py-4 transition-colors group"
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--foreground) 5%, transparent)' }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
                     >
-                      <h3 className="text-sm font-semibold group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors" style={{ color: 'var(--foreground)' }}>
+                      <h3 className="text-sm font-semibold transition-colors group-hover:text-[var(--primary)]" style={{ color: 'var(--foreground)' }}>
                         Cut
                         {filters.cut.length > 0 && (
-                          <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                          <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 15%, transparent)', color: 'var(--status-warning)' }}>
                             {filters.cut.length}
                           </span>
                         )}
                       </h3>
                       <ChevronDown 
-                        className={`w-4 h-4 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-all ${expandedSections.includes('cut') ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 transition-all group-hover:text-[var(--primary)] ${expandedSections.includes('cut') ? 'rotate-180' : ''}`}
+                        style={{ color: 'var(--muted-foreground)' }}
                       />
                     </button>
                     {expandedSections.includes('cut') && (
-                      <div className="px-6 pb-5 pt-3" style={{ backgroundColor: 'var(--muted)' }}>
+                      <div className="px-6 pb-5 pt-3" style={{ backgroundColor: 'color-mix(in srgb, var(--foreground) 3%, transparent)' }}>
                         <div className="grid grid-cols-2 gap-2 mt-2">
                           {['ID','EX','VG','GD','FR','PR'].map(cut => {
                             const isSelected = filters.cut.includes(cut);
@@ -714,8 +759,13 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                               <button
                                 key={cut}
                                 type="button"
-                                className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'hover:border-yellow-300'}`}
-                                style={isSelected ? undefined : { backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }}
+                                className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all`}
+                                style={isSelected 
+                                  ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } 
+                                  : { backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }
+                                }
+                                onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--primary)'; }}
+                                onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
                                 onClick={() => {
                                   const next = isSelected
                                     ? filters.cut.filter(c => c !== cut)
@@ -736,22 +786,25 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                   <div>
                     <button
                       onClick={() => toggleSection('polish')}
-                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
+                      className="w-full flex items-center justify-between px-6 py-4 transition-colors group"
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--foreground) 5%, transparent)' }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
                     >
-                      <h3 className="text-sm font-semibold group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors" style={{ color: 'var(--foreground)' }}>
+                      <h3 className="text-sm font-semibold transition-colors group-hover:text-[var(--primary)]" style={{ color: 'var(--foreground)' }}>
                         Polish
                         {filters.polish && filters.polish.length > 0 && (
-                          <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                          <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 15%, transparent)', color: 'var(--status-warning)' }}>
                             {filters.polish.length}
                           </span>
                         )}
                       </h3>
                       <ChevronDown 
-                        className={`w-4 h-4 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-all ${expandedSections.includes('polish') ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 transition-all group-hover:text-[var(--primary)] ${expandedSections.includes('polish') ? 'rotate-180' : ''}`}
+                        style={{ color: 'var(--muted-foreground)' }}
                       />
                     </button>
                     {expandedSections.includes('polish') && (
-                      <div className="px-6 pb-5 pt-3" style={{ backgroundColor: 'var(--muted)' }}>
+                      <div className="px-6 pb-5 pt-3" style={{ backgroundColor: 'color-mix(in srgb, var(--foreground) 3%, transparent)' }}>
                         <div className="grid grid-cols-3 gap-2 mt-2">
                           {['EX','VG','GD','FR','PR'].map(polish => {
                             const isSelected = filters.polish?.includes(polish);
@@ -759,8 +812,13 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                               <button
                                 key={polish}
                                 type="button"
-                                className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'hover:border-yellow-300'}`}
-                                style={isSelected ? undefined : { backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }}
+                                className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all`}
+                                style={isSelected 
+                                  ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } 
+                                  : { backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }
+                                }
+                                onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--primary)'; }}
+                                onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
                                 onClick={() => {
                                   const currentPolish = filters.polish || [];
                                   const next = isSelected
@@ -782,22 +840,25 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                   <div>
                     <button
                       onClick={() => toggleSection('symmetry')}
-                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
+                      className="w-full flex items-center justify-between px-6 py-4 transition-colors group"
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--foreground) 5%, transparent)' }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
                     >
-                      <h3 className="text-sm font-semibold group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors" style={{ color: 'var(--foreground)' }}>
+                      <h3 className="text-sm font-semibold transition-colors group-hover:text-[var(--primary)]" style={{ color: 'var(--foreground)' }}>
                         Symmetry
                         {filters.symmetry && filters.symmetry.length > 0 && (
-                          <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                          <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 15%, transparent)', color: 'var(--status-warning)' }}>
                             {filters.symmetry.length}
                           </span>
                         )}
                       </h3>
                       <ChevronDown 
-                        className={`w-4 h-4 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-all ${expandedSections.includes('symmetry') ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 transition-all group-hover:text-[var(--primary)] ${expandedSections.includes('symmetry') ? 'rotate-180' : ''}`}
+                        style={{ color: 'var(--muted-foreground)' }}
                       />
                     </button>
                     {expandedSections.includes('symmetry') && (
-                      <div className="px-6 pb-5 pt-3" style={{ backgroundColor: 'var(--muted)' }}>
+                      <div className="px-6 pb-5 pt-3" style={{ backgroundColor: 'color-mix(in srgb, var(--foreground) 3%, transparent)' }}>
                         <div className="grid grid-cols-3 gap-2 mt-2">
                           {['EX','VG','GD','FR','PR'].map(symmetry => {
                             const isSelected = filters.symmetry?.includes(symmetry);
@@ -805,8 +866,13 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                               <button
                                 key={symmetry}
                                 type="button"
-                                className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'hover:border-yellow-300'}`}
-                                style={isSelected ? undefined : { backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }}
+                                className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all`}
+                                style={isSelected 
+                                  ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } 
+                                  : { backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }
+                                }
+                                onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--primary)'; }}
+                                onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
                                 onClick={() => {
                                   const currentSymmetry = filters.symmetry || [];
                                   const next = isSelected
@@ -828,22 +894,25 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                   <div>
                     <button
                       onClick={() => toggleSection('lab')}
-                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
+                      className="w-full flex items-center justify-between px-6 py-4 transition-colors group"
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--foreground) 5%, transparent)' }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
                     >
-                      <h3 className="text-sm font-semibold group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors" style={{ color: 'var(--foreground)' }}>
+                      <h3 className="text-sm font-semibold transition-colors group-hover:text-[var(--primary)]" style={{ color: 'var(--foreground)' }}>
                         Lab
                         {filters.certification && filters.certification.length > 0 && (
-                          <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                          <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 15%, transparent)', color: 'var(--status-warning)' }}>
                             {filters.certification.length}
                           </span>
                         )}
                       </h3>
                       <ChevronDown 
-                        className={`w-4 h-4 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-all ${expandedSections.includes('lab') ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 transition-all group-hover:text-[var(--primary)] ${expandedSections.includes('lab') ? 'rotate-180' : ''}`}
+                        style={{ color: 'var(--muted-foreground)' }}
                       />
                     </button>
                     {expandedSections.includes('lab') && (
-                      <div className="px-6 pb-5 pt-3" style={{ backgroundColor: 'var(--muted)' }}>
+                      <div className="px-6 pb-5 pt-3" style={{ backgroundColor: 'color-mix(in srgb, var(--foreground) 3%, transparent)' }}>
                         <div className="grid grid-cols-3 gap-2 mt-2">
                           {['GIA','IGI','HRD','GCAL','AGS'].map(cert => {
                             const isSelected = filters.certification?.includes(cert);
@@ -851,8 +920,13 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                               <button
                                 key={cert}
                                 type="button"
-                                className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'hover:border-yellow-300'}`}
-                                style={isSelected ? undefined : { backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }}
+                                className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all`}
+                                style={isSelected 
+                                  ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } 
+                                  : { backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }
+                                }
+                                onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--primary)'; }}
+                                onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
                                 onClick={() => {
                                   const currentCert = filters.certification || [];
                                   const next = isSelected
@@ -874,22 +948,25 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                   <div>
                     <button
                       onClick={() => toggleSection('fluorescence')}
-                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
+                      className="w-full flex items-center justify-between px-6 py-4 transition-colors group"
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--foreground) 5%, transparent)' }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
                     >
-                      <h3 className="text-sm font-semibold group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors" style={{ color: 'var(--foreground)' }}>
+                      <h3 className="text-sm font-semibold transition-colors group-hover:text-[var(--primary)]" style={{ color: 'var(--foreground)' }}>
                         Fluorescence
                         {filters.fluorescence && filters.fluorescence.length > 0 && (
-                          <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                          <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 15%, transparent)', color: 'var(--status-warning)' }}>
                             {filters.fluorescence.length}
                           </span>
                         )}
                       </h3>
                       <ChevronDown 
-                        className={`w-4 h-4 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-all ${expandedSections.includes('fluorescence') ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 transition-all group-hover:text-[var(--primary)] ${expandedSections.includes('fluorescence') ? 'rotate-180' : ''}`}
+                        style={{ color: 'var(--muted-foreground)' }}
                       />
                     </button>
                     {expandedSections.includes('fluorescence') && (
-                      <div className="px-6 pb-5 pt-3" style={{ backgroundColor: 'var(--muted)' }}>
+                      <div className="px-6 pb-5 pt-3" style={{ backgroundColor: 'color-mix(in srgb, var(--foreground) 3%, transparent)' }}>
                         <div className="grid grid-cols-2 gap-2 mt-2">
                           {['None','Faint','Medium','Slight','Strong','V. Str'].map(fluor => {
                             const isSelected = filters.fluorescence?.includes(fluor);
@@ -897,8 +974,13 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                               <button
                                 key={fluor}
                                 type="button"
-                                className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'hover:border-yellow-300'}`}
-                                style={isSelected ? undefined : { backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }}
+                                className={`px-2 py-1.5 rounded-full text-sm font-medium transition-all`}
+                                style={isSelected 
+                                  ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' } 
+                                  : { backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--muted-foreground)' }
+                                }
+                                onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--primary)'; }}
+                                onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
                                 onClick={() => {
                                   const currentFluor = filters.fluorescence || [];
                                   const next = isSelected
@@ -918,11 +1000,13 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
 
                   {/* Ratio Range Section - Removed due to type errors */}
                 </div>
-              </div>
               {/* Sticky Footer */}
               <div className="sticky bottom-0 left-0 w-full border-t px-6 py-4 z-20" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                 <button
-                  className="w-full py-3 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold transition-colors"
+                  className="w-full py-3 rounded-lg font-semibold transition-all"
+                  style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--primary) 90%, black)'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--primary)'; }}
                   onClick={() => setShowFilters(false)}
                 >
                   Show Results
