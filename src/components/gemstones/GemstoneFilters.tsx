@@ -5,9 +5,9 @@ import { ChevronDown, CheckSquare, X, MousePointer2 } from 'lucide-react'
 
 function FilterSection({ title, children, actions }: { title: string; children: React.ReactNode; actions?: React.ReactNode }) {
   return (
-    <div className="filter-group border-b border-gray-100 dark:border-gray-800 pb-5 mb-5 last:border-0">
+    <div className="filter-group border-b pb-5 mb-5 last:border-0" style={{ borderColor: 'var(--border)' }}>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold tracking-wide text-gray-900 dark:text-gray-100 uppercase">{title}</h3>
+        <h3 className="text-sm font-bold tracking-wide uppercase" style={{ color: 'var(--foreground)' }}>{title}</h3>
         {actions && <div className="flex items-center gap-1">{actions}</div>}
       </div>
       <div className="mt-2">{children}</div>
@@ -354,14 +354,29 @@ export default function GemstoneFilters({
             <button
               key={option}
               onClick={() => handleArrayFilterChange(category, option, options)}
-              className={`cursor-pointer group w-full px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200
+              className={`cursor-pointer group w-full px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border
                 ${isSelected
-                  ? "bg-yellow-50 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100 border border-yellow-500 dark:border-yellow-500"
-                  : "bg-transparent border hover:text-black border-gray-200 dark:border-slate-700 dark:text-gray-300"
+                  ? "text-white shadow-md"
+                  : "bg-transparent border-border text-muted-foreground"
                 }
-                hover:bg-yellow-50 dark:hover:bg-yellow-900/30 dark:hover:text-black 
-                hover:border-yellow-500/30 dark:hover:border-yellow-500/30
               `}
+              style={{
+                backgroundColor: isSelected ? 'var(--status-warning)' : 'transparent',
+                borderColor: isSelected ? 'var(--status-warning)' : 'var(--border)',
+                color: isSelected ? 'white' : 'var(--muted-foreground)'
+              }}
+              onMouseEnter={(e) => {
+                if (!isSelected) {
+                  e.currentTarget.style.backgroundColor = 'var(--accent)';
+                  e.currentTarget.style.color = 'var(--foreground)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isSelected) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = 'var(--muted-foreground)';
+                }
+              }}
             >
               {option}
             </button>
@@ -385,24 +400,26 @@ export default function GemstoneFilters({
             onClick={() => handleArrayFilterChange('color', color.name, colorOptions)}
             className={`cursor-pointer relative p-2 rounded-lg transition-all duration-200 border
               ${isRangeStart
-                ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-900 dark:text-blue-100 border-blue-500 ring-2 ring-blue-300 shadow-sm'
+                ? 'ring-2 ring-blue-300 shadow-sm'
                 :
               isSelected
-                ? "bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/30 border-yellow-500 dark:border-yellow-600 shadow-sm"
-                : "bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 hover:border-yellow-300 dark:hover:border-yellow-700 hover:shadow-sm"
+                ? "shadow-sm"
+                : "hover:shadow-sm"
               }
             `}
+            style={{
+              backgroundColor: isRangeStart ? 'color-mix(in srgb, var(--status-info) 10%, transparent)' : isSelected ? 'color-mix(in srgb, var(--status-warning) 10%, transparent)' : 'var(--card)',
+              borderColor: isRangeStart ? 'var(--status-info)' : isSelected ? 'var(--status-warning)' : 'var(--border)',
+            }}
           >
             <div className="flex flex-col items-center gap-2">
               <div
-                className="w-6 h-6 rounded-full shadow-sm ring-2 ring-white dark:ring-slate-700"
-                style={{ background: color.color }}
+                className="w-6 h-6 rounded-full shadow-sm ring-2"
+                style={{ background: color.color, ringColor: 'var(--card)' }}
               />
               <span
-                className={`text-xs font-medium ${isSelected
-                    ? "text-yellow-800 dark:text-yellow-300"
-                    : "text-gray-700 dark:text-gray-300"
-                  }`}
+                className="text-xs font-bold"
+                style={{ color: isSelected ? 'var(--status-warning)' : 'var(--muted-foreground)' }}
               >
                 {color.name}
               </span>

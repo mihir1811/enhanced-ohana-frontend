@@ -64,7 +64,7 @@ export default function SellerLayoutWrapper({ children }: SellerLayoutWrapperPro
         />
         
         {/* Main Content Area */}
-        <div className="lg:pl-16">
+        <div className="lg:pl-20">
           {/* Header */}
           <SellerHeader setSidebarOpen={setSidebarOpen} />
           

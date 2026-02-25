@@ -213,7 +213,7 @@ const WatchDetailsPage: React.FC<WatchDetailsPageProps> = ({ watch }) => {
                   key={idx}
                   onClick={() => setImgIdx(idx)}
                   className="relative flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 transition-all"
-                  style={{ borderColor: imgIdx === idx ? 'var(--primary)' : 'var(--border)' }}
+                  style={{ borderColor: imgIdx === idx ? 'var(--status-warning)' : 'var(--border)' }}
                 >
                   <Image src={img} alt="Thumbnail" fill className="object-cover" />
                 </button>
@@ -224,7 +224,7 @@ const WatchDetailsPage: React.FC<WatchDetailsPageProps> = ({ watch }) => {
           {watch.videoURL && (
             <div className="rounded-3xl border p-6" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
               <h3 className="font-bold mb-4 flex items-center gap-2">
-                <Play className="w-5 h-5 text-primary" />
+                <Play className="w-5 h-5" style={{ color: 'var(--status-warning)' }} />
                 Video Presentation
               </h3>
               <video src={watch.videoURL} controls className="w-full rounded-2xl" />
@@ -235,7 +235,7 @@ const WatchDetailsPage: React.FC<WatchDetailsPageProps> = ({ watch }) => {
         {/* Right Side - Info */}
         <div className="space-y-8">
           <div className="space-y-2">
-            <h2 className="text-primary font-bold tracking-widest uppercase text-sm">{watch.brand}</h2>
+            <h2 className="font-bold tracking-widest uppercase text-sm" style={{ color: 'var(--status-warning)' }}>{watch.brand}</h2>
             <h1 className="text-4xl font-black" style={{ color: 'var(--foreground)' }}>{watch.model}</h1>
             <p className="text-lg" style={{ color: 'var(--muted-foreground)' }}>{watch.referenceNumber}</p>
           </div>
@@ -244,14 +244,26 @@ const WatchDetailsPage: React.FC<WatchDetailsPageProps> = ({ watch }) => {
             <div className="text-4xl font-black" style={{ color: 'var(--foreground)' }}>
               {formatPrice(watch.price)}
             </div>
-            <div className="mb-1 text-sm font-bold px-3 py-1 rounded-full bg-primary/10 text-primary">
+            <div 
+              className="mb-1 text-sm font-bold px-3 py-1 rounded-full"
+              style={{ 
+                backgroundColor: 'color-mix(in srgb, var(--status-warning) 10%, transparent)', 
+                color: 'var(--status-warning)' 
+              }}
+            >
               Includes Free Shipping
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 rounded-2xl border flex items-center gap-4" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-              <div className="p-3 rounded-xl bg-primary/10 text-primary">
+              <div 
+                className="p-3 rounded-xl"
+                style={{ 
+                  backgroundColor: 'color-mix(in srgb, var(--status-warning) 10%, transparent)', 
+                  color: 'var(--status-warning)' 
+                }}
+              >
                 <Box className="w-6 h-6" />
               </div>
               <div>
@@ -260,7 +272,13 @@ const WatchDetailsPage: React.FC<WatchDetailsPageProps> = ({ watch }) => {
               </div>
             </div>
             <div className="p-4 rounded-2xl border flex items-center gap-4" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-              <div className="p-3 rounded-xl bg-primary/10 text-primary">
+              <div 
+                className="p-3 rounded-xl"
+                style={{ 
+                  backgroundColor: 'color-mix(in srgb, var(--status-warning) 10%, transparent)', 
+                  color: 'var(--status-warning)' 
+                }}
+              >
                 <FileText className="w-6 h-6" />
               </div>
               <div>
@@ -270,7 +288,13 @@ const WatchDetailsPage: React.FC<WatchDetailsPageProps> = ({ watch }) => {
             </div>
             {watch.warrantyCardIncluded && (
               <div className="p-4 rounded-2xl border flex items-center gap-4 col-span-2" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-                <div className="p-3 rounded-xl bg-primary/10 text-primary">
+                <div 
+                  className="p-3 rounded-xl"
+                  style={{ 
+                    backgroundColor: 'color-mix(in srgb, var(--status-warning) 10%, transparent)', 
+                    color: 'var(--status-warning)' 
+                  }}
+                >
                   <CreditCard className="w-6 h-6" />
                 </div>
                 <div>
@@ -285,12 +309,18 @@ const WatchDetailsPage: React.FC<WatchDetailsPageProps> = ({ watch }) => {
             <button 
               onClick={handleAddToCart}
               disabled={isAddingToCart}
-              className="w-full py-4 bg-black dark:bg-white text-white dark:text-black rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:opacity-90 transition-all disabled:opacity-50 border border-gray-200 dark:border-gray-800"
+              className="w-full py-4 text-white rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all disabled:opacity-50 active:scale-[0.98]"
+              style={{ 
+                background: 'linear-gradient(to right, var(--status-warning), color-mix(in srgb, var(--status-warning) 85%, black))'
+              }}
             >
               <ShoppingCart className="w-5 h-5" />
               {isAddingToCart ? 'Adding...' : 'Add to Cart'}
             </button>
-            <button className="w-full py-4 border border-gray-200 dark:border-gray-800 rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all" style={{ color: 'var(--foreground)' }}>
+            <button 
+              className="w-full py-4 border rounded-xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all" 
+              style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+            >
               <MessageCircle className="w-5 h-5" />
               Chat with Seller
             </button>
@@ -302,7 +332,7 @@ const WatchDetailsPage: React.FC<WatchDetailsPageProps> = ({ watch }) => {
               {specifications.map((spec, idx) => (
                 <div key={idx} className="flex items-center justify-between">
                   <div className="flex items-center gap-3 text-muted-foreground">
-                    {spec.icon}
+                    <span style={{ color: 'var(--status-warning)' }}>{spec.icon}</span>
                     <span className="text-sm font-medium">{spec.label}</span>
                   </div>
                   <span className="font-bold text-sm" style={{ color: 'var(--foreground)' }}>{spec.value}</span>
@@ -318,8 +348,14 @@ const WatchDetailsPage: React.FC<WatchDetailsPageProps> = ({ watch }) => {
             </div>
           )}
 
-          <div className="p-6 rounded-3xl border-2 border-dashed border-primary/20 bg-primary/5 space-y-4">
-            <div className="flex items-center gap-3 text-primary">
+          <div 
+            className="p-6 rounded-3xl border-2 border-dashed space-y-4"
+            style={{ 
+              borderColor: 'color-mix(in srgb, var(--status-warning) 30%, transparent)',
+              backgroundColor: 'color-mix(in srgb, var(--status-warning) 5%, transparent)'
+            }}
+          >
+            <div className="flex items-center gap-3" style={{ color: 'var(--status-warning)' }}>
               <Shield className="w-6 h-6" />
               <h4 className="font-bold uppercase tracking-wider">Authenticity Guaranteed</h4>
             </div>
@@ -338,7 +374,13 @@ const WatchDetailsPage: React.FC<WatchDetailsPageProps> = ({ watch }) => {
                     <Image src={watch.seller.companyLogo} alt={watch.seller.companyName} fill className="object-cover" />
                   </div>
                 ) : (
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold">
+                  <div 
+                    className="w-12 h-12 rounded-xl flex items-center justify-center font-bold"
+                    style={{ 
+                      backgroundColor: 'color-mix(in srgb, var(--status-warning) 10%, transparent)', 
+                      color: 'var(--status-warning)' 
+                    }}
+                  >
                     {watch.seller.companyName.charAt(0)}
                   </div>
                 )}

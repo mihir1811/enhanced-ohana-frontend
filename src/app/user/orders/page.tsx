@@ -57,13 +57,13 @@ export default function UserOrdersPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'delivered':
-        return <Check className="w-5 h-5" style={{ color: 'var(--chart-1)' }} />
+        return <Check className="w-5 h-5" style={{ color: '#16a34a' }} />
       case 'shipped':
-        return <Truck className="w-5 h-5" style={{ color: 'var(--chart-2)' }} />
+        return <Truck className="w-5 h-5" style={{ color: 'var(--status-warning)' }} />
       case 'processing':
-        return <Package className="w-5 h-5" style={{ color: 'var(--chart-3)' }} />
+        return <Package className="w-5 h-5" style={{ color: 'var(--status-warning)' }} />
       case 'pending':
-        return <Clock className="w-5 h-5" style={{ color: 'var(--chart-4)' }} />
+        return <Clock className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
       default:
         return <Package className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
     }
@@ -72,13 +72,28 @@ export default function UserOrdersPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'delivered':
-        return 'var(--chart-1)'
+        return 'color-mix(in srgb, #22c55e 15%, transparent)'
       case 'shipped':
-        return 'var(--chart-2)'
+        return 'color-mix(in srgb, var(--status-warning) 15%, transparent)'
       case 'processing':
-        return 'var(--chart-3)'
+        return 'color-mix(in srgb, var(--status-warning) 10%, transparent)'
       case 'pending':
-        return 'var(--chart-4)'
+        return 'var(--muted)'
+      default:
+        return 'var(--muted)'
+    }
+  }
+
+  const getStatusTextColor = (status: string) => {
+    switch (status) {
+      case 'delivered':
+        return '#16a34a'
+      case 'shipped':
+        return 'var(--status-warning)'
+      case 'processing':
+        return 'var(--status-warning)'
+      case 'pending':
+        return 'var(--muted-foreground)'
       default:
         return 'var(--muted-foreground)'
     }
@@ -121,22 +136,18 @@ export default function UserOrdersPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
-                    activeTab === tab.id
-                      ? 'border-amber-500 text-amber-600'
-                      : 'border-transparent hover:border-gray-300'
-                  }`}
+                  className="py-2 px-1 border-b-2 font-medium text-sm transition-all"
                   style={{
-                    borderBottomColor: activeTab === tab.id ? 'var(--chart-1)' : 'transparent',
-                    color: activeTab === tab.id ? 'var(--chart-1)' : 'var(--muted-foreground)'
+                    borderBottomColor: activeTab === tab.id ? 'var(--status-warning)' : 'transparent',
+                    color: activeTab === tab.id ? 'var(--status-warning)' : 'var(--muted-foreground)'
                   }}
                 >
                   {tab.label}
                   <span 
                     className="ml-2 px-2 py-0.5 text-xs rounded-full"
                     style={{ 
-                      backgroundColor: activeTab === tab.id ? 'var(--chart-1)' : 'var(--muted)',
-                      color: activeTab === tab.id ? 'var(--primary-foreground)' : 'var(--muted-foreground)'
+                      backgroundColor: activeTab === tab.id ? 'color-mix(in srgb, var(--status-warning) 15%, transparent)' : 'var(--muted)',
+                      color: activeTab === tab.id ? 'var(--status-warning)' : 'var(--muted-foreground)'
                     }}
                   >
                     {tab.count}
@@ -195,7 +206,7 @@ export default function UserOrdersPage() {
                           className="px-3 py-1 text-sm font-medium rounded-full capitalize"
                           style={{ 
                             backgroundColor: getStatusColor(order.status),
-                            color: 'var(--primary-foreground)'
+                            color: getStatusTextColor(order.status)
                           }}
                         >
                           {order.status}
@@ -233,7 +244,7 @@ export default function UserOrdersPage() {
                           <h4 className="font-medium" style={{ color: 'var(--card-foreground)' }}>
                             {item.name}
                           </h4>
-                          <p className="text-sm font-semibold" style={{ color: 'var(--chart-1)' }}>
+                          <p className="text-sm font-semibold" style={{ color: 'var(--status-warning)' }}>
                             {item.price}
                           </p>
                         </div>
@@ -286,10 +297,9 @@ export default function UserOrdersPage() {
                       )}
                       {order.status === 'delivered' && (
                         <button 
-                          className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors"
+                          className="flex items-center space-x-2 px-4 py-2 text-white rounded-lg font-medium transition-all active:scale-95"
                           style={{ 
-                            backgroundColor: 'var(--primary)',
-                            color: 'var(--primary-foreground)'
+                            backgroundColor: 'var(--status-warning)'
                           }}
                         >
                           <RefreshCw className="w-4 h-4" />

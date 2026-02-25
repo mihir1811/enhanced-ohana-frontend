@@ -123,7 +123,7 @@ export default function UserWishlistPage() {
       <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
         <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 sm:px-6 lg:px-8 py-8`}>
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: 'var(--status-warning)' }}></div>
           </div>
         </div>
       </div>
@@ -212,13 +212,13 @@ export default function UserWishlistPage() {
             Total: <span style={{ color: 'var(--foreground)' }}>{stats.total}</span>
           </span>
           <span>
-            Diamonds: <span style={{ color: 'var(--chart-1)' }}>{stats.diamonds}</span>
+            Diamonds: <span style={{ color: 'var(--status-warning)' }}>{stats.diamonds}</span>
           </span>
           <span>
-            Gemstones: <span style={{ color: 'var(--chart-2)' }}>{stats.gemstones}</span>
+            Gemstones: <span style={{ color: 'var(--status-warning)' }}>{stats.gemstones}</span>
           </span>
           <span>
-            Jewelry: <span style={{ color: 'var(--chart-3)' }}>{stats.jewellery}</span>
+            Jewelry: <span style={{ color: 'var(--status-warning)' }}>{stats.jewellery}</span>
           </span>
         </div>
       )}

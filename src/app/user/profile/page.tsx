@@ -54,16 +54,20 @@ export default function UserProfilePage() {
   // If no user, show loading or redirect
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--background)' }}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading profile...</p>
-          <p className="mt-2 text-sm text-gray-500">
+          <div 
+            className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto"
+            style={{ borderColor: 'var(--status-warning)' }}
+          ></div>
+          <p className="mt-4" style={{ color: 'var(--foreground)' }}>Loading profile...</p>
+          <p className="mt-2 text-sm" style={{ color: 'var(--muted-foreground)' }}>
             No user data found. Please log in to view your profile.
           </p>
           <button 
             onClick={() => setTestUserData()}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="mt-4 px-6 py-2 text-white rounded-lg transition-all active:scale-95"
+            style={{ backgroundColor: 'var(--status-warning)' }}
           >
             Load Test User Data
           </button>
@@ -374,8 +378,8 @@ export default function UserProfilePage() {
                       isEditing ? 'cursor-pointer hover:opacity-75 transition-opacity' : ''
                     }`}
                     style={{ 
-                      background: 'linear-gradient(135deg, var(--chart-1), var(--chart-4))',
-                      color: 'var(--primary-foreground)'
+                      background: 'linear-gradient(135deg, var(--status-warning), color-mix(in srgb, var(--status-warning) 70%, black))',
+                      color: 'white'
                     }}
                     onClick={handleProfilePictureClick}
                   >
@@ -430,8 +434,8 @@ export default function UserProfilePage() {
                 <div 
                   className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mb-4"
                   style={{ 
-                    backgroundColor: user.isVerified ? 'var(--chart-1)' : 'var(--muted)',
-                    color: 'var(--primary-foreground)'
+                    backgroundColor: user.isVerified ? 'color-mix(in srgb, #22c55e 15%, transparent)' : 'var(--muted)',
+                    color: user.isVerified ? '#16a34a' : 'var(--muted-foreground)'
                   }}
                 >
                   <Shield className="w-4 h-4 mr-1" />
@@ -450,13 +454,13 @@ export default function UserProfilePage() {
                     <>
                       <div className="flex items-center justify-between">
                         <span style={{ color: 'var(--muted-foreground)' }}>Total Sales</span>
-                        <span style={{ color: 'var(--chart-1)' }}>$0</span> {/* TODO: Implement totalSales */}
+                        <span style={{ color: 'var(--status-warning)' }}>$0</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span style={{ color: 'var(--muted-foreground)' }}>Seller Rating</span>
                         <div className="flex items-center space-x-1">
-                          <Star className="w-4 h-4" style={{ color: 'var(--chart-3)' }} />
-                          <span style={{ color: 'var(--card-foreground)' }}>N/A</span> {/* TODO: Implement sellerRating */}
+                          <Star className="w-4 h-4" style={{ color: 'var(--status-warning)' }} />
+                          <span style={{ color: 'var(--card-foreground)' }}>N/A</span>
                         </div>
                       </div>
                     </>
@@ -694,8 +698,8 @@ export default function UserProfilePage() {
                           <TrendingUp className="w-4 h-4" />
                           <span>Total Sales</span>
                         </label>
-                        <p className="text-lg font-semibold" style={{ color: 'var(--chart-1)' }}>
-                          $0 {/* TODO: Implement totalSales */}
+                        <p className="text-lg font-semibold" style={{ color: 'var(--status-warning)' }}>
+                          $0
                         </p>
                       </div>
                       <div>
@@ -704,9 +708,9 @@ export default function UserProfilePage() {
                           <span>Seller Rating</span>
                         </label>
                         <div className="flex items-center space-x-1">
-                          <Star className="w-4 h-4" style={{ color: 'var(--chart-3)' }} />
+                          <Star className="w-4 h-4" style={{ color: 'var(--status-warning)' }} />
                           <p className="text-lg font-semibold" style={{ color: 'var(--card-foreground)' }}>
-                            N/A {/* TODO: Implement sellerRating */}
+                            N/A
                           </p>
                         </div>
                       </div>
@@ -772,7 +776,12 @@ export default function UserProfilePage() {
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                      <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600" style={{ backgroundColor: 'var(--muted)' }} />
+                      <style jsx>{`
+                        .peer:checked + div {
+                          background-color: var(--status-warning) !important;
+                        }
+                      `}</style>
                     </label>
                   </div>
                   
@@ -783,7 +792,7 @@ export default function UserProfilePage() {
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" className="sr-only peer" />
-                      <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                      <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600" style={{ backgroundColor: 'var(--muted)' }} />
                     </label>
                   </div>
 
@@ -793,10 +802,9 @@ export default function UserProfilePage() {
                       <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Add an extra layer of security to your account</p>
                     </div>
                     <button 
-                      className="px-4 py-2 text-sm font-medium rounded-lg transition-colors"
+                      className="px-4 py-2 text-sm font-medium text-white rounded-lg transition-all active:scale-95"
                       style={{ 
-                        backgroundColor: 'var(--primary)',
-                        color: 'var(--primary-foreground)'
+                        backgroundColor: 'var(--status-warning)'
                       }}
                     >
                       Enable

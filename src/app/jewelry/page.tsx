@@ -137,15 +137,17 @@ export default function JewelryHomePage() {
                 
                 <button
                   onClick={prevSlide}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-3 bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-3 backdrop-blur-md rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 border"
+                  style={{ backgroundColor: 'color-mix(in srgb, var(--card) 80%, transparent)', borderColor: 'var(--border)' }}
                 >
-                  <ChevronLeft className="w-6 h-6 text-gray-900 dark:text-white" />
+                  <ChevronLeft className="w-6 h-6" style={{ color: 'var(--foreground)' }} />
                 </button>
                 <button
                   onClick={nextSlide}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-3 bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-3 backdrop-blur-md rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 border"
+                  style={{ backgroundColor: 'color-mix(in srgb, var(--card) 80%, transparent)', borderColor: 'var(--border)' }}
                 >
-                  <ChevronRight className="w-6 h-6 text-gray-900 dark:text-white" />
+                  <ChevronRight className="w-6 h-6" style={{ color: 'var(--foreground)' }} />
                 </button>
 
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex gap-3">
@@ -434,14 +436,17 @@ export default function JewelryHomePage() {
               </span>
               </div>
 
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight" style={{ color: 'var(--foreground)' }}>
                 Crafted to
-                <span className="block bg-gradient-to-r from-amber-600 to-yellow-500 bg-clip-text text-transparent">
+                <span 
+                  className="block bg-clip-text text-transparent"
+                  style={{ backgroundImage: 'linear-gradient(to right, var(--status-warning), color-mix(in srgb, var(--status-warning) 80%, white))' }}
+                >
                   Perfection
                 </span>
               </h2>
               
-              <p className="text-lg text-gray-600 dark:text-gray-300 mb-10 leading-relaxed">
+              <p className="text-lg mb-10 leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>
                 Each piece in our collection is meticulously handcrafted by master jewelers, 
                 combining traditional techniques with contemporary design to create heirlooms 
                 that will be treasured for generations.
@@ -453,20 +458,23 @@ export default function JewelryHomePage() {
                   { icon: <Award className="w-6 h-6" />, text: 'Lifetime Warranty', desc: 'Guaranteed craftsmanship' },
                   { icon: <Shield className="w-6 h-6" />, text: 'Certified Authenticity', desc: 'Full documentation included' }
                 ].map((feature, index) => (
-                  <div key={index} className="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md dark:shadow-gray-900/50 dark:hover:shadow-gray-900/70 transition-shadow">
+                  <div 
+                    key={index} 
+                    className="flex items-start gap-4 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                    style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
+                  >
                     <div
                       className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center"
                       style={{
-                        backgroundColor:
-                          'color-mix(in srgb, var(--card-jewelry-bg) 40%, transparent)',
-                        color: 'var(--card-jewelry-icon-text)'
+                        backgroundColor: 'color-mix(in srgb, var(--status-warning) 15%, transparent)',
+                        color: 'var(--status-warning)'
                       }}
                     >
                       {feature.icon}
                     </div>
                     <div>
-                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{feature.text}</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{feature.desc}</p>
+                      <h4 className="text-lg font-semibold mb-1" style={{ color: 'var(--foreground)' }}>{feature.text}</h4>
+                      <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>{feature.desc}</p>
                     </div>
                   </div>
                 ))}

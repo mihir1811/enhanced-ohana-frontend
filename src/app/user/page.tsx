@@ -95,28 +95,28 @@ export default function UserDashboardPage() {
                   title="Orders"
                   value="8"
                   subtitle="2 pending"
-                  icon={<Package className="w-6 h-6" style={{ color: 'var(--chart-1)' }} />}
+                  icon={<Package className="w-6 h-6" style={{ color: 'var(--status-warning)' }} />}
                   href="/user/orders"
                 />
                 <UserStatsCard
                   title="Wishlist"
                   value="24"
                   subtitle="3 on sale"
-                  icon={<Heart className="w-6 h-6" style={{ color: 'var(--chart-2)' }} />}
+                  icon={<Heart className="w-6 h-6" style={{ color: 'var(--status-warning)' }} />}
                   href="/user/wishlist"
                 />
                 <UserStatsCard
                   title="Reviews"
                   value="12"
                   subtitle="4.8 avg rating"
-                  icon={<Star className="w-6 h-6" style={{ color: 'var(--chart-3)' }} />}
+                  icon={<Star className="w-6 h-6" style={{ color: 'var(--status-warning)' }} />}
                   href="/user/reviews"
                 />
                 <UserStatsCard
                   title="Cart Items"
                   value="3"
                   subtitle="$8,450 total"
-                  icon={<ShoppingCart className="w-6 h-6" style={{ color: 'var(--chart-4)' }} />}
+                  icon={<ShoppingCart className="w-6 h-6" style={{ color: 'var(--status-warning)' }} />}
                   href="/user/cart"
                 />
               </>
@@ -138,21 +138,21 @@ export default function UserDashboardPage() {
                   description: 'Premium certified diamonds',
                   icon: <Gem className="w-10 h-10" />,
                   href: '/products/diamonds',
-                  color: 'var(--chart-1)'
+                  color: 'var(--status-warning)'
                 },
                 {
                   name: 'Gemstones',
                   description: 'Rare and precious gemstones',
                   icon: <Award className="w-10 h-10" />,
                   href: '/products/gemstones',
-                  color: 'var(--chart-2)'
+                  color: 'var(--status-warning)'
                 },
                 {
                   name: 'Jewelry',
                   description: 'Handcrafted luxury jewelry',
                   icon: <ShoppingBag className="w-10 h-10" />,
                   href: '/products/jewelry',
-                  color: 'var(--chart-3)'
+                  color: 'var(--status-warning)'
                 }
               ].map((category) => (
                 <Link key={category.name} href={category.href}>
@@ -165,7 +165,10 @@ export default function UserDashboardPage() {
                   >
                     <div 
                       className="w-20 h-20 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300"
-                      style={{ backgroundColor: 'var(--muted)', color: 'var(--card-foreground)' }}
+                      style={{ 
+                        backgroundColor: 'color-mix(in srgb, var(--status-warning) 10%, transparent)', 
+                        color: 'var(--status-warning)' 
+                      }}
                     >
                       {category.icon}
                     </div>
@@ -182,10 +185,10 @@ export default function UserDashboardPage() {
                       {category.description}
                     </p>
                     <div 
-                      className="mt-4 inline-block px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                      className="mt-4 inline-block px-4 py-2 rounded-lg text-sm font-medium transition-all"
                       style={{ 
-                        backgroundColor: category.color,
-                        color: 'var(--primary-foreground)'
+                        backgroundColor: 'var(--status-warning)',
+                        color: 'white'
                       }}
                     >
                       Browse Collection
@@ -307,9 +310,10 @@ export default function UserDashboardPage() {
                       <span 
                         className="px-2 py-1 text-xs rounded-full"
                         style={{ 
-                          backgroundColor: order.status === 'Delivered' ? 'var(--chart-1)' : 
-                                          order.status === 'Shipped' ? 'var(--chart-2)' : 'var(--chart-3)',
-                          color: 'var(--primary-foreground)'
+                          backgroundColor: order.status === 'Delivered' ? 'color-mix(in srgb, #22c55e 15%, transparent)' : 
+                                          order.status === 'Shipped' ? 'color-mix(in srgb, var(--status-warning) 15%, transparent)' : 'color-mix(in srgb, var(--muted-foreground) 15%, transparent)',
+                          color: order.status === 'Delivered' ? '#16a34a' : 
+                                 order.status === 'Shipped' ? 'var(--status-warning)' : 'var(--muted-foreground)'
                         }}
                       >
                         {order.status}
@@ -346,15 +350,15 @@ export default function UserDashboardPage() {
                       <p className="font-medium" style={{ color: 'var(--card-foreground)' }}>
                         {product.name}
                       </p>
-                      <p className="text-sm font-semibold" style={{ color: 'var(--chart-1)' }}>
+                      <p className="text-sm font-semibold" style={{ color: 'var(--status-warning)' }}>
                         {product.price}
                       </p>
                     </div>
                     <button 
-                      className="px-3 py-1 text-xs rounded-lg transition-colors"
+                      className="px-3 py-1 text-xs rounded-lg transition-all active:scale-95"
                       style={{ 
-                        backgroundColor: 'var(--primary)',
-                        color: 'var(--primary-foreground)'
+                        backgroundColor: 'var(--status-warning)',
+                        color: 'white'
                       }}
                     >
                       View

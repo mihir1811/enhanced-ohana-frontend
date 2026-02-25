@@ -910,19 +910,23 @@ export default function JewelryCategoryPage() {
   }
 
   // Debounced price range update function
-  const debouncedPriceRangeUpdate = useCallback(
-    (newPriceRange: { min: number; max: number }) => {
-      const debouncedFn = debounce(() => {
-        setFilters(prev => ({
-          ...prev,
-          priceRange: newPriceRange
-        }))
-        setPagination(prev => ({ ...prev, page: 1 }))
-      }, 500);
-      debouncedFn();
-    },
+  const debouncedPriceRangeUpdate = useMemo(
+    () => debounce((newPriceRange: { min: number; max: number }) => {
+      setFilters(prev => ({
+        ...prev,
+        priceRange: newPriceRange
+      }))
+      setPagination(prev => ({ ...prev, page: 1 }))
+    }, 500),
     [setFilters, setPagination]
   )
+
+  // Clean up debounce on unmount
+  useEffect(() => {
+    return () => {
+      debouncedPriceRangeUpdate.cancel()
+    }
+  }, [debouncedPriceRangeUpdate])
 
   // Handle price range change with immediate UI update and debounced API call
   const handlePriceRangeChange = (newPriceRange: { min: number; max: number }) => {
@@ -1242,9 +1246,7 @@ export default function JewelryCategoryPage() {
                             }}
                           />
                         ) : (
-                          <span className={`text-xs font-medium text-center ${
-                            isSelected ? 'text-white' : 'text-slate-600'
-                          }`}>
+                          <span className="text-xs font-medium text-center" style={{ color: isSelected ? 'white' : 'var(--muted-foreground)' }}>
                             {brand.label}
                           </span>
                         )}
@@ -2373,10 +2375,10 @@ function ImageCarousel({ images, alt, className = "" }: ImageCarouselProps) {
   
   if (validImages.length === 0) {
     return (
-      <div className={`bg-slate-100 flex items-center justify-center ${className}`}>
-        <div className="text-center text-slate-400">
-          <div className="w-16 h-16 mx-auto mb-2 bg-slate-200 rounded-full flex items-center justify-center">
-            <Star className="w-8 h-8 text-slate-400" />
+      <div className={`flex items-center justify-center ${className}`} style={{ backgroundColor: 'var(--muted)' }}>
+        <div className="text-center" style={{ color: 'var(--muted-foreground)' }}>
+          <div className="w-16 h-16 mx-auto mb-2 rounded-full flex items-center justify-center" style={{ backgroundColor: 'color-mix(in srgb, var(--foreground) 5%, transparent)' }}>
+            <Star className="w-8 h-8" />
           </div>
           <p className="text-sm">No Image</p>
         </div>
@@ -2490,7 +2492,10 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
               className="w-full h-full group-hover:scale-105 transition-transform duration-500"
             />
             {item.isOnAuction && (
-              <div className="absolute top-2 left-2 px-2 py-1 bg-red-500 text-white text-xs font-semibold rounded-full shadow-lg">
+              <div 
+                className="absolute top-2 left-2 px-2 py-1 text-white text-xs font-semibold rounded-full shadow-lg"
+                style={{ backgroundColor: 'var(--destructive)' }}
+              >
                 🔥 Auction
               </div>
             )}
@@ -2601,7 +2606,10 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
 
         {/* Auction Badge - Top Left */}
         {item.isOnAuction && (
-          <div className="absolute top-3 left-3 px-3 py-1.5 bg-red-500 text-white text-xs font-semibold rounded-full shadow-lg animate-pulse">
+          <div 
+            className="absolute top-3 left-3 px-3 py-1.5 text-white text-xs font-semibold rounded-full shadow-lg animate-pulse"
+            style={{ backgroundColor: 'var(--destructive)' }}
+          >
             🔥 Live Auction
           </div>
         )}

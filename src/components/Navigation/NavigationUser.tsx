@@ -356,52 +356,52 @@ export default function NavigationUser() {
   return (
     <>
       {/* Top Bar */}
-      <div className="bg-slate-950 border-b border-amber-500/20 py-2 hidden lg:block" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)' }}>
+      <div className="border-b py-2 hidden lg:block" style={{ backgroundColor: 'var(--background)', borderColor: 'color-mix(in srgb, var(--status-warning) 20%, transparent)' }}>
         <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 sm:px-6 lg:px-8`}>
           <div className="flex justify-between items-center text-sm">
             <div className="flex items-center space-x-6" style={{ color: 'var(--muted-foreground)' }}>
               <span className="flex items-center space-x-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--chart-1)' }}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--status-warning)' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>GIA Certified Diamonds</span>
               </span>
               <span className="flex items-center space-x-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--chart-1)' }}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--status-warning)' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
                 </svg>
                 <span>Secure Diamond Trading</span>
               </span>
               <span className="flex items-center space-x-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--chart-1)' }}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--status-warning)' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
                 <span>Worldwide Shipping</span>
               </span>
             </div>
             <div className="flex items-center space-x-4" style={{ color: 'var(--muted-foreground)' }}>
-              <Link href="/diamond-certification" className="hover:text-amber-400 transition-colors" style={{ '--hover-color': 'var(--chart-1)' } as React.CSSProperties}>Certificate Verification</Link>
-              <Link href="/expert-consultation" className="hover:text-amber-400 transition-colors" style={{ '--hover-color': 'var(--chart-1)' } as React.CSSProperties}>Expert Consultation</Link>
-              <Link href="/contact" className="hover:text-amber-400 transition-colors" style={{ '--hover-color': 'var(--chart-1)' } as React.CSSProperties}>Support</Link>
+              <Link href="/diamond-certification" className="transition-colors" style={{ color: 'inherit' }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--status-warning)'} onMouseLeave={(e) => e.currentTarget.style.color = 'inherit'}>Certificate Verification</Link>
+              <Link href="/expert-consultation" className="transition-colors" style={{ color: 'inherit' }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--status-warning)'} onMouseLeave={(e) => e.currentTarget.style.color = 'inherit'}>Expert Consultation</Link>
+              <Link href="/contact" className="transition-colors" style={{ color: 'inherit' }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--status-warning)'} onMouseLeave={(e) => e.currentTarget.style.color = 'inherit'}>Support</Link>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Navigation Header */}
-      <header className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 shadow-lg w-full" style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)' }}>
+      <header className="backdrop-blur-xl border-b sticky top-0 z-50 shadow-lg w-full" style={{ backgroundColor: 'color-mix(in srgb, var(--background) 95%, transparent)', borderColor: 'var(--border)' }}>
         <nav className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 sm:px-6 lg:px-8 w-full`}>
           <div className="flex items-center justify-between h-16 lg:h-20 w-full min-w-0 gap-4">
             {/* Brand Logo */}
             <div className="flex items-center space-x-3 flex-shrink-0 min-w-fit">
               <Link href="/user" className="flex items-center space-x-2 group">
                 <div className="relative">
-                  <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-amber-400 via-yellow-500 to-orange-500 rounded-xl lg:rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-all duration-300" style={{ background: 'linear-gradient(135deg, var(--chart-1), var(--chart-4))', borderRadius: 'var(--radius-lg)' }}>
-                    <svg className="w-5 h-5 lg:w-7 lg:h-7 text-white" fill="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--primary-foreground)' }}>
+                  <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-all duration-300" style={{ background: 'linear-gradient(135deg, var(--status-warning), color-mix(in srgb, var(--status-warning) 70%, black))', borderRadius: 'var(--radius-lg)' }}>
+                    <svg className="w-5 h-5 lg:w-7 lg:h-7 text-white" fill="currentColor" viewBox="0 0 24 24" style={{ color: 'white' }}>
                       <path d="M12 2L3.09 8.26L12 14L20.91 8.26L12 2ZM21 16.5C21 16.88 20.79 17.21 20.47 17.38L12.57 21.82C12.41 21.94 12.21 22 12 22S11.59 21.94 11.43 21.82L3.53 17.38C3.21 17.21 3 16.88 3 16.5V7.5C3 7.12 3.21 6.79 3.53 6.62L11.43 2.18C11.59 2.06 11.79 2 12 2S12.41 2.06 12.57 2.18L20.47 6.62C20.79 6.79 21 7.12 21 7.5V16.5Z" />
                     </svg>
                   </div>
-                  <div className="absolute -top-1 -right-1 w-3 h-3 lg:w-4 lg:h-4 bg-green-500 rounded-full animate-pulse" style={{ backgroundColor: 'var(--chart-2)' }}></div>
+                  <div className="absolute -top-1 -right-1 w-3 h-3 lg:w-4 lg:h-4 rounded-full animate-pulse" style={{ backgroundColor: 'var(--status-success)' }}></div>
                 </div>
               </Link>
             </div>
@@ -541,16 +541,30 @@ export default function NavigationUser() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onFocus={() => setIsSearchFocused(true)}
                     placeholder="Search diamonds, gemstones, jewelry... (Ctrl+K)"
-                    className="w-40 lg:w-44 xl:w-48 px-3 py-2 pl-9 pr-8 border rounded-lg text-sm transition-all duration-300 focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 focus:w-56 bg-input border-border text-foreground"
+                    className="w-40 lg:w-44 xl:w-48 px-3 py-2 pl-9 pr-8 border rounded-lg text-sm transition-all duration-300 focus:ring-2 focus:w-56 bg-input border-border text-foreground"
+                    style={{ 
+                      borderColor: 'var(--border)', 
+                      backgroundColor: 'var(--input)',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--status-warning)';
+                      e.currentTarget.style.boxShadow = '0 0 0 2px color-mix(in srgb, var(--status-warning) 30%, transparent)';
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--border)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
                   />
-                  <svg className="absolute left-2.5 top-2.5 w-4 h-4 transition-colors group-focus-within:text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--muted-foreground)' }}>
+                  <svg className="absolute left-2.5 top-2.5 w-4 h-4 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--muted-foreground)' }}>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                   {searchQuery && (
                     <button
                       type="button"
                       onClick={clearSearch}
-                      className="absolute right-2 top-2.5 w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors"
+                      className="absolute right-2 top-2.5 w-4 h-4 opacity-40 hover:opacity-100 transition-opacity"
+                      style={{ color: 'var(--foreground)' }}
                     >
                       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -597,7 +611,7 @@ export default function NavigationUser() {
                                 className="flex items-center space-x-3 w-full px-3 py-2 text-left hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
                                 style={{ color: 'var(--popover-foreground)', borderRadius: 'var(--radius-lg)' }}
                               >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--chart-1)' }}>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--status-warning)' }}>
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                                 <span className="text-sm">{suggestion}</span>
@@ -625,12 +639,12 @@ export default function NavigationUser() {
               </div>
 
               {/* Notifications */}
-              <Link href="/notifications" className="relative group p-2 transition-all duration-300 hover:text-amber-500 hover:bg-[var(--muted)] dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit flex items-center justify-center" style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <Link href="/notifications" className="relative group p-2 transition-all duration-300 hover:bg-[var(--muted)] dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit flex items-center justify-center" style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}>
+                <svg className="w-5 h-5 transition-colors group-hover:text-[var(--status-warning)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
                 {notifications > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 text-white text-xs rounded-full flex items-center justify-center font-bold animate-pulse" style={{ background: 'linear-gradient(90deg, var(--chart-2), var(--chart-3))', color: 'var(--primary-foreground)' }}>
+                  <span className="absolute -top-1 -right-1 w-4 h-4 text-white text-[10px] rounded-full flex items-center justify-center font-bold animate-pulse shadow-sm" style={{ backgroundColor: 'var(--status-warning)', color: 'white' }}>
                     {notifications}
                   </span>
                 )}
@@ -640,23 +654,23 @@ export default function NavigationUser() {
               <button
                 type="button"
                 onClick={openCartDrawer}
-                className="relative group p-2 transition-all duration-300 hover:text-amber-500 hover:bg-[var(--muted)] dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit"
+                className="relative group p-2 transition-all duration-300 hover:bg-[var(--muted)] dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit"
                 style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}
                 aria-label="Open cart"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 transition-colors group-hover:text-[var(--status-warning)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m-2.4 0L3 3H1m6 10v6a1 1 0 001 1h8a1 1 0 001-1v-6M7 13l-1.4-7M7 13l1.5 7m8.5-7L15 20" />
                 </svg>
                 {cartItems > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 text-white text-xs rounded-full flex items-center justify-center font-bold animate-pulse" style={{ background: 'linear-gradient(90deg, var(--chart-1), var(--chart-4))', color: 'var(--primary-foreground)' }}>
+                  <span className="absolute -top-1 -right-1 w-4 h-4 text-white text-[10px] rounded-full flex items-center justify-center font-bold animate-pulse shadow-sm" style={{ backgroundColor: 'var(--status-warning)', color: 'white' }}>
                     {cartItems}
                   </span>
                 )}
               </button>
 
               {/* Wishlist */}
-              <Link href="/user/wishlist" className="relative group p-2 transition-all duration-300 hover:text-amber-500 hover:bg-[var(--muted)] dark:hover:bg-[var(--muted)] rounded-lg flex-shrink-0 min-w-fit" style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <Link href="/user/wishlist" className="relative group p-2 transition-all duration-300 hover:bg-[var(--muted)] dark:hover:bg-[var(--muted)] rounded-lg flex-shrink-0 min-w-fit" style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}>
+                <svg className="w-5 h-5 transition-colors group-hover:text-[var(--status-warning)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
               </Link>
@@ -669,7 +683,16 @@ export default function NavigationUser() {
               {/* User Profile Dropdown */}
               {
                 !user?.email ? (
-                  <Link href="/login" className="px-3 py-2 lg:px-4 lg:py-2 rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition-colors text-sm">
+                  <Link 
+                    href="/login" 
+                    className="px-3 py-2 lg:px-4 lg:py-2 rounded-lg transition-colors text-sm font-semibold"
+                    style={{ 
+                      backgroundColor: 'var(--status-warning)', 
+                      color: 'white' 
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--status-warning) 80%, black)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--status-warning)'}
+                  >
                     Login
                   </Link>
                 ) : (
@@ -677,19 +700,20 @@ export default function NavigationUser() {
                     <button
                       ref={buttonRef}
                       onClick={toggleDropdown}
-                      className={`flex items-center space-x-2 p-2 transition-all duration-300 rounded-lg ${isDropdownOpen
-                          ? 'text-amber-500 bg-slate-100 dark:bg-[var(--muted)]'
-                          : 'hover:text-amber-500 hover:bg-[var(--muted)] dark:hover:bg-[var(--muted)]'
-                        }`}
-                      style={{ color: isDropdownOpen ? 'var(--chart-1)' : 'var(--foreground)', borderRadius: 'var(--radius-md)' }}
+                      className="flex items-center space-x-2 p-2 transition-all duration-300 rounded-lg"
+                      style={{ 
+                        color: isDropdownOpen ? 'var(--status-warning)' : 'var(--foreground)',
+                        backgroundColor: isDropdownOpen ? 'var(--accent)' : 'transparent',
+                        borderRadius: 'var(--radius-md)' 
+                      }}
                       aria-expanded={isDropdownOpen}
                       aria-haspopup="true"
                     >
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-lg" style={{ background: 'linear-gradient(135deg, var(--chart-1), var(--chart-4))', color: 'var(--primary-foreground)', borderRadius: 'var(--radius-md)' }}>
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-lg" style={{ background: 'linear-gradient(135deg, var(--status-warning), color-mix(in srgb, var(--status-warning) 70%, black))', color: 'white', borderRadius: 'var(--radius-md)' }}>
                         {user?.name?.charAt(0) || 'U'}
                       </div>
                       <div className="hidden lg:block text-left">
-                        <div className="font-medium text-sm" style={{ color: isDropdownOpen ? 'var(--chart-1)' : 'var(--foreground)' }}>{user?.name || 'User'}</div>
+                        <div className="font-medium text-sm" style={{ color: isDropdownOpen ? 'var(--status-warning)' : 'var(--foreground)' }}>{user?.name || 'User'}</div>
                         <div className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Premium</div>
                       </div>
                       <svg className={`w-3 h-3 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -699,176 +723,102 @@ export default function NavigationUser() {
 
                     {isDropdownOpen && (
                       <div
-                        className="absolute w-64 bg-white dark:bg-slate-900 rounded-2xl border shadow-2xl z-[9999] dropdown-enter"
-                        style={{
+                        className="absolute w-72 rounded-xl shadow-2xl border backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-300 z-[9999]"
+                        style={{ 
                           top: 'calc(100% + 8px)',
                           right: 0,
-                          backgroundColor: 'var(--popover)',
+                          backgroundColor: 'color-mix(in srgb, var(--card) 98%, transparent)', 
                           borderColor: 'var(--border)',
                           borderRadius: 'var(--radius-xl)',
                           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                          backdropFilter: 'blur(16px)',
-                          WebkitBackdropFilter: 'blur(16px)'
                         }}
                         role="menu"
                         aria-orientation="vertical"
                       >
-                        <div className="p-4">
-                          {/* User Info */}
-                          <div className="flex items-center space-x-3 pb-4 border-b" style={{ borderColor: 'var(--border)' }}>
-                            <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold" style={{ background: 'linear-gradient(135deg, var(--chart-1), var(--chart-4))', color: 'var(--primary-foreground)', borderRadius: 'var(--radius-lg)' }}>
+                        {/* Profile Header */}
+                        <div className="p-4 border-b" style={{ borderColor: 'var(--border)' }}>
+                          <div className="flex items-center space-x-3">
+                            <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-inner" style={{ background: 'linear-gradient(135deg, var(--status-warning), color-mix(in srgb, var(--status-warning) 70%, black))', borderRadius: 'var(--radius-lg)' }}>
                               {user?.name?.charAt(0) || 'U'}
                             </div>
-                            <div>
-                              <div className="font-medium" style={{ color: 'var(--popover-foreground)' }}>{user?.name || 'User'}</div>
-                              <div className="text-sm" style={{ color: 'var(--muted-foreground)' }}>{user?.email || 'user@example.com'}</div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-bold truncate" style={{ color: 'var(--foreground)' }}>{user?.name || 'User'}</p>
+                              <p className="text-xs truncate" style={{ color: 'var(--muted-foreground)' }}>{user?.email}</p>
+                              <div className="mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 15%, transparent)', color: 'var(--status-warning)' }}>
+                                Premium Member
+                              </div>
                             </div>
                           </div>
+                        </div>
 
-                          {/* Menu Items */}
-                          <div className="py-2 space-y-1">
+                        {/* Menu Items */}
+                        <div className="p-2 space-y-1">
+                          {[
+                            { label: 'Dashboard', href: '/user', icon: 'M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z M8 5v4m8-4v4' },
+                            { label: 'My Profile', href: '/user/profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+                            { label: 'Become Seller', href: '/become-seller', icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' },
+                            { label: 'Order History', href: '/user/orders', icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z' },
+                            { label: 'Shopping Cart', href: '/user/cart', icon: 'M3 3h2l.4 2M7 13h10l4-8H5.4m-2.4 0L3 3H1m6 10v6a1 1 0 001 1h8a1 1 0 001-1v-6M7 13l-1.4-7M7 13l1.5 7m8.5-7L15 20' },
+                            { label: 'My Wishlist', href: '/user/wishlist', icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' },
+                            { label: 'My Reviews', href: '/user/reviews', icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' },
+                            { label: 'Messages', href: '/user/chat', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z' },
+                            { label: 'Settings', href: '/user/settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' }
+                          ].map((item, index) => (
                             <Link
-                              href="/user"
-                              className="flex items-center space-x-3 px-3 py-3 text-slate-700 dark:text-slate-200 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 group"
-                              style={{ color: 'var(--popover-foreground)', borderRadius: 'var(--radius-lg)' }}
-                              role="menuitem"
+                              key={index}
+                              href={item.href}
                               onClick={() => setIsDropdownOpen(false)}
-                            >
-                              <svg className="w-5 h-5 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5v4m8-4v4" />
-                              </svg>
-                              <span className="font-medium">Dashboard</span>
-                            </Link>
-
-                            <Link
-                              href="/user/profile"
-                              className="flex items-center space-x-3 px-3 py-3 text-slate-700 dark:text-slate-200 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 group"
-                              style={{ color: 'var(--popover-foreground)', borderRadius: 'var(--radius-lg)' }}
-                              role="menuitem"
-                              onClick={() => setIsDropdownOpen(false)}
-                            >
-                              <svg className="w-5 h-5 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                              </svg>
-                              <span className="font-medium">My Profile</span>
-                            </Link>
-                            <Link
-                              href="/become-seller"
-                              className="flex items-center space-x-3 px-3 py-3 text-slate-700 dark:text-slate-200 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 group"
-                              style={{ color: 'var(--popover-foreground)', borderRadius: 'var(--radius-lg)' }}
-                              role="menuitem"
-                              onClick={() => setIsDropdownOpen(false)}
-                            >
-                              <svg className="w-5 h-5 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                              </svg>
-                              <span className="font-medium">Become Seller</span>
-                            </Link>
-                            <Link
-                              href="/user/orders"
-                              className="flex items-center space-x-3 px-3 py-3 text-slate-700 dark:text-slate-200 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 group"
-                              style={{ color: 'var(--popover-foreground)', borderRadius: 'var(--radius-lg)' }}
-                              role="menuitem"
-                              onClick={() => setIsDropdownOpen(false)}
-                            >
-                              <svg className="w-5 h-5 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                              </svg>
-                              <span className="font-medium">Order History</span>
-                            </Link>
-
-                            <Link
-                              href="/user/cart"
-                              className="flex items-center space-x-3 px-3 py-3 text-slate-700 dark:text-slate-200 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 group"
-                              style={{ color: 'var(--popover-foreground)', borderRadius: 'var(--radius-lg)' }}
-                              role="menuitem"
-                              onClick={() => setIsDropdownOpen(false)}
-                            >
-                              <svg className="w-5 h-5 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m-2.4 0L3 3H1m6 10v6a1 1 0 001 1h8a1 1 0 001-1v-6M7 13l-1.4-7M7 13l1.5 7m8.5-7L15 20" />
-                              </svg>
-                              <span className="font-medium">Shopping Cart</span>
-                            </Link>
-
-                            <Link
-                              href="/user/wishlist"
-                              className="flex items-center space-x-3 px-3 py-3 text-slate-700 dark:text-slate-200 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 group"
-                              style={{ color: 'var(--popover-foreground)', borderRadius: 'var(--radius-lg)' }}
-                              role="menuitem"
-                              onClick={() => setIsDropdownOpen(false)}
-                            >
-                              <svg className="w-5 h-5 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                              </svg>
-                              <span className="font-medium">My Wishlist</span>
-                            </Link>
-
-                            <Link
-                              href="/user/reviews"
-                              className="flex items-center space-x-3 px-3 py-3 text-slate-700 dark:text-slate-200 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 group"
-                              style={{ color: 'var(--popover-foreground)', borderRadius: 'var(--radius-lg)' }}
-                              role="menuitem"
-                              onClick={() => setIsDropdownOpen(false)}
-                            >
-                              <svg className="w-5 h-5 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                              </svg>
-                              <span className="font-medium">My Reviews</span>
-                            </Link>
-
-                            <Link
-                              href="/user/chat"
-                              className="flex items-center space-x-3 px-3 py-3 text-slate-700 dark:text-slate-200 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 group"
-                              style={{ color: 'var(--popover-foreground)', borderRadius: 'var(--radius-lg)' }}
-                              role="menuitem"
-                              onClick={() => setIsDropdownOpen(false)}
-                            >
-                              <svg className="w-5 h-5 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z" />
-                              </svg>
-                              <span className="font-medium">Messages</span>
-                            </Link>
-
-                            <Link
-                              href="/user/settings"
-                              className="flex items-center space-x-3 px-3 py-3 text-slate-700 dark:text-slate-200 hover:text-amber-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all duration-300 group"
-                              style={{ color: 'var(--popover-foreground)', borderRadius: 'var(--radius-lg)' }}
-                              role="menuitem"
-                              onClick={() => setIsDropdownOpen(false)}
-                            >
-                              <svg className="w-5 h-5 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                              </svg>
-                              <span className="font-medium">Settings</span>
-                            </Link>
-                          </div>
-
-                          <div className="border-t pt-2 mt-2" style={{ borderColor: 'var(--border)' }}>
-                            <button
-                              onClick={() => {
-                                handleLogout()
-                                setIsDropdownOpen(false)
+                              className="flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 group"
+                              style={{ color: 'var(--foreground)' }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = 'var(--accent)';
+                                e.currentTarget.querySelector('svg')?.style.setProperty('color', 'var(--status-warning)');
                               }}
-                              disabled={isLoggingOut}
-                              className="flex items-center space-x-3 px-3 py-3 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all duration-300 w-full group disabled:opacity-50 disabled:cursor-not-allowed"
-                              style={{ borderRadius: 'var(--radius-lg)' }}
-                              role="menuitem"
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                                e.currentTarget.querySelector('svg')?.style.setProperty('color', 'var(--muted-foreground)');
+                              }}
                             >
+                              <div className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 8%, transparent)' }}>
+                                <svg className="w-4 h-4 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--muted-foreground)' }}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
+                                </svg>
+                              </div>
+                              <span className="flex-1 text-sm font-medium">{item.label}</span>
+                              <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--status-warning)' }}>
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </Link>
+                          ))}
+                        </div>
+
+                        {/* Logout Footer */}
+                        <div className="p-2 mt-1 border-t" style={{ borderColor: 'var(--border)' }}>
+                          <button
+                            onClick={() => {
+                              handleLogout()
+                              setIsDropdownOpen(false)
+                            }}
+                            disabled={isLoggingOut}
+                            className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 group disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{ color: 'var(--destructive)' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--destructive) 10%, transparent)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                          >
+                            <div className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'color-mix(in srgb, var(--destructive) 10%, transparent)' }}>
                               {isLoggingOut ? (
-                                <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
                               ) : (
-                                <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                 </svg>
                               )}
-                              <span className="font-medium">{isLoggingOut ? 'Signing Out...' : 'Sign Out'}</span>
-                            </button>
-                          </div>
+                            </div>
+                            <span className="text-sm font-bold">{isLoggingOut ? 'Signing Out...' : 'Sign Out'}</span>
+                          </button>
                         </div>
                       </div>
                     )}
@@ -881,7 +831,11 @@ export default function NavigationUser() {
               <div className="lg:hidden flex-shrink-0 min-w-fit">
                 <button
                   onClick={() => setIsOpen(!isOpen)}
-                  className="p-2 text-slate-600 dark:text-slate-300 hover:text-amber-500 transition-colors"
+                  className="p-2 transition-colors rounded-lg"
+                  style={{ 
+                    color: isOpen ? 'var(--status-warning)' : 'var(--muted-foreground)',
+                    backgroundColor: isOpen ? 'var(--accent)' : 'transparent'
+                  }}
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     {isOpen ? (
@@ -908,14 +862,22 @@ export default function NavigationUser() {
                 >
                   <Link
                     href={item.href}
-                    className="whitespace-nowrap px-4 py-2 text-sm font-medium hover:text-amber-500 transition-colors flex items-center gap-1"
-                    style={{ color: 'var(--foreground)' }}
+                    className="whitespace-nowrap px-4 py-2 text-sm font-medium transition-colors flex items-center gap-1"
+                    style={{ 
+                      color: activeNavDropdown === item.href ? 'var(--status-warning)' : 'var(--foreground)' 
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--status-warning)'}
+                    onMouseLeave={(e) => {
+                      if (activeNavDropdown !== item.href) {
+                        e.currentTarget.style.color = 'var(--foreground)';
+                      }
+                    }}
                   >
                     {item.label}
                     {item.hasDropdown && (
                       <svg
-                        className={`w-3 h-3 dropdown-arrow ${activeNavDropdown === item.href ? 'active' : ''
-                          }`}
+                        className={`w-3 h-3 dropdown-arrow transition-transform duration-300 ${activeNavDropdown === item.href ? 'rotate-180 text-amber-500' : ''}`}
+                        style={{ color: activeNavDropdown === item.href ? 'var(--status-warning)' : 'currentColor' }}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -932,19 +894,20 @@ export default function NavigationUser() {
                       <div className="absolute top-full left-0 right-0 h-2 bg-transparent"></div>
 
                       <div
-                        className="fixed w-80 rounded-lg shadow-xl border z-50 overflow-hidden nav-dropdown-animate"
+                        className="fixed w-80 rounded-xl shadow-2xl border z-50 overflow-hidden nav-dropdown-animate backdrop-blur-xl"
                         style={{
-                          backgroundColor: 'var(--background)',
+                          backgroundColor: 'color-mix(in srgb, var(--background) 98%, transparent)',
                           borderColor: 'var(--border)',
                           left: dropdownPositions[item.href]?.left || 'auto',
                           top: dropdownPositions[item.href]?.top || 'auto',
-                          visibility: dropdownPositions[item.href] ? 'visible' : 'hidden'
+                          visibility: dropdownPositions[item.href] ? 'visible' : 'hidden',
+                          borderRadius: 'var(--radius-lg)'
                         }}
                       >
                         <div className="p-4">
                           <div className="flex items-center gap-2 mb-3">
                             <span className="text-2xl">{item.label === 'Diamonds' ? '💎' : '🔮'}</span>
-                            <h3 className="font-semibold text-lg" style={{ color: 'var(--foreground)' }}>
+                            <h3 className="font-bold text-lg" style={{ color: 'var(--foreground)' }}>
                               {item.label}
                             </h3>
                           </div>
@@ -953,10 +916,19 @@ export default function NavigationUser() {
                               <Link
                                 key={`${dropdownItem.href}-${dropdownItem.label}`}
                                 href={dropdownItem.href}
-                                className="block p-3 rounded-lg transition-all duration-200 hover:scale-[1.02] bg-muted text-foreground hover:bg-accent"
+                                className="block p-3 rounded-xl transition-all duration-200 group"
+                                style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = 'var(--accent)';
+                                  e.currentTarget.style.transform = 'translateY(-2px)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = 'var(--muted)';
+                                  e.currentTarget.style.transform = 'translateY(0)';
+                                }}
                               >
-                                <div className="font-medium text-sm">{dropdownItem.label}</div>
-                                <div className="text-xs mt-1 text-muted-foreground">
+                                <div className="font-bold text-sm group-hover:text-amber-600" style={{ color: 'inherit' }}>{dropdownItem.label}</div>
+                                <div className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
                                   {dropdownItem.description}
                                 </div>
                               </Link>
@@ -968,13 +940,31 @@ export default function NavigationUser() {
                   )}
                 </div>
               ))}
-              <Link href="/watches" className="whitespace-nowrap px-4 py-2 text-sm font-medium hover:text-amber-500 transition-colors" style={{ color: 'var(--foreground)' }}>
+              <Link 
+                href="/watches" 
+                className="whitespace-nowrap px-4 py-2 text-sm font-medium transition-colors" 
+                style={{ color: 'var(--foreground)' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--status-warning)'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--foreground)'}
+              >
                 Watches
               </Link>
-              <Link href="/products/bullions" className="whitespace-nowrap px-4 py-2 text-sm font-medium hover:text-amber-500 transition-colors" style={{ color: 'var(--foreground)' }}>
+              <Link 
+                href="/products/bullions" 
+                className="whitespace-nowrap px-4 py-2 text-sm font-medium transition-colors" 
+                style={{ color: 'var(--foreground)' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--status-warning)'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--foreground)'}
+              >
                 Bullions
               </Link>
-              <Link href="/experience" className="whitespace-nowrap px-4 py-2 text-sm font-medium hover:text-amber-500 transition-colors" style={{ color: 'var(--foreground)' }}>
+              <Link 
+                href="/experience" 
+                className="whitespace-nowrap px-4 py-2 text-sm font-medium transition-colors" 
+                style={{ color: 'var(--foreground)' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--status-warning)'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--foreground)'}
+              >
                 Experience
               </Link>
             </div>

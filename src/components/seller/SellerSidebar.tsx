@@ -151,23 +151,26 @@ export default function SellerSidebar({ sidebarOpen, setSidebarOpen }: SellerSid
         </nav>
       </Drawer>
 
-      {/* Desktop sidebar */}
+      {/* Desktop sidebar - collapses to icons and expands on hover */}
       <div
-        className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-16 lg:flex-col"
+        className={`hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:flex-col transition-[width] duration-200 ${
+          isDesktopHovered ? 'lg:w-64' : 'lg:w-20'
+        }`}
         onMouseEnter={() => setIsDesktopHovered(true)}
         onMouseLeave={() => setIsDesktopHovered(false)}
       >
         <div 
-          className="relative flex grow flex-col gap-y-5 overflow-y-auto border-r px-3 pb-4"
+          className="flex grow flex-col gap-y-5 overflow-y-auto border-r px-3 pb-4"
           style={{ 
             backgroundColor: 'var(--sidebar)',
             borderColor: 'var(--sidebar-border)',
           }}
         >
-          <div className="flex h-16 shrink-0 items-center justify-center">
+          {/* Logo / brand */}
+          <div className="flex h-16 shrink-0 items-center px-1">
             <Link
               href="/seller/dashboard"
-              className="flex items-center justify-center"
+              className="flex items-center gap-3"
             >
               <div 
                 className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
@@ -185,119 +188,64 @@ export default function SellerSidebar({ sidebarOpen, setSidebarOpen }: SellerSid
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
                 </svg>
               </div>
+              {/* Show text only when expanded */}
+              {isDesktopHovered && (
+                <div className="flex flex-col">
+                  <span 
+                    className="text-sm font-semibold"
+                    style={{ color: 'var(--sidebar-foreground)' }}
+                  >
+                    Gem World
+                  </span>
+                  <span 
+                    className="text-xs"
+                    style={{ color: 'var(--muted-foreground)' }}
+                  >
+                    Seller Dashboard
+                  </span>
+                </div>
+              )}
             </Link>
           </div>
           
-          <nav className="flex flex-1 flex-col">
-            <ul role="list" className="flex flex-1 flex-col gap-y-7">
-              <li>
-                <ul role="list" className="-mx-2 space-y-1">
-                  {navigation.map((item) => {
-                    const isActive = pathname === item.href
-                    return (
-                      <li key={item.name}>
-                        <Link
-                          href={item.href}
-                          className="group flex items-center justify-center rounded-lg py-2 transition-colors"
-                          style={{
-                            backgroundColor: isActive ? 'var(--sidebar-accent)' : 'transparent',
-                            color: isActive ? 'var(--sidebar-accent-foreground)' : 'var(--sidebar-foreground)',
-                          }}
-                        >
-                          <div
-                            className="flex h-8 w-8 items-center justify-center rounded-lg border bg-background transition-colors"
-                            style={{
-                              borderColor: 'var(--sidebar-border)',
-                              color: isActive ? 'var(--sidebar-accent-foreground)' : 'var(--sidebar-foreground)',
-                            }}
-                          >
-                            {item.icon}
-                          </div>
-                        </Link>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </li>
+          {/* Nav */}
+          <nav className="flex flex-1 flex-col mt-2">
+            <ul role="list" className="flex flex-1 flex-col gap-y-4">
+              {navigation.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <li key={item.name}>
+                    <Link
+                      href={item.href}
+                      className={`group flex items-center rounded-lg px-2 py-2 text-sm leading-6 font-medium transition-colors ${
+                        isDesktopHovered ? 'justify-start gap-3' : 'justify-center'
+                      }`}
+                      style={{
+                        backgroundColor: isActive ? 'var(--sidebar-accent)' : 'transparent',
+                        color: isActive ? 'var(--sidebar-accent-foreground)' : 'var(--sidebar-foreground)',
+                      }}
+                    >
+                      <div
+                        className="flex h-8 w-8 items-center justify-center rounded-lg border bg-background transition-colors"
+                        style={{
+                          borderColor: 'var(--sidebar-border)',
+                          color: isActive ? 'var(--sidebar-accent-foreground)' : 'var(--sidebar-foreground)',
+                        }}
+                      >
+                        {item.icon}
+                      </div>
+                      {/* Label: only render when expanded so collapsed state is clean icons-only */}
+                      {isDesktopHovered && (
+                        <span className="truncate">
+                          {item.name}
+                        </span>
+                      )}
+                    </Link>
+                  </li>
+                )
+              })}
             </ul>
           </nav>
-
-          {isDesktopHovered && (
-            <div
-              className="absolute inset-y-0 left-16 w-64 border-r px-5 pb-4 pt-4 flex flex-col gap-y-6"
-              style={{
-                backgroundColor: 'var(--sidebar)',
-                borderColor: 'var(--sidebar-border)',
-                boxShadow: '0 18px 40px rgba(15, 23, 42, 0.35)',
-              }}
-            >
-              <div className="flex h-16 shrink-0 items-center">
-                <Link href="/seller/dashboard" className="flex items-center space-x-3">
-                  <div 
-                    className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
-                    style={{ 
-                      backgroundColor: 'var(--sidebar-primary)',
-                      color: 'var(--sidebar-primary-foreground)'
-                    }}
-                  >
-                    <svg 
-                      className="w-6 h-6" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h1 
-                      className="text-lg font-semibold"
-                      style={{ color: 'var(--sidebar-foreground)' }}
-                    >
-                      Gem World
-                    </h1>
-                    <p 
-                      className="text-xs"
-                      style={{ color: 'var(--muted-foreground)' }}
-                    >
-                      Seller Dashboard
-                    </p>
-                  </div>
-                </Link>
-              </div>
-
-              <nav className="flex-1 overflow-y-auto">
-                <ul role="list" className="space-y-1">
-                  {navigation.map((item) => {
-                    const isActive = pathname === item.href
-                    return (
-                      <li key={item.name}>
-                        <Link
-                          href={item.href}
-                          className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm leading-6 font-medium transition-colors"
-                          style={{
-                            backgroundColor: isActive ? 'var(--sidebar-accent)' : 'transparent',
-                            color: isActive ? 'var(--sidebar-accent-foreground)' : 'var(--sidebar-foreground)',
-                          }}
-                        >
-                          <div
-                            className="flex h-8 w-8 items-center justify-center rounded-lg border bg-background transition-colors"
-                            style={{
-                              borderColor: 'var(--sidebar-border)',
-                              color: isActive ? 'var(--sidebar-accent-foreground)' : 'var(--sidebar-foreground)',
-                            }}
-                          >
-                            {item.icon}
-                          </div>
-                          <span className="truncate">{item.name}</span>
-                        </Link>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </nav>
-            </div>
-          )}
         </div>
       </div>
     </>

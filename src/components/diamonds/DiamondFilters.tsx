@@ -246,13 +246,13 @@ export default function DiamondFilters({
                       selected.includes(shape) ? 'shadow-sm' : ''
                     }`}
                     style={{
-                      backgroundColor: selected.includes(shape) ? 'color-mix(in srgb, var(--primary) 10%, transparent)' : 'var(--card)',
-                      borderColor: selected.includes(shape) ? 'var(--primary)' : 'var(--border)',
-                      color: selected.includes(shape) ? 'var(--primary)' : 'var(--foreground)'
+                      backgroundColor: selected.includes(shape) ? 'color-mix(in srgb, var(--status-warning) 10%, transparent)' : 'var(--card)',
+                      borderColor: selected.includes(shape) ? 'var(--status-warning)' : 'var(--border)',
+                      color: selected.includes(shape) ? 'var(--status-warning)' : 'var(--foreground)'
                     }}
                     onMouseEnter={(e) => {
                       if (!selected.includes(shape)) {
-                        e.currentTarget.style.borderColor = 'var(--primary)';
+                        e.currentTarget.style.borderColor = 'var(--status-warning)';
                       }
                     }}
                     onMouseLeave={(e) => {
@@ -273,8 +273,8 @@ export default function DiamondFilters({
         ))}
         <button
           onClick={() => setShowAllCategories(!showAllCategories)}
-          className="text-xs hover:underline w-full text-left"
-          style={{ color: 'var(--primary)' }}
+          className="text-xs hover:underline w-full text-left font-medium"
+          style={{ color: 'var(--status-warning)' }}
         >
           {showAllCategories ? 'Show Less Shapes' : `Show All Shapes (${DIAMOND_SHAPES.length} total)`}
         </button>
@@ -303,17 +303,17 @@ export default function DiamondFilters({
       {selected.length > 0 && (
         <div className="flex items-center justify-between p-3 rounded-lg border" 
           style={{ 
-            backgroundColor: 'color-mix(in srgb, var(--primary) 5%, transparent)', 
-            borderColor: 'color-mix(in srgb, var(--primary) 20%, transparent)' 
+            backgroundColor: 'color-mix(in srgb, var(--status-warning) 5%, transparent)', 
+            borderColor: 'color-mix(in srgb, var(--status-warning) 20%, transparent)' 
           }}
         >
-          <span className="text-sm font-medium" style={{ color: 'var(--primary)' }}>
+          <span className="text-sm font-medium" style={{ color: 'var(--status-warning)' }}>
             {selected.length} selected
           </span>
           <button
             onClick={() => onChange([])}
             className="text-xs underline hover:no-underline transition-all"
-            style={{ color: 'var(--primary)' }}
+            style={{ color: 'var(--status-warning)' }}
           >
             Clear all
           </button>
@@ -417,7 +417,7 @@ export default function DiamondFilters({
         <span className="text-xs font-medium" style={{ color: 'var(--foreground)' }}>
           Current Range:
         </span>
-        <span className="text-xs font-bold" style={{ color: 'var(--primary)' }}>
+        <span className="text-xs font-bold" style={{ color: 'var(--status-warning)' }}>
           {value.min.toLocaleString()}{unit} - {value.max.toLocaleString()}{unit}
         </span>
       </div>
@@ -434,8 +434,20 @@ export default function DiamondFilters({
             min={min}
             max={max}
             step={step}
-            className="w-full px-2 py-2 text-xs border rounded-md focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-all outline-none"
-            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+            className="w-full px-2 py-2 text-xs border rounded-md focus:ring-1 transition-all outline-none"
+            style={{ 
+              backgroundColor: 'var(--card)', 
+              borderColor: 'var(--border)', 
+              color: 'var(--foreground)'
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'var(--status-warning)';
+              e.currentTarget.style.boxShadow = '0 0 0 1px var(--status-warning)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'var(--border)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
             placeholder={`Min ${unit}`}
           />
         </div>
@@ -450,8 +462,20 @@ export default function DiamondFilters({
             min={min}
             max={max}
             step={step}
-            className="w-full px-2 py-2 text-xs border rounded-md focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-all outline-none"
-            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+            className="w-full px-2 py-2 text-xs border rounded-md focus:ring-1 transition-all outline-none"
+            style={{ 
+              backgroundColor: 'var(--card)', 
+              borderColor: 'var(--border)', 
+              color: 'var(--foreground)'
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'var(--status-warning)';
+              e.currentTarget.style.boxShadow = '0 0 0 1px var(--status-warning)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'var(--border)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
             placeholder={`Max ${unit}`}
           />
         </div>
@@ -478,9 +502,9 @@ export default function DiamondFilters({
                 color: 'var(--muted-foreground)' 
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'var(--primary)';
-                e.currentTarget.style.color = 'var(--primary)';
-                e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--primary) 5%, transparent)';
+                e.currentTarget.style.borderColor = 'var(--status-warning)';
+                e.currentTarget.style.color = 'var(--status-warning)';
+                e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--status-warning) 5%, transparent)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.borderColor = 'var(--border)';
@@ -514,9 +538,9 @@ export default function DiamondFilters({
                 color: 'var(--muted-foreground)' 
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'var(--primary)';
-                e.currentTarget.style.color = 'var(--primary)';
-                e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--primary) 5%, transparent)';
+                e.currentTarget.style.borderColor = 'var(--status-warning)';
+                e.currentTarget.style.color = 'var(--status-warning)';
+                e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--status-warning) 5%, transparent)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.borderColor = 'var(--border)';

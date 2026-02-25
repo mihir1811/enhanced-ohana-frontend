@@ -528,12 +528,12 @@ export default function RegisterPage() {
                 <button
                   type="submit"
                   disabled={loading || !canSubmit}
-                      className="w-full py-4 px-6 rounded-xl font-semibold focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale shadow-2xl transform hover:-translate-y-0.5 disabled:transform-none"
-                      style={{
-                        backgroundColor: '#d97706',
-                        color: 'white',
-                        boxShadow: canSubmit ? '0 18px 45px color-mix(in srgb, #d97706 32%, transparent)' : 'none'
-                      }}
+                  className="w-full py-4 px-6 rounded-xl font-semibold focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale shadow-2xl transform hover:-translate-y-0.5 disabled:transform-none"
+                  style={{
+                    backgroundColor: 'var(--status-warning)',
+                    color: 'white',
+                    boxShadow: canSubmit ? '0 18px 45px color-mix(in srgb, var(--status-warning) 32%, transparent)' : 'none'
+                  }}
                 >
                   {loading ? (
                     <div className="flex items-center justify-center space-x-3">

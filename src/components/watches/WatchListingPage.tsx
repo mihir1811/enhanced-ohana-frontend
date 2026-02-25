@@ -59,17 +59,27 @@ const FilterSection = ({ title, children, isOpen = false, count = 0, onToggle }:
         style={{ color: 'var(--foreground)' }}
       >
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold group-hover:text-primary transition-colors">
+          <span 
+            className="text-sm font-semibold transition-colors"
+            style={{ color: isOpen ? 'var(--status-warning)' : 'inherit' }}
+          >
             {title}
           </span>
           {count > 0 && (
-            <span className="px-2 py-0.5 text-xs font-medium rounded-full" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+            <span 
+              className="px-2 py-0.5 text-xs font-medium rounded-full" 
+              style={{ 
+                backgroundColor: 'color-mix(in srgb, var(--status-warning) 15%, transparent)', 
+                color: 'var(--status-warning)' 
+              }}
+            >
               {count}
             </span>
           )}
         </div>
         <ChevronDown
-          className={`w-4 h-4 text-gray-400 group-hover:text-primary transition-all duration-300 ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 transition-all duration-300 ${isOpen ? 'rotate-180' : ''}`}
+          style={{ color: isOpen ? 'var(--status-warning)' : 'var(--muted-foreground)' }}
         />
       </button>
       {isOpen && (
@@ -120,7 +130,12 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-3 py-1.5 pl-8 text-xs border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 focus:ring-1 focus:ring-primary focus:border-primary outline-none"
+            className="w-full px-3 py-1.5 pl-8 text-xs border rounded-lg outline-none transition-all"
+            style={{ 
+              backgroundColor: 'var(--card)', 
+              borderColor: 'var(--border)', 
+              color: 'var(--foreground)'
+            }}
           />
           <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
         </div>
@@ -137,10 +152,17 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
                 type="checkbox"
                 checked={selectedValues.includes(option.value)}
                 onChange={() => handleToggle(option.value)}
-                className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary cursor-pointer transition-colors"
+                className="w-4 h-4 rounded cursor-pointer transition-colors"
+                style={{ 
+                  accentColor: 'var(--status-warning)',
+                  borderColor: 'var(--border)'
+                }}
               />
             </div>
-            <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors flex-1">
+            <span 
+              className="text-sm transition-colors flex-1"
+              style={{ color: selectedValues.includes(option.value) ? 'var(--status-warning)' : 'var(--muted-foreground)' }}
+            >
               {option.label}
             </span>
           </label>
@@ -150,7 +172,8 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
       {hasMoreOptions && (
         <button
           onClick={() => setShowAll(!showAll)}
-          className="text-xs font-medium text-primary hover:underline mt-1"
+          className="text-xs font-medium hover:underline mt-1"
+          style={{ color: 'var(--status-warning)' }}
         >
           {showAll ? 'Show Less' : `Show All (${filteredOptions.length})`}
         </button>
@@ -332,11 +355,17 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
           
           {/* Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-2">
-            <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full shadow-sm" style={{ backgroundColor: 'color-mix(in srgb, var(--card) 90%, transparent)', color: 'var(--foreground)' }}>
+            <span 
+              className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full shadow-sm" 
+              style={{ backgroundColor: 'color-mix(in srgb, var(--card) 90%, transparent)', color: 'var(--foreground)' }}
+            >
               {product.condition}
             </span>
             {product.modelYear && (
-              <span className="px-2.5 py-1 text-[10px] font-bold bg-primary text-white rounded-full shadow-sm">
+              <span 
+                className="px-2.5 py-1 text-[10px] font-bold rounded-full shadow-sm"
+                style={{ backgroundColor: 'var(--status-warning)', color: 'white' }}
+              >
                 {product.modelYear}
               </span>
             )}
@@ -347,17 +376,17 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
             <WishlistButton
               productId={product.id}
               productType="watch"
-              className="h-[40px] w-[40px] p-2 shadow-lg rounded-full hover:bg-primary hover:text-white transition-colors"
+              className="h-[40px] w-[40px] p-2 shadow-lg rounded-full transition-colors"
               style={{ backgroundColor: 'var(--card)' }}
             />
             <CompareButton
               product={product}
               productType="watch"
-              className="h-[40px] w-[40px] flex items-center justify-center p-2 shadow-lg rounded-full hover:bg-primary  transition-colors"
+              className="h-[40px] w-[40px] flex items-center justify-center p-2 shadow-lg rounded-full transition-colors"
               style={{ backgroundColor: 'var(--card)' }}
             />
             <button 
-              className="cursor-pointer h-[40px] w-[40px] p-2 shadow-lg rounded-full hover:bg-primary hover:text-white transition-colors"
+              className="cursor-pointer h-[40px] w-[40px] p-2 shadow-lg rounded-full transition-colors"
               style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -386,10 +415,16 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
         {/* Content */}
         <div className="p-4 flex flex-col flex-1">
           <div className="mb-1">
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-1 block">
+            <span 
+              className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1 block"
+              style={{ color: 'var(--status-warning)' }}
+            >
               {product.brand}
             </span>
-            <h3 className="font-bold line-clamp-1 group-hover:text-primary transition-colors" style={{ color: 'var(--foreground)' }}>
+            <h3 
+              className="font-bold line-clamp-1 transition-colors" 
+              style={{ color: 'var(--foreground)' }}
+            >
               {product.model}
             </h3>
           </div>
@@ -451,10 +486,16 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
         <div className="p-6 flex flex-col flex-1">
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
             <div>
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-1 block">
+              <span 
+                className="text-xs font-bold uppercase tracking-[0.2em] mb-1 block"
+                style={{ color: 'var(--status-warning)' }}
+              >
                 {product.brand}
               </span>
-              <h3 className="text-xl font-bold group-hover:text-primary transition-colors" style={{ color: 'var(--foreground)' }}>
+              <h3 
+                className="text-xl font-bold transition-colors" 
+                style={{ color: 'var(--foreground)' }}
+              >
                 {product.model}
               </h3>
               <p className="text-sm mt-1 line-clamp-2" style={{ color: 'var(--muted-foreground)' }}>
@@ -492,7 +533,10 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
 
           <div className="mt-6 flex items-center gap-3">
             <button 
-              className="flex-1 py-3 bg-primary text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
+              className="flex-1 py-3 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+              style={{ 
+                background: 'linear-gradient(to right, var(--status-warning), color-mix(in srgb, var(--status-warning) 85%, black))'
+              }}
               onClick={(e) => {
                 e.stopPropagation();
               }}
@@ -501,7 +545,7 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
               Add to Cart
             </button>
             <button 
-              className="px-6 py-3 border text-sm font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              className="px-6 py-3 border text-sm font-bold rounded-xl transition-colors"
               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -512,7 +556,7 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
             <CompareButton
               product={product}
               productType="watch"
-              className="p-3 border rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              className="p-3 border rounded-xl transition-colors"
               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
             />
           </div>
@@ -778,7 +822,8 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
                             priceMin: 0,
                             priceMax: 1000000,
                           })}
-                          className="text-sm font-medium text-amber-600 hover:text-amber-700 dark:text-amber-500 dark:hover:text-amber-400 transition-colors"
+                          className="text-sm font-medium transition-colors"
+                          style={{ color: 'var(--status-warning)' }}
                         >
                           Clear all
                         </button>
@@ -815,14 +860,17 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
                         });
                         setShowFilters(false);
                       }}
-                      className="flex-1 py-3 text-sm font-bold border rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      className="flex-1 py-3 text-sm font-bold border rounded-xl transition-colors"
                       style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
                     >
                       Reset
                     </button>
                     <button
                       onClick={() => setShowFilters(false)}
-                      className="flex-[2] py-3 bg-primary text-white text-sm font-bold rounded-xl shadow-lg shadow-primary/20"
+                      className="flex-[2] py-3 text-white text-sm font-bold rounded-xl shadow-lg"
+                      style={{ 
+                        background: 'linear-gradient(to right, var(--status-warning), color-mix(in srgb, var(--status-warning) 85%, black))'
+                      }}
                     >
                       Apply Filters
                     </button>
@@ -864,14 +912,22 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
                 <div className="flex items-center gap-2 p-1 rounded-xl border" style={{ backgroundColor: 'var(--muted)', borderColor: 'var(--border)' }}>
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`cursor-pointer w-8 h-8 flex items-center justify-center rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-gray-700 shadow-sm text-black' : 'dark:text-white hover:text-gray-600'}`}
+                    className="cursor-pointer w-8 h-8 flex items-center justify-center rounded-lg transition-all"
+                    style={{ 
+                      backgroundColor: viewMode === 'grid' ? 'var(--card)' : 'transparent',
+                      color: viewMode === 'grid' ? 'var(--status-warning)' : 'var(--muted-foreground)'
+                    }}
                     aria-label="Grid view"
                   >
                     <Grid size={18} />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`cursor-pointer w-8 h-8 flex items-center justify-center rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 shadow-sm text-black' : 'dark:text-white hover:text-gray-600'}`}
+                    className="cursor-pointer w-8 h-8 flex items-center justify-center rounded-lg transition-all"
+                    style={{ 
+                      backgroundColor: viewMode === 'list' ? 'var(--card)' : 'transparent',
+                      color: viewMode === 'list' ? 'var(--status-warning)' : 'var(--muted-foreground)'
+                    }}
                     aria-label="List view"
                   >
                     <List size={18} />
@@ -883,8 +939,12 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="w-full appearance-none border rounded-xl px-4 py-2.5 text-sm font-bold pr-10 outline-none focus:ring-1 focus:ring-primary"
-                    style={{ backgroundColor: 'var(--muted)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                    className="w-full appearance-none border rounded-xl px-4 py-2.5 text-sm font-bold pr-10 outline-none focus:ring-1 transition-all"
+                    style={{ 
+                      backgroundColor: 'var(--muted)', 
+                      borderColor: 'var(--border)', 
+                      color: 'var(--foreground)'
+                    }}
                     aria-label="Sort watches"
                   >
                     <option value="newest">Newest</option>
@@ -898,16 +958,23 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
             </div>
 
             {/* Brand Filter Bar (Horizontal) */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-8 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
+            <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-8 scrollbar-thin">
             <button
               onClick={() => setFilters({ ...filters, brand: [] })}
-              className={`flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 h-[38px] sm:h-[44px] rounded-full border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all ${
-                filters.brand.length === 0 
-                  ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' 
-                  : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-100 dark:border-gray-800 hover:border-primary hover:text-primary dark:hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800'
-              }`}
+              className="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 h-[38px] sm:h-[44px] rounded-full border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shadow-sm"
+              style={{ 
+                backgroundColor: filters.brand.length === 0 ? 'var(--status-warning)' : 'var(--card)',
+                borderColor: filters.brand.length === 0 ? 'var(--status-warning)' : 'var(--border)',
+                color: filters.brand.length === 0 ? 'white' : 'var(--foreground)'
+              }}
             >
-              <span className="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white dark:bg-gray-900 text-[11px] font-bold border border-white/40 dark:border-gray-700/60">
+              <span 
+                className="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full text-[11px] font-bold border"
+                style={{ 
+                  backgroundColor: filters.brand.length === 0 ? 'rgba(255,255,255,0.2)' : 'var(--muted)',
+                  borderColor: 'rgba(255,255,255,0.4)'
+                }}
+              >
                 All
               </span>
               <span>All Brands</span>
@@ -923,19 +990,17 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
                         : [...filters.brand, opt.value];
                       setFilters({ ...filters, brand: next });
                     }}
-                    className={`flex items-center gap-2 sm:gap-3 pl-1 pr-3 sm:pl-1 sm:pr-4 py-1.5 rounded-full border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all ${
-                      isSelected 
-                        ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' 
-                        : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-100 dark:border-gray-800 hover:border-primary hover:text-primary dark:hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800'
-                    }`}
+                    className="flex items-center gap-2 sm:gap-3 pl-1 pr-3 sm:pl-1 sm:pr-4 py-1.5 rounded-full border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shadow-sm"
+                    style={{ 
+                      backgroundColor: isSelected ? 'var(--status-warning)' : 'var(--card)',
+                      borderColor: isSelected ? 'var(--status-warning)' : 'var(--border)',
+                      color: isSelected ? 'white' : 'var(--foreground)'
+                    }}
                   >
                     {opt.logo ? (
                       <span
-                        className={`w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center overflow-hidden rounded-full shrink-0 transition-colors ${
-                          isSelected 
-                            ? 'bg-white/10' 
-                            : 'bg-white dark:bg-gray-100'
-                        }`}
+                        className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center overflow-hidden rounded-full shrink-0 transition-colors"
+                        style={{ backgroundColor: isSelected ? 'rgba(255,255,255,0.1)' : 'white' }}
                       >
                         <div className="relative w-5 h-5 sm:w-6 sm:h-6">
                           <Image
@@ -948,11 +1013,13 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
                       </span>
                     ) : (
                       <span
-                        className={`w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full shrink-0 ${
-                          isSelected ? 'bg-white/10' : 'bg-gray-50 dark:bg-gray-800'
-                        }`}
+                        className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full shrink-0"
+                        style={{ backgroundColor: isSelected ? 'rgba(255,255,255,0.1)' : 'var(--muted)' }}
                       >
-                        <span className={`text-[10px] font-semibold ${isSelected ? 'text-white' : 'text-gray-500 dark:text-gray-300'}`}>
+                        <span 
+                          className="text-[10px] font-semibold"
+                          style={{ color: isSelected ? 'white' : 'var(--muted-foreground)' }}
+                        >
                           {opt.label
                             .split(' ')
                             .map(word => word.charAt(0))
@@ -969,9 +1036,9 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
 
         {/* Results Grid/List */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-24 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
-            <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
-            <p className="font-bold text-gray-500">Curating luxury timepieces...</p>
+          <div className="flex flex-col items-center justify-center py-24 rounded-2xl border shadow-sm" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+            <Loader2 className="w-12 h-12 animate-spin mb-4" style={{ color: 'var(--status-warning)' }} />
+            <p className="font-bold" style={{ color: 'var(--muted-foreground)' }}>Curating luxury timepieces...</p>
           </div>
         ) : products.length > 0 ? (
           <div className="space-y-8">
@@ -987,7 +1054,7 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
 
             {/* Pagination */}
             {meta && meta.lastPage > 1 && (
-              <div className="flex justify-center pt-8 border-t border-gray-100 dark:border-gray-800">
+              <div className="flex justify-center pt-8 border-t" style={{ borderColor: 'var(--border)' }}>
                 <Pagination
                   currentPage={currentPage}
                   totalPages={meta.lastPage}
@@ -1005,11 +1072,11 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
               className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
               style={{ backgroundColor: 'var(--muted)' }}
             >
-              <WatchIcon size={40} style={{ color: 'var(--muted-foreground)' }} />
+              <Search className="w-10 h-10" style={{ color: 'var(--muted-foreground)' }} />
             </div>
-            <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>No watches found</h3>
-            <p className="max-w-sm" style={{ color: 'var(--muted-foreground)' }}>
-              We couldn't find any timepieces matching your current filters. Try adjusting your search criteria.
+            <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>No timepieces found</h3>
+            <p className="max-w-sm mb-8" style={{ color: 'var(--muted-foreground)' }}>
+              Try adjusting your filters to find what you are looking for.
             </p>
             <button
               onClick={() => setFilters({
@@ -1022,9 +1089,10 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
                 priceMin: 0,
                 priceMax: 1000000,
               })}
-              className="mt-6 px-6 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+              className="px-8 py-3 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95"
+              style={{ backgroundColor: 'var(--status-warning)' }}
             >
-              Reset All Filters
+              Clear All Filters
             </button>
           </div>
         )}
