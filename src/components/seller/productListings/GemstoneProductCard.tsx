@@ -4,6 +4,7 @@ import { toast } from "react-hot-toast";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { MoreVertical, Eye, Pencil, Trash2, Images, ChevronLeft, ChevronRight, Clock, Gavel } from "lucide-react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import SelectWinnerModal from "./SelectWinnerModal";
 import { gemstoneService } from '@/services/gemstoneService';
 import { auctionService } from '@/services/auctionService';
 import { getCookie } from '@/lib/cookie-utils';
@@ -207,6 +208,7 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, 
   const [showDelete, setShowDelete] = useState(false);
   const [showQuickView, setShowQuickView] = useState(false);
   const [showAuctionModal, setShowAuctionModal] = useState(false);
+  const [showSelectWinner, setShowSelectWinner] = useState(false);
   const dropdownClosedRef = React.useRef(false);
   const [auctionStart, setAuctionStart] = useState("");
   const [auctionEnd, setAuctionEnd] = useState("");
@@ -312,36 +314,45 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, 
                 </DropdownMenu.Item>
               )}
               {product.isOnAuction && !product.isSold && (
-                <DropdownMenu.Item
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors hover:bg-orange-50 text-orange-700"
-                  onSelect={async () => {
-                    const confirmEnd = window.confirm("End this auction now?");
-                    if (!confirmEnd) return;
-                    try {
-                      const token = getCookie("token");
-                      if (!token) throw new Error("User not authenticated");
-                      const idToUse = product.auctionId ?? product.id;
-                      const res = await auctionService.endAuction(String(idToUse), token);
-                      if (!res || (res as any).success === false) {
-                        throw new Error((res as any)?.message || "Failed to end auction");
+                <>
+                  <DropdownMenu.Item
+                    className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors hover:bg-orange-50 text-orange-700"
+                    onSelect={async () => {
+                      const confirmEnd = window.confirm("End this auction now?");
+                      if (!confirmEnd) return;
+                      try {
+                        const token = getCookie("token");
+                        if (!token) throw new Error("User not authenticated");
+                        const idToUse = product.auctionId ?? product.id;
+                        const res = await auctionService.endAuction(String(idToUse), token);
+                        if (!res || (res as any).success === false) {
+                          throw new Error((res as any)?.message || "Failed to end auction");
+                        }
+                        const ended: any = (res as any).data;
+                        onUpdateProduct?.({
+                          ...product,
+                          isOnAuction: false,
+                          isSold: ended?.isSold ?? product.isSold,
+                          auctionEndTime: undefined,
+                        });
+                        toast.success("Auction ended successfully");
+                      } catch (err: any) {
+                        const message = err?.response?.data?.message || err.message || "Failed to end auction";
+                        toast.error(message);
                       }
-                      const ended: any = (res as any).data;
-                      onUpdateProduct?.({
-                        ...product,
-                        isOnAuction: false,
-                        isSold: ended?.isSold ?? product.isSold,
-                        auctionEndTime: undefined,
-                      });
-                      toast.success("Auction ended successfully");
-                    } catch (err: any) {
-                      const message = err?.response?.data?.message || err.message || "Failed to end auction";
-                      toast.error(message);
-                    }
-                  }}
-                >
-                  <Gavel className="w-4 h-4" />
-                  End Auction
-                </DropdownMenu.Item>
+                    }}
+                  >
+                    <Gavel className="w-4 h-4" />
+                    End Auction
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item
+                    className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors hover:bg-amber-50 text-amber-700"
+                    onSelect={() => setShowSelectWinner(true)}
+                  >
+                    <Gavel className="w-4 h-4" />
+                    Select Winner
+                  </DropdownMenu.Item>
+                </>
               )}
               <DropdownMenu.Separator className="h-px my-1" style={{ backgroundColor: 'var(--border)' }} />
               <DropdownMenu.Item
@@ -723,6 +734,21 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, 
           }
         }}
         onNo={() => setShowDelete(false)}
+      />
+
+      <SelectWinnerModal
+        open={showSelectWinner}
+        onOpenChange={setShowSelectWinner}
+        auctionId={product.auctionId ?? product.id}
+        productName={displayName}
+        onSuccess={() => {
+          onUpdateProduct?.({
+            ...product,
+            isOnAuction: false,
+            isSold: true,
+            auctionEndTime: undefined,
+          });
+        }}
       />
     </div>
   );

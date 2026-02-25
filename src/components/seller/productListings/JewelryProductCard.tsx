@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { MoreVertical, Eye, Pencil, Trash2, Images, ChevronLeft, ChevronRight, Clock, Gavel } from "lucide-react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import SelectWinnerModal from "./SelectWinnerModal";
 import { getCookie } from '@/lib/cookie-utils';
 
 export interface JewelryProduct {
@@ -158,6 +159,7 @@ const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
 export default function JewelryProductCard({ product, onQuickView, onDelete, onUpdateProduct }: Props) {
   const [showDelete, setShowDelete] = useState(false);
   const [showEndAuction, setShowEndAuction] = useState(false);
+  const [showSelectWinner, setShowSelectWinner] = useState(false);
   const [showAuctionModal, setShowAuctionModal] = useState(false);
   const [auctionStart, setAuctionStart] = useState("");
   const [auctionEnd, setAuctionEnd] = useState("");
@@ -244,13 +246,22 @@ export default function JewelryProductCard({ product, onQuickView, onDelete, onU
                 </DropdownMenu.Item>
               )}
               {product.isOnAuction && !product.isSold && (
-                <DropdownMenu.Item
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors hover:bg-orange-50 text-orange-700"
-                  onSelect={() => setShowEndAuction(true)}
-                >
-                  <Gavel className="w-4 h-4" />
-                  End Auction
-                </DropdownMenu.Item>
+                <>
+                  <DropdownMenu.Item
+                    className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors hover:bg-orange-50 text-orange-700"
+                    onSelect={() => setShowEndAuction(true)}
+                  >
+                    <Gavel className="w-4 h-4" />
+                    End Auction
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item
+                    className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors hover:bg-amber-50 text-amber-700"
+                    onSelect={() => setShowSelectWinner(true)}
+                  >
+                    <Gavel className="w-4 h-4" />
+                    Select Winner
+                  </DropdownMenu.Item>
+                </>
               )}
               <DropdownMenu.Separator className="h-px my-1" style={{ backgroundColor: 'var(--border)' }} />
               <DropdownMenu.Item
@@ -606,6 +617,21 @@ export default function JewelryProductCard({ product, onQuickView, onDelete, onU
           }
         }}
         onNo={() => setShowDelete(false)}
+      />
+
+      <SelectWinnerModal
+        open={showSelectWinner}
+        onOpenChange={setShowSelectWinner}
+        auctionId={product.auctionId ?? product.id}
+        productName={product.name}
+        onSuccess={() => {
+          onUpdateProduct?.({
+            ...product,
+            isOnAuction: false,
+            isSold: true,
+            auctionEndTime: undefined,
+          });
+        }}
       />
     </div>
   );
