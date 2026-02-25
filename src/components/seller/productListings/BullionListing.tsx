@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import BulkUploadModal from './BulkUploadModal';
 import { bullionService, BullionProduct } from '@/services/bullion.service';
 import BullionProductCard from './BullionProductCard';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { toast } from 'react-hot-toast';
+import { useSelector } from 'react-redux';
+
+interface RootState {
+  seller: { profile?: { id: string } };
+}
 
 const BullionListing = () => {
+  const router = useRouter();
+  const sellerId = useSelector((state: RootState) => state.seller.profile?.id) || '';
   const [bullions, setBullions] = useState<BullionProduct[]>([]);
   const [view, setView] = useState<'list' | 'grid'>('grid');
   const [loading, setLoading] = useState(true);
@@ -27,7 +34,7 @@ const BullionListing = () => {
 
   useEffect(() => {
     setLoading(true);
-    bullionService.getBullions({ page, limit })
+    bullionService.getBullions({ page, limit, ...(sellerId && { sellerId }) })
       .then((res) => {
         const topLevel = res as unknown;
 
@@ -95,7 +102,7 @@ const BullionListing = () => {
         setBullions([]);
       })
       .finally(() => setLoading(false));
-  }, [page, limit, refreshKey]);
+  }, [page, limit, refreshKey, sellerId]);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
@@ -213,10 +220,7 @@ const BullionListing = () => {
                             type="button"
                             className="inline-flex items-center justify-center w-8 h-8 rounded-full border text-xs"
                             style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
-                            onClick={() => {
-                              // TODO: View logic
-                              console.log('View', bullion.id);
-                            }}
+                            onClick={() => typeof window !== 'undefined' && window.open(`/bullions/${bullion.id}`, '_blank')}
                             aria-label="View product"
                           >
                             <Eye className="w-4 h-4" />
@@ -225,9 +229,7 @@ const BullionListing = () => {
                             type="button"
                             className="inline-flex items-center justify-center w-8 h-8 rounded-full border text-xs"
                             style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
-                            onClick={() => {
-                              router.push(`/seller/products/${bullion.id}/edit`);
-                            }}
+                            onClick={() => router.push(`/seller/products/${bullion.id}/edit`)}
                             aria-label="Edit product"
                           >
                             <Pencil className="w-4 h-4" />

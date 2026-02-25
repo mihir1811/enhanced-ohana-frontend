@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+// import Link from 'next/link';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
+// import { ChevronLeft } from 'lucide-react';
 import AddDiamondForm from '@/components/seller/addProductForms/AddDiamondForm';
 import AddGemstoneForm from '@/components/seller/addProductForms/AddGemstoneForm';
 import AddJewelryForm from '@/components/seller/addProductForms/AddJewelryForm';
@@ -26,7 +28,7 @@ export default function Page() {
       return (
         <div className="space-y-8">
           <div className="flex flex-col gap-4">
-            <h1 className="text-3xl font-bold">Add New Product</h1>
+            <h1 className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>Add New Product</h1>
             <div className="flex gap-4 border-b">
               <button
                 onClick={() => setSelectedType('jewellery')}
@@ -79,6 +81,14 @@ export default function Page() {
 
   return (
     <div className="container mx-auto py-8">
+      {/* <Link
+        href="/seller/products"
+        className="inline-flex items-center gap-1 text-sm font-medium mb-6 hover:underline"
+        style={{ color: 'var(--muted-foreground)' }}
+      >
+        <ChevronLeft className="w-4 h-4" />
+        Back to Products
+      </Link> */}
       {renderForm()}
     </div>
   );
