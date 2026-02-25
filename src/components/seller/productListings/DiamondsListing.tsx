@@ -129,7 +129,8 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
         <div className="flex gap-2 items-center relative">
           {/* Bulk Upload Button */}
           <button
-            className="px-4 py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 transition cursor-pointer"
+            className="px-4 py-2 rounded font-semibold transition cursor-pointer"
+            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
             onClick={() => setBulkModalOpen(true)}
             type="button"
           >
@@ -191,7 +192,18 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
       {!loading && !error && (
         <>
           {diamonds.length === 0 ? (
-            <div>No diamonds found.</div>
+            <div className="rounded-xl border p-12 text-center" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <p className="text-lg font-medium mb-2" style={{ color: 'var(--foreground)' }}>No diamonds yet</p>
+              <p className="text-sm mb-4" style={{ color: 'var(--muted-foreground)' }}>Add your first diamond with Bulk Upload to get started.</p>
+              <button
+                type="button"
+                className="px-4 py-2 rounded font-medium transition"
+                style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+                onClick={() => setBulkModalOpen(true)}
+              >
+                Bulk Upload
+              </button>
+            </div>
           ) : view === 'list' ? (
             <div className="overflow-x-auto">
               {/* Table view */}

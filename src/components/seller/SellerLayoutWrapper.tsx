@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import SellerSidebar from './SellerSidebar'
 import SellerHeader from './SellerHeader'
+import SellerBreadcrumbs from './SellerBreadcrumbs'
 import { PageLoader } from './Loader'
 import { LoadingProvider } from '@/contexts/LoadingContext'
 
@@ -71,6 +72,7 @@ export default function SellerLayoutWrapper({ children }: SellerLayoutWrapperPro
           {/* Page Content */}
           <main className="px-4 py-8 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-7xl">
+              <SellerBreadcrumbs />
               {children}
             </div>
           </main>

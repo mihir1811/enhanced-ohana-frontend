@@ -71,11 +71,7 @@ export default function SellerDashboardPage() {
   const router = useRouter()
 
   useEffect(() => {
-    // Simple loading - just one timer
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 1500)
-
+    const timer = setTimeout(() => setIsLoading(false), 500)
     return () => clearTimeout(timer)
   }, [])
 
@@ -183,11 +179,12 @@ export default function SellerDashboardPage() {
               Recent Orders
             </h3>
               <RippleButton 
+                onClick={() => router.push('/seller/orders')}
                 className="text-sm font-medium hover:underline disabled:opacity-50"
                 style={{ color: 'var(--primary)' }}
                 disabled={isLoading}
               >
-              View all
+                View all
               </RippleButton>
           </div>
           

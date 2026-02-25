@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect } from 'react'
+import Link from 'next/link'
 import { useLoading } from '@/hooks/useLoading'
 import { TableLoader } from '@/components/seller/Loader'
+import { ShoppingCart, Package } from 'lucide-react'
 
 export default function SellerOrdersPage() {
   const { setPageLoading, isPageLoading } = useLoading()
@@ -10,14 +12,9 @@ export default function SellerOrdersPage() {
 
   useEffect(() => {
     setPageLoading('orders', true)
-    
-    // Simulate loading orders data
-    const timer = setTimeout(() => {
-      setPageLoading('orders', false)
-    }, 1800)
-
+    const timer = setTimeout(() => setPageLoading('orders', false), 400)
     return () => clearTimeout(timer)
-  }, []) // Empty dependency array - only run once on mount
+  }, [setPageLoading])
 
   if (isLoading) {
     return <TableLoader rows={8} />
@@ -64,24 +61,40 @@ export default function SellerOrdersPage() {
       </div>
 
       <div 
-        className="rounded-xl border p-8 text-center"
+        className="rounded-xl border p-12 text-center"
         style={{ 
           backgroundColor: 'var(--card)',
           borderColor: 'var(--border)'
         }}
       >
+        <div className="flex justify-center mb-4">
+          <div 
+            className="w-16 h-16 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: 'var(--muted)' }}
+          >
+            <ShoppingCart className="w-8 h-8" style={{ color: 'var(--muted-foreground)' }} />
+          </div>
+        </div>
         <h3 
           className="text-xl font-semibold mb-2"
           style={{ color: 'var(--card-foreground)' }}
         >
-          Orders Management
+          No orders yet
         </h3>
         <p 
-          className="text-base"
+          className="text-base mb-6 max-w-md mx-auto"
           style={{ color: 'var(--muted-foreground)' }}
         >
-          Order tracking and management functionality will be implemented here.
+          When customers place orders, they will appear here. You can track status, update shipping, and manage fulfillment.
         </p>
+        <Link
+          href="/seller/add-product"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded font-medium transition"
+          style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+        >
+          <Package className="w-4 h-4" />
+          Add Product
+        </Link>
       </div>
     </div>
   )

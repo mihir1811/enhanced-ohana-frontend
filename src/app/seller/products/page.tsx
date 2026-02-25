@@ -22,14 +22,9 @@ export default function SellerProductsPage() {
 
   useEffect(() => {
     setPageLoading('products', true)
-
-    // Simulate loading products data
-    const timer = setTimeout(() => {
-      setPageLoading('products', false)
-    }, 2000)
-
+    const timer = setTimeout(() => setPageLoading('products', false), 400)
     return () => clearTimeout(timer)
-  }, [setPageLoading]) // Include setPageLoading in dependency array
+  }, [setPageLoading])
 
 
   // Get sellerType from redux state

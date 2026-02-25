@@ -134,7 +134,8 @@ const JewelryListing = () => {
         <div className="flex gap-2 items-center relative">
           {/* Bulk Upload Button */}
           <button
-            className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 transition"
+            className="cursor-pointer px-4 py-2 rounded font-semibold transition"
+            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
             onClick={() => setBulkModalOpen(true)}
             type="button"
           >
@@ -188,7 +189,18 @@ const JewelryListing = () => {
       {!loading && !error && (
         <>
           {jewelry.length === 0 ? (
-            <div>No jewelry found.</div>
+            <div className="rounded-xl border p-12 text-center" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <p className="text-lg font-medium mb-2" style={{ color: 'var(--foreground)' }}>No jewelry items yet</p>
+              <p className="text-sm mb-4" style={{ color: 'var(--muted-foreground)' }}>Add your first piece from the Add Product page to get started.</p>
+              <button
+                type="button"
+                className="px-4 py-2 rounded font-medium transition"
+                style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+                onClick={() => typeof window !== 'undefined' && (window.location.href = '/seller/add-product')}
+              >
+                Add Product
+              </button>
+            </div>
           ) : view === 'list' ? (
             <div className="overflow-x-auto">
               <table className="min-w-full rounded-lg shadow border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
