@@ -1,8 +1,11 @@
 'use client'
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSelector, useDispatch } from 'react-redux';
 import { SellerType, sellerService, type SellerTypeValue } from '../../services/seller.service';
 import Image from 'next/image';
+import Link from 'next/link';
 import {
   Building,
   MapPin,
@@ -14,16 +17,51 @@ import {
   Users,
   Globe,
   Camera,
-  X
+  X,
+  Store,
+  LogIn
 } from 'lucide-react';
 import { SECTION_WIDTH } from '@/lib/constants';
 import { getCookie } from '@/lib/cookie-utils';
+import { RootState } from '@/store';
+import { setCredentials } from '@/features/auth/authSlice';
+import { fetchSellerInfo } from '@/features/seller/sellerSlice';
+import { useAppDispatch } from '@/store/hooks';
+import type { SellerData } from '@/features/auth/authSlice';
 
 interface BecomeSellerFormProps {
   onSuccess?: () => void;
 }
 
+/** Map API seller to auth SellerData shape */
+function mapSellerToSellerData(seller: { id: string; [key: string]: unknown }): SellerData {
+  return {
+    id: seller.id,
+    companyName: (seller.companyName as string) ?? '',
+    addressLine1: (seller.addressLine1 as string) ?? '',
+    addressLine2: (seller.addressLine2 as string) ?? '',
+    city: (seller.city as string) ?? '',
+    state: (seller.state as string) ?? '',
+    country: (seller.country as string) ?? '',
+    zipCode: (seller.zipCode as string) ?? '',
+    companyLogo: (seller.companyLogo as string) ?? '',
+    sellerType: (seller.sellerType as string) ?? '',
+    gstNumber: (seller.gstNumber as string) ?? '',
+    panCard: (seller.panCard as string) ?? '',
+    isBlocked: (seller.isBlocked as boolean) ?? false,
+    isDeleted: (seller.isDeleted as boolean) ?? false,
+    isVerified: (seller.isVerified as boolean) ?? false,
+    userId: (seller.userId as string) ?? '',
+    createdAt: (seller.createdAt as string) ?? '',
+    updatedAt: (seller.updatedAt as string) ?? '',
+  };
+}
+
 const BecomeSellerForm: React.FC<BecomeSellerFormProps> = ({ onSuccess }) => {
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const appDispatch = useAppDispatch();
+  const { user, token } = useSelector((state: RootState) => state.auth);
   const [currentStep, setCurrentStep] = useState(1);
   const [form, setForm] = useState<{
     companyName: string;
@@ -141,21 +179,45 @@ const BecomeSellerForm: React.FC<BecomeSellerFormProps> = ({ onSuccess }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const authToken = token || getCookie('token');
+    if (!authToken) {
+      setError('Please log in to apply as a seller.');
+      return;
+    }
     setLoading(true);
     setError(null);
     setSuccess(false);
     try {
-      const token = getCookie('token') || undefined;
-      await sellerService.createSeller(form, token);
+      const response = await sellerService.createSeller(form, authToken);
+      if (!response.success || !response.data?.accessToken || !response.data?.seller) {
+        throw new Error(response.message || 'Failed to create seller');
+      }
+      const { accessToken: newToken, seller } = response.data;
+
+      // Update auth: new token + user with seller role
+      const updatedUser = user
+        ? { ...user, role: 'seller' as const, sellerData: mapSellerToSellerData(seller) }
+        : null;
+      if (updatedUser) {
+        dispatch(setCredentials({ user: updatedUser, token: newToken }));
+      }
+      document.cookie = `role=seller; path=/`;
+      document.cookie = `token=${newToken}; path=/`;
+
+      // Fetch seller profile for seller dashboard
+      appDispatch(fetchSellerInfo(seller.id));
+
       setSuccess(true);
-      setTimeout(() => {
-        onSuccess?.();
-      }, 2000);
+      onSuccess?.();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoToDashboard = () => {
+    router.push('/seller/dashboard');
   };
 
   if (success) {
@@ -166,15 +228,52 @@ const BecomeSellerForm: React.FC<BecomeSellerFormProps> = ({ onSuccess }) => {
             <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <h2 className="text-2xl font-bold text-card-foreground mb-4">Application Submitted!</h2>
+            <h2 className="text-2xl font-bold text-card-foreground mb-4">You&apos;re Now a Seller!</h2>
             <p className="text-muted-foreground mb-6">
-              Your seller application has been received. We&apos;ll review your information and get back to you within 24-48 hours.
+              Your seller account has been created successfully. You can now add products and start selling on the marketplace.
             </p>
-            <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-2xl p-4 border border-emerald-200 dark:border-emerald-800">
+            <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-2xl p-4 border border-emerald-200 dark:border-emerald-800 mb-6">
               <p className="text-sm text-emerald-700 dark:text-emerald-400">
-                📧 Check your email for next steps and verification requirements.
+                You&apos;re already logged in with your new seller account. No need to sign in again.
               </p>
             </div>
+            <button
+              onClick={handleGoToDashboard}
+              className="inline-flex items-center gap-2 w-full justify-center px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl transition-all shadow-md hover:shadow-lg"
+            >
+              <Store className="w-5 h-5" />
+              Go to Seller Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Not logged in - show login prompt
+  if (!token && !getCookie('token')) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="max-w-md w-full text-center">
+          <div className="bg-card rounded-3xl shadow-2xl p-8 border border-border">
+            <div className="w-20 h-20 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+              <LogIn className="w-10 h-10 text-amber-600 dark:text-amber-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-card-foreground mb-4">Sign In Required</h2>
+            <p className="text-muted-foreground mb-6">
+              You need to be logged in to apply as a seller. Please sign in with your account to continue.
+            </p>
+            <Link
+              href={`/login?redirect=${encodeURIComponent('/become-seller')}`}
+              className="inline-flex items-center gap-2 w-full justify-center px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl transition-all shadow-md hover:shadow-lg"
+            >
+              <LogIn className="w-5 h-5" />
+              Sign In
+            </Link>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Don&apos;t have an account?{' '}
+              <Link href="/register" className="text-primary hover:underline">Register</Link>
+            </p>
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useDispatch } from 'react-redux'
 import { useAppDispatch } from '@/store/hooks'
 import { fetchSellerInfo } from '@/features/seller/sellerSlice'
@@ -11,6 +11,8 @@ import { API_CONFIG, buildApiUrl } from '@/lib/constants'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirect') || ''
   const dispatch = useDispatch()
   const appDispatch = useAppDispatch()
   
@@ -80,16 +82,20 @@ export default function LoginPage() {
         document.cookie = `role=${user.role}; path=/`
         document.cookie = `token=${accessToken}; path=/`
 
-        // Redirect based on role
-        switch (user.role) {
-          case 'admin':
-            router.push('/admin')
-            break
-          case 'seller':
-            router.push('/seller/dashboard')
-            break
-          default:
-            router.push('/')
+        // Redirect based on role or explicit redirect param
+        if (redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//')) {
+          router.push(redirectTo)
+        } else {
+          switch (user.role) {
+            case 'admin':
+              router.push('/admin')
+              break
+            case 'seller':
+              router.push('/seller/dashboard')
+              break
+            default:
+              router.push('/')
+          }
         }
       } else {
         setError(result.message || 'Login failed. Please check your credentials.')

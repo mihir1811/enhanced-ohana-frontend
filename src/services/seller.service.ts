@@ -62,6 +62,16 @@ export interface CreateSellerResponse {
   seller: SellerInfo;
 }
 
+/** Backend returns { success, message, data: { seller, accessToken } } */
+export interface CreateSellerApiResponse {
+  success: boolean;
+  message: string;
+  data: {
+    seller: SellerInfo;
+    accessToken: string;
+  };
+}
+
 export interface UpdateSellerInfoResponse {
   success: boolean;
   message: string;
@@ -70,7 +80,7 @@ export interface UpdateSellerInfoResponse {
 
 class SellerService {
   // Create seller with exact API call matching the curl request
-  async createSeller(data: CreateSellerRequest, token?: string): Promise<ApiResponse<CreateSellerResponse>> {
+  async createSeller(data: CreateSellerRequest, token?: string): Promise<CreateSellerApiResponse> {
     // Build FormData exactly matching the curl request
     const formData = new FormData();
     
