@@ -380,9 +380,9 @@ export default function NavigationUser() {
               </span>
             </div>
             <div className="flex items-center space-x-4" style={{ color: 'var(--muted-foreground)' }}>
-              <Link href="/diamond-certification" className="transition-colors" style={{ color: 'inherit' }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--status-warning)'} onMouseLeave={(e) => e.currentTarget.style.color = 'inherit'}>Certificate Verification</Link>
-              <Link href="/expert-consultation" className="transition-colors" style={{ color: 'inherit' }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--status-warning)'} onMouseLeave={(e) => e.currentTarget.style.color = 'inherit'}>Expert Consultation</Link>
-              <Link href="/contact" className="transition-colors" style={{ color: 'inherit' }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--status-warning)'} onMouseLeave={(e) => e.currentTarget.style.color = 'inherit'}>Support</Link>
+              <Link href="/education/diamond/certification" className="transition-colors" style={{ color: 'inherit' }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--status-warning)'} onMouseLeave={(e) => e.currentTarget.style.color = 'inherit'}>Certificate Verification</Link>
+              <Link href="/contact-us" className="transition-colors" style={{ color: 'inherit' }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--status-warning)'} onMouseLeave={(e) => e.currentTarget.style.color = 'inherit'}>Expert Consultation</Link>
+              <Link href="/contact-us" className="transition-colors" style={{ color: 'inherit' }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--status-warning)'} onMouseLeave={(e) => e.currentTarget.style.color = 'inherit'}>Support</Link>
             </div>
           </div>
         </div>
@@ -639,7 +639,7 @@ export default function NavigationUser() {
               </div>
 
               {/* Notifications */}
-              <Link href="/notifications" className="relative group p-2 transition-all duration-300 hover:bg-[var(--muted)] dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit flex items-center justify-center" style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}>
+              <Link href="/user/orders" className="relative group p-2 transition-all duration-300 hover:bg-[var(--muted)] dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit flex items-center justify-center" style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }} title="Order History">
                 <svg className="w-5 h-5 transition-colors group-hover:text-[var(--status-warning)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
@@ -762,7 +762,7 @@ export default function NavigationUser() {
                             { label: 'My Wishlist', href: '/user/wishlist', icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' },
                             { label: 'My Reviews', href: '/user/reviews', icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' },
                             { label: 'Messages', href: '/user/chat', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z' },
-                            { label: 'Settings', href: '/user/settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' }
+                            { label: 'Settings', href: '/user/profile', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' }
                           ].map((item, index) => (
                             <Link
                               key={index}
@@ -950,7 +950,7 @@ export default function NavigationUser() {
                 Watches
               </Link>
               <Link 
-                href="/products/bullions" 
+                href="/bullions" 
                 className="whitespace-nowrap px-4 py-2 text-sm font-medium transition-colors" 
                 style={{ color: 'var(--foreground)' }}
                 onMouseEnter={(e) => e.currentTarget.style.color = 'var(--status-warning)'}

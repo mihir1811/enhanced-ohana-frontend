@@ -66,9 +66,9 @@ export default function MobileSidebar({
         { href: '/jewelry', label: 'Jewelry', icon: '📿' },
         { href: '/watches', label: 'Watches', icon: '⌚' },
         { href: '/auctions', label: 'Auctions', icon: '🔨' },
-        { href: '/lab-grown-diamonds', label: 'Lab Grown Diamonds', icon: '⚗️' },
+        { href: '/diamonds?diamondType=lab-grown', label: 'Lab Grown Diamonds', icon: '⚗️' },
         { href: '/bullions', label: 'Bullions', icon: '🥇' },
-        { href: '/experience', label: 'Experience', icon: '✨' }
+        { href: '/user', label: 'My Dashboard', icon: '✨' }
       ]
     },
     {
@@ -78,7 +78,7 @@ export default function MobileSidebar({
         { href: '/user/profile', label: 'My Profile', icon: '👤' },
         { href: '/user/orders', label: 'Order History', icon: '📦' },
         { href: '/user/wishlist', label: 'My Wishlist', icon: '❤️' },
-        { href: '/user/addresses', label: 'Saved Addresses', icon: '📍' }
+        { href: '/user/profile', label: 'Saved Addresses', icon: '📍' }
       ]
     }
   ], [])
@@ -120,7 +120,7 @@ export default function MobileSidebar({
 
           {/* Settings Link */}
           <Link 
-            href="/user/settings" 
+            href="/user/profile" 
             onClick={handleLinkClick} 
             className="group flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 border" 
             style={{ borderRadius: 'var(--radius-xl)', borderColor: 'var(--border)', backgroundColor: 'var(--background)', color: 'var(--foreground)' }}
