@@ -81,11 +81,11 @@ export default function UserReviewsPage() {
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
-            className={`w-4 h-4 ${
-              star <= rating 
-                ? 'text-yellow-400 fill-current' 
-                : 'text-gray-300'
-            } ${interactive ? 'cursor-pointer hover:text-yellow-400' : ''}`}
+            className={`w-4 h-4 ${interactive ? 'cursor-pointer' : ''}`}
+            style={{ 
+              color: star <= rating ? 'var(--status-warning)' : 'var(--muted)',
+              fill: star <= rating ? 'var(--status-warning)' : 'transparent'
+            }}
           />
         ))}
       </div>
@@ -225,12 +225,13 @@ export default function UserReviewsPage() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <button className="p-2 text-gray-500 hover:text-gray-700 transition-colors">
+                      <button className="p-2 transition-colors" style={{ color: 'var(--muted-foreground)' }}>
                         <Edit className="w-4 h-4" />
                       </button>
                       <button 
                         onClick={() => deleteReview(review.id)}
-                        className="p-2 text-red-500 hover:text-red-600 transition-colors"
+                        className="p-2 transition-colors"
+                        style={{ color: 'var(--destructive)' }}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

@@ -808,10 +808,11 @@ export default function UserMessagesPage() {
       <div className="max-w-4xl mx-auto px-4 py-6">
         <div className="text-center">
           <h3 className="text-lg font-semibold mb-2">Authentication Required</h3>
-          <p className="text-gray-600 mb-4">Please log in to view your messages</p>
+          <p className="mb-4" style={{ color: 'var(--muted-foreground)' }}>Please log in to view your messages</p>
           <button 
             onClick={() => router.push('/login')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="px-4 py-2 rounded-md"
+            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
           >
             Go to Login
           </button>
@@ -827,10 +828,11 @@ export default function UserMessagesPage() {
       <div className="max-w-4xl mx-auto px-4 py-6">
         <div className="text-center">
           <h3 className="text-lg font-semibold mb-2">Authentication Required</h3>
-          <p className="text-gray-600 mb-4">Please log in to view your messages</p>
+          <p className="mb-4" style={{ color: 'var(--muted-foreground)' }}>Please log in to view your messages</p>
           <button 
             onClick={() => router.push('/login')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="px-4 py-2 rounded-md"
+            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
           >
             Go to Login
           </button>
@@ -840,16 +842,20 @@ export default function UserMessagesPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col" style={{ backgroundColor: 'var(--muted)' }}>
       {/* Header */}
-      <div className="flex-none bg-white border-b border-gray-200 px-4 py-3 sm:px-6">
+      <div className="flex-none border-b px-4 py-3 sm:px-6" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <MessageSquare className="w-6 h-6 text-blue-600" />
-            <h1 className="text-xl font-semibold text-gray-900">My Messages</h1>
-            <span className={`inline-flex items-center gap-1.5 text-sm px-2 py-1 rounded-full ${
-              connected ? 'text-green-700 bg-green-100' : 'text-gray-500 bg-gray-100'
-            }`}>
+            <MessageSquare className="w-6 h-6" style={{ color: 'var(--primary)' }} />
+            <h1 className="text-xl font-semibold" style={{ color: 'var(--foreground)' }}>My Messages</h1>
+            <span 
+              className="inline-flex items-center gap-1.5 text-sm px-2 py-1 rounded-full"
+              style={{ 
+                color: connected ? 'var(--status-success)' : 'var(--muted-foreground)', 
+                backgroundColor: connected ? 'var(--status-success-bg)' : 'var(--muted)' 
+              }}
+            >
               <Wifi className="w-3.5 h-3.5" />
               {connected ? 'Online' : 'Offline'}
             </span>
@@ -860,7 +866,8 @@ export default function UserMessagesPage() {
             {selectedParticipantId && (
               <button
                 onClick={() => setSelectedParticipantId(null)}
-                className="p-2 text-gray-600 hover:text-gray-900"
+                className="p-2 transition-colors"
+                style={{ color: 'var(--muted-foreground)' }}
               >
                 <User className="w-5 h-5" />
               </button>
@@ -870,11 +877,11 @@ export default function UserMessagesPage() {
         
         {/* Product Context Banner */}
         {productName && (
-          <div className="mt-3 bg-blue-50 border border-blue-200 px-3 py-2 rounded-lg">
-            <div className="flex items-center gap-2 text-sm text-blue-800">
+          <div className="mt-3 px-3 py-2 rounded-lg" style={{ backgroundColor: 'var(--card-diamond-bg)', border: '1px solid var(--card-diamond-border)' }}>
+            <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--card-diamond-icon-text)' }}>
               <MessageSquare className="w-4 h-4" />
               <span>Chat about: <strong>{decodeURIComponent(productName)}</strong></span>
-              {productType && <span className="text-xs bg-blue-200 px-2 py-1 rounded-full">{productType}</span>}
+              {productType && <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: 'var(--card-diamond-icon-bg)' }}>{productType}</span>}
             </div>
           </div>
         )}
@@ -882,17 +889,18 @@ export default function UserMessagesPage() {
 
       {/* Error Banner */}
       {error && (
-        <div className="flex-none bg-red-50 border-b border-red-200 px-4 py-3 sm:px-6">
+        <div className="flex-none border-b px-4 py-3 sm:px-6" style={{ backgroundColor: 'var(--destructive-bg)', borderColor: 'var(--destructive)' }}>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-red-800">
-              <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs font-bold">!</span>
+            <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--destructive)' }}>
+              <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--destructive)' }}>
+                <span className="text-xs font-bold text-white">!</span>
               </div>
               <span>{error}</span>
             </div>
             <button 
               onClick={() => setError(null)}
-              className="text-red-600 hover:text-red-800 text-lg font-bold"
+              className="text-lg font-bold"
+              style={{ color: 'var(--destructive)' }}
             >
               ×
             </button>
@@ -905,16 +913,19 @@ export default function UserMessagesPage() {
         {/* Left Side - Conversations List */}
         <div className={`${
           selectedParticipantId ? 'hidden lg:flex' : 'flex'
-        } flex-col w-full lg:w-80 xl:w-96 bg-white border-r border-gray-200`}>
+        } flex-col w-full lg:w-80 xl:w-96 border-r`}
+          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+        >
           {/* Search Header */}
-          <div className="flex-none p-4 border-b border-gray-200">
+          <div className="flex-none p-4 border-b" style={{ borderColor: 'var(--border)' }}>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search conversations..."
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 text-sm"
+                style={{ border: '1px solid var(--border)' }}
               />
             </div>
           </div>
@@ -923,32 +934,33 @@ export default function UserMessagesPage() {
           <div className="flex-1 overflow-y-auto">
             {loading ? (
               <div className="flex flex-col items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <p className="text-gray-500 mt-3 text-sm">Loading conversations...</p>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: 'var(--primary)' }}></div>
+                <p className="mt-3 text-sm" style={{ color: 'var(--muted-foreground)' }}>Loading conversations...</p>
               </div>
             ) : filteredConversations.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-64 px-6 text-center">
                 {search ? (
                   <>
-                    <Search className="w-12 h-12 text-gray-400 mb-4" />
-                    <p className="text-gray-600 mb-2">No conversations found for &ldquo;{search}&rdquo;</p>
+                    <Search className="w-12 h-12 mb-4" style={{ color: 'var(--muted-foreground)' }} />
+                    <p className="mb-2" style={{ color: 'var(--muted-foreground)' }}>No conversations found for &ldquo;{search}&rdquo;</p>
                     <button 
                       onClick={() => setSearch('')}
-                      className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                      className="text-sm font-medium"
+                      style={{ color: 'var(--primary)' }}
                     >
                       Clear search
                     </button>
                   </>
                 ) : (
                   <>
-                    <User className="w-16 h-16 text-gray-400 mb-4" />
-                    <p className="text-gray-600 mb-2 font-medium">No conversations yet</p>
-                    <p className="text-sm text-gray-500 max-w-48">Sellers will appear here when they initiate conversations about products</p>
+                    <User className="w-16 h-16 mb-4" style={{ color: 'var(--muted-foreground)' }} />
+                    <p className="mb-2 font-medium" style={{ color: 'var(--muted-foreground)' }}>No conversations yet</p>
+                    <p className="text-sm max-w-48" style={{ color: 'var(--muted-foreground)' }}>Sellers will appear here when they initiate conversations about products</p>
                   </>
                 )}
               </div>
             ) : (
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
                 {filteredConversations.map((conversation) => {
                   const isNewConversation = !conversation.lastMessage
                   const isSelected = selectedParticipantId === conversation.participantId
@@ -957,50 +969,48 @@ export default function UserMessagesPage() {
                     <div
                       key={conversation.participantId}
                       onClick={() => handleSelectConversation(conversation.participantId)}
-                      className={`flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer transition-all duration-200 ${
-                        isSelected ? 'bg-blue-50 border-r-3 border-blue-500' : ''
-                      } ${isNewConversation ? 'bg-green-50 hover:bg-green-100' : ''}`}
+                      className="flex items-center gap-3 p-4 cursor-pointer transition-all duration-200"
+                      style={{
+                        backgroundColor: isSelected ? 'var(--card-diamond-bg)' : isNewConversation ? 'var(--status-success-bg)' : 'transparent'
+                      }}
                     >
                       <div className="flex-shrink-0">
-                        <div className={`w-12 h-12 bg-gradient-to-br ${
-                          isNewConversation 
-                            ? 'from-green-500 to-emerald-600' 
-                            : 'from-blue-500 to-purple-600'
-                        } rounded-full flex items-center justify-center text-white font-semibold ${
-                          isNewConversation ? 'ring-2 ring-green-300 ring-offset-2' : ''
-                        }`}>
+                        <div 
+                          className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold"
+                          style={{
+                            background: isNewConversation ? 'linear-gradient(135deg, var(--status-success), var(--status-warning))' : 'linear-gradient(135deg, var(--primary), var(--card-gem-icon-text))'
+                          }}
+                        >
                           {conversation.participantName.charAt(0).toUpperCase()}
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <h3 className={`font-semibold truncate ${
-                            isNewConversation ? 'text-green-900' : 'text-gray-900'
-                          }`}>
+                          <h3 className="font-semibold truncate" style={{ color: 'var(--foreground)' }}>
                             {conversation.participantName}
                             {isNewConversation && (
-                              <span className="ml-2 text-xs text-green-600 font-normal">✨ Ready to chat</span>
+                              <span className="ml-2 text-xs font-normal" style={{ color: 'var(--status-success)' }}>✨ Ready to chat</span>
                             )}
                           </h3>
                           <div className="flex items-center gap-1.5">
                             {isNewConversation && (
-                              <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-semibold bg-green-500 text-white rounded-full animate-pulse">
+                              <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-semibold text-white rounded-full animate-pulse" style={{ backgroundColor: 'var(--status-success)' }}>
                                 New
                               </span>
                             )}
                             {conversation.unreadCount > 0 && (
-                              <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-xs font-bold bg-red-500 text-white rounded-full">
+                              <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-xs font-bold text-white rounded-full" style={{ backgroundColor: 'var(--destructive)' }}>
                                 {conversation.unreadCount > 9 ? '9+' : conversation.unreadCount}
                               </span>
                             )}
                           </div>
                         </div>
-                        <p className={`text-sm truncate ${
-                          isNewConversation ? 'text-green-600 font-medium' : 'text-gray-500'
-                        }`}>
+                        <p 
+                          className="text-sm truncate"
+                          style={{ color: isNewConversation ? 'var(--status-success)' : 'var(--muted-foreground)' }}>
                           {conversation.lastMessage?.message || 'Click to start chatting'}
                         </p>
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
                           {conversation.lastMessage ? formatMessageTime(new Date(conversation.lastMessage.createdAt).getTime()) : 'Just now'}
                         </p>
                       </div>
@@ -1014,59 +1024,63 @@ export default function UserMessagesPage() {
         {/* Right Side - Chat Messages */}
         <div className={`${
           selectedParticipantId ? 'flex' : 'hidden lg:flex'
-        } flex-col flex-1 bg-white`}>
+        } flex-col flex-1`}
+          style={{ backgroundColor: 'var(--card)' }}
+        >
           {selectedParticipantId && selectedConversation ? (
             <>
               {/* Chat Header */}
-              <div className="flex-none p-4 border-b border-gray-200 bg-gray-50">
+              <div className="flex-none p-4 border-b" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--muted)' }}>
                 <div className="flex items-center gap-3">
                   {/* Mobile back button */}
                   <button 
                     onClick={() => setSelectedParticipantId(null)}
-                    className="lg:hidden p-1 text-gray-600 hover:text-gray-900"
+                    className="lg:hidden p-1"
+                    style={{ color: 'var(--muted-foreground)' }}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
                   
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold" style={{ background: 'linear-gradient(135deg, var(--primary), var(--card-gem-icon-text))' }}>
                     {selectedConversation.participantName.charAt(0).toUpperCase()}
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 truncate">
+                    <h3 className="font-semibold truncate" style={{ color: 'var(--foreground)' }}>
                       {selectedConversation.participantName}
                     </h3>
                     <div className="flex items-center gap-2">
-                      <p className="text-sm text-gray-500">{selectedConversation.participantRole}</p>
+                      <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>{selectedConversation.participantRole}</p>
                       {preSelectedSellerId === selectedConversation.participantId && productName && (
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                        <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: 'var(--card-diamond-bg)', color: 'var(--card-diamond-icon-text)' }}>
                           About: {decodeURIComponent(productName)}
                         </span>
                       )}
                     </div>
                   </div>
                   
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
                     {connected ? '🟢 Online' : '🔴 Offline'}
                   </div>
                 </div>
               </div>
 
               {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ backgroundColor: 'var(--muted)' }}>
                 {/* Load More Messages Button */}
                 {hasMoreMessages && messages.length > 0 && (
                   <div className="flex justify-center mb-4">
                     <button
                       onClick={loadMoreMessages}
                       disabled={loadingMoreMessages}
-                      className="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg text-sm transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-2 rounded-lg text-sm transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
                     >
                       {loadingMoreMessages ? (
                         <div className="flex items-center gap-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2" style={{ borderColor: 'var(--primary)' }}></div>
                           Loading older messages...
                         </div>
                       ) : (
@@ -1079,25 +1093,25 @@ export default function UserMessagesPage() {
                 {loadingMessages ? (
                   <div className="flex justify-center items-center h-full">
                     <div className="flex flex-col items-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-3"></div>
-                      <p className="text-gray-500 text-sm">Loading messages...</p>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 mb-3" style={{ borderColor: 'var(--primary)' }}></div>
+                      <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Loading messages...</p>
                     </div>
                   </div>
                 ) : messages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center px-6">
-                    <MessageSquare className="w-16 h-16 text-gray-400 mb-4" />
+                    <MessageSquare className="w-16 h-16 mb-4" style={{ color: 'var(--muted-foreground)' }} />
                     {preSelectedSellerId === selectedParticipantId && productName ? (
                       <>
-                        <p className="text-gray-600 mb-2 font-medium">Start chatting with {selectedConversation?.participantName}</p>
-                        <p className="text-sm text-gray-500 mb-4">Ask questions about <strong>{decodeURIComponent(productName)}</strong></p>
-                        <div className="text-xs text-gray-400 bg-white px-4 py-2 rounded-lg border border-gray-200">
+                        <p className="mb-2 font-medium" style={{ color: 'var(--muted-foreground)' }}>Start chatting with {selectedConversation?.participantName}</p>
+                        <p className="text-sm mb-4" style={{ color: 'var(--muted-foreground)' }}>Ask questions about <strong>{decodeURIComponent(productName)}</strong></p>
+                        <div className="text-xs px-4 py-2 rounded-lg" style={{ color: 'var(--muted-foreground)', backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
                           💎 {productType === 'gemstone' ? 'Gemstone' : productType === 'diamond' ? 'Diamond' : 'Product'} Chat
                         </div>
                       </>
                     ) : (
                       <>
-                        <p className="text-gray-600 mb-2 font-medium">No messages yet</p>
-                        <p className="text-sm text-gray-500">Start the conversation by sending a message!</p>
+                        <p className="mb-2 font-medium" style={{ color: 'var(--muted-foreground)' }}>No messages yet</p>
+                        <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Start the conversation by sending a message!</p>
                       </>
                     )}
                   </div>
@@ -1107,13 +1121,16 @@ export default function UserMessagesPage() {
                       const isOwnMessage = message.fromId === String(user.id)
                       return (
                         <div key={message.id || index} className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-xs sm:max-w-sm lg:max-w-md xl:max-w-lg px-4 py-3 rounded-2xl shadow-sm ${
-                            isOwnMessage 
-                              ? 'bg-blue-500 text-white' 
-                              : 'bg-white text-gray-900 border border-gray-200'
-                          }`}>
+                          <div 
+                            className="max-w-xs sm:max-w-sm lg:max-w-md xl:max-w-lg px-4 py-3 rounded-2xl shadow-sm"
+                            style={{
+                              backgroundColor: isOwnMessage ? 'var(--primary)' : 'var(--card)',
+                              color: isOwnMessage ? 'var(--primary-foreground)' : 'var(--foreground)',
+                              border: isOwnMessage ? 'none' : '1px solid var(--border)'
+                            }}
+                          >
                             <p className="text-sm leading-relaxed">{message.message}</p>
-                            <p className={`text-xs mt-2 ${isOwnMessage ? 'text-blue-100' : 'text-gray-500'}`}>
+                            <p className="text-xs mt-2" style={{ color: isOwnMessage ? 'var(--primary-foreground)' : 'var(--muted-foreground)', opacity: 0.9 }}>
                               {formatMessageTime(new Date(message.createdAt).getTime())}
                               {isOwnMessage && message.isRead && (
                                 <span className="ml-2">✓✓</span>
@@ -1127,7 +1144,7 @@ export default function UserMessagesPage() {
                     {/* Message Count Info */}
                     {totalMessages > messages.length && (
                       <div className="flex justify-center py-2">
-                        <p className="text-xs text-gray-500 bg-white px-3 py-1 rounded-full border border-gray-200">
+                        <p className="text-xs px-3 py-1 rounded-full" style={{ color: 'var(--muted-foreground)', backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
                           Showing {messages.length} of {totalMessages} messages
                         </p>
                       </div>
@@ -1138,7 +1155,7 @@ export default function UserMessagesPage() {
               </div>
 
               {/* Message Input */}
-              <div className="flex-none p-4 border-t border-gray-200 bg-white">
+              <div className="flex-none p-4 border-t" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}>
                 <div className="flex gap-3">
                   <div className="flex-1 relative">
                     <input
@@ -1146,11 +1163,12 @@ export default function UserMessagesPage() {
                       onChange={(e) => setNewMessage(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                       placeholder={connected ? "Type your message..." : "Connecting..."}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12 text-sm"
+                      className="w-full px-4 py-3 rounded-full focus:outline-none focus:ring-2 pr-12 text-sm"
+                      style={{ border: '1px solid var(--border)' }}
                       disabled={!connected}
                     />
                     {newMessage.trim() && (
-                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-500">
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs" style={{ color: 'var(--muted-foreground)' }}>
                         {newMessage.length}/1000
                       </div>
                     )}
@@ -1158,7 +1176,8 @@ export default function UserMessagesPage() {
                   <button
                     onClick={handleSendMessage}
                     disabled={!newMessage.trim() || !connected}
-                    className="w-12 h-12 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-md"
+                    className="w-12 h-12 rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 shadow-sm"
+                    style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
                   >
                     <Send className="w-5 h-5" />
                   </button>
@@ -1166,23 +1185,24 @@ export default function UserMessagesPage() {
                 
                 {!connected && (
                   <div className="mt-2 text-center">
-                    <p className="text-xs text-red-500">Connection lost. Reconnecting...</p>
+                    <p className="text-xs" style={{ color: 'var(--destructive)' }}>Connection lost. Reconnecting...</p>
                   </div>
                 )}
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center bg-gray-50">
+            <div className="flex-1 flex items-center justify-center" style={{ backgroundColor: 'var(--muted)' }}>
               <div className="text-center px-6">
-                <MessageSquare className="w-20 h-20 text-gray-400 mx-auto mb-6" />
-                <h3 className="text-lg font-semibold text-gray-600 mb-2">Select a conversation</h3>
-                <p className="text-sm text-gray-500">Choose a conversation from the sidebar to start chatting</p>
+                <MessageSquare className="w-20 h-20 mx-auto mb-6" style={{ color: 'var(--muted-foreground)' }} />
+                <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--muted-foreground)' }}>Select a conversation</h3>
+                <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Choose a conversation from the sidebar to start chatting</p>
                 
                 {/* Mobile call-to-action */}
                 <div className="lg:hidden mt-6">
                   <button
                     onClick={() => setSelectedParticipantId(null)}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm"
+                    style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
                   >
                     <User className="w-4 h-4" />
                     Browse Conversations

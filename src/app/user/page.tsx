@@ -310,9 +310,9 @@ export default function UserDashboardPage() {
                       <span 
                         className="px-2 py-1 text-xs rounded-full"
                         style={{ 
-                          backgroundColor: order.status === 'Delivered' ? 'color-mix(in srgb, #22c55e 15%, transparent)' : 
-                                          order.status === 'Shipped' ? 'color-mix(in srgb, var(--status-warning) 15%, transparent)' : 'color-mix(in srgb, var(--muted-foreground) 15%, transparent)',
-                          color: order.status === 'Delivered' ? '#16a34a' : 
+                          backgroundColor: order.status === 'Delivered' ? 'var(--status-success-bg)' : 
+                                          order.status === 'Shipped' ? 'var(--status-warning-bg)' : 'color-mix(in srgb, var(--muted-foreground) 15%, transparent)',
+                          color: order.status === 'Delivered' ? 'var(--status-success)' : 
                                  order.status === 'Shipped' ? 'var(--status-warning)' : 'var(--muted-foreground)'
                         }}
                       >

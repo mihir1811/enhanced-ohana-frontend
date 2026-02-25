@@ -197,7 +197,7 @@ export default function UserWishlistPage() {
             <button 
               onClick={handleClearAll}
               disabled={isClearing}
-              className="px-4 py-2 rounded-lg font-medium transition-colors border text-red-600 border-red-200 hover:bg-red-50"
+              className="px-4 py-2 rounded-lg font-medium transition-colors border border-[var(--destructive)] text-[var(--destructive)] hover:bg-[var(--destructive-bg)]"
             >
               {isClearing ? 'Clearing...' : 'Clear All'}
             </button>

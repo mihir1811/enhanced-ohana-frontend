@@ -352,11 +352,12 @@ export default function UserProfilePage() {
           {/* Success/Error Message */}
           {saveMessage && (
             <div 
-              className={`p-4 rounded-lg border ${
-                saveMessage.type === 'success' 
-                  ? 'bg-green-50 border-green-200 text-green-800' 
-                  : 'bg-red-50 border-red-200 text-red-800'
-              }`}
+              className="p-4 rounded-lg border"
+              style={{
+                backgroundColor: saveMessage.type === 'success' ? 'var(--status-success-bg)' : 'var(--destructive-bg)',
+                borderColor: saveMessage.type === 'success' ? 'var(--status-success)' : 'var(--destructive)',
+                color: saveMessage.type === 'success' ? 'var(--status-success)' : 'var(--destructive)'
+              }}
             >
               <p className="text-sm font-medium">{saveMessage.text}</p>
             </div>
@@ -434,8 +435,8 @@ export default function UserProfilePage() {
                 <div 
                   className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mb-4"
                   style={{ 
-                    backgroundColor: user.isVerified ? 'color-mix(in srgb, #22c55e 15%, transparent)' : 'var(--muted)',
-                    color: user.isVerified ? '#16a34a' : 'var(--muted-foreground)'
+                    backgroundColor: user.isVerified ? 'var(--status-success-bg)' : 'var(--muted)',
+                    color: user.isVerified ? 'var(--status-success)' : 'var(--muted-foreground)'
                   }}
                 >
                   <Shield className="w-4 h-4 mr-1" />
@@ -681,9 +682,11 @@ export default function UserProfilePage() {
                       </label>
                       <div className="flex items-center space-x-2">
                         <div 
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                            user.sellerData.isVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                          }`}
+                          className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                          style={{
+                            backgroundColor: user.sellerData.isVerified ? 'var(--status-success-bg)' : 'var(--status-warning-bg)',
+                            color: user.sellerData.isVerified ? 'var(--status-success)' : 'var(--status-warning)'
+                          }}
                         >
                           <Shield className="w-4 h-4 mr-1" />
                           {user.sellerData.isVerified ? 'Verified Seller' : 'Pending Verification'}
@@ -776,7 +779,7 @@ export default function UserProfilePage() {
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600" style={{ backgroundColor: 'var(--muted)' }} />
+                      <div className="relative w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:rounded-full after:h-5 after:w-5 after:transition-all" style={{ backgroundColor: 'var(--muted)', border: '1px solid var(--border)' }} />
                       <style jsx>{`
                         .peer:checked + div {
                           background-color: var(--status-warning) !important;
@@ -792,7 +795,7 @@ export default function UserProfilePage() {
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" className="sr-only peer" />
-                      <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600" style={{ backgroundColor: 'var(--muted)' }} />
+                      <div className="relative w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:rounded-full after:h-5 after:w-5 after:transition-all" style={{ backgroundColor: 'var(--muted)', border: '1px solid var(--border)' }} />
                     </label>
                   </div>
 

@@ -78,8 +78,11 @@
 
   /* Semantic status aliases */
   --status-success: var(--chart-2);
+  --status-success-bg: color-mix(in srgb, var(--chart-2) 15%, transparent);
   --status-warning: #fbbf24;
+  --status-warning-bg: color-mix(in srgb, #fbbf24 15%, transparent);
   --status-info: var(--chart-3);
+  --destructive-bg: color-mix(in srgb, var(--destructive) 15%, transparent);
 
   /* Custom Colorful Theme - Light */
   --hero-gradient-start: #eff6ff;
@@ -153,8 +156,11 @@
 
   /* Semantic status aliases */
   --status-success: var(--chart-2);
+  --status-success-bg: color-mix(in srgb, var(--chart-2) 20%, transparent);
   --status-warning: #d97706;
+  --status-warning-bg: color-mix(in srgb, #d97706 15%, transparent);
   --status-info: var(--chart-3);
+  --destructive-bg: color-mix(in srgb, var(--destructive) 20%, transparent);
 
   /* Custom Colorful Theme - Dark */
   --hero-gradient-start: #0f172a;

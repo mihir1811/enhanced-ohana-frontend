@@ -57,7 +57,7 @@ export default function UserOrdersPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'delivered':
-        return <Check className="w-5 h-5" style={{ color: '#16a34a' }} />
+        return <Check className="w-5 h-5" style={{ color: 'var(--status-success)' }} />
       case 'shipped':
         return <Truck className="w-5 h-5" style={{ color: 'var(--status-warning)' }} />
       case 'processing':
@@ -72,9 +72,9 @@ export default function UserOrdersPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'delivered':
-        return 'color-mix(in srgb, #22c55e 15%, transparent)'
+        return 'var(--status-success-bg)'
       case 'shipped':
-        return 'color-mix(in srgb, var(--status-warning) 15%, transparent)'
+        return 'var(--status-warning-bg)'
       case 'processing':
         return 'color-mix(in srgb, var(--status-warning) 10%, transparent)'
       case 'pending':
@@ -87,7 +87,7 @@ export default function UserOrdersPage() {
   const getStatusTextColor = (status: string) => {
     switch (status) {
       case 'delivered':
-        return '#16a34a'
+        return 'var(--status-success)'
       case 'shipped':
         return 'var(--status-warning)'
       case 'processing':
