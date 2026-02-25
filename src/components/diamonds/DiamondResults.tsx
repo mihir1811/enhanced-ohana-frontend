@@ -83,12 +83,15 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
                 Ref: <span className="font-mono font-medium">{diamond.certificateNumber || diamond.stockNumber || 'N/A'}</span>
               </span>
               <div className="flex items-center gap-1">
-                <Award className="w-4 h-4 text-amber-500" />
+                <Award className="w-4 h-4" style={{ color: 'var(--status-warning)' }} />
                 <span className="text-xs sm:text-sm font-medium" style={{ color: 'var(--foreground)' }}>Certified</span>
               </div>
-              <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
-                diamond.isSold ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-              }`}>
+              <div className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
+                style={diamond.isSold 
+                  ? { backgroundColor: 'color-mix(in srgb, var(--destructive) 15%, transparent)', color: 'var(--destructive)' } 
+                  : { backgroundColor: 'color-mix(in srgb, var(--status-success) 15%, transparent)', color: 'var(--status-success)' }
+                }
+              >
                 {diamond.isSold ? 'Sold' : 'Available'}
               </div>
             </div>
@@ -807,10 +810,10 @@ export default function DiamondResults({
 
           {/* Badges Row */}
           <div className="flex gap-2 mb-3 flex-wrap">
-            <span className="px-2 py-0.5 text-xs font-semibold rounded bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+            <span className="px-2 py-0.5 text-xs font-semibold rounded" style={{ backgroundColor: 'color-mix(in srgb, var(--status-success) 15%, transparent)', color: 'var(--status-success)' }}>
               YES EYE CLEAN
             </span>
-            <span className="px-2 py-0.5 text-xs font-semibold rounded bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+            <span className="px-2 py-0.5 text-xs font-semibold rounded" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
               {diamond.fluorescence || 'NONE'}
             </span>
           </div>
@@ -889,52 +892,48 @@ export default function DiamondResults({
           <span className="text-xs text-gray-400 dark:text-zinc-500">
             {diamond.sellerId ? `Seller #${diamond.sellerId}` : 'Unknown Seller'}
           </span>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={e => { e.stopPropagation(); onAddToCart(diamond.id); }}
-            className="px-3 py-1 rounded-md font-medium text-xs transition-colors"
-            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-            title="Add to Cart"
-          >
-            <ShoppingCart className="w-4 h-4 inline mr-1" />Add to Cart
-          </button>
-          <button
-              className="text-xs px-3 py-1 rounded-md font-medium transition-colors border"
-              style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
-              onClick={e => e.stopPropagation()}
-            >
-              View Details
-            </button>
-            {/* Compare & Quick View (now inline, minimalist) */}
-            <CompareButton
-              product={diamond}
-              productType="diamond"
-              size="sm"
-            />
-            <button
-              className="p-2 rounded-full border transition-colors"
-              style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
-              title="Quick View"
-              onClick={e => { e.stopPropagation(); setQuickViewDiamond(diamond); }}
-            >
-              <Eye className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-            </button>
-          </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={e => { e.stopPropagation(); onAddToCart(diamond.id); }}
+                    className="px-3 py-1 rounded-md font-medium text-xs transition-all"
+                    style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--primary) 90%, black)'; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--primary)'; }}
+                    title="Add to Cart"
+                  >
+                    <ShoppingCart className="w-4 h-4 inline mr-1" />Add to Cart
+                  </button>
+                  <button
+                    className="text-xs px-3 py-1 rounded-md font-medium transition-all border"
+                    style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--primary)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--primary)'; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--foreground)'; }}
+                    onClick={e => e.stopPropagation()}
+                  >
+                    View Details
+                  </button>
+                  {/* Compare & Quick View (now inline, minimalist) */}
+                  <CompareButton
+                    product={diamond}
+                    productType="diamond"
+                    size="sm"
+                  />
+                  <button
+                    className="p-2 rounded-full border transition-all"
+                    style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--primary)'; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
+                    title="Quick View"
+                    onClick={e => { e.stopPropagation(); setQuickViewDiamond(diamond); }}
+                  >
+                    <Eye className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+                  </button>
+                </div>
         </div>
       </div>
     </div>
   )
 
-
-  if (loading) {
-    return (
-      <div className={`space-y-4 ${className}`}>
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: 'var(--primary)' }}></div>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -1099,10 +1098,23 @@ export default function DiamondResults({
       </div>
 
       {/* Results Grid/List */}
-      {filteredDiamonds.length === 0 ? (
-        <div className="text-center py-12 border rounded-lg" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div
+            className="animate-spin rounded-full h-12 w-12 border-b-2"
+            style={{ borderColor: 'var(--primary)' }}
+          ></div>
+        </div>
+      ) : filteredDiamonds.length === 0 ? (
+        <div
+          className="text-center py-12 border rounded-lg"
+          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+        >
           <div className="text-6xl mb-4">💎</div>
-          <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
+          <h3
+            className="text-xl font-semibold mb-2"
+            style={{ color: 'var(--foreground)' }}
+          >
             No diamonds found
           </h3>
           <p style={{ color: 'var(--muted-foreground)' }}>

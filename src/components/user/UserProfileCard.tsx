@@ -37,8 +37,8 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ className = '' }) => 
 
   if (!user) {
     return (
-      <div className={`bg-white rounded-lg shadow-md p-6 ${className}`}>
-        <p className="text-gray-500">Please log in to view your profile</p>
+      <div className={`rounded-lg shadow-md p-6 ${className}`} style={{ backgroundColor: 'var(--card)' }}>
+        <p style={{ color: 'var(--muted-foreground)' }}>Please log in to view your profile</p>
       </div>
     )
   }
@@ -68,31 +68,33 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ className = '' }) => 
     }
   }
 
+  const getRoleBadgeStyle = (): React.CSSProperties => {
+    if (isAdmin) return { backgroundColor: 'var(--card-gem-bg)', color: 'var(--card-gem-icon-text)' };
+    if (isSeller) return { backgroundColor: 'var(--card-diamond-bg)', color: 'var(--card-diamond-icon-text)' };
+    return { backgroundColor: 'var(--status-success-bg)', color: 'var(--status-success)' };
+  };
+
   return (
-    <div className={`bg-white rounded-lg shadow-md p-6 ${className}`}>
+    <div className={`rounded-lg shadow-md p-6 ${className}`} style={{ backgroundColor: 'var(--card)' }}>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">
+        <h2 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
           {user.name}
         </h2>
         <div className="flex gap-2">
           {/* Role Badge */}
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-            isAdmin 
-              ? 'bg-purple-100 text-purple-800' 
-              : isSeller 
-                ? 'bg-blue-100 text-blue-800' 
-                : 'bg-green-100 text-green-800'
-          }`}>
+          <span className="px-3 py-1 rounded-full text-sm font-medium" style={getRoleBadgeStyle()}>
             {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
           </span>
           
           {/* Verification Badge for Sellers */}
           {isSeller && user.sellerData && (
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              user.sellerData.isVerified
-                ? 'bg-green-100 text-green-800'
-                : 'bg-yellow-100 text-yellow-800'
-            }`}>
+            <span 
+              className="px-3 py-1 rounded-full text-sm font-medium"
+              style={{
+                backgroundColor: user.sellerData.isVerified ? 'var(--status-success-bg)' : 'var(--status-warning-bg)',
+                color: user.sellerData.isVerified ? 'var(--status-success)' : 'var(--status-warning)'
+              }}
+            >
               {user.sellerData.isVerified ? 'Verified Seller' : 'Pending Verification'}
             </span>
           )}
@@ -102,49 +104,49 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ className = '' }) => 
       {/* User Basic Info */}
       <div className="space-y-4 mb-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium mb-1" style={{ color: 'var(--muted-foreground)' }}>
             Email
           </label>
-          <p className="text-gray-900">{user.email}</p>
+          <p style={{ color: 'var(--foreground)' }}>{user.email}</p>
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium mb-1" style={{ color: 'var(--muted-foreground)' }}>
             Username
           </label>
-          <p className="text-gray-900">@{user.userName}</p>
+          <p style={{ color: 'var(--foreground)' }}>@{user.userName}</p>
         </div>
 
         {user.phone && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--muted-foreground)' }}>
               Phone
             </label>
-            <p className="text-gray-900">{user.phone}</p>
+            <p style={{ color: 'var(--foreground)' }}>{user.phone}</p>
           </div>
         )}
       </div>
 
       {/* Seller Information */}
       {isSeller && user.sellerData && (
-        <div className="border-t pt-6 mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="border-t pt-6 mb-6" style={{ borderColor: 'var(--border)' }}>
+          <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--foreground)' }}>
             Seller Information
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--muted-foreground)' }}>
                 Business Name
               </label>
-              <p className="text-gray-900">{user.sellerData.companyName}</p>
+              <p style={{ color: 'var(--foreground)' }}>{user.sellerData.companyName}</p>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--muted-foreground)' }}>
                 Seller Type
               </label>
-              <p className="text-gray-900">{user.sellerData.sellerType}</p>
+              <p style={{ color: 'var(--foreground)' }}>{user.sellerData.sellerType}</p>
             </div>
             
 
@@ -159,7 +161,8 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ className = '' }) => 
           <button
             onClick={() => setShowSellerForm(true)}
             disabled={isUpgradingToSeller}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
           >
             {isUpgradingToSeller ? 'Registering...' : 'Become a Seller'}
           </button>
@@ -168,7 +171,8 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ className = '' }) => 
         <button
           onClick={() => {/* Open edit profile modal */}}
           disabled={isUpdatingProfile}
-          className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
         >
           {isUpdatingProfile ? 'Updating...' : 'Edit Profile'}
         </button>
@@ -176,15 +180,15 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ className = '' }) => 
 
       {/* Seller Registration Form */}
       {showSellerForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
+        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+            <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--foreground)' }}>
               Register as Seller
             </h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--muted-foreground)' }}>
                   Business Name *
                 </label>
                 <input
@@ -194,13 +198,14 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ className = '' }) => 
                     ...prev,
                     businessName: e.target.value
                   }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2"
+                  style={{ border: '1px solid var(--border)' }}
                   required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--muted-foreground)' }}>
                   Business Registration Number *
                 </label>
                 <input
@@ -210,13 +215,14 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ className = '' }) => 
                     ...prev,
                     businessRegistration: e.target.value
                   }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2"
+                  style={{ border: '1px solid var(--border)' }}
                   required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--muted-foreground)' }}>
                   Business Description
                 </label>
                 <textarea
@@ -226,7 +232,8 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ className = '' }) => 
                     businessDescription: e.target.value
                   }))}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2"
+                  style={{ border: '1px solid var(--border)' }}
                 />
               </div>
             </div>
@@ -235,14 +242,16 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ className = '' }) => 
               <button
                 onClick={handleSellerRegistration}
                 disabled={isUpgradingToSeller || !sellerFormData.businessName || !sellerFormData.businessRegistration}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
               >
                 {isUpgradingToSeller ? 'Registering...' : 'Submit Application'}
               </button>
               <button
                 onClick={() => setShowSellerForm(false)}
                 disabled={isUpgradingToSeller}
-                className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
               >
                 Cancel
               </button>

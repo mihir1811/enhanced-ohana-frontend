@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, FormEvent } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Menu, Bell, Search, User, Settings, LogOut } from 'lucide-react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { logout } from '@/features/auth/authSlice'
-import { useRouter } from 'next/navigation'
-import Loader from './Loader'
 import ThemeSwitcher from '@/components/ThemeSwitcher'
 
 interface SellerHeaderProps {
@@ -17,18 +17,18 @@ export default function SellerHeader({ setSidebarOpen }: SellerHeaderProps) {
   const dispatch = useAppDispatch()
   const router = useRouter()
   const { user } = useAppSelector((state) => state.auth)
-  const [notificationsLoading, setNotificationsLoading] = useState(true)
-  const [notificationCount, setNotificationCount] = useState(0)
+  const notificationCount = 0 // Real notifications not yet implemented; badge hidden when 0
+  const [searchQuery, setSearchQuery] = useState('')
 
-  useEffect(() => {
-    // Simulate notification loading
-    const timer = setTimeout(() => {
-      setNotificationsLoading(false)
-      setNotificationCount(3)
-    }, 1000)
-
-    return () => clearTimeout(timer)
-  }, [])
+  const handleSearch = (e: FormEvent) => {
+    e.preventDefault()
+    const q = searchQuery.trim()
+    if (q) {
+      router.push(`/seller/products?q=${encodeURIComponent(q)}`)
+    } else {
+      router.push('/seller/products')
+    }
+  }
 
   const handleLogout = () => {
     dispatch(logout())
@@ -62,22 +62,23 @@ export default function SellerHeader({ setSidebarOpen }: SellerHeaderProps) {
         />
 
         <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-          {/* Search */}
-          <form className="relative flex flex-1 justify-between w-full items-center" action="#" method="GET">
+          {/* Search - navigates to products with query on submit */}
+          <form className="relative flex flex-1 justify-between w-full items-center" onSubmit={handleSearch}>
             <label htmlFor="search-field" className="sr-only">
               Search
             </label>
-            <div className="relative max-w-2xl">
+            <div className="relative max-w-2xl w-full">
               <Search 
                 className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4"
                 style={{ color: 'var(--muted-foreground)' }}
               />
               <input
                 id="search-field"
-                className="block w-full pl-10 pr-3 py-2 rounded-full border border-gray-200 bg-white dark:bg-[#23272f] shadow-sm placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary text-sm transition hover:border-gray-400"
+                className="block w-full pl-10 pr-3 py-2 rounded-full border shadow-sm placeholder:text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/70 text-sm transition-colors"
                 placeholder="Search products, orders..."
                 type="search"
-                name="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
                   color: 'var(--foreground)',
                   borderColor: 'var(--border)',
@@ -89,22 +90,17 @@ export default function SellerHeader({ setSidebarOpen }: SellerHeaderProps) {
           
           <div className="flex items-center gap-x-4 lg:gap-x-6">
             <ThemeSwitcher />
-            {/* Notifications */}
-            <button
-              type="button"
-              className="relative p-2.5 hover:bg-opacity-10 rounded-lg transition-colors cursor-pointer"
+            {/* Notifications - links to orders until real notifications exist */}
+            <Link
+              href="/seller/orders"
+              className="relative p-2.5 hover:bg-opacity-10 rounded-lg transition-colors cursor-pointer inline-flex"
               style={{ color: 'var(--foreground)' }}
             >
-              <span className="sr-only">View notifications</span>
+              <span className="sr-only">View orders and notifications</span>
               <Bell className="h-6 w-6" />
-              {/* Notification badge */}
-              {notificationsLoading ? (
-                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center">
-                  <Loader size="sm" />
-                </div>
-              ) : notificationCount > 0 ? (
+              {notificationCount > 0 && (
                 <span 
-                  className="absolute -top-1 -right-1 h-4 w-4 rounded-full text-xs font-medium flex items-center justify-center animate-pulse"
+                  className="absolute -top-1 -right-1 h-4 w-4 rounded-full text-xs font-medium flex items-center justify-center"
                   style={{ 
                     backgroundColor: 'var(--destructive)',
                     color: 'var(--destructive-foreground)'
@@ -112,8 +108,8 @@ export default function SellerHeader({ setSidebarOpen }: SellerHeaderProps) {
                 >
                   {notificationCount}
                 </span>
-              ) : null}
-            </button>
+              )}
+            </Link>
 
             {/* Separator */}
             <div 
@@ -165,19 +161,25 @@ export default function SellerHeader({ setSidebarOpen }: SellerHeaderProps) {
                   sideOffset={5}
                 >
                   <DropdownMenu.Item 
-                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer hover:bg-muted transition-colors"
+                    asChild
+                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer hover:bg-muted transition-colors outline-none"
                     style={{ color: 'var(--popover-foreground)' }}
                   >
-                    <User className="h-4 w-4" />
-                    View Profile
+                    <Link href="/seller/profile" className="flex items-center gap-2 w-full">
+                      <User className="h-4 w-4" />
+                      View Profile
+                    </Link>
                   </DropdownMenu.Item>
                   
                   <DropdownMenu.Item 
-                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer hover:bg-muted transition-colors"
+                    asChild
+                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer hover:bg-muted transition-colors outline-none"
                     style={{ color: 'var(--popover-foreground)' }}
                   >
-                    <Settings className="h-4 w-4" />
-                    Settings
+                    <Link href="/seller/profile" className="flex items-center gap-2 w-full">
+                      <Settings className="h-4 w-4" />
+                      Settings
+                    </Link>
                   </DropdownMenu.Item>
                   
                   <DropdownMenu.Separator 

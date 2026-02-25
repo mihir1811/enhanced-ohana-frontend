@@ -47,7 +47,7 @@ import {
 } from '../../../public/icons'
 
 // Constants
-const SECTION_WIDTH = 1400
+import { SECTION_WIDTH } from '@/lib/constants'
 
 // Sieve size data for melee diamonds
 const SIEVE_DATA = [
@@ -197,7 +197,6 @@ interface MultiSelectFilterProps {
   onChange: (field: keyof DiamondSearchForm, value: string) => void
   label: string
   gridCols?: string
-  colorVariant?: 'blue' | 'green' | 'purple' | 'yellow' | 'orange'
 }
 
 // Shape Icon Mapping
@@ -521,16 +520,16 @@ const RangeSelectFilter = React.memo(({
           className={`
               p-3 rounded-lg border-2 text-sm font-medium transition-all duration-150
               ${isSelected
-              ? 'border-yellow-400 bg-gradient-to-br from-yellow-50 to-yellow-100 text-yellow-900 shadow-md transform scale-105'
-              : 'border-gray-300 bg-white  hover:border-yellow-400 hover:bg-yellow-50'
+              ? 'shadow-md transform scale-105'
+              : 'border-gray-300 bg-white hover:bg-yellow-50'
             }
               ${isLastClicked ? 'ring-2 ring-yellow-400 ring-opacity-60' : ''}
             `}
           style={{
-            background: isSelected ? 'linear-gradient(135deg, #fefce8 0%, #fef08a 100%)' : '#ffffff',
-            borderColor: isSelected ? '#facc15' : '#d1d5db',
-            color: isSelected ? '#713f12' : '#374151',
-            boxShadow: isLastClicked ? '0 0 0 2px rgba(250, 204, 21, 0.6)' : isSelected ? '0 4px 12px rgba(250, 204, 21, 0.25)' : 'none'
+            background: isSelected ? 'linear-gradient(135deg, color-mix(in srgb, var(--status-warning) 10%, white) 0%, color-mix(in srgb, var(--status-warning) 20%, white) 100%)' : 'var(--card)',
+            borderColor: isSelected ? 'var(--status-warning)' : 'var(--border)',
+            color: isSelected ? 'color-mix(in srgb, var(--status-warning) 80%, black)' : 'var(--foreground)',
+            boxShadow: isLastClicked ? '0 0 0 2px color-mix(in srgb, var(--status-warning) 60%, transparent)' : isSelected ? '0 4px 12px color-mix(in srgb, var(--status-warning) 25%, transparent)' : 'none'
           }}
         >
           {option}
@@ -541,13 +540,13 @@ const RangeSelectFilter = React.memo(({
 
   return (
     <div className="space-y-3">
-      <div className="text-xs p-3 rounded-lg bg-gray-50 text-gray-700 border border-gray-200">
+      <div className="text-xs p-3 rounded-lg border" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }}>
         💡 <strong>Range Selection:</strong> Click two unselected {label.toLowerCase()} to select all items in between. Click any selected item to deselect it individually.
       </div>
 
       {(selected && selected.length > 0) && (
-        <div className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 border border-yellow-200">
-          <span className="text-sm font-medium text-yellow-900">
+        <div className="flex items-center justify-between p-3 rounded-lg border" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--status-warning) 20%, transparent)' }}>
+          <span className="text-sm font-medium" style={{ color: 'color-mix(in srgb, var(--status-warning) 80%, black)' }}>
             {selected.length} {label.toLowerCase()} selected: <strong>{selected.join(', ')}</strong>
           </span>
           <button
@@ -555,7 +554,8 @@ const RangeSelectFilter = React.memo(({
               onChange([])
               setLastClickedIndex(null)
             }}
-            className="cursor-pointer text-xs underline hover:no-underline transition-all text-yellow-700 font-medium"
+            className="cursor-pointer text-xs underline hover:no-underline transition-all font-medium"
+            style={{ color: 'var(--status-warning)' }}
           >
             Clear all
           </button>
@@ -576,23 +576,21 @@ const DiamondTypeCard = React.memo(({ type, currentType, onTypeChange }: Diamond
   const isSelected = currentType === type
   const config = useMemo(() => ({
     natural: {
-      icon: <Gem className="w-6 h-6 mx-auto mb-2" style={{ color: 'var(--primary)' }} />,
+      icon: <Gem className="w-6 h-6 mx-auto mb-2" style={{ color: 'var(--status-warning)' }} />,
       title: 'Natural',
       subtitle: 'Mined diamonds',
-      colors: 'border-yellow-500 bg-yellow-50',
       style: {
-        backgroundColor: 'var(--primary)/10',
-        borderColor: 'var(--primary)'
+        backgroundColor: 'color-mix(in srgb, var(--status-warning) 10%, transparent)',
+        borderColor: 'var(--status-warning)'
       }
     },
     'lab-grown': {
-      icon: <Leaf className="w-6 h-6 mx-auto mb-2" style={{ color: 'var(--chart-2)' }} />,
+      icon: <Leaf className="w-6 h-6 mx-auto mb-2" style={{ color: 'var(--status-warning)' }} />,
       title: 'Lab-Grown',
       subtitle: 'Eco-friendly',
-      colors: 'border-green-500 bg-green-50',
       style: {
-        backgroundColor: 'var(--chart-2)/10',
-        borderColor: 'var(--chart-2)'
+        backgroundColor: 'color-mix(in srgb, var(--status-warning) 10%, transparent)',
+        borderColor: 'var(--status-warning)'
       }
     }
   }), [])
@@ -602,8 +600,7 @@ const DiamondTypeCard = React.memo(({ type, currentType, onTypeChange }: Diamond
   return (
     <button
       onClick={() => onTypeChange(type)}
-      className={`p-4 rounded-lg border-2 transition-all ${isSelected ? selectedConfig.colors : 'border-gray-200 hover:border-gray-300'
-        } ${isSelected ? 'cursor-default' : 'cursor-pointer'}`}
+      className={`p-4 rounded-lg border-2 transition-all ${isSelected ? 'cursor-default' : 'cursor-pointer'}`}
       style={isSelected ? selectedConfig.style : {
         backgroundColor: 'var(--card)',
         borderColor: 'var(--border)',
@@ -625,29 +622,27 @@ const CategoryCard = React.memo(({ category, currentCategory, onCategoryChange }
   const isSelected = currentCategory === category
   const config = useMemo(() => ({
     single: {
-      icon: <Sparkles className="w-6 h-6 mx-auto mb-2" style={{ color: 'var(--chart-3)' }} />,
+      icon: <Sparkles className="w-6 h-6 mx-auto mb-2" style={{ color: 'var(--status-warning)' }} />,
       title: 'Single Diamonds',
       subtitle: '0.30ct and above',
-      colors: 'border-purple-500 bg-purple-50',
       style: {
-        backgroundColor: 'var(--chart-3)/10',
-        borderColor: 'var(--chart-3)'
+        backgroundColor: 'color-mix(in srgb, var(--status-warning) 10%, transparent)',
+        borderColor: 'var(--status-warning)'
       }
     },
     melee: {
       icon: (
         <div className="w-6 h-6 mx-auto mb-2 grid grid-cols-2 gap-0.5">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="w-2 h-2 bg-current rounded-full" style={{ color: 'var(--chart-4)' }} />
+            <div key={i} className="w-2 h-2 bg-current rounded-full" style={{ color: 'var(--status-warning)' }} />
           ))}
         </div>
       ),
       title: 'Melee Diamonds',
       subtitle: 'Under 0.30ct',
-      colors: 'border-orange-500 bg-orange-50',
       style: {
-        backgroundColor: 'var(--chart-4)/10',
-        borderColor: 'var(--chart-4)'
+        backgroundColor: 'color-mix(in srgb, var(--status-warning) 10%, transparent)',
+        borderColor: 'var(--status-warning)'
       }
     }
   }), [])
@@ -657,8 +652,7 @@ const CategoryCard = React.memo(({ category, currentCategory, onCategoryChange }
   return (
     <button
       onClick={() => onCategoryChange(category)}
-      className={`p-4 rounded-lg border-2 transition-all ${isSelected ? selectedConfig.colors : 'border-gray-200 hover:border-gray-300'
-        } ${isSelected ? 'cursor-default' : 'cursor-pointer'}`}
+      className={`p-4 rounded-lg border-2 transition-all ${isSelected ? 'cursor-default' : 'cursor-pointer'}`}
       style={isSelected ? selectedConfig.style : {
         backgroundColor: 'var(--card)',
         borderColor: 'var(--border)',
@@ -925,9 +919,12 @@ const DiamondShapesCarousel = ({
             key={index}
             onClick={() => scrollToIndex(index)}
             className={`w-2 h-2 rounded-full transition-all ${index === currentIndex
-                ? 'bg-yellow-500 dark:bg-yellow-400 w-4 shadow-md'
+                ? 'w-4 shadow-md'
                 : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
               }`}
+            style={{ 
+              backgroundColor: index === currentIndex ? 'var(--status-warning)' : undefined 
+            }}
             aria-label={`Go to slide ${index + 1}`}
           />
         ))}
@@ -938,23 +935,14 @@ const DiamondShapesCarousel = ({
 
 DiamondShapesCarousel.displayName = 'DiamondShapesCarousel'
 
-// Multi-Select Filter Component
+// Multi-Select Filter Component - uses yellow (var(--status-warning)) like GemstoneFilters
 const MultiSelectFilter = React.memo(({
   options,
   selected,
   onChange,
   label,
-  gridCols = 'grid-cols-3',
-  colorVariant = 'yellow'
+  gridCols = 'grid-cols-3'
 }: MultiSelectFilterProps) => {
-  const colorConfig = useMemo(() => ({
-    blue: 'border-blue-500 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-100',
-    green: 'border-green-500 dark:border-green-500 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-100',
-    purple: 'border-purple-500 dark:border-purple-500 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-100',
-    yellow: 'border-yellow-500 dark:border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-100',
-    orange: 'border-orange-500 dark:border-orange-500 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-100'
-  }), [])
-
   const fieldMap: Record<string, keyof DiamondSearchForm> = useMemo(() => ({
     'growth method (cvd / hpht)': 'grownMethod',
     'manufacturing process': 'process',
@@ -980,18 +968,31 @@ const MultiSelectFilter = React.memo(({
     options.map(option => {
       const selectedArray = selected || []
       const isSelected = selectedArray.includes(option)
+      
       return (
         <button
           key={option}
           onClick={() => onChange(fieldMap[label.toLowerCase()] || label.toLowerCase() as keyof DiamondSearchForm, option)}
-          className={`cursor-pointer group w-full px-4 py-2 rounded-3xl text-sm font-medium transition-all duration-200
-            ${isSelected
-              ? colorConfig[colorVariant]
-              : "bg-transparent border border-input text-foreground"
+          className="cursor-pointer group w-full px-4 py-2 rounded-3xl text-sm font-medium transition-all duration-200 bg-transparent border"
+          style={isSelected ? {
+            backgroundColor: 'color-mix(in srgb, var(--status-warning) 10%, transparent)',
+            borderColor: 'var(--status-warning)',
+            color: 'var(--status-warning)'
+          } : { borderColor: 'var(--border)', color: 'var(--foreground)' }}
+          onMouseEnter={(e) => {
+            if (!isSelected) {
+              e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--status-warning) 5%, transparent)';
+              e.currentTarget.style.borderColor = 'var(--status-warning)';
+              e.currentTarget.style.color = 'var(--status-warning)';
             }
-            hover:bg-yellow-50 dark:hover:bg-yellow-900/30 hover:text-yellow-900 dark:hover:text-yellow-100
-            hover:border-yellow-300 dark:hover:border-yellow-700
-          `}
+          }}
+          onMouseLeave={(e) => {
+            if (!isSelected) {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.borderColor = 'var(--border)';
+              e.currentTarget.style.color = 'var(--foreground)';
+            }
+          }}
         >
           {option}
         </button>
@@ -1010,7 +1011,6 @@ const MultiSelectFilter = React.memo(({
         selected={selected || []}
         label={label}
         onRemove={(value) => onChange(fieldMap[label.toLowerCase()] || label.toLowerCase() as keyof DiamondSearchForm, value)}
-        colorVariant={colorVariant}
       />
       
       {/* Options Grid */}
@@ -1023,68 +1023,32 @@ const MultiSelectFilter = React.memo(({
 
 MultiSelectFilter.displayName = 'MultiSelectFilter'
 
-// Selected Options Display Component
+// Selected Options Display Component - uses yellow (var(--status-warning)) like GemstoneFilters
 const SelectedOptionsDisplay = React.memo(({
   selected,
   label,
-  onRemove,
-  colorVariant = 'yellow'
+  onRemove
 }: {
   selected: string[]
   label: string
   onRemove: (value: string) => void
-  colorVariant?: 'blue' | 'green' | 'purple' | 'yellow' | 'orange'
 }) => {
-  const colorConfig = useMemo(() => ({
-    blue: {
-      bg: 'from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20',
-      border: 'border-blue-300 dark:border-blue-700',
-      text: 'text-blue-800 dark:text-blue-300',
-      icon: 'text-blue-600 dark:text-blue-400',
-      badge: 'border-blue-400 dark:border-blue-600'
-    },
-    green: {
-      bg: 'from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20',
-      border: 'border-green-300 dark:border-green-700',
-      text: 'text-green-800 dark:text-green-300',
-      icon: 'text-green-600 dark:text-green-400',
-      badge: 'border-green-400 dark:border-green-600'
-    },
-    purple: {
-      bg: 'from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20',
-      border: 'border-purple-300 dark:border-purple-700',
-      text: 'text-purple-800 dark:text-purple-300',
-      icon: 'text-purple-600 dark:text-purple-400',
-      badge: 'border-purple-400 dark:border-purple-600'
-    },
-    yellow: {
-      bg: 'from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20',
-      border: 'border-yellow-300 dark:border-yellow-700',
-      text: 'text-yellow-800 dark:text-yellow-300',
-      icon: 'text-yellow-600 dark:text-yellow-400',
-      badge: 'border-yellow-400 dark:border-yellow-600'
-    },
-    orange: {
-      bg: 'from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20',
-      border: 'border-orange-300 dark:border-orange-700',
-      text: 'text-orange-800 dark:text-orange-300',
-      icon: 'text-orange-600 dark:text-orange-400',
-      badge: 'border-orange-400 dark:border-orange-600'
-    }
-  }), [])
-
-  const colors = colorConfig[colorVariant]
-
   if (!selected || selected.length === 0) return null
 
   return (
-    <div className={`flex items-center justify-between p-3 rounded-lg bg-gradient-to-r ${colors.bg} border ${colors.border} shadow-sm`}>
+    <div 
+      className="flex items-center justify-between p-3 rounded-lg shadow-sm"
+      style={{ 
+        backgroundColor: 'color-mix(in srgb, var(--status-warning) 10%, transparent)', 
+        border: '1px solid color-mix(in srgb, var(--status-warning) 30%, transparent)' 
+      }}
+    >
       <div className="flex-1">
         <div className="flex items-center gap-2 mb-2">
-          <svg className={`w-5 h-5 ${colors.icon}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--status-warning)' }}>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
-          <span className={`text-sm font-bold ${colors.text}`}>
+          <span className="text-sm font-bold" style={{ color: 'var(--status-warning)' }}>
             {selected.length} {label}{selected.length > 1 ? 's' : ''} Selected
           </span>
         </div>
@@ -1092,7 +1056,8 @@ const SelectedOptionsDisplay = React.memo(({
           {selected.map((option) => (
             <div
               key={option}
-              className={`inline-flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 rounded-full border ${colors.badge} shadow-sm`}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full shadow-sm"
+              style={{ backgroundColor: 'var(--card)', border: '1px solid var(--status-warning)' }}
             >
               <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
                 {option}
@@ -1953,8 +1918,8 @@ export default function DiamondsSearchPage() {
         <NavigationUser />
       </div>
 
-      <div className="w-full py-12 ">
-        <div className="max-w-[1400px] mx-auto px-4">
+      <div className="w-full py-7 ">
+        <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4`}>
 
           <DiamondShapesCarousel 
             title="Select Diamond Shapes" 
@@ -2019,7 +1984,6 @@ export default function DiamondsSearchPage() {
                 onChange={handleMultiSelect}
                 label="Growth Method (CVD / HPHT)"
                 gridCols="grid-cols-2"
-                colorVariant="green"
               />
               <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 ml-4">
                 <span className="inline-flex items-center">
@@ -2087,7 +2051,6 @@ export default function DiamondsSearchPage() {
                     selected={searchForm.shape || []}
                     label="Shape"
                     onRemove={(shape) => handleMultiSelect('shape', shape)}
-                    colorVariant="yellow"
                   />
                 </div>
               )}
@@ -2273,7 +2236,6 @@ export default function DiamondsSearchPage() {
                     selected={searchForm.color || []}
                     label="Color"
                     onRemove={(color) => handleMultiSelect('color', color)}
-                    colorVariant="yellow"
                   />
                 </div>
               )}
@@ -2286,7 +2248,6 @@ export default function DiamondsSearchPage() {
                       selected={searchForm.fancyColors || []}
                       label="Fancy Color"
                       onRemove={(color) => handleMultiSelect('fancyColors', color)}
-                      colorVariant="orange"
                     />
                   )}
 
@@ -2340,7 +2301,6 @@ export default function DiamondsSearchPage() {
                     onChange={handleMultiSelect}
                     label="Overtone"
                     gridCols="grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
-                    colorVariant="purple"
                   />
                   <MultiSelectFilter
                     options={DIAMOND_CONSTANTS.INTENSITY_OPTIONS}
@@ -2348,7 +2308,6 @@ export default function DiamondsSearchPage() {
                     onChange={handleMultiSelect}
                     label="Intensity"
                     gridCols="grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
-                    colorVariant="orange"
                   />
                 </div>
               ) : (
@@ -2440,7 +2399,6 @@ export default function DiamondsSearchPage() {
                     selected={searchForm.clarity || []}
                     label="Clarity"
                     onRemove={(clarity) => handleMultiSelect('clarity', clarity)}
-                    colorVariant="purple"
                   />
                 </div>
               )}
@@ -2453,7 +2411,6 @@ export default function DiamondsSearchPage() {
               onChange={handleMultiSelect}
               label="Finish (Quick Select)"
               gridCols="grid-cols-2 md:grid-cols-5"
-              colorVariant="purple"
             />
 
             {/* Cut Grade, Finish, Certification, Fluorescence */}
@@ -2463,7 +2420,6 @@ export default function DiamondsSearchPage() {
               onChange={handleMultiSelect}
               label="Cut Grade"
               gridCols="grid-cols-3 md:grid-cols-6"
-              colorVariant="green"
             />
 
             {/* Polish and Symmetry - Auto-selected by Finish */}
@@ -2474,7 +2430,6 @@ export default function DiamondsSearchPage() {
                 onChange={handleMultiSelect}
                 label="Polish"
                 gridCols="grid-cols-2 md:grid-cols-6"
-                colorVariant="yellow"
               />
 
               <MultiSelectFilter
@@ -2483,7 +2438,6 @@ export default function DiamondsSearchPage() {
                 onChange={handleMultiSelect}
                 label="Symmetry"
                 gridCols="grid-cols-2 md:grid-cols-6"
-                colorVariant="green"
               />
             </div>
 
@@ -2493,7 +2447,6 @@ export default function DiamondsSearchPage() {
               onChange={handleMultiSelect}
               label="Certification"
               gridCols="grid-cols-3 md:grid-cols-5"
-              colorVariant="yellow"
             />
 
             <MultiSelectFilter
@@ -2502,7 +2455,6 @@ export default function DiamondsSearchPage() {
               onChange={handleMultiSelect}
               label="Fluorescence"
               gridCols="grid-cols-3 md:grid-cols-5"
-              colorVariant="purple"
             />
 
             {/* Sieve Size Table - Only for Melee Diamonds */}
@@ -2946,10 +2898,10 @@ export default function DiamondsSearchPage() {
 
 
         {/* Action Buttons */}
-        <div className="flex flex-col md:flex-row gap-4 mt-8 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex justify-center flex-col md:flex-row gap-4 mt-8 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
           <button
             onClick={handleSearch}
-            className="group cursor-pointer flex-1 px-6 py-4 rounded-2xl font-semibold text-base md:text-lg flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2"
+            className="group cursor-pointer px-5 py-0 rounded-2xl font-semibold text-base md:text-lg flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2"
             style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', borderColor: 'var(--primary)' }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--primary) 80%, currentColor 20%)' }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--primary)' }}
@@ -2960,7 +2912,7 @@ export default function DiamondsSearchPage() {
           <button
             onClick={resetFilters}
             disabled={isDefaultFilters}
-            className="group md:w-auto px-6 py-4 rounded-2xl font-semibold text-base md:text-lg flex items-center justify-center transition-all duration-200 border disabled:opacity-50 disabled:cursor-not-allowed"
+            className="group md:w-auto px-6 py-2 rounded-2xl font-semibold text-base md:text-lg flex items-center justify-center transition-all duration-200 border disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ borderColor: 'var(--border)', color: 'var(--foreground)', background: 'transparent' }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, currentColor 40%, transparent)' }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}

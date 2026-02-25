@@ -148,7 +148,18 @@ const WatchListing = () => {
       {!loading && !error && (
         <>
           {watches.length === 0 ? (
-            <div>No watch products found.</div>
+            <div className="rounded-xl border p-12 text-center" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <p className="text-lg font-medium mb-2" style={{ color: 'var(--foreground)' }}>No watch products yet</p>
+              <p className="text-sm mb-4" style={{ color: 'var(--muted-foreground)' }}>Add your first watch from the Add Product page to get started.</p>
+              <button
+                type="button"
+                className="px-4 py-2 rounded font-medium transition"
+                style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+                onClick={() => typeof window !== 'undefined' && (window.location.href = '/seller/add-product')}
+              >
+                Add Product
+              </button>
+            </div>
           ) : view === 'list' ? (
             <div className="overflow-x-auto">
               <table

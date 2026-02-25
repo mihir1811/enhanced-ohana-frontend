@@ -1,8 +1,11 @@
 
+'use client';
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
+import { useTheme } from 'next-themes';
 import { diamondService } from '@/services/diamondService';
 import { getCookie } from '@/lib/cookie-utils';
 import { Input } from "@/components/ui/input";
@@ -56,6 +59,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { resolvedTheme } = useTheme();
 
   const filteredOptions = options.filter(option =>
     option.label.toLowerCase().includes(searchTerm.toLowerCase())
@@ -76,7 +80,14 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
 
   const handleSelect = (option: Option) => {
     if (disabled) return;
-    onChange(option.value);
+
+    // Toggle behavior: if the same option is clicked again, clear the value
+    if (option.value === value) {
+      onChange("");
+    } else {
+      onChange(option.value);
+    }
+
     setSearchTerm("");
     setIsOpen(false);
   };
@@ -132,9 +143,12 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 rounded-xl border border-border bg-popover text-popover-foreground 
+      <div
+        className="absolute z-50 w-full mt-2 rounded-xl border border-border bg-popover text-popover-foreground 
                        shadow-xl ring-1 ring-black/5 outline-none animate-in fade-in-0 zoom-in-95 
-                       max-h-60 overflow-auto bg-white p-1">
+                       max-h-60 overflow-auto p-1"
+        style={resolvedTheme === 'dark' ? { backgroundColor: '#000000' } : { backgroundColor: '#ffffff' }}
+      >
           {filteredOptions.length > 0 ? (
             filteredOptions.map((option) => (
               <div
@@ -309,6 +323,15 @@ function AddDiamondForm() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [activeTab, setActiveTab] = useState('Single');
   const isMelee = activeTab === 'Melee';
+
+  const handleTabChange = (tab: 'Single' | 'Melee') => {
+    if (tab === activeTab) return;
+    setActiveTab(tab);
+    // Treat Single vs Melee as separate flows and reset form + errors when switching
+    setForm(initialState);
+    setFieldErrors({});
+    setError('');
+  };
 
   const priceNumber = parseFloat(String(form.price || ''));
   const caratNumber = parseFloat(String(form.caratWeight || ''));
@@ -985,8 +1008,14 @@ function AddDiamondForm() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">Add Diamond</h2>
-          <p className="text-muted-foreground">Fill in the details below to add a new diamond to your inventory.</p>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">
+            {isMelee ? 'Add Melee Diamond Parcel' : 'Add Single Diamond'}
+          </h2>
+          <p className="text-muted-foreground">
+            {isMelee
+              ? 'Fill in the parcel details (ranges, pieces, sizes) to add a new melee diamond lot.'
+              : 'Fill in the details below to add a new single stone diamond to your inventory.'}
+          </p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -995,27 +1024,29 @@ function AddDiamondForm() {
           </Button>
 
           {/* Modern Segmented Control */}
-        <div className="inline-flex p-1 bg-muted rounded-xl border border-border">
+        <div className="inline-flex p-1 rounded-xl border border-border/60 bg-muted/60 dark:bg-muted/30">
           <button
             type="button"
-            onClick={() => setActiveTab('Single')}
-            className={`relative flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${activeTab === 'Single'
-              ? 'bg-background text-foreground shadow-sm ring-1 ring-black/5 dark:ring-white/5'
-              : 'text-muted-foreground hover:text-foreground'
-              }`}
+            onClick={() => handleTabChange('Single')}
+            className={`relative flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${
+              activeTab === 'Single'
+                ? 'bg-blue-500 text-white shadow-md scale-[1.02]'
+                : 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted/70 dark:text-muted-foreground dark:hover:bg-muted/60'
+            }`}
           >
-            <Gem className={`w-4 h-4 ${activeTab === 'Single' ? 'text-primary' : ''}`} />
+            <Gem className="w-4 h-4" />
             Single Diamond
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab('Melee')}
-            className={`relative flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${activeTab === 'Melee'
-              ? 'bg-background text-foreground shadow-sm ring-1 ring-black/5 dark:ring-white/5'
-              : 'text-muted-foreground hover:text-foreground'
-              }`}
+            onClick={() => handleTabChange('Melee')}
+            className={`relative flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${
+              activeTab === 'Melee'
+                ? 'bg-blue-500 text-white shadow-md scale-[1.02]'
+                : 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted/70 dark:text-muted-foreground dark:hover:bg-muted/60'
+            }`}
           >
-            <Layers className={`w-4 h-4 ${activeTab === 'Melee' ? 'text-primary' : ''}`} />
+            <Layers className="w-4 h-4" />
             Melee Parcel
           </button>
         </div>

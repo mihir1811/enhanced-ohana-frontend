@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { ChevronLeft } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
@@ -55,7 +57,7 @@ export default function EditProductPage() {
             setProductType('diamond');
             break;
           case 'gemstone':
-            const gemstoneRes = await gemstoneService.getGemstoneById(id);
+            const gemstoneRes = await gemstoneService.getGemstoneById(String(id));
             setProductData(gemstoneRes.data || gemstoneRes);
             setProductType('gemstone');
             break;
@@ -114,23 +116,60 @@ export default function EditProductPage() {
     );
   }
 
+  const BackButton = () => (
+    <Link
+      href="/seller/products"
+      className="inline-flex items-center gap-1 text-sm font-medium mb-6 hover:underline"
+      style={{ color: 'var(--muted-foreground)' }}
+    >
+      <ChevronLeft className="w-4 h-4" />
+      Back to Products
+    </Link>
+  );
+
   // Render the appropriate form based on productType
   switch (productType) {
     case 'bullion':
-      return <EditBullionForm initialData={productData} />;
+      return (
+        <div>
+          <BackButton />
+          <EditBullionForm initialData={productData} />
+        </div>
+      );
     case 'watch':
-      return <EditWatchForm initialData={productData} />;
+      return (
+        <div>
+          <BackButton />
+          <EditWatchForm initialData={productData} />
+        </div>
+      );
     case 'diamond':
-      return <EditDiamondForm initialData={productData} />;
+      return (
+        <div>
+          <BackButton />
+          <EditDiamondForm initialData={productData} />
+        </div>
+      );
     case 'gemstone':
-      return <EditGemstoneForm initialData={productData} />;
+      return (
+        <div>
+          <BackButton />
+          <EditGemstoneForm initialData={productData} />
+        </div>
+      );
     case 'jewellery':
-      return <EditJewelryForm initialData={productData} />;
+      return (
+        <div>
+          <BackButton />
+          <EditJewelryForm initialData={productData} />
+        </div>
+      );
     default:
       return (
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold text-gray-800">Unsupported product type</h2>
-          <p className="text-gray-600 mt-2">We don't have a form for this type of product yet.</p>
+          <BackButton />
+          <h2 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>Unsupported product type</h2>
+          <p className="mt-2" style={{ color: 'var(--muted-foreground)' }}>We don't have a form for this type of product yet.</p>
         </div>
       );
   }

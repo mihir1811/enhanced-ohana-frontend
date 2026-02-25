@@ -2,6 +2,8 @@
 
 import * as Dialog from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
+import type { ReactNode } from "react"
+import { useEffect } from "react"
 
 export function ConfirmModal({
   title = "Are you sure?",
@@ -10,6 +12,8 @@ export function ConfirmModal({
   onOpenChange,
   onYes,
   onNo,
+  preventAutoClose = false,
+  children,
 }: {
   title?: string
   description?: string
@@ -17,7 +21,16 @@ export function ConfirmModal({
   onOpenChange: (open: boolean) => void
   onYes: () => void
   onNo: () => void
+  preventAutoClose?: boolean
+  children?: ReactNode
 }) {
+  // Fix: ensure body pointer-events is reset when modal closes (Radix dismissable-layer can leave it set)
+  useEffect(() => {
+    if (!open) {
+      document.body.style.pointerEvents = ""
+    }
+  }, [open])
+
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -41,6 +54,13 @@ export function ConfirmModal({
             {description}
           </Dialog.Description>
 
+          {/* Optional custom content */}
+          {children && (
+            <div className="px-6 py-4 border-b bg-white dark:bg-zinc-900 text-sm text-gray-700 dark:text-zinc-300">
+              {children}
+            </div>
+          )}
+
           {/* Action buttons */}
           <div className="px-6 py-6 flex justify-end gap-4 bg-white dark:bg-zinc-900 rounded-b-2xl">
             <button
@@ -55,7 +75,9 @@ export function ConfirmModal({
             <button
               onClick={() => {
                 onYes()
-                onOpenChange(false)
+                if (!preventAutoClose) {
+                  onOpenChange(false)
+                }
               }}
               className="px-6 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 transition font-semibold shadow-sm"
             >

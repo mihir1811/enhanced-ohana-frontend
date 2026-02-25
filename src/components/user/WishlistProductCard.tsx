@@ -38,12 +38,12 @@ const WishlistProductCard: React.FC<WishlistProductCardProps> = ({
     }
   };
 
-  const getProductTypeColor = (productType: string) => {
+  const getProductTypeStyle = (productType: string): React.CSSProperties => {
     switch (productType) {
-      case 'diamond': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
-      case 'gemstone': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
-      case 'jewellery': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+      case 'diamond': return { backgroundColor: 'var(--card-diamond-bg)', color: 'var(--card-diamond-icon-text)' };
+      case 'gemstone': return { backgroundColor: 'var(--card-gem-bg)', color: 'var(--card-gem-icon-text)' };
+      case 'jewellery': return { backgroundColor: 'var(--card-jewelry-bg)', color: 'var(--card-jewelry-icon-text)' };
+      default: return { backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' };
     }
   };
 
@@ -131,7 +131,7 @@ const WishlistProductCard: React.FC<WishlistProductCardProps> = ({
           </div>
           
           {/* Product Type Badge */}
-          <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full mb-2 ${getProductTypeColor(product.productType)}`}>
+          <span className="inline-block px-2 py-1 text-xs font-medium rounded-full mb-2" style={getProductTypeStyle(product.productType)}>
             {product.productType.charAt(0).toUpperCase() + product.productType.slice(1)}
           </span>
 
@@ -217,7 +217,7 @@ const WishlistProductCard: React.FC<WishlistProductCardProps> = ({
           <div className="flex items-center space-x-2">
             <button 
               onClick={onView}
-              className="p-2 rounded-lg transition-colors border hover:bg-opacity-10 hover:bg-gray-500"
+              className="p-2 rounded-lg transition-colors border hover:bg-[var(--muted)]"
               style={{ 
                 borderColor: 'var(--border)',
                 color: 'var(--foreground)'
@@ -228,7 +228,7 @@ const WishlistProductCard: React.FC<WishlistProductCardProps> = ({
             </button>
             <button 
               onClick={onShare}
-              className="p-2 rounded-lg transition-colors border hover:bg-opacity-10 hover:bg-gray-500"
+              className="p-2 rounded-lg transition-colors border hover:bg-[var(--muted)]"
               style={{ 
                 borderColor: 'var(--border)',
                 color: 'var(--foreground)'
@@ -239,7 +239,7 @@ const WishlistProductCard: React.FC<WishlistProductCardProps> = ({
             </button>
             {/* <button
               onClick={onRemove}
-              className="p-2 rounded-lg transition-colors border text-red-600 border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20"
+              className="p-2 rounded-lg transition-colors border border-[var(--destructive)] text-[var(--destructive)] hover:bg-[var(--destructive-bg)]"
               title="Remove from Wishlist"
             >
               <Trash2 className="w-4 h-4" />

@@ -1,6 +1,5 @@
 'use client'
 
-
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLoading } from '@/hooks/useLoading'
@@ -14,6 +13,7 @@ import MeleeGemstonesListing from '@/components/seller/productListings/MeleeGems
 import JewelryListing from '@/components/seller/productListings/JewelryListing'
 import BullionListing from '@/components/seller/productListings/BullionListing'
 import WatchListing from '@/components/seller/productListings/WatchListing'
+import { ReusableTabs, TabItem } from '@/components/ui/ReusableTabs'
 
 export default function SellerProductsPage() {
   const { setPageLoading, isPageLoading } = useLoading()
@@ -22,19 +22,14 @@ export default function SellerProductsPage() {
 
   useEffect(() => {
     setPageLoading('products', true)
-
-    // Simulate loading products data
-    const timer = setTimeout(() => {
-      setPageLoading('products', false)
-    }, 2000)
-
+    const timer = setTimeout(() => setPageLoading('products', false), 400)
     return () => clearTimeout(timer)
-  }, [setPageLoading]) // Include setPageLoading in dependency array
+  }, [setPageLoading])
 
 
   // Get sellerType from redux state
   const profile = useSelector((state: RootState) => state.seller.profile)
-  const [activeTab, setActiveTab] = useState<'jewellery' | 'watch' | 'single' | 'melee'>('jewellery')
+  const [activeTab, setActiveTab] = useState<string>('jewellery')
 
   // Type guard to check if profile is SellerData with sellerType
   const sellerType = profile && 'sellerType' in profile ? profile.sellerType : undefined
@@ -44,148 +39,96 @@ export default function SellerProductsPage() {
     router.push('/seller/add-product')
   }
 
-  function getListingComponent(sellerType?: string) {
+  function getTabsForSellerType(sellerType?: string): TabItem[] {
     switch (sellerType) {
       case 'naturalDiamond':
-        return (
-          <div className="space-y-6">
-            <div className="flex gap-4 border-b">
-              <button
-                onClick={() => setActiveTab('single')}
-                className={`pb-4 px-4 font-medium transition-all ${
-                  (activeTab === 'single' || (activeTab !== 'melee' && activeTab !== 'single'))
-                    ? 'border-b-2 border-primary text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Natural Diamonds
-              </button>
-              <button
-                onClick={() => setActiveTab('melee')}
-                className={`pb-4 px-4 font-medium transition-all ${
-                  activeTab === 'melee'
-                    ? 'border-b-2 border-primary text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Melee Diamonds
-              </button>
-            </div>
-            {activeTab === 'melee' ? (
-              <MeleeDiamondsListing sellerId={sellerId} stoneType="naturalDiamond" />
-            ) : (
-              <DiamondsListing sellerId={sellerId} stoneType="naturalDiamond" />
-            )}
-          </div>
-        )
+        return [
+          {
+            id: 'single',
+            label: 'Natural Diamonds',
+            content: <DiamondsListing sellerId={sellerId} stoneType="naturalDiamond" />
+          },
+          {
+            id: 'melee',
+            label: 'Melee Diamonds',
+            content: <MeleeDiamondsListing sellerId={sellerId} stoneType="naturalDiamond" />
+          }
+        ]
+      
       case 'labGrownDiamond':
-        // For lab grown sellers, we default to single lab grown diamonds but allow switching to melee
-        // We initialize activeTab to 'single' if it's currently 'jewellery' (default)
-        return (
-          <div className="space-y-6">
-            <div className="flex gap-4 border-b">
-              <button
-                onClick={() => setActiveTab('single')}
-                className={`pb-4 px-4 font-medium transition-all ${
-                  (activeTab === 'single' || (activeTab !== 'melee' && activeTab !== 'single'))
-                    ? 'border-b-2 border-primary text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Lab Grown Diamonds
-              </button>
-              <button
-                onClick={() => setActiveTab('melee')}
-                className={`pb-4 px-4 font-medium transition-all ${
-                  activeTab === 'melee'
-                    ? 'border-b-2 border-primary text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Melee Diamonds
-              </button>
-            </div>
-            {activeTab === 'melee' ? (
-              <MeleeDiamondsListing sellerId={sellerId} stoneType="labGrownDiamond" />
-            ) : (
-              <DiamondsListing sellerId={sellerId} stoneType="labGrownDiamond" />
-            )}
-          </div>
-        )
+        return [
+          {
+            id: 'single',
+            label: 'Lab Grown Diamonds',
+            content: <DiamondsListing sellerId={sellerId} stoneType="labGrownDiamond" />
+          },
+          {
+            id: 'melee',
+            label: 'Melee Diamonds',
+            content: <MeleeDiamondsListing sellerId={sellerId} stoneType="labGrownDiamond" />
+          }
+        ]
+      
       case 'gemstone':
-        return (
-          <div className="space-y-6">
-            <div className="flex gap-4 border-b">
-              <button
-                onClick={() => setActiveTab('single')}
-                className={`pb-4 px-4 font-medium transition-all ${
-                  (activeTab === 'single' || (activeTab !== 'melee' && activeTab !== 'single'))
-                    ? 'border-b-2 border-primary text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Single Gemstones
-              </button>
-              <button
-                onClick={() => setActiveTab('melee')}
-                className={`pb-4 px-4 font-medium transition-all ${
-                  activeTab === 'melee'
-                    ? 'border-b-2 border-primary text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Melee Gemstones
-              </button>
-            </div>
-            {activeTab === 'melee' ? (
-              <MeleeGemstonesListing />
-            ) : (
-              <GemstonesListing />
-            )}
-          </div>
-        )
+        return [
+          {
+            id: 'single',
+            label: 'Single Gemstones',
+            content: <GemstonesListing />
+          },
+          {
+            id: 'melee',
+            label: 'Melee Gemstones',
+            content: <MeleeGemstonesListing />
+          }
+        ]
+      
       case 'jewellery':
-        return (
-          <div className="space-y-6">
-            <div className="flex gap-4 border-b">
-              <button
-                onClick={() => setActiveTab('jewellery')}
-                className={`pb-4 px-4 font-medium transition-all ${
-                  activeTab === 'jewellery'
-                    ? 'border-b-2 border-primary text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Jewelry Products
-              </button>
-              <button
-                onClick={() => setActiveTab('watch')}
-                className={`pb-4 px-4 font-medium transition-all ${
-                  activeTab === 'watch'
-                    ? 'border-b-2 border-primary text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Watch Products
-              </button>
-            </div>
-            {activeTab === 'jewellery' ? <JewelryListing /> : <WatchListing />}
-          </div>
-        )
+        return [
+          {
+            id: 'jewellery',
+            label: 'Jewelry Products',
+            content: <JewelryListing />
+          },
+          {
+            id: 'watch',
+            label: 'Watch Products',
+            content: <WatchListing />
+          }
+        ]
+      
       case 'bullion':
-        return <BullionListing />
+        return [
+          {
+            id: 'bullion',
+            label: 'Bullion Products',
+            content: <BullionListing />
+          }
+        ]
+      
       case 'watch':
-        return <WatchListing />
+        return [
+          {
+            id: 'watch',
+            label: 'Watch Products',
+            content: <WatchListing />
+          }
+        ]
+      
       default:
-        return (
-          <div className="rounded-xl border p-8 text-center">
-            <h3 className="text-xl font-semibold mb-2">Products Page</h3>
-            <p className="text-base">No seller type found.</p>
-          </div>
-        )
+        return []
     }
   }
 
+
+  const tabs = getTabsForSellerType(sellerType)
+
+  // Set default active tab based on available tabs
+  useEffect(() => {
+    if (tabs.length > 0 && !tabs.find(tab => tab.id === activeTab)) {
+      setActiveTab(tabs[0].id)
+    }
+  }, [tabs, activeTab])
 
   return (
     <div className="space-y-8">
@@ -221,17 +164,42 @@ export default function SellerProductsPage() {
       </div>
       {isLoading ? (
         <PageLoader />
-      ) : 1 > 0 ? (
-        getListingComponent(sellerType)
+      ) : tabs.length > 0 ? (
+        <ReusableTabs
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          variant="underline"
+          size="md"
+        />
       ) : (
-        <div className="rounded-xl border p-8 text-center"
-          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+        <div
+          className="rounded-xl border p-8 text-center space-y-4"
+          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+        >
           <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--card-foreground)' }}>
             No Products Found
           </h3>
           <p className="text-base" style={{ color: 'var(--muted-foreground)' }}>
-            You haven&apos;t added any products yet. Click &ldquo;Add New Product&rdquo; to get started.
+            You haven&apos;t added any products yet. Click &ldquo;Add Product&rdquo; to create your first listing.
           </p>
+          <button
+            onClick={handleAddProduct}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium shadow-sm 
+                 bg-primary text-primary-foreground hover:bg-primary/90 transition cursor-pointer"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Product
+          </button>
         </div>
       )}
     </div>

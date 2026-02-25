@@ -262,8 +262,8 @@ export default function UserCartPage() {
                             </p>
                             {item.certification && (
                               <div className="flex items-center space-x-2 mb-3">
-                                <Shield className="w-4 h-4" style={{ color: 'var(--chart-1)' }} />
-                                <span className="text-sm" style={{ color: 'var(--chart-1)' }}>
+                                <Shield className="w-4 h-4" style={{ color: 'var(--status-warning)' }} />
+                                <span className="text-sm" style={{ color: 'var(--status-warning)' }}>
                                   {item.certification}
                                 </span>
                               </div>
@@ -358,7 +358,7 @@ export default function UserCartPage() {
                               )}
                             </div>
                             {item.savings && item.savings > 0 && (
-                              <p className="text-sm" style={{ color: 'var(--chart-1)' }}>
+                              <p className="text-sm" style={{ color: 'var(--status-warning)' }}>
                                 Save ${(item.savings * item.quantity).toLocaleString()}
                               </p>
                             )}
@@ -392,8 +392,8 @@ export default function UserCartPage() {
                     </div>
                     {totalSavings > 0 && (
                       <div className="flex justify-between">
-                        <span style={{ color: 'var(--chart-1)' }}>Savings</span>
-                        <span style={{ color: 'var(--chart-1)' }}>
+                        <span style={{ color: 'var(--status-warning)' }}>Savings</span>
+                        <span style={{ color: 'var(--status-warning)' }}>
                           -${totalSavings.toLocaleString()}
                         </span>
                       </div>
@@ -403,7 +403,7 @@ export default function UserCartPage() {
                       <div className="text-right">
                         {shipping === 0 ? (
                           <>
-                            <span style={{ color: 'var(--chart-1)' }}>FREE</span>
+                            <span style={{ color: 'var(--status-warning)' }}>FREE</span>
                             <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
                               On orders over $1,000
                             </p>
@@ -434,7 +434,7 @@ export default function UserCartPage() {
                   {/* Security Badge */}
                   <div className="mb-6 p-3 rounded-lg" style={{ backgroundColor: 'var(--muted)' }}>
                     <div className="flex items-center space-x-2 mb-2">
-                      <Shield className="w-4 h-4" style={{ color: 'var(--chart-1)' }} />
+                      <Shield className="w-4 h-4" style={{ color: 'var(--status-warning)' }} />
                       <span className="text-sm font-medium" style={{ color: 'var(--card-foreground)' }}>
                         Secure Checkout
                       </span>
@@ -447,7 +447,7 @@ export default function UserCartPage() {
                   {/* Shipping Info */}
                   <div className="mb-6 p-3 rounded-lg" style={{ backgroundColor: 'var(--muted)' }}>
                     <div className="flex items-center space-x-2 mb-2">
-                      <Truck className="w-4 h-4" style={{ color: 'var(--chart-2)' }} />
+                      <Truck className="w-4 h-4" style={{ color: 'var(--status-warning)' }} />
                       <span className="text-sm font-medium" style={{ color: 'var(--card-foreground)' }}>
                         Free Express Shipping
                       </span>

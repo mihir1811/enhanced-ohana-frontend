@@ -3,24 +3,13 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import { jewelryService, JewelryItem } from '@/services/jewelryService';
-import { auctionService } from '@/services/auctionService';
 import { getCookie } from '@/lib/cookie-utils';
-import { auctionProductTypes } from '@/config/sellerConfigData';
 
 interface DropdownOption {
   label: string;
   value: string;
 }
 
-interface JewelryItemWithAuction extends JewelryItem {
-  auction?: {
-    id: string;
-    productType: string;
-    startTime: string;
-    endTime: string;
-    isActive: boolean;
-  };
-}
 
 // --- Dropdown options (label-value format, same as AddJewelryForm) ---
 const DROPDOWN_OPTIONS = {
@@ -324,19 +313,14 @@ type JewelryFormState = {
   stones: Stone[];
   attributes: Attribute;
   images: File[];
-  // Auction fields
-  enableAuction: boolean;
-  productType: string;
-  startTime: string;
-  endTime: string;
 };
 
 type EditJewelryFormProps = {
-  initialData?: JewelryItemWithAuction;
+  initialData?: JewelryItem;
 };
 
 // Helper to normalize API data to form state
-function normalizeInitialData(data: JewelryItemWithAuction): JewelryFormState {
+function normalizeInitialData(data: JewelryItem): JewelryFormState {
   return {
     name: data?.name || '',
     skuCode: data?.skuCode || '',
@@ -371,11 +355,6 @@ function normalizeInitialData(data: JewelryItemWithAuction): JewelryFormState {
       is_adjustable: !!data.attributes.is_adjustable,
     } : { style: '', chain_type: '', clasp_type: '', length_cm: '', is_adjustable: false },
     images: [], // File[] for new uploads only
-    // Auction fields
-    enableAuction: false,
-    productType: 'jewelry',
-    startTime: '',
-    endTime: ''
   };
 }
 
@@ -388,11 +367,6 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
     stones: [{ type: '', shape: '', carat: '', color: '', clarity: '', cut: '', certification: '' }],
     attributes: { style: '', chain_type: '', clasp_type: '', length_cm: '', is_adjustable: false },
     images: [],
-    // Auction fields
-    enableAuction: false,
-    productType: 'jewelry',
-    startTime: '',
-    endTime: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -487,11 +461,6 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
           key !== 'id' &&
           key !== 'name' &&
           !/^image[1-6]$/.test(key) &&
-          // Exclude auction fields - they are handled separately
-          key !== 'enableAuction' &&
-          key !== 'productType' &&
-          key !== 'startTime' &&
-          key !== 'endTime' &&
           value !== undefined && value !== null && value !== ''
         ) {
           if (typeof value === 'boolean') {
@@ -539,22 +508,7 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
         throw new Error(response?.message || 'Failed to update jewelry');
       }
 
-      // If auction is enabled, create auction
-      if (form.enableAuction && form.productType && form.startTime && form.endTime) {
-        const auctionData = {
-          productId: String(initialData.id),
-          productType: form.productType as 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond',
-          startTime: new Date(form.startTime).toISOString(),
-          endTime: new Date(form.endTime).toISOString()
-        };
-
-        const auctionResponse = await auctionService.createAuction(auctionData, token);
-
-        if (!auctionResponse || auctionResponse.success === false) {
-          throw new Error(auctionResponse?.message || 'Failed to create auction');
-        }
-      }
-      toast.success('Jewelry product updated successfully!' + (form.enableAuction ? ' Auction created!' : ''));
+      toast.success('Jewelry product updated successfully!');
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update jewelry';
       toast.error(errorMessage);
@@ -772,96 +726,6 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
         </div>
       </section>
 
-      {/* Auction Section */}
-      <section className="bg-gray-50 p-4 rounded border">
-        <h4 className="font-medium text-gray-800 mb-2">Auction Configuration</h4>
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="enableAuction"
-              checked={form.enableAuction}
-              onChange={(e) => setForm(prev => ({ ...prev, enableAuction: e.target.checked }))}
-              className="rounded border-gray-300 text-primary focus:ring-primary"
-            />
-            <label htmlFor="enableAuction" className="text-sm font-medium">
-              Enable Auction for this Jewelry
-            </label>
-          </div>
-
-          {form.enableAuction && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 bg-card/50 border border-border/40 rounded-lg">
-              <div className="space-y-2">
-                <label htmlFor="productType" className="text-sm font-medium flex items-center gap-1 text-foreground/90">
-                  Product Type
-                  <span className="text-red-500 text-xs">*</span>
-                </label>
-                <select
-                  id="productType"
-                  value={form.productType}
-                  onChange={(e) => setForm(prev => ({ ...prev, productType: e.target.value }))}
-                  required
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <option value="">Select Product Type</option>
-                  {auctionProductTypes.map((type) => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="startTime" className="text-sm font-medium flex items-center gap-1 text-foreground/90">
-                  Auction Start Time
-                  <span className="text-red-500 text-xs">*</span>
-                </label>
-                <input
-                  type="datetime-local"
-                  id="startTime"
-                  value={form.startTime}
-                  onChange={(e) => setForm(prev => ({ ...prev, startTime: e.target.value }))}
-                  required
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 hover:border-primary/50"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="endTime" className="text-sm font-medium flex items-center gap-1 text-foreground/90">
-                  Auction End Time
-                  <span className="text-red-500 text-xs">*</span>
-                </label>
-                <input
-                  type="datetime-local"
-                  id="endTime"
-                  value={form.endTime}
-                  onChange={(e) => setForm(prev => ({ ...prev, endTime: e.target.value }))}
-                  required
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 hover:border-primary/50"
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Auction Data Section */}
-      {initialData?.auction && (
-        <section className="bg-card/50 border border-border/40 rounded-lg p-6 mb-4">
-          <div className="flex items-center gap-3 mb-4">
-            <h3 className="text-xl font-semibold text-foreground/90">Auction Details</h3>
-            <div className="flex-1 border-b border-border/40"></div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <div><span className="font-medium">Auction ID:</span> {initialData.auction.id}</div>
-            <div><span className="font-medium">Product Type:</span> {initialData.auction.productType}</div>
-            <div><span className="font-medium">Start Time:</span> {new Date(initialData.auction.startTime).toLocaleString()}</div>
-            <div><span className="font-medium">End Time:</span> {new Date(initialData.auction.endTime).toLocaleString()}</div>
-            <div><span className="font-medium">Is Active:</span> {initialData.auction.isActive ? 'Yes' : 'No'}</div>
-          </div>
-        </section>
-      )}
       {/* Submit Button */}
       <div className="flex justify-end gap-4 mt-4">
         <button type="reset" className="btn-secondary" onClick={() => setForm(initialData ? normalizeInitialData(initialData) : {
@@ -871,11 +735,6 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
           stones: [{ type: '', shape: '', carat: '', color: '', clarity: '', cut: '', certification: '' }],
           attributes: { style: '', chain_type: '', clasp_type: '', length_cm: '', is_adjustable: false },
           images: [],
-          // Auction fields
-          enableAuction: false,
-          productType: 'jewelry',
-          startTime: '',
-          endTime: ''
         })} disabled={submitting}>Cancel</button>
         <button type="submit" className="btn-primary" disabled={submitting}>{submitting ? 'Saving...' : 'Save Changes'}</button>
       </div>

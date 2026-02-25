@@ -60,16 +60,16 @@ export default function Navigation() {
         return [
           { href: '/seller/dashboard', label: 'Dashboard', icon: '🏠' },
           { href: '/seller/add-product', label: 'Add Product', icon: '➕' },
-          { href: '/seller/listings', label: 'My Listings', icon: '📋' },
+          { href: '/seller/products', label: 'My Listings', icon: '📋' },
           { href: '/seller/orders', label: 'Orders', icon: '📦' },
           { href: '/seller/stats', label: 'Analytics', icon: '📊' },
         ]
       default: // user
         return [
           { href: '/user', label: 'Home', icon: '🏠' },
-          { href: '/user/diamonds', label: 'Diamonds', icon: '💎' },
-          { href: '/user/gemstones', label: 'Gemstones', icon: '💍' },
-          { href: '/user/jewelries', label: 'Jewelry', icon: '👑' },
+          { href: '/products/diamonds', label: 'Diamonds', icon: '💎' },
+          { href: '/products/gemstones', label: 'Gemstones', icon: '💍' },
+          { href: '/products/jewelries', label: 'Jewelry', icon: '👑' },
           { href: '/user/cart', label: 'Cart', icon: '🛒' },
         ]
     }
@@ -89,7 +89,7 @@ export default function Navigation() {
               </svg>
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-amber-300 to-yellow-400 bg-clip-text text-transparent">
-              Ohana Gems
+              Gem World
             </span>
           </Link>
 

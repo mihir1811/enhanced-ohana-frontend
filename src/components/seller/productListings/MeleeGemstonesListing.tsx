@@ -71,7 +71,8 @@ const MeleeGemstonesListing = () => {
         <h2 className="text-xl font-bold">Melee Gemstone Parcels</h2>
         <div className="flex gap-2 items-center relative">
           <button
-            className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 transition"
+            className="cursor-pointer px-4 py-2 rounded font-semibold transition"
+            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
             onClick={() => setBulkModalOpen(true)}
             type="button"
           >
@@ -128,8 +129,17 @@ const MeleeGemstonesListing = () => {
       {!loading && !error && (
         <>
           {gemstones.length === 0 ? (
-            <div className="rounded-xl border p-8 text-center" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-              <p className="text-muted-foreground">No melee gemstone parcels found.</p>
+            <div className="rounded-xl border p-12 text-center" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <p className="text-lg font-medium mb-2" style={{ color: 'var(--foreground)' }}>No melee gemstone parcels yet</p>
+              <p className="text-sm mb-4" style={{ color: 'var(--muted-foreground)' }}>Add your first parcel with Bulk Upload to get started.</p>
+              <button
+                type="button"
+                className="px-4 py-2 rounded font-medium transition"
+                style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+                onClick={() => setBulkModalOpen(true)}
+              >
+                Bulk Upload
+              </button>
             </div>
           ) : view === 'list' ? (
             <div className="overflow-x-auto">
@@ -182,10 +192,22 @@ const MeleeGemstonesListing = () => {
                       <td className="px-4 py-2">{gem.shape}</td>
                       <td className="px-4 py-2">
                         <div className="flex gap-2">
-                          <button className="p-1 hover:text-blue-500 transition-colors" title="View">
+                          <button
+                            type="button"
+                            className="p-1 hover:opacity-80 transition-colors"
+                            style={{ color: 'var(--primary)' }}
+                            title="View"
+                            onClick={() => typeof window !== 'undefined' && window.open(`/gemstones/melee/${gem.id}`, '_blank')}
+                          >
                             <Eye className="w-5 h-5" />
                           </button>
-                          <button className="p-1 hover:text-green-500 transition-colors" title="Edit">
+                          <button
+                            type="button"
+                            className="p-1 hover:opacity-80 transition-colors"
+                            style={{ color: 'var(--primary)' }}
+                            title="Edit"
+                            onClick={() => typeof window !== 'undefined' && (window.location.href = `/seller/products/${gem.id}/edit`)}
+                          >
                             <Pencil className="w-5 h-5" />
                           </button>
                           <button 
@@ -208,9 +230,15 @@ const MeleeGemstonesListing = () => {
                 <GemstoneProductCard
                   key={gem.id}
                   product={gem}
+                  isMelee
                   onDelete={() => {
                     setGemstones((prev) => prev.filter((g) => g.id !== gem.id));
                     setTotal((prev) => Math.max(0, prev - 1));
+                  }}
+                  onUpdateProduct={(updatedProduct) => {
+                    setGemstones((prev) => prev.map((g) =>
+                      g.id === updatedProduct.id ? updatedProduct : g
+                    ));
                   }}
                 />
               ))}

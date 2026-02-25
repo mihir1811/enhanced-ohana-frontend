@@ -38,7 +38,7 @@ export default function ProductSearchPage({
 }: ProductSearchPageProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const initialCategory = searchParams.get('category') || 'single'
+  const initialCategory = searchParams ? (searchParams.get('category') || 'single') : 'single'
   
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
   const [selectedGemstones, setSelectedGemstones] = useState<string[]>([])
@@ -128,7 +128,7 @@ export default function ProductSearchPage({
   const handleRangeChange = (field: string, type: 'min' | 'max', value: number) => {
     setSearchForm(prev => {
       const currentValue = prev[field]
-      if (currentValue && typeof currentValue === 'object' && 'min' in currentValue && 'max' in currentValue) {
+      if (currentValue && typeof currentValue === 'object' && !Array.isArray(currentValue) && 'min' in (currentValue as PriceRange) && 'max' in (currentValue as PriceRange)) {
         return {
           ...prev,
           [field]: {
@@ -156,18 +156,18 @@ export default function ProductSearchPage({
     const params = new URLSearchParams()
     
     // Add filter parameters
-    Object.entries(searchForm).forEach(([key, value]) => {
-      if (Array.isArray(value) && value.length > 0) {
-        params.set(key, value.join(','))
-      } else if (typeof value === 'object' && value !== null) {
-        if ('min' in value && 'max' in value) {
-          params.set(`${key}Min`, value.min.toString())
-          params.set(`${key}Max`, value.max.toString())
+      Object.entries(searchForm).forEach(([key, value]) => {
+        if (Array.isArray(value) && value.length > 0) {
+          params.set(key, value.join(','))
+        } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+          if ('min' in (value as PriceRange) && 'max' in (value as PriceRange)) {
+            params.set(`${key}Min`, (value as PriceRange).min.toString())
+            params.set(`${key}Max`, (value as PriceRange).max.toString())
+          }
+        } else if (value && value !== '') {
+          params.set(key, value.toString())
         }
-      } else if (value && value !== '') {
-        params.set(key, value.toString())
-      }
-    })
+      })
 
     // Navigate to results page
     const resultsUrl = `/${productType}/${searchForm.category}?${params.toString()}`
@@ -213,15 +213,28 @@ export default function ProductSearchPage({
                 <button
                   key={option}
                   onClick={() => handleMultiSelect(filter.key, option)}
-                  className={`p-3 rounded-lg border text-sm transition-all ${
-                    Array.isArray(searchForm[filter.key]) && (searchForm[filter.key] as string[]).includes(option)
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  className="p-3 rounded-lg border text-sm transition-all"
                   style={{
-                    backgroundColor: Array.isArray(searchForm[filter.key]) && (searchForm[filter.key] as string[]).includes(option) ? 'var(--primary)/10' : 'var(--card)',
-                    borderColor: Array.isArray(searchForm[filter.key]) && (searchForm[filter.key] as string[]).includes(option) ? 'var(--primary)' : 'var(--border)',
-                    color: Array.isArray(searchForm[filter.key]) && (searchForm[filter.key] as string[]).includes(option) ? 'var(--primary)' : 'var(--foreground)'
+                    backgroundColor:
+                      Array.isArray(searchForm[filter.key]) &&
+                      (searchForm[filter.key] as string[]).includes(option)
+                        ? 'color-mix(in srgb, var(--primary) 10%, transparent)'
+                        : 'var(--card)',
+                    borderColor:
+                      Array.isArray(searchForm[filter.key]) &&
+                      (searchForm[filter.key] as string[]).includes(option)
+                        ? 'var(--primary)'
+                        : 'var(--border)',
+                    color:
+                      Array.isArray(searchForm[filter.key]) &&
+                      (searchForm[filter.key] as string[]).includes(option)
+                        ? 'var(--primary)'
+                        : 'var(--foreground)',
+                    boxShadow:
+                      Array.isArray(searchForm[filter.key]) &&
+                      (searchForm[filter.key] as string[]).includes(option)
+                        ? '0 6px 18px color-mix(in srgb, var(--primary) 18%, transparent)'
+                        : 'none'
                   }}
                 >
                   {option}
@@ -247,7 +260,7 @@ export default function ProductSearchPage({
                   max={filter.max}
                   value={(searchForm[filter.key] as PriceRange)?.min || filter.min || 0}
                   onChange={(e) => handleRangeChange(filter.key, 'min', parseFloat(e.target.value) || filter.min || 0)}
-                  className="w-full p-3 border rounded-lg"
+                  className="w-full p-3 border rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                 />
               </div>
@@ -260,7 +273,7 @@ export default function ProductSearchPage({
                   max={filter.max}
                   value={(searchForm[filter.key] as PriceRange)?.max || filter.max || 100}
                   onChange={(e) => handleRangeChange(filter.key, 'max', parseFloat(e.target.value) || filter.max || 100)}
-                  className="w-full p-3 border rounded-lg"
+                  className="w-full p-3 border rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                 />
               </div>
@@ -274,7 +287,7 @@ export default function ProductSearchPage({
   }
 
   // Gemstone types data - only including gemstones with available images
-  const gemstoneTypes = [
+  const gemstoneTypes = useMemo(() => [
     { title: "Alexandrite", img: "/images/gemstones/Alexandrite.png", alt: "Alexandrite gemstone" },
     { title: "Amber", img: "/images/gemstones/Amber.png", alt: "Amber gemstone" },
     { title: "Amethyst", img: "/images/gemstones/Amethyst.png", alt: "Amethyst gemstone" },
@@ -292,7 +305,7 @@ export default function ProductSearchPage({
     { title: "Sunstone", img: "/images/gemstones/Sunstone.png", alt: "Sunstone gemstone" },
     { title: "Tiger Eye", img: "/images/gemstones/Tiger Eye.png", alt: "Tiger Eye gemstone" },
     { title: "Zircon", img: "/images/gemstones/Zircon.png", alt: "Zircon gemstone" }
-  ]
+  ], [])
 
   const handleGemstoneSelect = (gemstone: string) => {
     setSelectedGemstones(prev => {
@@ -390,14 +403,18 @@ export default function ProductSearchPage({
                 <button
                   key={category}
                   onClick={() => handleCategoryChange(category)}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    searchForm.category === category
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  className="p-4 rounded-lg border-2 transition-all"
                   style={{
-                    backgroundColor: searchForm.category === category ? 'var(--primary)/10' : 'var(--card)',
-                    borderColor: searchForm.category === category ? 'var(--primary)' : 'var(--border)'
+                    backgroundColor:
+                      searchForm.category === category
+                        ? 'color-mix(in srgb, var(--primary) 10%, transparent)'
+                        : 'var(--card)',
+                    borderColor:
+                      searchForm.category === category ? 'var(--primary)' : 'var(--border)',
+                    boxShadow:
+                      searchForm.category === category
+                        ? '0 8px 22px color-mix(in srgb, var(--primary) 22%, transparent)'
+                        : 'none'
                   }}
                 >
                   <div className="font-medium capitalize" style={{ color: 'var(--foreground)' }}>
@@ -420,7 +437,7 @@ export default function ProductSearchPage({
                   type="number"
                   value={(searchForm.priceRange as PriceRange)?.min || 0}
                   onChange={(e) => handleRangeChange('priceRange', 'min', parseInt(e.target.value) || 0)}
-                  className="w-full p-3 border rounded-lg"
+                  className="w-full p-3 border rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                 />
               </div>
@@ -430,7 +447,7 @@ export default function ProductSearchPage({
                   type="number"
                   value={(searchForm.priceRange as PriceRange)?.max || 0}
                   onChange={(e) => handleRangeChange('priceRange', 'max', parseInt(e.target.value) || 0)}
-                  className="w-full p-3 border rounded-lg"
+                  className="w-full p-3 border rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                 />
               </div>
@@ -477,12 +494,16 @@ export default function ProductSearchPage({
             </div>
           )}
 
-          {/* Action Buttons */}
           <div className="flex flex-col md:flex-row gap-4 mt-8 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
             <button
               onClick={handleSearch}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-medium text-lg transition-colors flex items-center justify-center"
-              style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+              className="flex-1 px-8 py-4 rounded-lg font-medium text-lg transition-colors flex items-center justify-center"
+              style={{
+                backgroundImage:
+                  'linear-gradient(to right, var(--primary), color-mix(in srgb, var(--primary) 72%, var(--chart-3) 28%))',
+                color: 'var(--primary-foreground)',
+                boxShadow: '0 18px 45px color-mix(in srgb, var(--primary) 30%, transparent)'
+              }}
             >
               <Search className="w-5 h-5 mr-2" />
               Find {config.name}

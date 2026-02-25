@@ -155,12 +155,24 @@ const BullionDetailsPage: React.FC<BullionDetailsPageProps> = ({ bullion }) => {
           <div>
             <div className="flex items-center gap-2 mb-4">
               {bullion.availability && (
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                <span 
+                  className="px-3 py-1 rounded-full text-xs font-medium"
+                  style={{ 
+                    backgroundColor: 'color-mix(in srgb, #22c55e 15%, transparent)', 
+                    color: '#16a34a' 
+                  }}
+                >
                   {bullion.availability}
                 </span>
               )}
               {bullion.metalType && (
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                <span 
+                  className="px-3 py-1 rounded-full text-xs font-medium"
+                  style={{ 
+                    backgroundColor: 'color-mix(in srgb, var(--status-warning) 15%, transparent)', 
+                    color: 'var(--status-warning)' 
+                  }}
+                >
                   {bullion.metalType.name}
                 </span>
               )}
@@ -213,7 +225,7 @@ const BullionDetailsPage: React.FC<BullionDetailsPageProps> = ({ bullion }) => {
           {/* Key Features Grid */}
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 rounded-xl border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-              <Scale className="w-6 h-6 mb-2 text-amber-500" />
+              <Scale className="w-6 h-6 mb-2" style={{ color: 'var(--status-warning)' }} />
               <div className="text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>Weight</div>
               <div className="font-semibold" style={{ color: 'var(--foreground)' }}>{bullion.metalWeight}</div>
             </div>
@@ -243,12 +255,11 @@ const BullionDetailsPage: React.FC<BullionDetailsPageProps> = ({ bullion }) => {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-8 py-4 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-              style={activeTab === tab ? { borderColor: 'var(--primary)', color: 'var(--primary)' } : { color: 'var(--muted-foreground)' }}
+              className="px-8 py-4 text-sm font-medium border-b-2 transition-all"
+              style={{ 
+                borderColor: activeTab === tab ? 'var(--status-warning)' : 'transparent', 
+                color: activeTab === tab ? 'var(--status-warning)' : 'var(--muted-foreground)' 
+              }}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>

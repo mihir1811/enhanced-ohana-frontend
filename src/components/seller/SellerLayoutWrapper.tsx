@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import SellerSidebar from './SellerSidebar'
 import SellerHeader from './SellerHeader'
+import SellerBreadcrumbs from './SellerBreadcrumbs'
 import { PageLoader } from './Loader'
 import { LoadingProvider } from '@/contexts/LoadingContext'
 
@@ -43,7 +44,7 @@ export default function SellerLayoutWrapper({ children }: SellerLayoutWrapperPro
           </div>
           <div className="text-center">
             <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>
-              Ohana Gems
+              Gem World
             </h2>
             <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
               Loading seller dashboard...
@@ -64,13 +65,14 @@ export default function SellerLayoutWrapper({ children }: SellerLayoutWrapperPro
         />
         
         {/* Main Content Area */}
-        <div className="lg:pl-72">
+        <div className="lg:pl-20">
           {/* Header */}
           <SellerHeader setSidebarOpen={setSidebarOpen} />
           
           {/* Page Content */}
           <main className="px-4 py-8 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-7xl">
+              <SellerBreadcrumbs />
               {children}
             </div>
           </main>

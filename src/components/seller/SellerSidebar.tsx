@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { X, Menu } from 'lucide-react'
@@ -78,6 +79,7 @@ const navigation = [
 
 export default function SellerSidebar({ sidebarOpen, setSidebarOpen }: SellerSidebarProps) {
   const pathname = usePathname()
+  const [isDesktopHovered, setIsDesktopHovered] = useState(false)
 
   return (
     <>
@@ -91,24 +93,26 @@ export default function SellerSidebar({ sidebarOpen, setSidebarOpen }: SellerSid
           <Link href="/seller/dashboard" className="flex items-center space-x-3">
             <div 
               className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: 'var(--sidebar-primary)' }}
+              style={{ 
+                backgroundColor: 'var(--sidebar-primary)',
+                color: 'var(--sidebar-primary-foreground)'
+              }}
             >
               <svg 
                 className="w-5 h-5" 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
-                style={{ color: 'var(--sidebar-primary-foreground)' }}
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
               </svg>
             </div>
             <div>
               <h1 
-                className="text-lg font-bold"
+                className="text-lg font-semibold"
                 style={{ color: 'var(--sidebar-foreground)' }}
               >
-                Ohana Gems
+                Gem World
               </h1>
             </div>
           </Link>
@@ -122,19 +126,23 @@ export default function SellerSidebar({ sidebarOpen, setSidebarOpen }: SellerSid
                 <li key={item.name}>
                   <Link
                     href={item.href}
-                    className={`group flex items-center gap-x-3 rounded-lg p-3 text-sm font-medium transition-all duration-200 ${
-                      isActive 
-                        ? 'shadow-sm' 
-                        : 'hover:bg-opacity-10'
-                    }`}
+                    className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
                     style={{
                       backgroundColor: isActive ? 'var(--sidebar-accent)' : 'transparent',
                       color: isActive ? 'var(--sidebar-accent-foreground)' : 'var(--sidebar-foreground)',
                     }}
                     onClick={() => setSidebarOpen(false)}
                   >
-                    {item.icon}
-                    {item.name}
+                    <div
+                      className="flex h-8 w-8 items-center justify-center rounded-lg border bg-background transition-colors"
+                      style={{
+                        borderColor: 'var(--sidebar-border)',
+                        color: isActive ? 'var(--sidebar-accent-foreground)' : 'var(--sidebar-foreground)',
+                      }}
+                    >
+                      {item.icon}
+                    </div>
+                    <span className="truncate">{item.name}</span>
                   </Link>
                 </li>
               )
@@ -143,78 +151,99 @@ export default function SellerSidebar({ sidebarOpen, setSidebarOpen }: SellerSid
         </nav>
       </Drawer>
 
-      {/* Desktop sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
+      {/* Desktop sidebar - collapses to icons and expands on hover */}
+      <div
+        className={`hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:flex-col transition-[width] duration-200 ${
+          isDesktopHovered ? 'lg:w-64' : 'lg:w-20'
+        }`}
+        onMouseEnter={() => setIsDesktopHovered(true)}
+        onMouseLeave={() => setIsDesktopHovered(false)}
+      >
         <div 
-          className="flex grow flex-col gap-y-5 overflow-y-auto border-r px-6 pb-4"
+          className="flex grow flex-col gap-y-5 overflow-y-auto border-r px-3 pb-4"
           style={{ 
             backgroundColor: 'var(--sidebar)',
-            borderColor: 'var(--sidebar-border)'
+            borderColor: 'var(--sidebar-border)',
           }}
         >
-          <div className="flex h-16 shrink-0 items-center">
-            <Link href="/seller/dashboard" className="flex items-center space-x-3">
+          {/* Logo / brand */}
+          <div className="flex h-16 shrink-0 items-center px-1">
+            <Link
+              href="/seller/dashboard"
+              className="flex items-center gap-3"
+            >
               <div 
-                className="w-10 h-10 rounded-xl flex items-center justify-center"
-                style={{ backgroundColor: 'var(--sidebar-primary)' }}
+                className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
+                style={{ 
+                  backgroundColor: 'var(--sidebar-primary)',
+                  color: 'var(--sidebar-primary-foreground)'
+                }}
               >
                 <svg 
                   className="w-6 h-6" 
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24"
-                  style={{ color: 'var(--sidebar-primary-foreground)' }}
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
                 </svg>
               </div>
-              <div>
-                <h1 
-                  className="text-xl font-bold"
-                  style={{ color: 'var(--sidebar-foreground)' }}
-                >
-                  Ohana Gems
-                </h1>
-                <p 
-                  className="text-sm"
-                  style={{ color: 'var(--muted-foreground)' }}
-                >
-                  Seller Dashboard
-                </p>
-              </div>
+              {/* Show text only when expanded */}
+              {isDesktopHovered && (
+                <div className="flex flex-col">
+                  <span 
+                    className="text-sm font-semibold"
+                    style={{ color: 'var(--sidebar-foreground)' }}
+                  >
+                    Gem World
+                  </span>
+                  <span 
+                    className="text-xs"
+                    style={{ color: 'var(--muted-foreground)' }}
+                  >
+                    Seller Dashboard
+                  </span>
+                </div>
+              )}
             </Link>
           </div>
           
-          <nav className="flex flex-1 flex-col">
-            <ul role="list" className="flex flex-1 flex-col gap-y-7">
-              <li>
-                <ul role="list" className="-mx-2 space-y-1">
-                  {navigation.map((item) => {
-                    const isActive = pathname === item.href
-                    return (
-                      <li key={item.name}>
-                        <Link
-                          href={item.href}
-                          className={`group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200 ${
-                            isActive 
-                              ? 'shadow-sm transform scale-[1.02]' 
-                              : 'hover:bg-opacity-10 hover:scale-[1.01]'
-                          }`}
-                          style={{
-                            backgroundColor: isActive ? 'var(--sidebar-accent)' : 'transparent',
-                            color: isActive ? 'var(--sidebar-accent-foreground)' : 'var(--sidebar-foreground)',
-                          }}
-                        >
-                          <div className={`transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`}>
-                            {item.icon}
-                          </div>
+          {/* Nav */}
+          <nav className="flex flex-1 flex-col mt-2">
+            <ul role="list" className="flex flex-1 flex-col gap-y-4">
+              {navigation.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <li key={item.name}>
+                    <Link
+                      href={item.href}
+                      className={`group flex items-center rounded-lg px-2 py-2 text-sm leading-6 font-medium transition-colors ${
+                        isDesktopHovered ? 'justify-start gap-3' : 'justify-center'
+                      }`}
+                      style={{
+                        backgroundColor: isActive ? 'var(--sidebar-accent)' : 'transparent',
+                        color: isActive ? 'var(--sidebar-accent-foreground)' : 'var(--sidebar-foreground)',
+                      }}
+                    >
+                      <div
+                        className="flex h-8 w-8 items-center justify-center rounded-lg border bg-background transition-colors"
+                        style={{
+                          borderColor: 'var(--sidebar-border)',
+                          color: isActive ? 'var(--sidebar-accent-foreground)' : 'var(--sidebar-foreground)',
+                        }}
+                      >
+                        {item.icon}
+                      </div>
+                      {/* Label: only render when expanded so collapsed state is clean icons-only */}
+                      {isDesktopHovered && (
+                        <span className="truncate">
                           {item.name}
-                        </Link>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </li>
+                        </span>
+                      )}
+                    </Link>
+                  </li>
+                )
+              })}
             </ul>
           </nav>
         </div>

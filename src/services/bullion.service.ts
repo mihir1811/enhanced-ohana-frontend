@@ -45,6 +45,7 @@ export interface BullionQueryParams {
   limit?: number;
   sort?: string;
   search?: string;
+  sellerId?: string;
   priceMin?: number;
   priceMax?: number;
   metalType?: string[];
@@ -150,6 +151,7 @@ class BullionService {
     if (params.limit) queryParams.append('limit', params.limit.toString());
     if (params.sort) queryParams.append('sort', params.sort);
     if (params.search) queryParams.append('search', params.search);
+    if (params.sellerId) queryParams.append('sellerId', params.sellerId);
 
     // Filters
     if (params.priceMin !== undefined) queryParams.append('filters[price][gte]', params.priceMin.toString());

@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import BulkUploadModal from './BulkUploadModal';
 import { bullionService, BullionProduct } from '@/services/bullion.service';
 import BullionProductCard from './BullionProductCard';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { toast } from 'react-hot-toast';
+import { useSelector } from 'react-redux';
+
+interface RootState {
+  seller: { profile?: { id: string } };
+}
 
 const BullionListing = () => {
+  const router = useRouter();
+  const sellerId = useSelector((state: RootState) => state.seller.profile?.id) || '';
   const [bullions, setBullions] = useState<BullionProduct[]>([]);
   const [view, setView] = useState<'list' | 'grid'>('grid');
   const [loading, setLoading] = useState(true);
@@ -27,7 +34,7 @@ const BullionListing = () => {
 
   useEffect(() => {
     setLoading(true);
-    bullionService.getBullions({ page, limit })
+    bullionService.getBullions({ page, limit, ...(sellerId && { sellerId }) })
       .then((res) => {
         const topLevel = res as unknown;
 
@@ -95,7 +102,7 @@ const BullionListing = () => {
         setBullions([]);
       })
       .finally(() => setLoading(false));
-  }, [page, limit, refreshKey]);
+  }, [page, limit, refreshKey, sellerId]);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
@@ -106,7 +113,8 @@ const BullionListing = () => {
         <div className="flex gap-2 items-center relative">
           {/* Bulk Upload Button */}
           <button
-            className="px-4 py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 transition cursor-pointer"
+            className="px-4 py-2 rounded font-semibold transition cursor-pointer"
+            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
             onClick={() => setBulkModalOpen(true)}
             type="button"
           >
@@ -163,7 +171,18 @@ const BullionListing = () => {
       {!loading && !error && (
         <>
           {bullions.length === 0 ? (
-            <div>No bullion products found.</div>
+            <div className="rounded-xl border p-12 text-center" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <p className="text-lg font-medium mb-2" style={{ color: 'var(--foreground)' }}>No bullion products yet</p>
+              <p className="text-sm mb-4" style={{ color: 'var(--muted-foreground)' }}>Add your first bullion item with Bulk Upload to get started.</p>
+              <button
+                type="button"
+                className="px-4 py-2 rounded font-medium transition"
+                style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+                onClick={() => setBulkModalOpen(true)}
+              >
+                Bulk Upload
+              </button>
+            </div>
           ) : view === 'list' ? (
             <div className="overflow-x-auto">
               <table
@@ -201,10 +220,7 @@ const BullionListing = () => {
                             type="button"
                             className="inline-flex items-center justify-center w-8 h-8 rounded-full border text-xs"
                             style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
-                            onClick={() => {
-                              // TODO: View logic
-                              console.log('View', bullion.id);
-                            }}
+                            onClick={() => typeof window !== 'undefined' && window.open(`/bullions/${bullion.id}`, '_blank')}
                             aria-label="View product"
                           >
                             <Eye className="w-4 h-4" />
@@ -213,9 +229,7 @@ const BullionListing = () => {
                             type="button"
                             className="inline-flex items-center justify-center w-8 h-8 rounded-full border text-xs"
                             style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
-                            onClick={() => {
-                              router.push(`/seller/products/${bullion.id}/edit`);
-                            }}
+                            onClick={() => router.push(`/seller/products/${bullion.id}/edit`)}
                             aria-label="Edit product"
                           >
                             <Pencil className="w-4 h-4" />

@@ -66,9 +66,9 @@ export default function MobileSidebar({
         { href: '/jewelry', label: 'Jewelry', icon: '📿' },
         { href: '/watches', label: 'Watches', icon: '⌚' },
         { href: '/auctions', label: 'Auctions', icon: '🔨' },
-        { href: '/lab-grown-diamonds', label: 'Lab Grown Diamonds', icon: '⚗️' },
+        { href: '/diamonds?diamondType=lab-grown', label: 'Lab Grown Diamonds', icon: '⚗️' },
         { href: '/bullions', label: 'Bullions', icon: '🥇' },
-        { href: '/experience', label: 'Experience', icon: '✨' }
+        { href: '/user', label: 'My Dashboard', icon: '✨' }
       ]
     },
     {
@@ -78,7 +78,7 @@ export default function MobileSidebar({
         { href: '/user/profile', label: 'My Profile', icon: '👤' },
         { href: '/user/orders', label: 'Order History', icon: '📦' },
         { href: '/user/wishlist', label: 'My Wishlist', icon: '❤️' },
-        { href: '/user/addresses', label: 'Saved Addresses', icon: '📍' }
+        { href: '/user/profile', label: 'Saved Addresses', icon: '📍' }
       ]
     }
   ], [])
@@ -92,26 +92,26 @@ export default function MobileSidebar({
       width="w-80"
       title={
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg backdrop-blur-sm" style={{ borderRadius: 'var(--radius-lg)', backgroundColor: 'var(--sidebar-accent)', color: 'var(--sidebar-primary-foreground)' }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg backdrop-blur-sm" style={{ borderRadius: 'var(--radius-lg)', background: 'linear-gradient(135deg, var(--status-warning), color-mix(in srgb, var(--status-warning) 70%, black))', color: 'white' }}>
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2L3.09 8.26L12 14L20.91 8.26L12 2Z"/>
             </svg>
           </div>
           <div>
-            <h2 className="font-bold text-lg">Ohana Diamonds</h2>
-            <p className="text-xs opacity-75">Diamond & Jewelry Marketplace</p>
+            <h2 className="font-bold text-lg" style={{ color: 'var(--foreground)' }}>Gem World</h2>
+            <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Diamond & Jewelry Marketplace</p>
           </div>
         </div>
       }
       footer={
         <div className="space-y-4">
           {/* Theme Switcher Section */}
-          <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--sidebar-accent)', borderRadius: 'var(--radius-xl)' }}>
+          <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--muted)', borderRadius: 'var(--radius-xl)' }}>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div>
-                  <p className="text-sm font-medium">Theme</p>
-                  <p className="text-xs opacity-60">Switch appearance</p>
+                  <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>Theme</p>
+                  <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Switch appearance</p>
                 </div>
               </div>
               <ThemeSwitcher />
@@ -119,9 +119,22 @@ export default function MobileSidebar({
           </div>
 
           {/* Settings Link */}
-          <Link href="/settings" onClick={handleLinkClick} className="group flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] hover:bg-accent/50 border border-border" style={{ borderRadius: 'var(--radius-xl)' }}>
+          <Link 
+            href="/user/profile" 
+            onClick={handleLinkClick} 
+            className="group flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 border" 
+            style={{ borderRadius: 'var(--radius-xl)', borderColor: 'var(--border)', backgroundColor: 'var(--background)', color: 'var(--foreground)' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--accent)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--background)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
             <span className="font-medium">Settings</span>
-            <svg className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--status-warning)' }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </Link>
@@ -130,12 +143,24 @@ export default function MobileSidebar({
           <button
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="group w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] text-left border disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100" 
+            className="group w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 text-left border disabled:opacity-50 disabled:cursor-not-allowed" 
             style={{ 
-              color: 'var(--destructive-foreground)', 
-              backgroundColor: 'var(--destructive)',
+              color: 'var(--destructive)', 
+              backgroundColor: 'color-mix(in srgb, var(--destructive) 10%, transparent)',
               borderRadius: 'var(--radius-xl)',
-              borderColor: 'var(--destructive)'
+              borderColor: 'color-mix(in srgb, var(--destructive) 20%, transparent)'
+            }}
+            onMouseEnter={(e) => {
+              if (!isLoggingOut) {
+                e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--destructive) 15%, transparent)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isLoggingOut) {
+                e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--destructive) 10%, transparent)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }
             }}
           >
             <span className="font-medium">
@@ -152,8 +177,8 @@ export default function MobileSidebar({
 
           {/* App Version */}
           <div className="text-center">
-            <p className="text-xs opacity-60">
-              Ohana Diamonds v1.0.0
+            <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+              Gem World v1.0.0
             </p>
           </div>
         </div>
@@ -169,12 +194,23 @@ export default function MobileSidebar({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search diamonds, gemstones, jewelry..."
-                className="w-full px-4 py-3 pl-11 border rounded-xl focus:ring-2 focus:border-transparent transition-all duration-300 shadow-sm text-sm bg-background"
+                className="w-full px-4 py-3 pl-11 border transition-all duration-300 shadow-sm text-sm outline-none"
                 style={{ 
-                  borderRadius: 'var(--radius-xl)'
+                  borderRadius: 'var(--radius-xl)',
+                  backgroundColor: 'var(--input)',
+                  borderColor: 'var(--border)',
+                  color: 'var(--foreground)'
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--status-warning)';
+                  e.currentTarget.style.boxShadow = '0 0 0 2px color-mix(in srgb, var(--status-warning) 20%, transparent)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--border)';
+                  e.currentTarget.style.boxShadow = 'none';
                 }}
               />
-              <svg className="absolute left-3.5 top-3.5 w-4 h-4 transition-colors opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="absolute left-3.5 top-3.5 w-4 h-4 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--muted-foreground)' }}>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               {searchQuery && (
@@ -183,6 +219,7 @@ export default function MobileSidebar({
                   onClick={clearSearch}
                   className="absolute right-3 top-3.5 w-5 h-5 rounded-lg transition-colors hover:bg-accent/50"
                   aria-label="Clear search"
+                  style={{ color: 'var(--muted-foreground)' }}
                 >
                   <svg className="w-4 h-4 m-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -194,15 +231,26 @@ export default function MobileSidebar({
             {/* Recent Searches */}
             {recentSearches.length > 0 && (
               <div className="mb-4">
-                <h4 className="text-xs font-semibold uppercase tracking-wider mb-2 px-1 opacity-60">Recent Searches</h4>
+                <h4 className="text-xs font-semibold uppercase tracking-wider mb-2 px-1 opacity-60" style={{ color: 'var(--muted-foreground)' }}>Recent Searches</h4>
                 <div className="flex flex-wrap gap-2">
                   {recentSearches.slice(0, 3).map((search, index) => (
                     <button
                       key={index}
                       onClick={() => handleSearchSuggestion(search)}
-                      className="px-3 py-1 text-xs rounded-full border transition-all duration-200 hover:scale-105 bg-background"
+                      className="px-3 py-1 text-xs border transition-all duration-200 hover:scale-105"
                       style={{ 
-                        borderRadius: 'var(--radius-full)'
+                        borderRadius: 'var(--radius-full)',
+                        backgroundColor: 'var(--background)',
+                        borderColor: 'var(--border)',
+                        color: 'var(--foreground)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--status-warning)';
+                        e.currentTarget.style.color = 'var(--status-warning)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--border)';
+                        e.currentTarget.style.color = 'var(--foreground)';
                       }}
                     >
                       {search}
@@ -220,8 +268,11 @@ export default function MobileSidebar({
             <div key={section.id}>
               <button
                 onClick={() => setActiveSection(activeSection === section.id ? null : section.id)}
-                className="flex items-center justify-between w-full text-left mb-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-accent/50"
-                style={{ backgroundColor: activeSection === section.id ? 'var(--sidebar-accent)' : 'transparent' }}
+                className="flex items-center justify-between w-full text-left mb-3 px-3 py-2 rounded-lg transition-all duration-200"
+                style={{ 
+                  backgroundColor: activeSection === section.id ? 'var(--accent)' : 'transparent',
+                  color: activeSection === section.id ? 'var(--status-warning)' : 'var(--foreground)'
+                }}
               >
                 <h3 className="text-xs font-semibold uppercase tracking-wider opacity-60">
                   {section.title}
@@ -242,13 +293,29 @@ export default function MobileSidebar({
                     key={item.href}
                     href={item.href} 
                     onClick={handleLinkClick} 
-                    className="group flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] hover:bg-accent/50 border border-transparent hover:border-border" 
-                    style={{ borderRadius: 'var(--radius-xl)', backgroundColor: pathname && pathname.startsWith(item.href) ? 'var(--sidebar-accent)' : 'transparent' }}
+                    className="group flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 border border-transparent" 
+                    style={{ 
+                      borderRadius: 'var(--radius-xl)', 
+                      backgroundColor: pathname && pathname.startsWith(item.href) ? 'var(--accent)' : 'transparent',
+                      color: pathname && pathname.startsWith(item.href) ? 'var(--status-warning)' : 'var(--foreground)'
+                    }}
                     aria-current={pathname && pathname.startsWith(item.href) ? 'page' : undefined}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--accent)';
+                      e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--status-warning) 20%, transparent)';
+                      e.currentTarget.style.transform = 'translateX(4px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!(pathname && pathname.startsWith(item.href))) {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.borderColor = 'transparent';
+                      }
+                      e.currentTarget.style.transform = 'translateX(0)';
+                    }}
                   >
                     <span className="text-lg opacity-80">{item.icon}</span>
                     <span className="font-medium flex-1">{item.label}</span>
-                    <svg className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--status-warning)' }}>
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </Link>

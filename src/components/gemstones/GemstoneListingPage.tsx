@@ -7,6 +7,7 @@ import GemstoneFilters, { type GemstoneFilterValues } from './GemstoneFilters';
 import { ApiResponse } from '@/services/api';
 import * as ShapeIcons from '../../../public/icons';
 import { ChevronDown, X, Filter } from 'lucide-react';
+import { SECTION_WIDTH } from '@/lib/constants';
 
 interface GemstoneSearchParams {
   [key: string]: string | number | boolean | string[] | { min: number; max: number } | undefined;
@@ -209,19 +210,12 @@ const GemstoneListingPage: React.FC<GemstoneListingPageProps> = ({
         setGemstones([]);
       })
       .finally(() => setLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(filters), currentPage, pageSize, gemstoneType]);
+  }, [filters, currentPage, pageSize, gemstoneType]);
 
   const handleFiltersChange = (newFilters: GemstoneFilterValues) => {
     setFilters(newFilters);
     setCurrentPage(1); // Reset to first page on filter change
   };
-
-  // Commented out unused handleResetFilters function - uncomment if needed
-  // const handleResetFilters = () => {
-  //   setFilters(getDefaultFilterValues(gemstoneType));
-  //   setCurrentPage(1);
-  // };
 
   // Mobile filter sidebar state with animation
   const [showFilters, setShowFilters] = useState(false);
@@ -275,20 +269,21 @@ const GemstoneListingPage: React.FC<GemstoneListingPageProps> = ({
         }
       `}</style>
       <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
-      <div className="max-w-[1400px] mx-auto px-4 py-12">
+      <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 py-12`}>
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Desktop Sidebar */}
           <div className="hidden lg:block w-80 shrink-0">
-            <div className="bg-white/80 dark:bg-slate-900/80 rounded-2xl shadow-sm border p-6 backdrop-blur-xl sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto custom-scrollbar" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100 dark:border-gray-800">
+            <div className="rounded-2xl shadow-sm border p-6 backdrop-blur-xl sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto custom-scrollbar" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <div className="flex items-center justify-between mb-6 pb-4 border-b" style={{ borderColor: 'var(--border)' }}>
                 <div className="flex items-center gap-2">
-                  <Filter className="w-5 h-5 text-amber-500" />
+                  <Filter className="w-5 h-5" style={{ color: 'var(--status-warning)' }} />
                   <h2 className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>Filters</h2>
                 </div>
                 {totalAppliedFilters > 0 && (
                   <button
                     onClick={() => handleFiltersChange(getDefaultFilterValues(gemstoneType))}
-                    className="text-xs font-medium text-red-500 hover:text-red-600 transition-colors"
+                    className="text-xs font-medium hover:opacity-80 transition-colors"
+                    style={{ color: 'var(--destructive)' }}
                   >
                     Reset All
                   </button>
@@ -309,8 +304,8 @@ const GemstoneListingPage: React.FC<GemstoneListingPageProps> = ({
             {/* Header / Title */}
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                  <Filter className="w-6 h-6 text-amber-500" />
+                <div className="p-2 rounded-lg border" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--status-warning) 20%, transparent)' }}>
+                  <Filter className="w-6 h-6" style={{ color: 'var(--status-warning)' }} />
                 </div>
                 <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--foreground)' }}>{title}</h1>
               </div>
@@ -318,12 +313,15 @@ const GemstoneListingPage: React.FC<GemstoneListingPageProps> = ({
               {/* Mobile Filter Toggle */}
               <button
                 onClick={() => setShowFilters(true)}
-                className="lg:hidden flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl shadow-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition-all"
+                className="lg:hidden flex items-center gap-2 px-4 py-2 border rounded-xl shadow-sm transition-all"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--accent)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--card)'}
               >
-                <Filter className="w-4 h-4 text-amber-500" />
-                <span className="text-sm font-semibold">Filters</span>
+                <Filter className="w-4 h-4" style={{ color: 'var(--status-warning)' }} />
+                <span className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Filters</span>
                 {totalAppliedFilters > 0 && (
-                  <span className="flex items-center justify-center w-5 h-5 text-[10px] font-bold bg-amber-500 text-white rounded-full">
+                  <span className="flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white rounded-full" style={{ backgroundColor: 'var(--status-warning)' }}>
                     {totalAppliedFilters}
                   </span>
                 )}
@@ -331,7 +329,7 @@ const GemstoneListingPage: React.FC<GemstoneListingPageProps> = ({
             </div>
 
             {/* Results Grid */}
-            <div className="bg-white/80 dark:bg-slate-900/80 rounded-2xl shadow-sm border p-6 backdrop-blur-xl" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+            <div className="rounded-2xl shadow-sm border p-6 backdrop-blur-xl" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
               <GemstoneResults
                 gemstones={gemstones}
                 loading={loading}
@@ -374,20 +372,26 @@ const GemstoneListingPage: React.FC<GemstoneListingPageProps> = ({
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>Filters</h2>
                 <button
-                  className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-all"
+                  className="p-2 rounded-full transition-all"
+                  style={{ color: 'var(--foreground)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--accent)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                   onClick={() => setShowFilters(false)}
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
               {totalAppliedFilters > 0 && (
-                <div className="flex items-center justify-between bg-amber-50 dark:bg-amber-900/20 p-3 rounded-xl border border-amber-100 dark:border-amber-900/30">
-                  <span className="text-sm font-medium text-amber-800 dark:text-amber-400">
+                <div className="flex items-center justify-between p-3 rounded-xl border" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 8%, transparent)', borderColor: 'color-mix(in srgb, var(--status-warning) 20%, transparent)' }}>
+                  <span className="text-sm font-medium" style={{ color: 'var(--status-warning)' }}>
                     {totalAppliedFilters} filters applied
                   </span>
                   <button
                     onClick={() => handleFiltersChange(getDefaultFilterValues(gemstoneType))}
-                    className="text-xs font-bold text-amber-600 dark:text-amber-500 uppercase tracking-wider"
+                    className="text-xs font-bold uppercase tracking-wider transition-colors"
+                    style={{ color: 'var(--status-warning)' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'color-mix(in srgb, var(--status-warning) 80%, black)'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--status-warning)'}
                   >
                     Clear All
                   </button>
@@ -407,7 +411,13 @@ const GemstoneListingPage: React.FC<GemstoneListingPageProps> = ({
 
             <div className="border-t p-6 sticky bottom-0" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
               <button
-                className="w-full py-4 rounded-xl bg-amber-500 text-white font-bold shadow-lg shadow-amber-500/30 hover:bg-amber-600 transition-all active:scale-[0.98]"
+                className="w-full py-4 rounded-xl text-white font-bold shadow-lg transition-all active:scale-[0.98]"
+                style={{ 
+                  backgroundColor: 'var(--status-warning)',
+                  boxShadow: '0 10px 25px -5px color-mix(in srgb, var(--status-warning) 40%, transparent)'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--status-warning) 80%, black)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--status-warning)'}
                 onClick={() => setShowFilters(false)}
               >
                 Show Results

@@ -96,9 +96,12 @@ export const auctionService = {
     return api.post(`/auction/end/${id}`, {}, token);
   },
 
-  // Select auction winner
+  // Select auction winner (backend expects auctionId as number)
   selectWinner: async (auctionId: string, bidderId: string, token: string) => {
-    return api.post('/auction/select-winner', { auctionId, bidderId }, token);
+    return api.post('/auction/select-winner', {
+      auctionId: Number(auctionId),
+      bidderId,
+    }, token);
   },
 
   // Delete auction
