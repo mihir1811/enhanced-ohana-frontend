@@ -276,21 +276,12 @@ interface GemstoneData {
   certificateCompanyName: string;
   certificateCompanyId?: number;
   certificateNumber: string;
-  isOnAuction?: boolean;
   image1?: string;
   image2?: string;
   image3?: string;
   image4?: string;
   image5?: string;
   image6?: string;
-  auction?: {
-    id: string;
-    productType: string;
-    startTime: string;
-    endTime: string;
-    isActive: boolean;
-    createdAt: string;
-  };
 }
 
 interface EditGemstoneFormProps {
@@ -321,7 +312,6 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
       certificateCompanyId: certId,
       certificateCompanyName: certName,
       certificateNumber: initialData.certificateNumber || '',
-      isOnAuction: Boolean(initialData?.isOnAuction),
       images: [],
     };
   });

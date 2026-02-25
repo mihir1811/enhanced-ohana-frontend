@@ -49,7 +49,7 @@ export interface JewelryProduct {
   stones?: unknown[];
   auctionStartTime?: string;
   auctionEndTime?: string;
-  auctionId?: string;
+  auctionId?: string | number;
   stockNumber?: number;
 }
 
@@ -158,6 +158,10 @@ const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
 export default function JewelryProductCard({ product, onQuickView, onDelete, onUpdateProduct }: Props) {
   const [showDelete, setShowDelete] = useState(false);
   const [showEndAuction, setShowEndAuction] = useState(false);
+  const [showAuctionModal, setShowAuctionModal] = useState(false);
+  const [auctionStart, setAuctionStart] = useState("");
+  const [auctionEnd, setAuctionEnd] = useState("");
+  const [creatingAuction, setCreatingAuction] = useState(false);
   const [showQuickView, setShowQuickView] = useState(false);
   const [imgIdx, setImgIdx] = useState(0);
   const [animating, setAnimating] = useState(false);
@@ -230,9 +234,18 @@ export default function JewelryProductCard({ product, onQuickView, onDelete, onU
                 <Pencil className="w-4 h-4" />
                 Edit Product
               </DropdownMenu.Item>
-              {product.isOnAuction && (
+              {!product.isOnAuction && !product.isSold && (
                 <DropdownMenu.Item
-                  className="flex items-center gap-2 px-3 py-2 hover:bg-orange-50 cursor-pointer text-orange-600"
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors hover:bg-emerald-50 text-emerald-700"
+                  onSelect={() => setShowAuctionModal(true)}
+                >
+                  <Gavel className="w-4 h-4" />
+                  Add to Auction
+                </DropdownMenu.Item>
+              )}
+              {product.isOnAuction && !product.isSold && (
+                <DropdownMenu.Item
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors hover:bg-orange-50 text-orange-700"
                   onSelect={() => setShowEndAuction(true)}
                 >
                   <Gavel className="w-4 h-4" />
@@ -449,6 +462,80 @@ export default function JewelryProductCard({ product, onQuickView, onDelete, onU
         </div>
       )}
       
+      {/* Create Auction Modal */}
+      <ConfirmModal
+        open={showAuctionModal}
+        onOpenChange={setShowAuctionModal}
+        title="Create Auction for this jewelry?"
+        description="Set the auction start and end time. Once live, buyers will be able to place bids."
+        preventAutoClose
+        onYes={async () => {
+          if (!auctionStart || !auctionEnd) {
+            toast.error("Please select both start and end time");
+            return;
+          }
+          try {
+            setCreatingAuction(true);
+            const token = getCookie('token');
+            if (!token) throw new Error("User not authenticated");
+
+            const res = await auctionService.createAuction(
+              {
+                productId: String(product.id),
+                productType: "jewellery",
+                startTime: new Date(auctionStart).toISOString(),
+                endTime: new Date(auctionEnd).toISOString(),
+              },
+              token
+            );
+
+            if (!res || (res as any).success === false) {
+              throw new Error((res as any)?.message || "Failed to create auction");
+            }
+
+            const created: any = (res as any).data;
+            onUpdateProduct?.({
+              ...product,
+              isOnAuction: true,
+              auctionEndTime: created?.endTime || new Date(auctionEnd).toISOString(),
+            });
+
+            toast.success("Auction created successfully!");
+            setShowAuctionModal(false);
+          } catch (err: any) {
+            const message = err?.response?.data?.message || err.message || "Failed to create auction";
+            toast.error(message);
+          } finally {
+            setCreatingAuction(false);
+          }
+        }}
+        onNo={() => setShowAuctionModal(false)}
+      >
+        <div className="space-y-3 mt-3 text-sm">
+          <div>
+            <label className="block text-xs font-medium mb-1">Auction Start</label>
+            <input
+              type="datetime-local"
+              className="w-full border rounded px-2 py-1 text-sm"
+              value={auctionStart}
+              onChange={(e) => setAuctionStart(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1">Auction End</label>
+            <input
+              type="datetime-local"
+              className="w-full border rounded px-2 py-1 text-sm"
+              value={auctionEnd}
+              onChange={(e) => setAuctionEnd(e.target.value)}
+            />
+          </div>
+          {creatingAuction && (
+            <p className="text-xs text-muted-foreground">Creating auction...</p>
+          )}
+        </div>
+      </ConfirmModal>
+
       {/* End Auction Confirm Modal */}
       <ConfirmModal 
         open={showEndAuction}
@@ -462,17 +549,22 @@ export default function JewelryProductCard({ product, onQuickView, onDelete, onU
             const token =  getCookie('token') || '';
             if (!token) throw new Error('User not authenticated');
             
-            // Call end auction API using auction service
-            const auctionIdToUse = product.auctionId || product.id;
-            const response = await auctionService.endAuction(auctionIdToUse, token);
+            // Call end auction API using auction service (must use auctionId, not product id)
+            const auctionIdToUse = product.auctionId ?? product.id;
+            const response = await auctionService.endAuction(String(auctionIdToUse), token);
             
             if (!response || response.success === false) {
               throw new Error(response?.message || 'Failed to end auction');
             }
             
             toast.success('Auction ended successfully!');
-            // Update local state to reflect ended auction
-            onUpdateProduct?.({ ...product, isOnAuction: false });
+            const ended: any = (response as any)?.data;
+            onUpdateProduct?.({
+              ...product,
+              isOnAuction: false,
+              isSold: ended?.isSold ?? product.isSold,
+              auctionEndTime: undefined,
+            });
           } catch (error: unknown) {
             console.error('End auction error:', error);
             const errorMessage = error instanceof Error ? error.message : 'Failed to end auction';

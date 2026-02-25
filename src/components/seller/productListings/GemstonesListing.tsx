@@ -191,6 +191,11 @@ const GemstonesListing = () => {
                     setGemstones((prev) => prev.filter((g) => g.id !== gem.id));
                     setTotal((prev) => Math.max(0, prev - 1));
                   }}
+                  onUpdateProduct={(updatedProduct) => {
+                    setGemstones((prev) => prev.map((g) =>
+                      g.id === updatedProduct.id ? updatedProduct : g
+                    ));
+                  }}
                 />
               ))}
             </div>

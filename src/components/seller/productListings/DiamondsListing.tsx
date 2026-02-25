@@ -19,6 +19,12 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
   const [refreshKey, setRefreshKey] = useState(0);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
+  const handleUpdateProduct = (updated: DiamondProduct) => {
+    setDiamonds((prev) =>
+      prev.map((d) => (d.id === updated.id ? { ...d, ...updated } : d)),
+    );
+  };
+
   const handleBulkFileSelect = () => {
     // Called after successful upload in modal
     setBulkModalOpen(false);
@@ -96,6 +102,7 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
             sellerSKU: String(d.sellerSKU ?? ''),
             isOnAuction: Boolean(d.isOnAuction ?? false),
             isSold: Boolean(d.isSold ?? false),
+            auctionId: typeof d.auctionId === 'number' ? d.auctionId : undefined,
             auctionEndTime: (d.auctionEndTime as string | undefined) ?? undefined,
           };
         });
@@ -278,6 +285,7 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
                     setDiamonds((prev) => prev.filter((d) => d.id !== diamond.id));
                     setTotal((prev) => Math.max(0, prev - 1));
                   }}
+                  onUpdateProduct={handleUpdateProduct}
                 />
               ))}
             </div>

@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import Image from 'next/image';
 import { toast } from "react-hot-toast";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { MoreVertical, Eye, Pencil, Trash2, Images, ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { MoreVertical, Eye, Pencil, Trash2, Images, ChevronLeft, ChevronRight, Clock, Gavel } from "lucide-react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { gemstoneService } from '@/services/gemstoneService';
+import { auctionService } from '@/services/auctionService';
 import { getCookie } from '@/lib/cookie-utils';
 import { generateGemstoneName } from "@/utils/gemstoneUtils";
 
@@ -165,12 +166,15 @@ export interface GemstoneProduct {
   sellerId?: string;
   createdAt?: string;
   auctionStartTime?: string | null;
+  auctionId?: number | null;
 }
 
 interface Props {
   product: GemstoneProduct;
   onQuickView?: (product: GemstoneProduct) => void;
   onDelete?: (product: GemstoneProduct) => void;
+  onUpdateProduct?: (product: GemstoneProduct) => void;
+  isMelee?: boolean;
 }
 
 const getStatusTag = (isDeleted?: boolean, stockNumber?: number) => {
@@ -199,9 +203,14 @@ const getStatusTag = (isDeleted?: boolean, stockNumber?: number) => {
   );
 };
 
-const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }) => {
+const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, onUpdateProduct, isMelee = false }) => {
   const [showDelete, setShowDelete] = useState(false);
   const [showQuickView, setShowQuickView] = useState(false);
+  const [showAuctionModal, setShowAuctionModal] = useState(false);
+  const dropdownClosedRef = React.useRef(false);
+  const [auctionStart, setAuctionStart] = useState("");
+  const [auctionEnd, setAuctionEnd] = useState("");
+  const [creatingAuction, setCreatingAuction] = useState(false);
   const [imgIdx, setImgIdx] = useState(0);
   const [animating, setAnimating] = useState(false);
 
@@ -249,14 +258,22 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
 
   return (
     <div className="relative rounded-2xl shadow-lg border hover:shadow-2xl transition-all flex flex-col overflow-hidden group cursor-pointer" 
-      onClick={() => {
+      onClick={(e) => {
+        if (dropdownClosedRef.current) return;
         setShowQuickView(true);
         if (onQuickView) onQuickView(product);
       }}
       style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
       {/* Dropdown at top right */}
-      <div className="absolute top-3 right-3 z-10">
-        <DropdownMenu.Root>
+      <div className="absolute top-3 right-3 z-10" onClick={e => e.stopPropagation()}>
+        <DropdownMenu.Root
+          onOpenChange={(open) => {
+            if (!open) {
+              dropdownClosedRef.current = true;
+              setTimeout(() => { dropdownClosedRef.current = false; }, 150);
+            }
+          }}
+        >
           <DropdownMenu.Trigger asChild>
             <button
               className="p-2 rounded-full border shadow hover:opacity-90"
@@ -277,6 +294,7 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
               <DropdownMenu.Item
                 className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors"
                 onSelect={() => {
+                  setShowQuickView(false);
                   window.location.href = `/seller/products/${product.id}/edit`;
                 }}
                 style={{ color: 'var(--foreground)' }}
@@ -284,6 +302,47 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
                 <Pencil className="w-4 h-4" />
                 Edit Product
               </DropdownMenu.Item>
+              {!product.isOnAuction && !product.isSold && (
+                <DropdownMenu.Item
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors hover:bg-emerald-50 text-emerald-700"
+                  onSelect={() => setShowAuctionModal(true)}
+                >
+                  <Gavel className="w-4 h-4" />
+                  Add to Auction
+                </DropdownMenu.Item>
+              )}
+              {product.isOnAuction && !product.isSold && (
+                <DropdownMenu.Item
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors hover:bg-orange-50 text-orange-700"
+                  onSelect={async () => {
+                    const confirmEnd = window.confirm("End this auction now?");
+                    if (!confirmEnd) return;
+                    try {
+                      const token = getCookie("token");
+                      if (!token) throw new Error("User not authenticated");
+                      const idToUse = product.auctionId ?? product.id;
+                      const res = await auctionService.endAuction(String(idToUse), token);
+                      if (!res || (res as any).success === false) {
+                        throw new Error((res as any)?.message || "Failed to end auction");
+                      }
+                      const ended: any = (res as any).data;
+                      onUpdateProduct?.({
+                        ...product,
+                        isOnAuction: false,
+                        isSold: ended?.isSold ?? product.isSold,
+                        auctionEndTime: undefined,
+                      });
+                      toast.success("Auction ended successfully");
+                    } catch (err: any) {
+                      const message = err?.response?.data?.message || err.message || "Failed to end auction";
+                      toast.error(message);
+                    }
+                  }}
+                >
+                  <Gavel className="w-4 h-4" />
+                  End Auction
+                </DropdownMenu.Item>
+              )}
               <DropdownMenu.Separator className="h-px my-1" style={{ backgroundColor: 'var(--border)' }} />
               <DropdownMenu.Item
                 className="flex items-center gap-2 px-3 py-2 hover:bg-red-50 cursor-pointer text-red-600"
@@ -557,6 +616,7 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
                 className="px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-colors"
                 onClick={(e) => {
                   e.stopPropagation();
+                  setShowQuickView(false);
                   window.location.href = `/seller/products/${product.id}/edit`;
                 }}
               >
@@ -566,6 +626,80 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete }
           </div>
         </div>
       )}
+      {/* Create Auction Modal */}
+      <ConfirmModal
+        open={showAuctionModal}
+        onOpenChange={setShowAuctionModal}
+        title="Create Auction for this gemstone?"
+        description="Set the auction start and end time. Once live, buyers will be able to place bids."
+        preventAutoClose
+        onYes={async () => {
+          if (!auctionStart || !auctionEnd) {
+            toast.error("Please select both start and end time");
+            return;
+          }
+          try {
+            setCreatingAuction(true);
+            const token = getCookie("token");
+            if (!token) throw new Error("User not authenticated");
+
+            const res = await auctionService.createAuction(
+              {
+                productId: String(product.id),
+                productType: "gemstone",
+                startTime: new Date(auctionStart).toISOString(),
+                endTime: new Date(auctionEnd).toISOString(),
+              },
+              token
+            );
+
+            if (!res || (res as any).success === false) {
+              throw new Error((res as any)?.message || "Failed to create auction");
+            }
+
+            const created: any = (res as any).data;
+            onUpdateProduct?.({
+              ...product,
+              isOnAuction: true,
+              auctionEndTime: created?.endTime || new Date(auctionEnd).toISOString(),
+            });
+
+            toast.success("Auction created successfully!");
+            setShowAuctionModal(false);
+          } catch (err: any) {
+            const message = err?.response?.data?.message || err.message || "Failed to create auction";
+            toast.error(message);
+          } finally {
+            setCreatingAuction(false);
+          }
+        }}
+        onNo={() => setShowAuctionModal(false)}
+      >
+        <div className="space-y-3 mt-3 text-sm">
+          <div>
+            <label className="block text-xs font-medium mb-1">Auction Start</label>
+            <input
+              type="datetime-local"
+              className="w-full border rounded px-2 py-1 text-sm"
+              value={auctionStart}
+              onChange={(e) => setAuctionStart(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1">Auction End</label>
+            <input
+              type="datetime-local"
+              className="w-full border rounded px-2 py-1 text-sm"
+              value={auctionEnd}
+              onChange={(e) => setAuctionEnd(e.target.value)}
+            />
+          </div>
+          {creatingAuction && (
+            <p className="text-xs text-muted-foreground">Creating auction...</p>
+          )}
+        </div>
+      </ConfirmModal>
+
       {/* Delete Confirm Modal */}
       <ConfirmModal
         open={showDelete}
