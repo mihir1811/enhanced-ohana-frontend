@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { Gem } from 'lucide-react'
 import { useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
 import { RootState } from '@/store'
@@ -466,60 +467,93 @@ export default function NavigationUser() {
                       ></div>
                     </Link>
 
-                    {/* Desktop Dropdown */}
+                    {/* Desktop Dropdown - Megamenu */}
                     {item.hasDropdown && activeNavDropdown === item.href && (
                       <>
                         {/* Bridge area to prevent dropdown from closing */}
                         <div className="absolute top-full left-0 right-0 h-2 bg-transparent"></div>
 
                         <div
-                          className="fixed w-80 rounded-lg shadow-xl border z-50 overflow-hidden nav-dropdown-animate"
+                          className="fixed w-80 rounded-xl shadow-2xl border z-50 overflow-hidden nav-dropdown-animate backdrop-blur-xl"
                           style={{
-                            backgroundColor: 'var(--background)',
+                            backgroundColor: 'color-mix(in srgb, var(--card) 98%, transparent)',
                             borderColor: 'var(--border)',
                             left: dropdownPositions[item.href]?.left || 'auto',
                             top: dropdownPositions[item.href]?.top || 'auto',
-                            visibility: dropdownPositions[item.href] ? 'visible' : 'hidden'
+                            visibility: dropdownPositions[item.href] ? 'visible' : 'hidden',
+                            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15), 0 0 0 1px var(--border)'
                           }}
                         >
+                          {/* Accent header bar */}
+                          <div
+                            className="h-1 w-full"
+                            style={{ backgroundColor: 'var(--status-warning)' }}
+                          />
                           <div className="p-4">
-                            <div className="flex items-center gap-2 mb-3">
-                              <span className="text-2xl">{item.label === 'Diamonds' ? '💎' : '🔮'}</span>
-                              <h3 className="font-semibold text-lg" style={{ color: 'var(--foreground)' }}>
-                                {item.label}
-                              </h3>
+                            <div className="flex items-center gap-3 mb-4">
+                              <div
+                                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                                style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 12%, transparent)' }}
+                              >
+                                {item.label === 'Diamonds' ? (
+                                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--status-warning)' }}>
+                                    <path d="M12 2L3.09 8.26L12 14L20.91 8.26L12 2ZM21 16.5C21 16.88 20.79 17.21 20.47 17.38L12.57 21.82C12.41 21.94 12.21 22 12 22S11.59 21.94 11.43 21.82L3.53 17.38C3.21 17.21 3 16.88 3 16.5V7.5C3 7.12 3.21 6.79 3.53 6.62L11.43 2.18C11.59 2.06 11.79 2 12 2S12.41 2.06 12.57 2.18L20.47 6.62C20.79 6.79 21 7.12 21 7.5V16.5Z" />
+                                  </svg>
+                              ) : (
+                                <Gem className="w-5 h-5" strokeWidth={2} style={{ color: 'var(--status-warning)' }} />
+                              )}
+                            </div>
+                              <div>
+                                <h3 className="font-bold text-base" style={{ color: 'var(--foreground)' }}>
+                                  {item.label}
+                                </h3>
+                                <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                                  Browse by category
+                                </p>
+                              </div>
                             </div>
                             <div className="grid gap-2">
-                              {item.dropdownItems?.map((dropdownItem) => (
-                                item.label === 'Diamonds' && 'params' in dropdownItem ? (
-                                  // For diamonds, use a button that just sets URL params without redirecting
+                              {item.dropdownItems?.map((dropdownItem) => {
+                                const ItemContent = (
+                                  <>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="font-semibold text-sm" style={{ color: 'var(--foreground)' }}>{dropdownItem.label}</div>
+                                      <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                                        {dropdownItem.description}
+                                      </div>
+                                    </div>
+                                    <svg className="w-4 h-4 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--status-warning)' }}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                  </>
+                                )
+                                const itemClassName = "group flex items-center gap-3 p-3 rounded-xl transition-all duration-200 w-full text-left border-l-2"
+                                const itemStyle = { borderColor: 'transparent', backgroundColor: 'var(--muted)' }
+                                const hoverStyle = { borderColor: 'var(--status-warning)', backgroundColor: 'color-mix(in srgb, var(--status-warning) 8%, transparent)' }
+                                return item.label === 'Diamonds' && 'params' in dropdownItem ? (
                                   <button
                                     key={`${dropdownItem.href}-${JSON.stringify(dropdownItem.params)}`}
-                                    onClick={() => {
-                                      // Navigate to diamonds page with params in URL but don't trigger search
-                                      router.push(`${dropdownItem.href}?${new URLSearchParams((dropdownItem as { params: Record<string, string> }).params).toString()}`)
-                                    }}
-                                    className="block p-3 rounded-lg transition-all duration-200 hover:scale-[1.02] w-full text-left bg-muted text-foreground hover:bg-accent"
+                                    onClick={() => router.push(`${dropdownItem.href}?${new URLSearchParams((dropdownItem as { params: Record<string, string> }).params).toString()}`)}
+                                    className={itemClassName}
+                                    style={itemStyle}
+                                    onMouseEnter={(e) => Object.assign(e.currentTarget.style, hoverStyle)}
+                                    onMouseLeave={(e) => Object.assign(e.currentTarget.style, itemStyle)}
                                   >
-                                    <div className="font-medium text-sm">{dropdownItem.label}</div>
-                                    <div className="text-xs mt-1 text-muted-foreground">
-                                      {dropdownItem.description}
-                                    </div>
+                                    {ItemContent}
                                   </button>
                                 ) : (
-                                  // For other items, use regular Link
                                   <Link
                                     key={`${dropdownItem.href}-${dropdownItem.label}`}
                                     href={'params' in dropdownItem ? `${dropdownItem.href}?${new URLSearchParams((dropdownItem as { params: Record<string, string> }).params).toString()}` : dropdownItem.href}
-                                    className="block p-3 rounded-lg transition-all duration-200 hover:scale-[1.02] bg-muted text-foreground hover:bg-accent"
+                                    className={itemClassName}
+                                    style={itemStyle}
+                                    onMouseEnter={(e) => Object.assign(e.currentTarget.style, hoverStyle)}
+                                    onMouseLeave={(e) => Object.assign(e.currentTarget.style, itemStyle)}
                                   >
-                                    <div className="font-medium text-sm">{dropdownItem.label}</div>
-                                    <div className="text-xs mt-1 text-muted-foreground">
-                                      {dropdownItem.description}
-                                    </div>
+                                    {ItemContent}
                                   </Link>
                                 )
-                              ))}
+                              })}
                             </div>
                           </div>
                         </div>
@@ -887,7 +921,7 @@ export default function NavigationUser() {
                     )}
                   </Link>
 
-                  {/* Tablet Dropdown */}
+                  {/* Tablet Dropdown - Megamenu */}
                   {item.hasDropdown && activeNavDropdown === item.href && (
                     <>
                       {/* Bridge area to prevent dropdown from closing */}
@@ -896,43 +930,56 @@ export default function NavigationUser() {
                       <div
                         className="fixed w-80 rounded-xl shadow-2xl border z-50 overflow-hidden nav-dropdown-animate backdrop-blur-xl"
                         style={{
-                          backgroundColor: 'color-mix(in srgb, var(--background) 98%, transparent)',
+                          backgroundColor: 'color-mix(in srgb, var(--card) 98%, transparent)',
                           borderColor: 'var(--border)',
                           left: dropdownPositions[item.href]?.left || 'auto',
                           top: dropdownPositions[item.href]?.top || 'auto',
                           visibility: dropdownPositions[item.href] ? 'visible' : 'hidden',
-                          borderRadius: 'var(--radius-lg)'
+                          borderRadius: 'var(--radius-xl)',
+                          boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15), 0 0 0 1px var(--border)'
                         }}
                       >
+                        <div className="h-1 w-full" style={{ backgroundColor: 'var(--status-warning)' }} />
                         <div className="p-4">
-                          <div className="flex items-center gap-2 mb-3">
-                            <span className="text-2xl">{item.label === 'Diamonds' ? '💎' : '🔮'}</span>
-                            <h3 className="font-bold text-lg" style={{ color: 'var(--foreground)' }}>
-                              {item.label}
-                            </h3>
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 12%, transparent)' }}>
+                              {item.label === 'Diamonds' ? (
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--status-warning)' }}>
+                                  <path d="M12 2L3.09 8.26L12 14L20.91 8.26L12 2ZM21 16.5C21 16.88 20.79 17.21 20.47 17.38L12.57 21.82C12.41 21.94 12.21 22 12 22S11.59 21.94 11.43 21.82L3.53 17.38C3.21 17.21 3 16.88 3 16.5V7.5C3 7.12 3.21 6.79 3.53 6.62L11.43 2.18C11.59 2.06 11.79 2 12 2S12.41 2.06 12.57 2.18L20.47 6.62C20.79 6.79 21 7.12 21 7.5V16.5Z" />
+                                </svg>
+                              ) : (
+                                <Gem className="w-5 h-5" strokeWidth={2} style={{ color: 'var(--status-warning)' }} />
+                              )}
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-base" style={{ color: 'var(--foreground)' }}>{item.label}</h3>
+                              <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Browse by category</p>
+                            </div>
                           </div>
                           <div className="grid gap-2">
-                            {item.dropdownItems?.map((dropdownItem) => (
-                              <Link
-                                key={`${dropdownItem.href}-${dropdownItem.label}`}
-                                href={dropdownItem.href}
-                                className="block p-3 rounded-xl transition-all duration-200 group"
-                                style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.backgroundColor = 'var(--accent)';
-                                  e.currentTarget.style.transform = 'translateY(-2px)';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.backgroundColor = 'var(--muted)';
-                                  e.currentTarget.style.transform = 'translateY(0)';
-                                }}
-                              >
-                                <div className="font-bold text-sm group-hover:text-amber-600" style={{ color: 'inherit' }}>{dropdownItem.label}</div>
-                                <div className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
-                                  {dropdownItem.description}
-                                </div>
-                              </Link>
-                            ))}
+                            {item.dropdownItems?.map((dropdownItem) => {
+                              const href = 'params' in dropdownItem ? `${dropdownItem.href}?${new URLSearchParams((dropdownItem as { params: Record<string, string> }).params).toString()}` : dropdownItem.href
+                              const itemStyle = { borderColor: 'transparent', backgroundColor: 'var(--muted)' }
+                              const hoverStyle = { borderColor: 'var(--status-warning)', backgroundColor: 'color-mix(in srgb, var(--status-warning) 8%, transparent)' }
+                              return (
+                                <Link
+                                  key={`${dropdownItem.href}-${dropdownItem.label}`}
+                                  href={href}
+                                  className="group flex items-center gap-3 p-3 rounded-xl transition-all duration-200 w-full text-left border-l-2"
+                                  style={itemStyle}
+                                  onMouseEnter={(e) => Object.assign(e.currentTarget.style, hoverStyle)}
+                                  onMouseLeave={(e) => Object.assign(e.currentTarget.style, itemStyle)}
+                                >
+                                  <div className="flex-1 min-w-0">
+                                    <div className="font-semibold text-sm" style={{ color: 'var(--foreground)' }}>{dropdownItem.label}</div>
+                                    <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>{dropdownItem.description}</div>
+                                  </div>
+                                  <svg className="w-4 h-4 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--status-warning)' }}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                  </svg>
+                                </Link>
+                              )
+                            })}
                           </div>
                         </div>
                       </div>
