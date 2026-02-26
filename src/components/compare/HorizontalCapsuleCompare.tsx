@@ -5,16 +5,32 @@ import { useCompare } from '@/hooks/useCompare'
 import { X, ArrowRight, Scale, Trash2, Eye, ShoppingCart, Plus, Minus, Maximize2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
+const PLURAL_MAP: Record<string, string> = {
+  diamond: 'diamonds',
+  gemstone: 'gemstones',
+  jewelry: 'jewelry',
+  watch: 'watches'
+}
+
+const TYPE_LABELS: Record<string, string> = {
+  diamond: 'Diamonds',
+  gemstone: 'Gemstones',
+  jewelry: 'Jewelry',
+  watch: 'Watches'
+}
+
 const HorizontalCapsuleCompare = () => {
   const { 
     products, 
     removeProduct, 
     clearAll,
-    getCompareCount 
+    getCompareCount,
+    getTypeGroups
   } = useCompare()
   
   const router = useRouter()
   const count = getCompareCount()
+  const typeGroups = getTypeGroups()
   const [isExpanded, setIsExpanded] = useState(false)
 
   if (count === 0) return null
@@ -29,18 +45,9 @@ const HorizontalCapsuleCompare = () => {
     }).format(numPrice)
   }
 
-  const handleViewComparison = () => {
-    const firstProductType = products[0]?.type
-    if (firstProductType) {
-      const pluralMap: Record<string, string> = {
-        diamond: 'diamonds',
-        gemstone: 'gemstones',
-        jewelry: 'jewelry',
-        watch: 'watches'
-      }
-      const path = pluralMap[firstProductType] || `${firstProductType}s`
-      router.push(`/compare/${path}`)
-    }
+  const handleViewComparison = (type: string) => {
+    const path = PLURAL_MAP[type] || `${type}s`
+    router.push(`/compare/${path}`)
   }
 
   return (
@@ -217,16 +224,37 @@ const HorizontalCapsuleCompare = () => {
 
             {/* Action buttons */}
             <div className="space-y-3">
-              <button
-                onClick={handleViewComparison}
-                disabled={count < 2}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 disabled:cursor-not-allowed text-white rounded-xl transition-all duration-200 font-semibold shadow-lg hover:shadow-xl"
-                style={{ backgroundColor: count >= 2 ? 'var(--primary)' : 'var(--muted)' }}
-              >
-                <Eye className="w-5 h-5" />
-                View Comparison
-                <ArrowRight className="w-5 h-5" />
-              </button>
+              {typeGroups.length === 1 ? (
+                <button
+                  onClick={() => handleViewComparison(typeGroups[0].type)}
+                  disabled={typeGroups[0].count < 2}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 disabled:cursor-not-allowed text-white rounded-xl transition-all duration-200 font-semibold shadow-lg hover:shadow-xl"
+                  style={{ backgroundColor: typeGroups[0].count >= 2 ? 'var(--primary)' : 'var(--muted)' }}
+                >
+                  <Eye className="w-5 h-5" />
+                  View Comparison ({typeGroups[0].count} {TYPE_LABELS[typeGroups[0].type]})
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>
+                    Compare by type:
+                  </p>
+                  {typeGroups.map(({ type, count: typeCount }) => (
+                    <button
+                      key={type}
+                      onClick={() => handleViewComparison(type)}
+                      disabled={typeCount < 2}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 disabled:cursor-not-allowed text-white rounded-xl transition-all duration-200 font-medium shadow-md hover:shadow-lg disabled:opacity-50"
+                      style={{ backgroundColor: typeCount >= 2 ? 'var(--primary)' : 'var(--muted)' }}
+                    >
+                      <Eye className="w-4 h-4" />
+                      {typeCount} {TYPE_LABELS[type]}
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  ))}
+                </div>
+              )}
 
               <div className="flex gap-2">
                 <button

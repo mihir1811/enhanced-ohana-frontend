@@ -8,8 +8,10 @@ interface CompareButtonProps {
   product: {
     id: string | number;
     name?: string;
-    price: string | number;
-    images: string[];
+    price?: string | number;
+    totalPrice?: number;
+    images?: string[];
+    image1?: string | null;
   }
   productType: 'diamond' | 'gemstone' | 'jewelry' | 'watch'
   className?: string
