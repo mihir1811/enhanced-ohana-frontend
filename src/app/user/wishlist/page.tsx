@@ -4,8 +4,9 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Heart, Grid, List } from 'lucide-react';
 import { useWishlistActions } from '@/hooks/useWishlist';
 import { transformWishlistItemToUnified, UnifiedProduct, WishlistUnifiedProduct } from '@/types/unified-product';
-import { getProductUrl, getProductPath } from '@/lib/shareUtils';
+import { getProductPath } from '@/lib/shareUtils';
 import WishlistProductCard from '@/components/user/WishlistProductCard';
+import { WishlistSkeleton } from '@/components/ui/WishlistSkeleton';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { SECTION_WIDTH } from '@/lib/constants';
@@ -97,22 +98,16 @@ export default function UserWishlistPage() {
     router.push(path);
   };
 
-  const handleShareProduct = (product: UnifiedProduct) => {
-    const type = product.productType as 'diamond' | 'meleeDiamond' | 'gemstone' | 'jewellery' | 'watch' | 'bullion';
-    const url = getProductUrl(type, product.id);
-    navigator.clipboard.writeText(url).then(() => {
-      toast.success('Link copied to clipboard!');
-    }).catch(() => {
-      toast.error('Failed to copy link');
-    });
-  };
-
   if (loading && unifiedProducts.length === 0) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
         <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 sm:px-6 lg:px-8 py-8`}>
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: 'var(--status-warning)' }}></div>
+          <div className="space-y-8">
+            <div>
+              <div className="h-9 w-48 rounded animate-pulse mb-2" style={{ backgroundColor: 'var(--muted)' }} />
+              <div className="h-5 w-32 rounded animate-pulse" style={{ backgroundColor: 'var(--muted)' }} />
+            </div>
+            <WishlistSkeleton />
           </div>
         </div>
       </div>
@@ -258,14 +253,21 @@ export default function UserWishlistPage() {
 
       {error && (
         <div 
-          className="rounded-lg p-4 border"
+          className="rounded-lg p-4 border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
           style={{ 
-            backgroundColor: 'var(--destructive)/10',
-            borderColor: 'var(--destructive)/20',
+            backgroundColor: 'color-mix(in srgb, var(--destructive) 10%, transparent)',
+            borderColor: 'color-mix(in srgb, var(--destructive) 30%, transparent)',
             color: 'var(--destructive)'
           }}
         >
           <p>{error}</p>
+          <button
+            onClick={() => refreshWishlist()}
+            className="px-4 py-2 rounded-lg font-medium min-h-[44px] touch-target shrink-0"
+            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+          >
+            Try Again
+          </button>
         </div>
       )}
     </div>

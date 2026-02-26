@@ -1099,9 +1099,18 @@ export default function NavigationUser() {
           ) : cartError ? (
             <div className="space-y-3">
               <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>{cartError}</p>
-              <Link href="/user/cart" className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-                View Cart
-              </Link>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                  onClick={loadCartForDrawer}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg min-h-[44px] touch-target transition-colors"
+                  style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+                >
+                  Try Again
+                </button>
+                <Link href="/user/cart" className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border min-h-[44px] touch-target transition-colors" style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}>
+                  View Cart
+                </Link>
+              </div>
             </div>
           ) : cart && cart.items.length > 0 ? (
             <>
