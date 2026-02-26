@@ -390,7 +390,7 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
               style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
               onClick={(e) => {
                 e.stopPropagation();
-                // Quick view logic
+                router.push(`/watches/${product.id}`);
               }}
             >
               <Eye size={22} />
@@ -549,6 +549,7 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
               onClick={(e) => {
                 e.stopPropagation();
+                router.push(`/watches/${product.id}`);
               }}
             >
               Quick View

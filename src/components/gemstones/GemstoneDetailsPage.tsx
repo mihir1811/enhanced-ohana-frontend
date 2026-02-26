@@ -185,8 +185,9 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
   const hasImages = images.length > 0;
 
   const formatPrice = (price: number | string | undefined) => {
-    if (!price) return "Price on Request";
+    if (price === undefined || price === null) return "Price on Request";
     const numPrice = typeof price === "string" ? parseFloat(price) : price;
+    if (isNaN(numPrice)) return "Price on Request";
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
@@ -194,6 +195,8 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
       maximumFractionDigits: 0,
     }).format(numPrice);
   };
+
+  const displayPrice = gemstone.totalPrice ?? (gemstone as { price?: number }).price;
 
   const getCertificationGrade = () => {
     const hasColor = gemstone.color && gemstone.color !== "N/A";
@@ -368,7 +371,7 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
             <div className="rounded-2xl p-6 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
               <div className="text-sm font-medium mb-1" style={{ color: 'var(--muted-foreground)' }}>Total Price</div>
               <div className="text-3xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>
-                {formatPrice(gemstone.totalPrice)}
+                {formatPrice(displayPrice)}
               </div>
               <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                 Final price including all fees
@@ -381,7 +384,7 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
             <div className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
               <div className="text-sm mb-1" style={{ color: 'var(--muted-foreground)' }}>Total Price</div>
               <div className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>
-                {formatPrice(gemstone.totalPrice)}
+                {formatPrice(displayPrice)}
               </div>
             </div>
             <div className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
@@ -476,7 +479,7 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
                   <div>
                     <span style={{ color: 'var(--muted-foreground)' }}>Total Price:</span>
                     <span className="ml-2 font-medium" style={{ color: 'var(--foreground)' }}>
-                      {formatPrice(gemstone.totalPrice)}
+                      {formatPrice(displayPrice)}
                     </span>
                   </div>
                   <div>
@@ -518,7 +521,7 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
                   <div className="flex justify-between">
                     <span style={{ color: 'var(--muted-foreground)' }}>Total Price:</span>
                     <span className="font-medium" style={{ color: 'var(--foreground)' }}>
-                      {formatPrice(gemstone.totalPrice)}
+                      {formatPrice(displayPrice)}
                     </span>
                   </div>
                   <div className="flex justify-between">

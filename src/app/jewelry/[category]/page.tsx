@@ -2564,7 +2564,7 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
                 <button 
                   onClick={(e) => {
                     e.stopPropagation()
-                    // Quick view logic
+                    handleCardClick()
                   }}
                   className="p-2.5 border-2 rounded-lg transition-all duration-200 group/icon"
                   style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
@@ -2702,7 +2702,7 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
             <button 
               onClick={(e) => {
                 e.stopPropagation()
-                // Quick view logic
+                handleCardClick()
               }}
               className="p-2.5 border-2 rounded-lg transition-all duration-200 group/icon active:scale-95"
               style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}

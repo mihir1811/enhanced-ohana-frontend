@@ -411,7 +411,7 @@ function BullionCard({ bullion, viewMode, onClick }: BullionCardProps) {
               View Details
             </button>
             <button
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => { e.stopPropagation(); onClick(); }}
               className="p-3 border rounded-xl transition-all"
               style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
               title="Quick View"
