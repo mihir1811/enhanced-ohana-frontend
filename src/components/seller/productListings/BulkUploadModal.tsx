@@ -1,9 +1,18 @@
 import React from "react";
 import { toast } from "react-hot-toast";
+import { FileSpreadsheet, Upload, Loader2, X, FileCheck, Trash2 } from "lucide-react";
 import { diamondService } from "@/services/diamondService";
 import { getCookie } from "@/lib/cookie-utils";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
+
+const ACCEPT_TYPES = ".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel";
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 interface BulkUploadModalProps {
   open: boolean;
@@ -20,231 +29,371 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 }) => {
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+  const [isDragging, setIsDragging] = React.useState(false);
   const sellerType = useSelector((state: RootState) => state.seller.profile?.sellerType);
-  // Determine productType based on sellerType (switch/case style)
-  let productType = overrideProductType || 'diamond';
+
+  let productType = overrideProductType || "diamond";
   if (!overrideProductType) {
     switch (sellerType) {
-      case 'naturalDiamond':
-        productType = 'diamond';
+      case "naturalDiamond":
+        productType = "diamond";
         break;
-      case 'labGrownDiamond':
-        productType = 'lab-grown-diamond';
+      case "labGrownDiamond":
+        productType = "diamond";
         break;
-      case 'gemstone':
-        productType = 'gemstone';
+      case "gemstone":
+        productType = "gemstone";
         break;
-      case 'jewellery':
-        productType = 'jewellery';
+      case "jewellery":
+        productType = "jewellery";
         break;
       default:
-        productType = 'diamond';
+        productType = "diamond";
     }
   }
+
+  const productLabel =
+    productType === "gemstone" || productType === "melee-gemstone" ? "Gemstones" : productType === "jewellery" ? "Jewellery" : "Diamonds";
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
+      setUploadResult(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
   const [uploading, setUploading] = React.useState(false);
+  const [uploadResult, setUploadResult] = React.useState<{
+    inserted?: number;
+    failed?: number;
+    errors?: Array<{ row: number; errors: Array<{ field: string; constraints?: Record<string, string> }> }>;
+  } | null>(null);
+
   const handleUpload = async () => {
     if (!selectedFile) return;
     setUploading(true);
+    setUploadResult(null);
     try {
       const token = getCookie("token");
       if (!token) throw new Error("User not authenticated");
-      await diamondService.uploadExcel(selectedFile, productType, token);
-      toast.success("Excel uploaded successfully!");
-      onFileSelect(selectedFile); // Notify parent if needed
-      setSelectedFile(null);
-    } catch (err) {
-      toast.error("Failed to upload Excel file");
+      const apiProductType = productType === "melee-gemstone" ? "gemstone" : productType;
+      const result = await diamondService.uploadExcel(selectedFile, apiProductType, token);
+      const raw = result as unknown as Record<string, unknown>;
+      const data = (raw?.data ?? raw) as {
+        success?: boolean;
+        inserted?: number;
+        failed?: number;
+        errors?: Array<{ row: number; errors: Array<{ field: string; constraints?: Record<string, string> }> }>;
+        message?: string;
+      };
+      const inserted = data?.inserted ?? 0;
+      const failed = data?.failed ?? 0;
+      const errs = data?.errors ?? [];
+      setUploadResult({ inserted, failed, errors: errs });
+      if (inserted > 0) {
+        toast.success(
+          `Uploaded ${inserted} item(s) successfully${failed > 0 ? `. ${failed} row(s) failed.` : ""}`
+        );
+        if (failed === 0) {
+          onFileSelect(selectedFile);
+          setSelectedFile(null);
+        }
+      } else if (errs.length > 0) {
+        toast.error(`${errs.length} row(s) failed. See details below.`);
+      } else {
+        toast.error(data?.message || "Failed to upload. Check file format and column names.");
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to upload Excel file";
+      const apiMsg = (err as { status?: number; message?: string })?.message;
+      toast.error(apiMsg || msg);
+      setUploadResult(null);
     } finally {
       setUploading(false);
     }
   };
 
+  const clearResult = () => setUploadResult(null);
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      const validTypes = [
+        "text/csv",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      ];
+      const validExt = /\.(csv|xlsx|xls)$/i.test(file.name);
+      if (validTypes.includes(file.type) || validExt) {
+        setSelectedFile(file);
+        setUploadResult(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      } else {
+        toast.error("Please upload a CSV or Excel file (.csv, .xlsx, .xls)");
+      }
+    }
+  };
+
   const handleSampleDownload = () => {
-    // Generate sample CSV content dynamically
     const headers = [
-      'stockNumber',
-      'pricePerCarat',
-      'totalPrice',
-      'caratWeight',
-      'shape',
-      'color',
-      'clarity',
-      'cut',
-      'polish',
-      'symmetry',
-      'fluorescence',
-      'measurement',
-      'table',
-      'depth',
-      'ratio',
-      'certificateCompanyName',
-      'certificateNumber',
-      'imageUrl',
-      'videoUrl',
-      'stoneType'
+      "stockNumber",
+      "pricePerCarat",
+      "totalPrice",
+      "caratWeight",
+      "shape",
+      "color",
+      "clarity",
+      "cut",
+      "polish",
+      "symmetry",
+      "fluorescence",
+      "measurement",
+      "table",
+      "depth",
+      "ratio",
+      "certificateCompanyName",
+      "certificateNumber",
+      "image1",
+      "videoURL",
+      "stoneType",
     ];
-
     const sampleRow = [
-      '12345',         // stockNumber
-      '5000',          // pricePerCarat
-      '7500',          // totalPrice
-      '1.50',          // caratWeight
-      'Round',         // shape
-      'D',             // color
-      'VS1',           // clarity
-      'Excellent',     // cut
-      'Excellent',     // polish
-      'Excellent',     // symmetry
-      'None',          // fluorescence
-      '6.50x6.50x4.00',// measurement
-      '58',            // table
-      '61.5',          // depth
-      '1.00',          // ratio
-      'GIA',           // certificateCompanyName
-      '123456789',     // certificateNumber
-      'https://example.com/image.jpg', // imageUrl
-      'https://example.com/video.mp4', // videoUrl
-      'naturalDiamond'        // stoneType
+      "12345",
+      "5000",
+      "7500",
+      "1.50",
+      "Round",
+      "D",
+      "VS1",
+      "Excellent",
+      "Excellent",
+      "Excellent",
+      "None",
+      "6.50x6.50x4.00",
+      "58",
+      "61.5",
+      "1.00",
+      "GIA",
+      "123456789",
+      "https://example.com/image.jpg",
+      "https://example.com/video.mp4",
+      "naturalDiamond",
     ];
-
-    const csvContent = [
-      headers.join(','),
-      sampleRow.join(',')
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const csvContent = [headers.join(","), sampleRow.join(",")].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     if (link.download !== undefined) {
       const url = URL.createObjectURL(blob);
       link.setAttribute("href", url);
       link.setAttribute("download", "sample-diamond.csv");
-      link.style.visibility = 'hidden';
+      link.style.visibility = "hidden";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     }
+  };
+
+  const handleClose = () => {
+    clearResult();
+    onClose();
   };
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* ✅ Background overlay */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose} // click outside to close
+        className="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm"
+        onClick={handleClose}
+        aria-hidden="true"
       />
 
-      {/* ✅ Modal content */}
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 z-10">
-        <button
-          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-          onClick={onClose}
-          aria-label="Close"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+      {/* Modal */}
+      <div
+        className="relative w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col rounded-xl shadow-2xl border bg-[var(--card)] dark:bg-[var(--card)] text-[var(--card-foreground)] border-[var(--border)] dark:border-slate-700/50 z-10"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="bulk-upload-title"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] dark:border-slate-700/50 shrink-0">
+          <h2 id="bulk-upload-title" className="text-lg font-semibold" style={{ color: "var(--foreground)" }}>
+            Bulk Upload {productLabel}
+          </h2>
+          <button
+            type="button"
+            onClick={handleClose}
+            aria-label="Close"
+            className="p-2 rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] dark:hover:bg-slate-700/50 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-        <h3 className="text-lg font-semibold mb-4">
-          Bulk Upload {productType === 'gemstone' || productType === 'melee-gemstone' ? 'Gemstones' : 'Diamonds'}
-        </h3>
-        <div className="flex flex-col items-center gap-4">
+        {/* Content */}
+        <div className="flex flex-col gap-5 overflow-y-auto flex-1 min-h-0 p-6">
           <input
             type="file"
-            accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+            accept={ACCEPT_TYPES}
             ref={fileInputRef}
             onChange={handleFileChange}
             className="hidden"
           />
+
+          {/* Drop zone */}
           <div
-            className="w-full border-2 border-dashed border-blue-400 rounded-lg p-6 text-center cursor-pointer bg-blue-50 hover:bg-blue-100 transition"
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => !uploading && fileInputRef.current?.click()}
             onDragOver={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              if (!uploading) setIsDragging(true);
             }}
-            onDrop={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              const file = e.dataTransfer.files?.[0];
-              if (file) setSelectedFile(file);
-            }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleDrop}
+            className={`
+              w-full rounded-xl border-2 border-dashed p-8 text-center cursor-pointer transition-all duration-200
+              ${isDragging
+                ? "border-[var(--primary)] bg-[var(--primary)]/10 dark:bg-[var(--primary)]/20"
+                : "border-[var(--border)] dark:border-slate-600 hover:border-[var(--primary)]/50 hover:bg-[var(--muted)]/50 dark:hover:bg-slate-800/50"
+              }
+              ${uploading ? "pointer-events-none opacity-70" : ""}
+            `}
           >
-            <div className="flex flex-col items-center justify-center gap-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8 text-blue-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+            <div className="flex flex-col items-center gap-3">
+              <div
+                className={`p-4 rounded-full transition-colors ${
+                  isDragging ? "bg-[var(--primary)]/20" : "bg-[var(--muted)] dark:bg-slate-700/50"
+                }`}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5-5m0 0l5 5m-5-5v12"
+                <FileSpreadsheet
+                  className={`w-10 h-10 ${isDragging ? "text-[var(--primary)]" : "text-[var(--muted-foreground)]"}`}
                 />
-              </svg>
-              <span className="text-blue-700 font-medium">
-                Click or drag and drop Excel/CSV file here
-              </span>
-              <span className="text-xs text-gray-500">
-                .csv, .xlsx supported
-              </span>
+              </div>
+              <div>
+                <p className="font-medium text-[var(--foreground)]">
+                  {isDragging ? "Drop your file here" : "Click or drag file here"}
+                </p>
+                <p className="text-sm text-[var(--muted-foreground)] mt-0.5">.csv, .xlsx supported (max 10MB)</p>
+              </div>
             </div>
           </div>
+
+          {/* Selected file card */}
           {selectedFile && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-700">{selectedFile.name}</span>
+            <div className="flex items-center gap-3 p-4 rounded-xl bg-[var(--muted)]/50 dark:bg-slate-800/50 border border-[var(--border)] dark:border-slate-700/50">
+              <div className="p-2 rounded-lg bg-[var(--card)] dark:bg-slate-700/50">
+                <FileCheck className="w-5 h-5 text-[var(--status-success)]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-[var(--foreground)] truncate">{selectedFile.name}</p>
+                <p className="text-xs text-[var(--muted-foreground)]">{formatFileSize(selectedFile.size)}</p>
+              </div>
               <button
-                className="text-xs text-red-500 hover:underline"
-                onClick={() => setSelectedFile(null)}
                 type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedFile(null);
+                  clearResult();
+                  if (fileInputRef.current) fileInputRef.current.value = "";
+                }}
+                disabled={uploading}
+                aria-label="Remove file"
+                className="p-2 rounded-lg text-[var(--destructive)] hover:bg-[var(--destructive)]/10 dark:hover:bg-red-500/10 transition-colors disabled:opacity-50"
               >
-                Remove
+                <Trash2 className="w-4 h-4" />
               </button>
             </div>
           )}
-          <button
-            className="px-4 py-2 bg-green-600 text-white rounded font-semibold hover:bg-green-700 transition w-full disabled:opacity-50"
-            onClick={handleUpload}
-            type="button"
-            disabled={!selectedFile || uploading}
-          >
-            {uploading ? "Uploading..." : "Upload"}
-          </button>
-          <button
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded font-semibold hover:bg-gray-300 transition w-full"
-            onClick={handleSampleDownload}
-            type="button"
-          >
-            Download Sample CSV
-          </button>
-          <p className="text-sm text-gray-500">
-            Upload an Excel or CSV file to add multiple diamonds at once.
+
+          {/* Actions */}
+          <div className="flex flex-col gap-3">
+            <button
+              type="button"
+              onClick={handleUpload}
+              disabled={!selectedFile || uploading}
+              className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl font-semibold text-white bg-[var(--primary)] hover:bg-[var(--primary)]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:ring-offset-2 dark:focus:ring-offset-[var(--card)]"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-5 h-5" />
+                  Upload
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={handleSampleDownload}
+              className="w-full px-4 py-3 rounded-xl font-medium border border-[var(--border)] dark:border-slate-600 text-[var(--foreground)] hover:bg-[var(--muted)] dark:hover:bg-slate-800/50 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+            >
+              Download Sample CSV
+            </button>
+          </div>
+
+          <p className="text-sm text-[var(--muted-foreground)] text-center">
+            Upload an Excel or CSV file to add multiple {productLabel.toLowerCase()} at once.
           </p>
+
+          {/* Error panel */}
+          {uploadResult?.errors && uploadResult.errors.length > 0 && (
+            <div
+              className="w-full rounded-xl overflow-hidden border"
+              style={{
+                backgroundColor: "color-mix(in srgb, var(--destructive) 8%, transparent)",
+                borderColor: "color-mix(in srgb, var(--destructive) 30%, transparent)",
+              }}
+            >
+              <div
+                className="px-4 py-3 border-b"
+                style={{ borderColor: "color-mix(in srgb, var(--destructive) 30%, transparent)" }}
+              >
+                <h4 className="text-sm font-semibold" style={{ color: "var(--destructive)" }}>
+                  {uploadResult.errors.length} product{uploadResult.errors.length !== 1 ? "s" : ""} failed
+                </h4>
+                {uploadResult.inserted !== undefined && uploadResult.inserted > 0 && (
+                  <p className="text-xs mt-0.5 text-[var(--muted-foreground)]">
+                    {uploadResult.inserted} row(s) uploaded successfully.
+                  </p>
+                )}
+              </div>
+              <div className="max-h-48 overflow-y-auto p-3 space-y-2">
+                {uploadResult.errors.map((err, idx) => (
+                  <div
+                    key={idx}
+                    className="text-sm rounded-lg p-3"
+                    style={{
+                      backgroundColor: "var(--card)",
+                      borderLeft: "3px solid var(--destructive)",
+                    }}
+                  >
+                    <span className="font-medium text-[var(--foreground)]">Row {err.row}:</span>
+                    <ul className="mt-1 ml-2 list-disc space-y-0.5 text-[var(--destructive)]">
+                      {err.errors.map((e, i) => (
+                        <li key={i}>{e.constraints ? Object.values(e.constraints).join(", ") : e.field}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+              <div
+                className="px-4 py-2 text-xs text-[var(--muted-foreground)] border-t"
+                style={{ borderColor: "var(--border)" }}
+              >
+                Fix the errors in your file and upload again. Row numbers match the Excel/CSV row (header = row 1).
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
