@@ -17,7 +17,9 @@ import {
   Calendar,
   Box,
   FileText,
-  CreditCard
+  CreditCard,
+  Eye,
+  Award
 } from 'lucide-react';
 import Image from 'next/image';
 import { WatchProduct } from '@/services/watch.service';
@@ -26,24 +28,15 @@ import { cartService } from '@/services/cartService';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
+import { copyProductUrlToClipboard } from '@/lib/shareUtils';
 
-interface ExtendedWatchProduct extends WatchProduct {
+type ExtendedWatchProduct = Omit<WatchProduct, 'stonesOnDial' | 'display' | 'gender' | 'wristSizeFit' | 'price' | 'image1' | 'image2' | 'image3' | 'image4' | 'image5' | 'image6' | 'videoURL'> & {
   stonesOnDial?: number | null;
-  bezelType?: string;
-  bezelMaterial?: string;
-  display: string;
-  gender: string;
-  collection?: string;
-  certification?: string;
-  modelYear?: number;
+  display?: string;
+  gender?: string;
   wristSizeFit?: string | number;
-  lugWidth?: number;
-  condition: string;
   price: number | string;
-  availabilityStatus?: boolean;
-  warrantyCardIncluded: boolean;
-  boxIncluded: boolean;
-  papersIncluded: boolean;
   image1?: string | null;
   image2?: string | null;
   image3?: string | null;
@@ -66,6 +59,7 @@ interface WatchDetailsPageProps {
 
 const WatchDetailsPage: React.FC<WatchDetailsPageProps> = ({ watch }) => {
   const [imgIdx, setImgIdx] = useState(0);
+  const [activeTab, setActiveTab] = useState<'overview' | 'specifications' | 'seller'>('overview');
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const router = useRouter();
 
@@ -125,26 +119,6 @@ const WatchDetailsPage: React.FC<WatchDetailsPageProps> = ({ watch }) => {
     }).format(numPrice);
   };
 
-  const specifications = [
-    { label: 'Brand', value: watch.brand, icon: <Star className="w-5 h-5" /> },
-    { label: 'Model', value: watch.model, icon: <WatchIcon className="w-5 h-5" /> },
-    { label: 'Reference', value: watch.referenceNumber, icon: <FileText className="w-5 h-5" /> },
-    { label: 'Movement', value: watch.movementType, icon: <Clock className="w-5 h-5" /> },
-    { label: 'Case Size', value: watch.caseSize ? `${watch.caseSize}mm` : null, icon: <Maximize2 className="w-5 h-5" /> },
-    { label: 'Case Material', value: watch.caseMaterial, icon: <Shield className="w-5 h-5" /> },
-    { label: 'Case Shape', value: watch.caseShape, icon: <div className="w-5 h-5 border-2 rounded-sm" /> },
-    { label: 'Dial Color', value: watch.dialColor, icon: <div className="w-5 h-5 rounded-full border" style={{ backgroundColor: watch.dialColor?.toLowerCase() }} /> },
-    { label: 'Strap Material', value: watch.strapMaterial, icon: <CreditCard className="w-5 h-5" /> },
-    { label: 'Strap Color', value: watch.strapColor, icon: <div className="w-5 h-5 rounded-md border" style={{ backgroundColor: watch.strapColor?.toLowerCase() }} /> },
-    { label: 'Clasp Type', value: watch.claspType, icon: <Shield className="w-5 h-5" /> },
-    { label: 'Bezel Material', value: watch.bezelMaterial, icon: <Maximize2 className="w-5 h-5" /> },
-    { label: 'Glass', value: watch.glass, icon: <Shield className="w-5 h-5" /> },
-    { label: 'Condition', value: watch.condition, icon: <CheckCircle className="w-5 h-5" /> },
-    { label: 'Year', value: watch.modelYear, icon: <Calendar className="w-5 h-5" /> },
-    { label: 'Water Resistance', value: watch.waterResistance, icon: <div className="text-xs font-bold">H2O</div> },
-    { label: 'Power Reserve', value: watch.powerReserve ? `${watch.powerReserve}h` : null, icon: <Clock className="w-5 h-5" /> },
-  ].filter(s => s.value);
-
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-8">
       {/* Breadcrumb */}
@@ -197,9 +171,16 @@ const WatchDetailsPage: React.FC<WatchDetailsPageProps> = ({ watch }) => {
                 productId={watch.id}
                 productType="watch"
                 className="p-3 rounded-full shadow-lg border backdrop-blur-sm"
-                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
               />
-              <button className="p-3 rounded-full shadow-lg border backdrop-blur-sm" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <button
+                onClick={async () => {
+                  const ok = await copyProductUrlToClipboard('watch', watch.id);
+                  toast[ok ? 'success' : 'error'](ok ? 'Link copied to clipboard!' : 'Failed to copy link');
+                }}
+                className="p-3 rounded-full shadow-lg border backdrop-blur-sm"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+                title="Share"
+              >
                 <Share2 className="w-5 h-5" />
               </button>
             </div>
@@ -326,28 +307,6 @@ const WatchDetailsPage: React.FC<WatchDetailsPageProps> = ({ watch }) => {
             </button>
           </div>
 
-          <div className="space-y-6">
-            <h3 className="text-xl font-bold border-b pb-4" style={{ borderColor: 'var(--border)' }}>Specifications</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
-              {specifications.map((spec, idx) => (
-                <div key={idx} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 text-muted-foreground">
-                    <span style={{ color: 'var(--status-warning)' }}>{spec.icon}</span>
-                    <span className="text-sm font-medium">{spec.label}</span>
-                  </div>
-                  <span className="font-bold text-sm" style={{ color: 'var(--foreground)' }}>{spec.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {watch.description && (
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold">About This Timepiece</h3>
-              <p className="leading-relaxed text-muted-foreground">{watch.description}</p>
-            </div>
-          )}
-
           <div 
             className="p-6 rounded-3xl border-2 border-dashed space-y-4"
             style={{ 
@@ -365,30 +324,222 @@ const WatchDetailsPage: React.FC<WatchDetailsPageProps> = ({ watch }) => {
             </p>
           </div>
 
-          {watch.seller && (
-            <div className="p-6 rounded-3xl border space-y-4" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-              <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Sold & Shipped By</h4>
-              <div className="flex items-center gap-4">
-                {watch.seller.companyLogo ? (
-                  <div className="relative w-12 h-12 rounded-xl overflow-hidden border">
-                    <Image src={watch.seller.companyLogo} alt={watch.seller.companyName} fill className="object-cover" />
+        </div>
+      </div>
+
+      {/* Detailed Information Tabs - like Diamond, Jewelry, Bullion */}
+      <div className="mt-12">
+        <div className="border-b" style={{ borderColor: 'var(--border)' }}>
+          <nav className="flex space-x-8">
+            {[
+              { id: 'overview' as const, label: 'Overview', icon: Eye },
+              { id: 'specifications' as const, label: 'Specifications', icon: Award },
+              ...(watch.seller ? [{ id: 'seller' as const, label: 'Seller Info', icon: Star }] : []),
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors duration-200`}
+                style={activeTab === tab.id ? { borderColor: 'var(--primary)', color: 'var(--primary)' } : { borderColor: 'transparent', color: 'var(--muted-foreground)' }}
+              >
+                <tab.icon className="w-4 h-4" />
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        <div className="py-8">
+          {activeTab === 'overview' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--foreground)' }}>Watch Summary</h3>
+                  <div className="rounded-2xl border p-6 space-y-4" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                    {[
+                      { icon: '⌚', label: 'Brand', value: watch.brand },
+                      { icon: '📋', label: 'Model', value: watch.model },
+                      { icon: '🔢', label: 'Reference', value: watch.referenceNumber || watch.stockNumber },
+                      { icon: '💰', label: 'Price', value: formatPrice(watch.price) },
+                      { icon: '⏱️', label: 'Movement', value: watch.movementType },
+                      { icon: '📐', label: 'Case Size', value: watch.caseSize ? `${watch.caseSize}mm` : null },
+                      { icon: '🎨', label: 'Dial Color', value: watch.dialColor },
+                      { icon: '📅', label: 'Year', value: watch.modelYear },
+                      { icon: '✓', label: 'Condition', value: watch.condition },
+                    ].filter(item => item.value).map(item => (
+                      <div key={item.label} className="flex items-center justify-between py-2 border-b last:border-0" style={{ borderColor: 'var(--border)' }}>
+                        <div className="flex items-center gap-3">
+                          <span className="text-lg">{item.icon}</span>
+                          <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>{item.label}</span>
+                        </div>
+                        <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{item.value || 'N/A'}</span>
+                      </div>
+                    ))}
                   </div>
-                ) : (
-                  <div 
-                    className="w-12 h-12 rounded-xl flex items-center justify-center font-bold"
-                    style={{ 
-                      backgroundColor: 'color-mix(in srgb, var(--status-warning) 10%, transparent)', 
-                      color: 'var(--status-warning)' 
-                    }}
-                  >
-                    {watch.seller.companyName.charAt(0)}
+                </div>
+              </div>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--foreground)' }}>Included Items</h3>
+                  <div className="rounded-2xl border p-6 space-y-4" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: 'var(--border)' }}>
+                      <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>Box</span>
+                      <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{watch.boxIncluded ? 'Original Box' : 'Not Included'}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b" style={{ borderColor: 'var(--border)' }}>
+                      <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>Papers</span>
+                      <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{watch.papersIncluded ? 'Original Papers' : 'Not Included'}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 last:border-0" style={{ borderColor: 'var(--border)' }}>
+                      <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>Warranty Card</span>
+                      <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{watch.warrantyCardIncluded ? 'Included' : 'Not Included'}</span>
+                    </div>
+                  </div>
+                </div>
+                {watch.description && (
+                  <div>
+                    <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--foreground)' }}>About This Timepiece</h3>
+                    <div className="rounded-2xl border p-6" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                      <p className="leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>{watch.description}</p>
+                    </div>
                   </div>
                 )}
-                <div>
-                  <p className="font-bold text-lg">{watch.seller.companyName}</p>
-                  <div className="flex items-center gap-1 text-xs text-green-600 font-bold">
-                    <CheckCircle className="w-3 h-3" />
-                    Verified Seller
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'specifications' && (
+            <div className="space-y-8">
+              <div>
+                <h3 className="text-xl font-bold mb-6" style={{ color: 'var(--foreground)' }}>Detailed Specifications</h3>
+                
+                {/* Case & Dial */}
+                <div className="rounded-2xl border p-6 mb-6" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                  <h4 className="font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
+                    <Maximize2 className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
+                    Case & Dial
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {[
+                      { label: 'Brand', value: watch.brand },
+                      { label: 'Model', value: watch.model },
+                      { label: 'Reference Number', value: watch.referenceNumber },
+                      { label: 'Stock Number', value: watch.stockNumber },
+                      { label: 'Case Size', value: watch.caseSize ? `${watch.caseSize}mm` : null },
+                      { label: 'Case Material', value: watch.caseMaterial },
+                      { label: 'Case Shape', value: watch.caseShape },
+                      { label: 'Case Back', value: watch.caseBack },
+                      { label: 'Crown Type', value: watch.crownType },
+                      { label: 'Dial Color', value: watch.dialColor },
+                      { label: 'Bezel Type', value: watch.bezelType },
+                      { label: 'Bezel Material', value: watch.bezelMaterial },
+                      { label: 'Glass', value: watch.glass },
+                      { label: 'Stones on Dial', value: watch.stonesOnDial },
+                    ].filter(s => s.value).map(spec => (
+                      <div key={spec.label} className="flex justify-between py-2 border-b last:border-0" style={{ borderColor: 'var(--border)' }}>
+                        <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>{spec.label}</span>
+                        <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{String(spec.value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Movement */}
+                <div className="rounded-2xl border p-6 mb-6" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                  <h4 className="font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
+                    <Clock className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
+                    Movement
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {[
+                      { label: 'Movement Type', value: watch.movementType },
+                      { label: 'Calibre', value: watch.calibre },
+                      { label: 'Movement Details', value: watch.movementDetails },
+                      { label: 'Power Reserve', value: watch.powerReserve ? `${watch.powerReserve} hours` : null },
+                      { label: 'Display', value: watch.display },
+                    ].filter(s => s.value).map(spec => (
+                      <div key={spec.label} className="flex justify-between py-2 border-b last:border-0" style={{ borderColor: 'var(--border)' }}>
+                        <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>{spec.label}</span>
+                        <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{String(spec.value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Strap & Clasp */}
+                <div className="rounded-2xl border p-6 mb-6" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                  <h4 className="font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
+                    <CreditCard className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
+                    Strap & Clasp
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {[
+                      { label: 'Strap Material', value: watch.strapMaterial },
+                      { label: 'Strap Color', value: watch.strapColor },
+                      { label: 'Clasp Type', value: watch.claspType },
+                      { label: 'Clasp Material', value: watch.claspMaterial },
+                      { label: 'Lug Width', value: watch.lugWidth ? `${watch.lugWidth}mm` : null },
+                      { label: 'Wrist Size Fit', value: watch.wristSizeFit },
+                    ].filter(s => s.value).map(spec => (
+                      <div key={spec.label} className="flex justify-between py-2 border-b last:border-0" style={{ borderColor: 'var(--border)' }}>
+                        <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>{spec.label}</span>
+                        <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{String(spec.value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Additional Features */}
+                <div className="rounded-2xl border p-6" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                  <h4 className="font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
+                    <Award className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
+                    Additional Features
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {[
+                      { label: 'Water Resistance', value: watch.waterResistance },
+                      { label: 'Complications', value: watch.complications },
+                      { label: 'Features', value: watch.features },
+                      { label: 'Gender', value: watch.gender },
+                      { label: 'Collection', value: watch.collection },
+                      { label: 'Model Year', value: watch.modelYear },
+                      { label: 'Condition', value: watch.condition },
+                      { label: 'Certification', value: watch.certification },
+                    ].filter(s => s.value).map(spec => (
+                      <div key={spec.label} className="flex justify-between py-2 border-b last:border-0" style={{ borderColor: 'var(--border)' }}>
+                        <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>{spec.label}</span>
+                        <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{String(spec.value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'seller' && watch.seller && (
+            <div className="space-y-6">
+              <h3 className="text-xl font-bold mb-6" style={{ color: 'var(--foreground)' }}>Seller Information</h3>
+              <div className="rounded-2xl border p-6" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                <div className="flex items-center gap-4">
+                  {watch.seller.companyLogo ? (
+                    <div className="relative w-16 h-16 rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
+                      <Image src={watch.seller.companyLogo} alt={watch.seller.companyName} fill className="object-cover" />
+                    </div>
+                  ) : (
+                    <div 
+                      className="w-16 h-16 rounded-xl flex items-center justify-center font-bold text-xl"
+                      style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
+                    >
+                      {watch.seller.companyName.charAt(0)}
+                    </div>
+                  )}
+                  <div>
+                    <h4 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>{watch.seller.companyName}</h4>
+                    <div className="flex items-center gap-1 mt-1 text-sm font-medium" style={{ color: 'var(--status-success)' }}>
+                      <CheckCircle className="w-4 h-4" />
+                      Verified Seller
+                    </div>
                   </div>
                 </div>
               </div>

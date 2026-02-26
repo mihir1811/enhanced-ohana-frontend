@@ -29,6 +29,8 @@ import { cartService } from "@/services/cartService";
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
 import { useRouter } from 'next/navigation'
+import { toast } from 'react-hot-toast'
+import { copyProductUrlToClipboard } from '@/lib/shareUtils'
 
 interface GemstoneDetailsPageProps {
   gemstone: GemstonItem | null;
@@ -291,6 +293,27 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
                 </div>
               </div>
             )}
+
+            {/* Image overlay - Wishlist & Share (like watches) */}
+            <div className="absolute top-4 left-4 flex gap-2">
+              <WishlistButton
+                productId={Number(gemstone.id)}
+                productType="gemstone"
+                className="p-3 rounded-full shadow-lg border backdrop-blur-sm"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+              />
+              <button
+                onClick={async () => {
+                  const ok = await copyProductUrlToClipboard('gemstone', gemstone.id);
+                  toast[ok ? 'success' : 'error'](ok ? 'Link copied to clipboard!' : 'Failed to copy link');
+                }}
+                className="p-3 rounded-full shadow-lg border backdrop-blur-sm"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                title="Share"
+              >
+                <Share2 className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Thumbnail Gallery */}
@@ -425,7 +448,7 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
               <span>{isAddingToCart ? 'Adding...' : 'Add to Cart'}</span>
             </button>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <button 
                 onClick={handleChatWithSeller}
                 className="flex items-center justify-center space-x-2 py-3 rounded-xl border transition-colors"
@@ -433,10 +456,6 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
               >
                 <MessageSquare className="w-4 h-4" />
                 <span>Chat</span>
-              </button>
-              <button className="flex items-center justify-center space-x-2 py-3 rounded-xl border transition-colors" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
-                <Share2 className="w-4 h-4" />
-                <span>Share</span>
               </button>
               <button className="flex items-center justify-center space-x-2 py-3 rounded-xl border transition-colors" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
                 <Download className="w-4 h-4" />

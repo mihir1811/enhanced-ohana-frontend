@@ -22,6 +22,8 @@ import { cartService } from '@/services/cartService';
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
 import { useRouter } from 'next/navigation'
+import { toast } from 'react-hot-toast'
+import { copyProductUrlToClipboard } from '@/lib/shareUtils'
 
 interface MeleeDiamondDetailsPageProps {
   diamond: Diamond | null;
@@ -171,7 +173,15 @@ const MeleeDiamondDetailsPage: React.FC<MeleeDiamondDetailsPageProps> = ({ diamo
                 className="p-3 rounded-full shadow-lg transition-all duration-200 border backdrop-blur-sm"
                 style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
               />
-              <button className="p-3 rounded-full shadow-lg transition-all duration-200 border backdrop-blur-sm" style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}>
+              <button
+                onClick={async () => {
+                  const ok = await copyProductUrlToClipboard('meleeDiamond', diamond.id);
+                  toast[ok ? 'success' : 'error'](ok ? 'Link copied to clipboard!' : 'Failed to copy link');
+                }}
+                className="p-3 rounded-full shadow-lg transition-all duration-200 border backdrop-blur-sm"
+                style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
+                title="Share"
+              >
                 <Share2 className="w-5 h-5" />
               </button>
             </div>
@@ -327,9 +337,6 @@ const MeleeDiamondDetailsPage: React.FC<MeleeDiamondDetailsPageProps> = ({ diamo
                 showText={false}
                 className="font-semibold"
               />
-              <button className="px-6 py-4 border-2 font-semibold rounded-2xl transition-all duration-200" style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}>
-                <Share2 className="w-5 h-5" />
-              </button>
             </div>
             
             {/* Chat with Seller Button */}

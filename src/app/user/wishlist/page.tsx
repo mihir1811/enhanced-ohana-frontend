@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Heart, Grid, List } from 'lucide-react';
 import { useWishlistActions } from '@/hooks/useWishlist';
 import { transformWishlistItemToUnified, UnifiedProduct, WishlistUnifiedProduct } from '@/types/unified-product';
+import { getProductUrl, getProductPath } from '@/lib/shareUtils';
 import WishlistProductCard from '@/components/user/WishlistProductCard';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
@@ -91,26 +92,14 @@ export default function UserWishlistPage() {
   };
 
   const handleViewProduct = (product: UnifiedProduct) => {
-    // Navigate to product details page based on product type
-    const id = String(product.id);
-    switch (product.productType) {
-      case 'diamond':
-        router.push(`/product/diamond/${id}`);
-        break;
-      case 'gemstone':
-        router.push(`/product/gemstone/${id}`);
-        break;
-      case 'jewellery':
-        router.push(`/product/jewelry/${id}`);
-        break;
-      default:
-        router.push(`/product/${id}`);
-    }
+    const type = product.productType as 'diamond' | 'meleeDiamond' | 'gemstone' | 'jewellery' | 'watch' | 'bullion';
+    const path = getProductPath(type, product.id);
+    router.push(path);
   };
 
-  const handleShareProduct = (productId: string | number) => {
-    // TODO: Implement share functionality
-    const url = `${window.location.origin}/product/${productId}`;
+  const handleShareProduct = (product: UnifiedProduct) => {
+    const type = product.productType as 'diamond' | 'meleeDiamond' | 'gemstone' | 'jewellery' | 'watch' | 'bullion';
+    const url = getProductUrl(type, product.id);
     navigator.clipboard.writeText(url).then(() => {
       toast.success('Link copied to clipboard!');
     }).catch(() => {
@@ -261,7 +250,7 @@ export default function UserWishlistPage() {
               onRemove={() => handleRemoveItem(product.wishlistItemId)}
               onAddToCart={() => handleAddToCart(product.id)}
               onView={() => handleViewProduct(product)}
-              onShare={() => handleShareProduct(product.id)}
+              onShare={() => handleShareProduct(product)}
             />
           ))}
         </div>

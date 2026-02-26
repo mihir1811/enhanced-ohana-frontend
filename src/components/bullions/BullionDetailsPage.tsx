@@ -27,6 +27,8 @@ import { cartService } from '@/services/cartService';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
+import { copyProductUrlToClipboard } from '@/lib/shareUtils';
 
 interface BullionDetailsPageProps {
   bullion: BullionProduct | null;
@@ -147,6 +149,26 @@ const BullionDetailsPage: React.FC<BullionDetailsPageProps> = ({ bullion }) => {
               height={600}
               className="w-full h-full object-contain p-8 transition-transform duration-500 group-hover:scale-105"
             />
+            {/* Image overlay - Wishlist & Share (like watches) */}
+            <div className="absolute top-4 left-4 flex gap-2">
+              <WishlistButton
+                productId={Number(bullion.id)}
+                productType="jewellery"
+                className="p-3 rounded-full shadow-lg border backdrop-blur-sm"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+              />
+              <button
+                onClick={async () => {
+                  const ok = await copyProductUrlToClipboard('bullion', bullion.id);
+                  toast[ok ? 'success' : 'error'](ok ? 'Link copied to clipboard!' : 'Failed to copy link');
+                }}
+                className="p-3 rounded-full shadow-lg border backdrop-blur-sm"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                title="Share"
+              >
+                <Share2 className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
 

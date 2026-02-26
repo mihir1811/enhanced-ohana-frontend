@@ -4,8 +4,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { WatchProduct, MovementType, DisplayType, Gender } from '@/services/watch.service';
-import { Shield, Award, Grid, List, Loader2, X, ChevronDown, Filter, Search, ArrowUpDown, ShoppingCart, Eye, Clock, Watch as WatchIcon, MoreHorizontal } from 'lucide-react';
-import { SECTION_WIDTH } from '@/lib/constants';
+import { Shield, Award, Grid, List, X, ChevronDown, Filter, Search, ArrowUpDown, ShoppingCart, Eye, Clock, Watch as WatchIcon, MoreHorizontal } from 'lucide-react';
 import WishlistButton from '@/components/shared/WishlistButton';
 import CompareButton from '@/components/compare/CompareButton';
 import Pagination from '../ui/Pagination';
@@ -55,13 +54,13 @@ const FilterSection = ({ title, children, isOpen = false, count = 0, onToggle }:
     <div className="border-b" style={{ borderColor: 'var(--border)' }}>
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors group"
+        className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors group"
         style={{ color: 'var(--foreground)' }}
       >
         <div className="flex items-center gap-2">
           <span 
             className="text-sm font-semibold transition-colors"
-            style={{ color: isOpen ? 'var(--status-warning)' : 'inherit' }}
+            style={{ color: isOpen ? 'var(--primary)' : 'inherit' }}
           >
             {title}
           </span>
@@ -79,11 +78,11 @@ const FilterSection = ({ title, children, isOpen = false, count = 0, onToggle }:
         </div>
         <ChevronDown
           className={`w-4 h-4 transition-all duration-300 ${isOpen ? 'rotate-180' : ''}`}
-          style={{ color: isOpen ? 'var(--status-warning)' : 'var(--muted-foreground)' }}
+          style={{ color: isOpen ? 'var(--primary)' : 'var(--muted-foreground)' }}
         />
       </button>
       {isOpen && (
-        <div className="px-4 pb-4 pt-2 animate-in fade-in slide-in-from-top-2 duration-300" style={{ backgroundColor: 'var(--muted)' }}>
+        <div className="px-6 pb-5 pt-3 animate-in fade-in slide-in-from-top-2 duration-300" style={{ backgroundColor: 'color-mix(in srgb, var(--foreground) 3%, transparent)' }}>
           {children}
         </div>
       )}
@@ -154,14 +153,14 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
                 onChange={() => handleToggle(option.value)}
                 className="w-4 h-4 rounded cursor-pointer transition-colors"
                 style={{ 
-                  accentColor: 'var(--status-warning)',
+                  accentColor: 'var(--primary)',
                   borderColor: 'var(--border)'
                 }}
               />
             </div>
             <span 
               className="text-sm transition-colors flex-1"
-              style={{ color: selectedValues.includes(option.value) ? 'var(--status-warning)' : 'var(--muted-foreground)' }}
+              style={{ color: selectedValues.includes(option.value) ? 'var(--primary)' : 'var(--muted-foreground)' }}
             >
               {option.label}
             </span>
@@ -173,7 +172,7 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
         <button
           onClick={() => setShowAll(!showAll)}
           className="text-xs font-medium hover:underline mt-1"
-          style={{ color: 'var(--status-warning)' }}
+          style={{ color: 'var(--primary)' }}
         >
           {showAll ? 'Show Less' : `Show All (${filteredOptions.length})`}
         </button>
@@ -768,8 +767,8 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
         }
       `}</style>
       <div className="min-h-screen transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
-      <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12`}>
-        <div className="flex flex-col lg:flex-row gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+        <div className="flex flex-col md:flex-row gap-6 relative">
           {/* Mobile Filter Drawer */}
           {drawerVisible && (
             <>
@@ -788,7 +787,7 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
                 }}
               >
                 {/* Header */}
-                <div className="border-b px-4 py-4 sticky top-0 z-10" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                <div className="border-b px-6 py-5 sticky top-0 z-10" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                   <div className="flex items-center justify-between mb-3">
                     <h2 className="text-xl font-semibold" style={{ color: 'var(--foreground)' }}>
                       Filters
@@ -824,7 +823,7 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
                             priceMax: 1000000,
                           })}
                           className="text-sm font-medium transition-colors"
-                          style={{ color: 'var(--status-warning)' }}
+                          style={{ color: 'var(--primary)' }}
                         >
                           Clear all
                         </button>
@@ -845,37 +844,14 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
                 </div>
 
                 {/* Footer Actions */}
-                <div className="p-4 border-t sticky bottom-0 z-10" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-                  <div className="flex gap-4">
-                    <button
-                      onClick={() => {
-                        setFilters({
-                          brand: [],
-                          movementType: [],
-                          gender: [],
-                          condition: [],
-                          caseMaterial: [],
-                          dialColor: [],
-                          priceMin: 0,
-                          priceMax: 1000000,
-                        });
-                        setShowFilters(false);
-                      }}
-                      className="flex-1 py-3 text-sm font-bold border rounded-xl transition-colors"
-                      style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
-                    >
-                      Reset
-                    </button>
-                    <button
-                      onClick={() => setShowFilters(false)}
-                      className="flex-[2] py-3 text-white text-sm font-bold rounded-xl shadow-lg"
-                      style={{ 
-                        background: 'linear-gradient(to right, var(--status-warning), color-mix(in srgb, var(--status-warning) 85%, black))'
-                      }}
-                    >
-                      Apply Filters
-                    </button>
-                  </div>
+                <div className="p-6 border-t sticky bottom-0 z-10" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                  <button
+                    onClick={() => setShowFilters(false)}
+                    className="w-full py-3 text-sm font-bold rounded-xl transition-colors"
+                    style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+                  >
+                    Show Results
+                  </button>
                 </div>
               </div>
             </>
@@ -884,9 +860,9 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
           {/* Main Content */}
           <main className="flex-1 min-w-0">
             {/* Results Header - aligned with diamond listing layout */}
-            <div className="rounded-2xl border p-4 mb-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border rounded-lg mb-6" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
               <div>
-                <h2 className="text-xl md:text-2xl font-black tracking-tight" style={{ color: 'var(--foreground)' }}>
+                <h2 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>
                   {totalCount > 0 ? `${totalCount.toLocaleString()} Watches Found` : title}
                 </h2>
                 <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
@@ -898,8 +874,7 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
-                {/* Filters button (small icon, like diamond listing) */}
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   className="w-8 h-8 flex items-center justify-center rounded-lg shadow border active:scale-95 transition"
                   style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
@@ -908,44 +883,23 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
                 >
                   <Filter className="w-4 h-4" style={{ color: 'var(--foreground)' }} />
                 </button>
-
-                {/* View mode toggle */}
-                <div className="flex items-center gap-2 p-1 rounded-xl border" style={{ backgroundColor: 'var(--muted)', borderColor: 'var(--border)' }}>
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className="cursor-pointer w-8 h-8 flex items-center justify-center rounded-lg transition-all"
-                    style={{ 
-                      backgroundColor: viewMode === 'grid' ? 'var(--card)' : 'transparent',
-                      color: viewMode === 'grid' ? 'var(--status-warning)' : 'var(--muted-foreground)'
-                    }}
-                    aria-label="Grid view"
-                  >
-                    <Grid size={18} />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className="cursor-pointer w-8 h-8 flex items-center justify-center rounded-lg transition-all"
-                    style={{ 
-                      backgroundColor: viewMode === 'list' ? 'var(--card)' : 'transparent',
-                      color: viewMode === 'list' ? 'var(--status-warning)' : 'var(--muted-foreground)'
-                    }}
-                    aria-label="List view"
-                  >
-                    <List size={18} />
-                  </button>
-                </div>
-
-                {/* Sort select */}
-                <div className="relative md:w-48">
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="h-8 px-2 rounded-lg shadow border"
+                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                  aria-label="Items per page"
+                >
+                  {[5, 10, 15, 20].map((n) => (
+                    <option key={n} value={n}>{n} / page</option>
+                  ))}
+                </select>
+                <div className="relative md:w-40">
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="w-full appearance-none border rounded-xl px-4 py-2.5 text-sm font-bold pr-10 outline-none focus:ring-1 transition-all"
-                    style={{ 
-                      backgroundColor: 'var(--muted)', 
-                      borderColor: 'var(--border)', 
-                      color: 'var(--foreground)'
-                    }}
+                    className="h-8 w-full appearance-none pl-8 pr-2 rounded-lg shadow border"
+                    style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                     aria-label="Sort watches"
                   >
                     <option value="newest">Newest</option>
@@ -953,27 +907,44 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
                     <option value="price_high">Price: High to Low</option>
                     <option value="brand">Brand: A-Z</option>
                   </select>
-                  <ArrowUpDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                  <ArrowUpDown className="absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none" size={14} style={{ color: 'var(--muted-foreground)' }} />
+                </div>
+                <div className="flex items-center shadow border rounded-lg" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg transition"
+                    style={{ backgroundColor: viewMode === 'grid' ? 'var(--primary)' : 'transparent', color: viewMode === 'grid' ? 'var(--primary-foreground)' : 'var(--muted-foreground)' }}
+                    aria-label="Grid view"
+                  >
+                    <Grid className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg transition"
+                    style={{ backgroundColor: viewMode === 'list' ? 'var(--primary)' : 'transparent', color: viewMode === 'list' ? 'var(--primary-foreground)' : 'var(--muted-foreground)' }}
+                    aria-label="List view"
+                  >
+                    <List className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             </div>
 
             {/* Brand Filter Bar (Horizontal) */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-8 scrollbar-thin">
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-4 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-thumb-muted-foreground/30">
             <button
               onClick={() => setFilters({ ...filters, brand: [] })}
-              className="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 h-[38px] sm:h-[44px] rounded-full border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shadow-sm"
+              className="flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-colors"
               style={{ 
-                backgroundColor: filters.brand.length === 0 ? 'var(--status-warning)' : 'var(--card)',
-                borderColor: filters.brand.length === 0 ? 'var(--status-warning)' : 'var(--border)',
-                color: filters.brand.length === 0 ? 'white' : 'var(--foreground)'
+                backgroundColor: filters.brand.length === 0 ? 'var(--primary)' : 'var(--card)',
+                borderColor: filters.brand.length === 0 ? 'var(--primary)' : 'var(--border)',
+                color: filters.brand.length === 0 ? 'var(--primary-foreground)' : 'var(--foreground)'
               }}
             >
               <span 
-                className="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full text-[11px] font-bold border"
+                className="inline-flex items-center justify-center w-7 h-7 rounded-full text-[11px] font-bold"
                 style={{ 
-                  backgroundColor: filters.brand.length === 0 ? 'rgba(255,255,255,0.2)' : 'var(--muted)',
-                  borderColor: 'rgba(255,255,255,0.4)'
+                  backgroundColor: filters.brand.length === 0 ? 'rgba(255,255,255,0.2)' : 'var(--muted)'
                 }}
               >
                 All
@@ -991,11 +962,11 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
                         : [...filters.brand, opt.value];
                       setFilters({ ...filters, brand: next });
                     }}
-                    className="flex items-center gap-2 sm:gap-3 pl-1 pr-3 sm:pl-1 sm:pr-4 py-1.5 rounded-full border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shadow-sm"
+                    className="flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-colors"
                     style={{ 
-                      backgroundColor: isSelected ? 'var(--status-warning)' : 'var(--card)',
-                      borderColor: isSelected ? 'var(--status-warning)' : 'var(--border)',
-                      color: isSelected ? 'white' : 'var(--foreground)'
+                      backgroundColor: isSelected ? 'var(--primary)' : 'var(--card)',
+                      borderColor: isSelected ? 'var(--primary)' : 'var(--border)',
+                      color: isSelected ? 'var(--primary-foreground)' : 'var(--foreground)'
                     }}
                   >
                     {opt.logo ? (
@@ -1037,13 +1008,16 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
 
         {/* Results Grid/List */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-24 rounded-2xl border shadow-sm" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-            <Loader2 className="w-12 h-12 animate-spin mb-4" style={{ color: 'var(--status-warning)' }} />
-            <p className="font-bold" style={{ color: 'var(--muted-foreground)' }}>Curating luxury timepieces...</p>
+          <div className="flex flex-col items-center justify-center py-12">
+            <div
+              className="animate-spin rounded-full h-12 w-12 border-b-2 mb-4"
+              style={{ borderColor: 'var(--primary)' }}
+            />
+            <p className="font-medium" style={{ color: 'var(--muted-foreground)' }}>Curating luxury timepieces...</p>
           </div>
         ) : products.length > 0 ? (
-          <div className="space-y-8">
-            <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6" : "flex flex-col gap-6"}>
+          <div className="space-y-4">
+            <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" : "flex flex-col gap-4"}>
               {products.map((product) => (
                 viewMode === 'grid' ? (
                   <WatchGridCard key={product.id} product={product} />
@@ -1065,19 +1039,16 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
             )}
           </div>
         ) : (
-          <div 
-            className="flex flex-col items-center justify-center py-24 rounded-2xl border shadow-sm text-center px-6"
+          <div
+            className="text-center py-12 border rounded-lg"
             style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
           >
-            <div 
-              className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
-              style={{ backgroundColor: 'var(--muted)' }}
-            >
-              <Search className="w-10 h-10" style={{ color: 'var(--muted-foreground)' }} />
-            </div>
-            <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>No timepieces found</h3>
-            <p className="max-w-sm mb-8" style={{ color: 'var(--muted-foreground)' }}>
-              Try adjusting your filters to find what you are looking for.
+            <div className="text-6xl mb-4">⌚</div>
+            <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
+              No watches found
+            </h3>
+            <p className="mb-6" style={{ color: 'var(--muted-foreground)' }}>
+              Try adjusting your filters to see more results
             </p>
             <button
               onClick={() => setFilters({
@@ -1090,8 +1061,8 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
                 priceMin: 0,
                 priceMax: 1000000,
               })}
-              className="px-8 py-3 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95"
-              style={{ backgroundColor: 'var(--status-warning)' }}
+              className="px-8 py-3 font-bold rounded-xl transition-all active:scale-95"
+              style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
             >
               Clear All Filters
             </button>

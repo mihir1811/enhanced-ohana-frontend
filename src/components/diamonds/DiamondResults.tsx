@@ -8,6 +8,8 @@ import { ChevronLeft, ChevronRight, ShoppingCart, Share2, Download, Star, Award,
 import Image from 'next/image'
 import CompareButton from '@/components/compare/CompareButton'
 import WishlistButton from '@/components/shared/WishlistButton'
+import { toast } from 'react-hot-toast'
+import { copyProductUrlToClipboard } from '@/lib/shareUtils'
 
 // Modern carousel and details for Quick View modal
 interface QuickViewDiamondModalContentProps {
@@ -181,7 +183,17 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
                   variant="default"
                   className="shadow-lg"
                 />
-                <button className="p-2.5 rounded-full shadow-lg transition-all duration-200 group border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                <button
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    const type = Number(diamond.caratWeight) < 0.2 ? 'meleeDiamond' : 'diamond';
+                    const ok = await copyProductUrlToClipboard(type, diamond.id);
+                    toast[ok ? 'success' : 'error'](ok ? 'Link copied to clipboard!' : 'Failed to copy link');
+                  }}
+                  className="p-2.5 rounded-full shadow-lg transition-all duration-200 group border"
+                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+                  title="Share"
+                >
                   <Share2 className="w-5 h-5 group-hover:scale-110 transition-transform" style={{ color: 'var(--foreground)' }} />
                 </button>
               </div>
@@ -428,7 +440,16 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
                 showText={true}
                 className="font-semibold rounded-xl text-sm sm:text-base px-4 sm:px-6 py-2.5 sm:py-3 border border-border text-foreground"
               />
-              <button className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 border font-semibold rounded-xl transition-all duration-200 text-sm sm:text-base" style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}>
+              <button
+                onClick={async () => {
+                  const type = Number(diamond.caratWeight) < 0.2 ? 'meleeDiamond' : 'diamond';
+                  const ok = await copyProductUrlToClipboard(type, diamond.id);
+                  toast[ok ? 'success' : 'error'](ok ? 'Link copied to clipboard!' : 'Failed to copy link');
+                }}
+                className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 border font-semibold rounded-xl transition-all duration-200 text-sm sm:text-base"
+                style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                title="Share"
+              >
                 <Share2 className="w-5 h-5" />
                 Share
               </button>

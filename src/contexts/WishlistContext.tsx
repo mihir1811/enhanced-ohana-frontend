@@ -43,9 +43,9 @@ type WishlistAction =
   | { type: 'SET_INITIALIZED'; payload: boolean };
 
 interface WishlistContextType extends WishlistState {
-  addToWishlist: (productId: number, productType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond') => Promise<boolean>;
+  addToWishlist: (productId: number, productType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond' | 'watch') => Promise<boolean>;
   removeFromWishlist: (wishlistItemId: number) => Promise<boolean>;
-  removeFromWishlistByProduct: (productId: number, explicitProductType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond') => Promise<boolean>;
+  removeFromWishlistByProduct: (productId: number, explicitProductType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond' | 'watch') => Promise<boolean>;
   isInWishlist: (productId: number) => boolean;
   loadWishlist: (page?: number, limit?: number) => Promise<void>;
   clearWishlist: () => Promise<boolean>;
@@ -157,7 +157,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   }, [token]);
 
   // Add item to wishlist
-  const addToWishlist = useCallback(async (productId: number, productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond' = 'jewellery'): Promise<boolean> => {
+  const addToWishlist = useCallback(async (productId: number, productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond' | 'watch' = 'jewellery'): Promise<boolean> => {
     if (!token) {
       dispatch({ type: 'SET_ERROR', payload: 'Please login to add items to wishlist' });
       return false;
@@ -216,7 +216,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   }, [token]);
 
   // Remove item from wishlist by product ID and type
-  const removeFromWishlistByProduct = useCallback(async (productId: number, explicitProductType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond'): Promise<boolean> => {
+  const removeFromWishlistByProduct = useCallback(async (productId: number, explicitProductType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond' | 'watch'): Promise<boolean> => {
     if (!token) {
       dispatch({ type: 'SET_ERROR', payload: 'Please login to manage wishlist' });
       return false;
@@ -231,7 +231,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       const itemToRemove = itemsArray.find(item => item.productId === productId);
       
       // Determine productType based on the product category or default to 'jewellery'
-      let productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond' = 'jewellery';
+      let productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond' | 'watch' = 'jewellery';
       
       if (explicitProductType) {
         productType = explicitProductType;
@@ -247,6 +247,8 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
           }
         } else if (category.includes('gem')) {
           productType = 'gemstone';
+        } else if (category.includes('watch')) {
+          productType = 'watch';
         } else {
           productType = 'jewellery';
         }
