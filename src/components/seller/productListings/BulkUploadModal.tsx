@@ -66,6 +66,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   };
 
   const [uploading, setUploading] = React.useState(false);
+  const [downloadingSample, setDownloadingSample] = React.useState(false);
   const [uploadResult, setUploadResult] = React.useState<{
     inserted?: number;
     failed?: number;
@@ -147,63 +148,35 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     }
   };
 
-  const handleSampleDownload = () => {
-    const headers = [
-      "stockNumber",
-      "pricePerCarat",
-      "totalPrice",
-      "caratWeight",
-      "shape",
-      "color",
-      "clarity",
-      "cut",
-      "polish",
-      "symmetry",
-      "fluorescence",
-      "measurement",
-      "table",
-      "depth",
-      "ratio",
-      "certificateCompanyName",
-      "certificateNumber",
-      "image1",
-      "videoURL",
-      "stoneType",
-    ];
-    const sampleRow = [
-      "12345",
-      "5000",
-      "7500",
-      "1.50",
-      "Round",
-      "D",
-      "VS1",
-      "Excellent",
-      "Excellent",
-      "Excellent",
-      "None",
-      "6.50x6.50x4.00",
-      "58",
-      "61.5",
-      "1.00",
-      "GIA",
-      "123456789",
-      "https://example.com/image.jpg",
-      "https://example.com/video.mp4",
-      "naturalDiamond",
-    ];
-    const csvContent = [headers.join(","), sampleRow.join(",")].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    if (link.download !== undefined) {
+  const SAMPLE_FILE_MAP: Record<string, string> = {
+    diamond: "/sample--diamond.xlsx",
+    meleeDiamond: "/sample-melee-diamond.xlsx",
+    gemstone: "/sample--gemstone.xlsx",
+    "melee-gemstone": "/sample--gemstone.xlsx",
+  };
+
+  const handleSampleDownload = async () => {
+    const samplePath = SAMPLE_FILE_MAP[productType] || SAMPLE_FILE_MAP.diamond;
+    const fileName = samplePath.split("/").pop() || "sample.xlsx";
+    setDownloadingSample(true);
+    try {
+      const res = await fetch(samplePath);
+      if (!res.ok) throw new Error("Failed to fetch sample");
+      const blob = await res.blob();
       const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", "sample-diamond.csv");
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
       link.style.visibility = "hidden";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+      toast.success(`Downloaded ${fileName}`);
+    } catch {
+      toast.error("Failed to download sample file");
+    } finally {
+      setDownloadingSample(false);
     }
   };
 
@@ -343,9 +316,20 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             <button
               type="button"
               onClick={handleSampleDownload}
-              className="w-full px-4 py-3 rounded-xl font-medium border border-[var(--border)] dark:border-slate-600 text-[var(--foreground)] hover:bg-[var(--muted)] dark:hover:bg-slate-800/50 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              disabled={downloadingSample}
+              className="w-full px-4 py-3 rounded-xl font-medium border border-[var(--border)] dark:border-slate-600 text-[var(--foreground)] hover:bg-[var(--muted)] dark:hover:bg-slate-800/50 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--ring)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Download Sample CSV
+              {downloadingSample ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Downloading...
+                </>
+              ) : (
+                <>
+                  <FileSpreadsheet className="w-4 h-4" />
+                  Download Sample Excel
+                </>
+              )}
             </button>
           </div>
 
