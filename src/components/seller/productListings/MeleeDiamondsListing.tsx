@@ -129,7 +129,7 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
             open={bulkModalOpen}
             onClose={() => setBulkModalOpen(false)}
             onFileSelect={handleBulkFileSelect}
-            productType="melee-diamond"
+            productType="meleeDiamond"
           />
           <button
             className={"cursor-pointer relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}

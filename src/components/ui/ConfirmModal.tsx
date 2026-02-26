@@ -24,11 +24,16 @@ export function ConfirmModal({
   preventAutoClose?: boolean
   children?: ReactNode
 }) {
-  // Fix: ensure body pointer-events is reset when modal closes (Radix dismissable-layer can leave it set)
+  // Fix: Radix Dialog leaves pointer-events: none on body after close (controlled dialogs).
+  // setTimeout ensures cleanup runs after Radix's internal teardown.
   useEffect(() => {
-    if (!open) {
+    if (open) return
+    const id = setTimeout(() => {
       document.body.style.pointerEvents = ""
-    }
+      document.body.style.overflow = ""
+      document.documentElement.style.overflow = ""
+    }, 50)
+    return () => clearTimeout(id)
   }, [open])
 
   return (
