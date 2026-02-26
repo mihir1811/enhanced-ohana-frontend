@@ -315,8 +315,9 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
               </div>
               <div className="text-right">
                 <div className="text-3xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>
-                  {diamond.price ? formatPrice(diamond.price) : 'POA'}
+                  {(diamond.totalPrice ?? diamond.price) ? formatPrice(diamond.totalPrice ?? diamond.price) : 'POA'}
                 </div>
+                <div className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Total Price</div>
                 {diamond.discount && (
                   <div className="text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>
                     Save {diamond.discount}% off retail
@@ -353,6 +354,13 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
 
           {/* Key Features Cards */}
           <div className="grid grid-cols-2 gap-4">
+            {/* Total Price card - always show first */}
+            <div className="rounded-2xl border p-4 hover:shadow-md transition-shadow duration-200" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 flex items-center justify-center text-2xl mb-3">💰</div>
+              <h3 className="font-semibold mb-1" style={{ color: 'var(--foreground)' }}>Total Price</h3>
+              <div className="text-xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>{(diamond.totalPrice ?? diamond.price) ? formatPrice(diamond.totalPrice ?? diamond.price) : 'POA'}</div>
+              <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Final price</p>
+            </div>
             {/* Show all main diamond fields as cards */}
             {[
               { label: 'Carat Weight', value: diamond.caratWeight, icon: '⚖️', color: 'from-blue-500 to-blue-600', description: 'Weight measurement' },
@@ -478,6 +486,7 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
                     {[
                       { icon: '💎', label: 'Shape', value: diamond.shape },
                       { icon: '⚖️', label: 'Carat Weight', value: diamond.caratWeight },
+                      { icon: '💰', label: 'Total Price', value: (diamond.totalPrice ?? diamond.price) ? formatPrice(diamond.totalPrice ?? diamond.price) : 'POA' },
                       { icon: '🎨', label: 'Color', value: diamond.color },
                       { icon: '🔍', label: 'Clarity', value: diamond.clarity },
                       { icon: '✂️', label: 'Cut', value: diamond.cut },
@@ -499,8 +508,8 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
                   <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--foreground)' }}>Investment Details</h3>
                   <div className="rounded-2xl border p-6 space-y-4" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                     <div className="flex justify-between items-center">
-                      <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>Current Price</span>
-                      <span className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>{diamond.price ? formatPrice(diamond.price) : 'POA'}</span>
+                      <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>Total Price</span>
+                      <span className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>{(diamond.totalPrice ?? diamond.price) ? formatPrice(diamond.totalPrice ?? diamond.price) : 'POA'}</span>
                     </div>
                     {diamond.rap && (
                       <div className="flex justify-between items-center">

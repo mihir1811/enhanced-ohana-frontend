@@ -366,6 +366,7 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
 
             {/* Price */}
             <div className="rounded-2xl p-6 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <div className="text-sm font-medium mb-1" style={{ color: 'var(--muted-foreground)' }}>Total Price</div>
               <div className="text-3xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>
                 {formatPrice(gemstone.totalPrice)}
               </div>
@@ -377,6 +378,12 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
 
           {/* Quick Specs */}
           <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <div className="text-sm mb-1" style={{ color: 'var(--muted-foreground)' }}>Total Price</div>
+              <div className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>
+                {formatPrice(gemstone.totalPrice)}
+              </div>
+            </div>
             <div className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
               <div className="text-sm mb-1" style={{ color: 'var(--muted-foreground)' }}>Carat Weight</div>
               <div className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>
@@ -467,6 +474,12 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
                 <h3 className="text-lg font-semibold mb-3" style={{ color: 'var(--foreground)' }}>Gemstone Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
+                    <span style={{ color: 'var(--muted-foreground)' }}>Total Price:</span>
+                    <span className="ml-2 font-medium" style={{ color: 'var(--foreground)' }}>
+                      {formatPrice(gemstone.totalPrice)}
+                    </span>
+                  </div>
+                  <div>
                     <span style={{ color: 'var(--muted-foreground)' }}>Type:</span>
                     <span className="ml-2 font-medium" style={{ color: 'var(--foreground)' }}>
                       {gemstone.gemType || "N/A"}
@@ -502,6 +515,12 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span style={{ color: 'var(--muted-foreground)' }}>Total Price:</span>
+                    <span className="font-medium" style={{ color: 'var(--foreground)' }}>
+                      {formatPrice(gemstone.totalPrice)}
+                    </span>
+                  </div>
                   <div className="flex justify-between">
                     <span style={{ color: 'var(--muted-foreground)' }}>Carat Weight:</span>
                     <span className="font-medium" style={{ color: 'var(--foreground)' }}>

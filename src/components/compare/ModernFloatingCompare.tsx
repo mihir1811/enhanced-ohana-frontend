@@ -10,7 +10,8 @@ const ModernFloatingCompare = () => {
     products, 
     removeProduct, 
     clearAll,
-    getCompareCount 
+    getCompareCount,
+    maxProducts 
   } = useCompare()
   
   const router = useRouter()
@@ -166,7 +167,7 @@ const ModernFloatingCompare = () => {
             {/* Progress Bar */}
             <div className="mb-4">
               <div className="flex items-center gap-1 mb-2">
-                {Array.from({ length: 4 }).map((_, index) => (
+                {Array.from({ length: maxProducts }).map((_, index) => (
                   <div
                     key={index}
                     className={`flex-1 h-2 rounded-full transition-colors duration-300 ${
@@ -176,7 +177,7 @@ const ModernFloatingCompare = () => {
                 ))}
               </div>
               <p className="text-xs text-gray-500 text-center">
-                {count === 4 ? 'Maximum reached' : `Add ${4 - count} more to compare`}
+                {count === maxProducts ? 'Maximum reached' : `Add ${maxProducts - count} more to compare`}
               </p>
             </div>
 
@@ -218,7 +219,7 @@ const ModernFloatingCompare = () => {
       </div>
 
       {/* Floating Add More Tip */}
-      {count < 4 && !isExpanded && (
+      {count < maxProducts && !isExpanded && (
         <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap opacity-75 animate-pulse">
           Click ⊕ on products to add
           <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>

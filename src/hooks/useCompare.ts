@@ -8,7 +8,8 @@ import {
   toggleCompareVisibility,
   setCompareVisibility,
   reorderCompareProducts,
-  CompareProduct
+  CompareProduct,
+  COMPARE_MAX_PRODUCTS
 } from '@/features/compare/compareSlice'
 import { Diamond } from '@/components/diamonds/DiamondResults'
 
@@ -20,7 +21,8 @@ export const useCompare = () => {
   const dispatch = useDispatch<AppDispatch>()
   const compareState = useSelector((state: RootState) => state.compare)
   const products = compareState?.products || []
-  const maxProducts = compareState?.maxProducts || 6
+  // Always use COMPARE_MAX_PRODUCTS (ignore any stale persisted maxProducts)
+  const maxProducts = COMPARE_MAX_PRODUCTS
   const isVisible = compareState?.isVisible || false
 
   const addProduct = useCallback((product: ComparableProduct, type: 'diamond' | 'gemstone' | 'jewelry' | 'watch') => {
@@ -76,7 +78,7 @@ export const useCompare = () => {
     return products.length
   }, [products.length])
 
-  const getProductsByType = useCallback((type: 'diamond' | 'gemstone' | 'jewelry') => {
+  const getProductsByType = useCallback((type: 'diamond' | 'gemstone' | 'jewelry' | 'watch') => {
     return products.filter(p => p.type === type)
   }, [products])
 

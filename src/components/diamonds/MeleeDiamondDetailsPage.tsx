@@ -278,6 +278,13 @@ const MeleeDiamondDetailsPage: React.FC<MeleeDiamondDetailsPageProps> = ({ diamo
 
           {/* Key Melee Features Cards */}
           <div className="grid grid-cols-2 gap-4">
+            {/* Total Price card - always show first */}
+            <div className="rounded-2xl border p-4 hover:shadow-md transition-shadow duration-200" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-3" style={{ backgroundColor: 'color-mix(in srgb, var(--chart-1) 15%, transparent)' }}>💰</div>
+              <h3 className="font-semibold mb-1" style={{ color: 'var(--foreground)' }}>Total Price</h3>
+              <div className="text-xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>{diamond.totalPrice ? formatPrice(diamond.totalPrice) : formatPrice(diamond.price)}</div>
+              <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Final parcel price</p>
+            </div>
             {[
               { label: 'Total Carat Weight', value: `${diamond.totalCaratWeight} ct`, icon: '⚖️', color: 'var(--chart-1)', description: 'Total parcel weight' },
               { label: 'Total Pieces', value: diamond.totalPcs, icon: '🔢', color: 'var(--chart-2)', description: 'Approximate piece count' },

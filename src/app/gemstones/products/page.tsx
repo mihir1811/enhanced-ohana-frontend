@@ -10,6 +10,7 @@ import Footer from '@/components/Footer';
 import { gemstoneService, GemstonItem } from '@/services/gemstoneService';
 import { GemstoneFilterValues } from '@/components/gemstones/GemstoneFilters';
 import WishlistButton from '@/components/shared/WishlistButton';
+import CompareButton from '@/components/compare/CompareButton';
 
 const SORT_OPTIONS = [
   { value: '-createdAt', label: 'Newest First' },
@@ -1501,7 +1502,19 @@ function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
               <Link href={`/gemstones/single/${item.id}`} className="text-lg font-medium" style={{ color: 'var(--foreground)' }}>
                 {item.name}
               </Link>
-              <WishlistButton productId={Number(item.id)} productType="gemstone" />
+              <div className="flex items-center gap-2">
+                <CompareButton
+                  product={{
+                    id: item.id,
+                    name: item.name,
+                    price: item.totalPrice ?? 0,
+                    images: [item.image1, item.image2, item.image3].filter(Boolean) as string[],
+                  }}
+                  productType="gemstone"
+                  size="sm"
+                />
+                <WishlistButton productId={Number(item.id)} productType="gemstone" />
+              </div>
             </div>
             
             <p className="text-sm mb-2" style={{ color: 'var(--muted-foreground)' }}>{item.skuCode}</p>
@@ -1531,6 +1544,16 @@ function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
               </div>
               
               <div className="flex items-center gap-2">
+                <CompareButton
+                  product={{
+                    id: item.id,
+                    name: item.name,
+                    price: item.totalPrice ?? 0,
+                    images: [item.image1, item.image2, item.image3].filter(Boolean) as string[],
+                  }}
+                  productType="gemstone"
+                  size="sm"
+                />
                 <button
                   onClick={goToDetails}
                   className="p-2 rounded-lg border"
@@ -1575,15 +1598,26 @@ function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
           </div>
         )}
         
+        <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
+          <CompareButton
+            product={{
+              id: item.id,
+              name: item.name,
+              price: item.totalPrice ?? 0,
+              images: [item.image1, item.image2, item.image3].filter(Boolean) as string[],
+            }}
+            productType="gemstone"
+            size="md"
+          />
+          {item.isOnAuction && (
+            <div className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
+              Auction
+            </div>
+          )}
+        </div>
         <div className="absolute top-3 right-3">
           <WishlistButton productId={Number(item.id)} productType="gemstone" />
         </div>
-        
-        {item.isOnAuction && (
-          <div className="absolute top-3 left-3 px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
-            Auction
-          </div>
-        )}
       </div>
       
       <div className="p-4" style={{ color: 'var(--foreground)' }}>
@@ -1629,6 +1663,16 @@ function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
             <ShoppingCart className="w-4 h-4" />
             Add to Cart
           </button>
+          <CompareButton
+            product={{
+              id: item.id,
+              name: item.name,
+              price: item.totalPrice ?? 0,
+              images: [item.image1, item.image2, item.image3].filter(Boolean) as string[],
+            }}
+            productType="gemstone"
+            size="sm"
+          />
           <button
             onClick={goToDetails}
             className="p-2 rounded border"

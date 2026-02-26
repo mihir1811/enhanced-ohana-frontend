@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useLayoutEffect } from 'react';
+import { useState, useEffect, useCallback, useLayoutEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   Grid, List, Search, X, ShoppingCart,

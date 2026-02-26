@@ -693,13 +693,14 @@ export default function DiamondResults({
 
   const totalPages = Math.ceil(totalCount / pageSize)
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | string) => {
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(price)
+    }).format(numPrice)
   }
 
   // Grid view: Professional diamond card inspired by industry standards
@@ -777,6 +778,14 @@ export default function DiamondResults({
             className="absolute top-3 right-3 z-20"
             size="md"
           />
+          {/* Compare - Top Left */}
+          <div className="absolute top-3 left-3 z-20" onClick={e => e.stopPropagation()}>
+            <CompareButton
+              product={diamond}
+              productType="diamond"
+              size="md"
+            />
+          </div>
         </div>
 
         {/* Card Content */}
@@ -797,6 +806,11 @@ export default function DiamondResults({
           <h3 className="text-sm font-bold mb-2 leading-snug" style={{ color: 'var(--foreground)' }}>
             {diamond.shape?.toUpperCase()} {diamond.caratWeight}CT {diamond.color} {diamond.cut || 'II'} {diamond.clarity || 'VG'} {diamond.polish || 'VG'} {diamond.symmetry || 'VG'} {diamond.fluorescence?.toUpperCase() || 'FNT'}
           </h3>
+
+          {/* Price */}
+          <div className="text-lg font-bold mb-2" style={{ color: 'var(--foreground)' }}>
+            {(diamond.totalPrice ?? diamond.price) ? formatPrice(diamond.totalPrice ?? diamond.price) : 'POA'}
+          </div>
 
           {/* Measurements */}
           <div className="text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>
@@ -877,8 +891,8 @@ export default function DiamondResults({
           <h3 className="font-semibold text-base sm:text-lg truncate" style={{ color: 'var(--foreground)' }}>
             {diamond.caratWeight}ct {diamond.shape}
           </h3>
-          <span className="text-base sm:text-lg font-bold" style={{ color: 'var(--primary)' }}>
-            {formatPrice(typeof diamond.price === 'string' ? parseFloat(diamond.price) : diamond.price)}
+          <span className="text-base sm:text-lg font-bold" style={{ color: 'var(--foreground)' }}>
+            {(diamond.totalPrice ?? diamond.price) ? formatPrice(diamond.totalPrice ?? diamond.price) : 'POA'}
           </span>
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs sm:text-sm mb-1" style={{ color: 'var(--muted-foreground)' }}>
