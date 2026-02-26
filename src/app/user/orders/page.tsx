@@ -1,11 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Package, Truck, Check, Clock, MoreHorizontal, Eye, Download, RefreshCw } from 'lucide-react'
+import { OrdersSkeleton } from '@/components/ui/OrdersSkeleton'
 
-export default function UserOrdersPage() {
-  const [activeTab, setActiveTab] = useState('all')
-  const [orders] = useState([
+const MOCK_ORDERS = [
     {
       id: 'ORD-001',
       date: '2025-01-05',
@@ -52,7 +51,30 @@ export default function UserOrdersPage() {
       tracking: null,
       estimatedDelivery: '2025-01-20'
     }
-  ])
+  ]
+
+export default function UserOrdersPage() {
+  const [activeTab, setActiveTab] = useState('all')
+  const [orders, setOrders] = useState<typeof MOCK_ORDERS>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchOrders = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      await new Promise((r) => setTimeout(r, 600))
+      setOrders(MOCK_ORDERS)
+    } catch {
+      setError('Failed to load orders')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchOrders()
+  }, [fetchOrders])
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -114,29 +136,50 @@ export default function UserOrdersPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
           {/* Header */}
-          <div>
-            <h1 
-              className="text-3xl font-bold tracking-tight"
-              style={{ color: 'var(--foreground)' }}
-            >
-              My Orders
-            </h1>
-            <p 
-              className="mt-2 text-lg"
-              style={{ color: 'var(--muted-foreground)' }}
-            >
-              Track and manage your jewelry orders.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 
+                className="text-3xl font-bold tracking-tight"
+                style={{ color: 'var(--foreground)' }}
+              >
+                My Orders
+              </h1>
+              <p 
+                className="mt-2 text-lg"
+                style={{ color: 'var(--muted-foreground)' }}
+              >
+                Track and manage your jewelry orders.
+              </p>
+            </div>
+            {!loading && (
+              <button
+                onClick={fetchOrders}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors border shrink-0 focus-visible:ring-2 focus-visible:ring-offset-2"
+                style={{ 
+                  borderColor: 'var(--border)',
+                  color: 'var(--foreground)',
+                  backgroundColor: 'var(--card)'
+                }}
+                aria-label="Refresh orders"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Refresh
+              </button>
+            )}
           </div>
 
           {/* Tabs */}
           <div className="border-b" style={{ borderColor: 'var(--border)' }}>
-            <nav className="-mb-px flex space-x-8">
+            <nav className="-mb-px flex space-x-8" role="tablist" aria-label="Order status filters">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
+                  role="tab"
+                  aria-selected={activeTab === tab.id}
+                  aria-controls={`orders-${tab.id}`}
+                  id={`tab-${tab.id}`}
                   onClick={() => setActiveTab(tab.id)}
-                  className="py-2 px-1 border-b-2 font-medium text-sm transition-all"
+                  className="py-2 px-1 border-b-2 font-medium text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded"
                   style={{
                     borderBottomColor: activeTab === tab.id ? 'var(--status-warning)' : 'transparent',
                     color: activeTab === tab.id ? 'var(--status-warning)' : 'var(--muted-foreground)'
@@ -158,8 +201,24 @@ export default function UserOrdersPage() {
           </div>
 
           {/* Orders List */}
-          <div className="space-y-6">
-            {filteredOrders.length === 0 ? (
+          <div className="space-y-6" role="tabpanel" id="orders-all" aria-labelledby="tab-all">
+            {loading ? (
+              <OrdersSkeleton />
+            ) : error ? (
+              <div 
+                className="text-center py-16 rounded-xl border"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+              >
+                <p className="mb-4" style={{ color: 'var(--destructive)' }}>{error}</p>
+                <button
+                  onClick={fetchOrders}
+                  className="px-6 py-3 rounded-lg font-medium focus-visible:ring-2 focus-visible:ring-offset-2"
+                  style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : filteredOrders.length === 0 ? (
               <div 
                 className="text-center py-12 rounded-xl border"
                 style={{ 
@@ -179,7 +238,7 @@ export default function UserOrdersPage() {
               filteredOrders.map((order) => (
                 <div
                   key={order.id}
-                  className="rounded-xl border p-6 transition-all duration-200 hover:shadow-lg"
+                  className="rounded-xl border p-6 hover-lift"
                   style={{ 
                     backgroundColor: 'var(--card)',
                     borderColor: 'var(--border)'

@@ -128,7 +128,7 @@ const MeleeDiamondDetailsPage: React.FC<MeleeDiamondDetailsPageProps> = ({ diamo
             {hasImages ? (
               <>
                 <Image
-                  src={images[imgIdx] || 'https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg'}
+                  src={images[imgIdx] || '/images/placeholder-product.svg'}
                   alt={`${diamond.shape} Melee Diamond`}
                   width={600}
                   height={600}

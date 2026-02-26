@@ -41,7 +41,6 @@ const ModernJewelryComparePage = () => {
             </button>
           </div>
         </div>
-      </div>
     )
   }
 
@@ -285,7 +284,6 @@ const ModernJewelryComparePage = () => {
           </div>
         </div>
       </div>
-    </div>
   )
 }
 

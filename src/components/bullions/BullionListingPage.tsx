@@ -335,7 +335,7 @@ interface BullionCardProps {
   onClick: () => void;
 }
 
-const BULLION_PLACEHOLDER = 'https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg';
+const BULLION_PLACEHOLDER = '/images/placeholder-product.svg';
 
 function BullionCard({ bullion, viewMode, onClick }: BullionCardProps) {
   const mainImage = BULLION_PLACEHOLDER;

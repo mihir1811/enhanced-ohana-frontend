@@ -320,6 +320,9 @@ export default function LoginPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {error && (
                   <div
+                    id="login-error"
+                    role="alert"
+                    aria-live="polite"
                     className="p-4 rounded-xl text-sm backdrop-blur-sm border"
                     style={{
                       backgroundColor:
@@ -329,7 +332,7 @@ export default function LoginPage() {
                     }}
                   >
                     <div className="flex items-center space-x-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--destructive)' }}>
+                      <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--destructive)' }} aria-hidden>
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -364,9 +367,12 @@ export default function LoginPage() {
                       name="userName"
                       type="text"
                       required
+                      autoComplete="username"
                       value={formData.userName}
                       onChange={handleInputChange}
-                      className="relative w-full px-4 py-3 rounded-xl placeholder-slate-400 focus:ring-2 transition-all duration-300 backdrop-blur-sm border outline-none"
+                      aria-invalid={!!error}
+                      aria-describedby={error ? 'login-error' : undefined}
+                      className="relative w-full px-4 py-3 rounded-xl placeholder-slate-400 focus:ring-2 focus-visible:ring-2 focus-visible:ring-offset-2 transition-all duration-300 backdrop-blur-sm border outline-none"
                       style={{
                         backgroundColor: 'color-mix(in srgb, var(--card) 10%, transparent)',
                         borderColor: 'color-mix(in srgb, var(--border) 80%, transparent)',
@@ -389,7 +395,7 @@ export default function LoginPage() {
                       Password
                     </label>
                     {formData.password && !isPasswordValid(formData.password) && (
-                      <span className="text-[10px] animate-pulse" style={{ color: 'var(--status-warning)' }}>
+                      <span id="password-hint" className="text-[10px] animate-pulse" style={{ color: 'var(--status-warning)' }} role="status">
                         Min 8 chars, 1 Upper, 1 Number, 1 Special
                       </span>
                     )}
@@ -407,9 +413,12 @@ export default function LoginPage() {
                       name="password"
                       type={showPassword ? 'text' : 'password'}
                       required
+                      autoComplete="current-password"
                       value={formData.password}
                       onChange={handleInputChange}
-                      className="relative w-full px-4 py-3 pr-12 rounded-xl placeholder-slate-400 focus:ring-2 transition-all duration-300 backdrop-blur-sm border outline-none"
+                      aria-invalid={!!error || (!!formData.password && !isPasswordValid(formData.password))}
+                      aria-describedby={formData.password && !isPasswordValid(formData.password) ? 'password-hint' : undefined}
+                      className="relative w-full px-4 py-3 pr-12 rounded-xl placeholder-slate-400 focus:ring-2 focus-visible:ring-2 focus-visible:ring-offset-2 transition-all duration-300 backdrop-blur-sm border outline-none"
                       style={{
                         backgroundColor: 'color-mix(in srgb, var(--card) 10%, transparent)',
                         borderColor: 'color-mix(in srgb, var(--border) 80%, transparent)',
@@ -421,8 +430,9 @@ export default function LoginPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:opacity-70 transition-opacity"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:opacity-70 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded"
                       style={{ color: 'var(--muted-foreground)' }}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
                       {showPassword ? (
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -453,7 +463,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLoading || !canSubmit}
-                  className="w-full py-4 px-6 rounded-xl font-semibold focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale shadow-2xl transform hover:-translate-y-0.5 disabled:transform-none"
+                  className="w-full py-4 px-6 rounded-xl font-semibold focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale shadow-2xl transform hover:-translate-y-0.5 disabled:transform-none"
                   style={{
                     backgroundColor: 'var(--status-warning)',
                     color: 'white',

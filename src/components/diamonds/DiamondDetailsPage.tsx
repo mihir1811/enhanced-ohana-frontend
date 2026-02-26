@@ -184,7 +184,7 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
             {hasImages ? (
               <>
                 <Image
-                  src={images[imgIdx] || 'https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg'}
+                  src={images[imgIdx] || '/images/placeholder-product.svg'}
                   alt={`${diamond.shape} Diamond`}
                   width={600}
                   height={600}
@@ -258,7 +258,7 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
                   style={{ borderColor: imgIdx === idx ? 'var(--foreground)' : 'var(--border)' }}
                 >
                   <Image 
-                    src={img || 'https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg'} 
+                    src={img || '/images/placeholder-product.svg'} 
                     alt={`View ${idx + 1}`} 
                     width={80}
                     height={80}

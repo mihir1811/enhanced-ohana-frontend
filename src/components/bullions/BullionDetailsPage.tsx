@@ -120,7 +120,7 @@ const BullionDetailsPage: React.FC<BullionDetailsPageProps> = ({ bullion }) => {
   }
 
   // Placeholder image since bullion might not have images array in the interface yet
-  const images = ['https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg'];
+  const images = ['/images/placeholder-product.svg'];
   const hasImages = images.length > 0;
 
   const price = Number(bullion.price) || 0;

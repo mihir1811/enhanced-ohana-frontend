@@ -302,6 +302,8 @@ export default function RegisterPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {error && (
                   <div
+                    role="alert"
+                    aria-live="polite"
                     className="p-4 rounded-xl text-sm backdrop-blur-sm border"
                     style={{
                       backgroundColor:
@@ -311,7 +313,7 @@ export default function RegisterPage() {
                     }}
                   >
                     <div className="flex items-center space-x-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--destructive)' }}>
+                      <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--destructive)' }} aria-hidden>
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z" />
                       </svg>
                       <span>{error}</span>
@@ -438,7 +440,7 @@ export default function RegisterPage() {
                       Password
                     </label>
                     {form.password && !isPasswordValid(form.password) && (
-                      <span className="text-[10px] animate-pulse" style={{ color: 'var(--status-warning)' }}>
+                      <span id="register-password-hint" className="text-[10px] animate-pulse" style={{ color: 'var(--status-warning)' }} role="status">
                         Min 8 chars, 1 Upper, 1 Number, 1 Special
                       </span>
                     )}
@@ -456,9 +458,12 @@ export default function RegisterPage() {
                       name="password"
                       type={showPassword ? 'text' : 'password'}
                       required
+                      autoComplete="new-password"
                       value={form.password}
                       onChange={handleChange}
-                      className="relative w-full px-4 py-3 pr-12 rounded-xl placeholder-slate-400 focus:ring-2 transition-all duration-300 backdrop-blur-sm border outline-none"
+                      aria-invalid={!!error || (!!form.password && !isPasswordValid(form.password))}
+                      aria-describedby={form.password && !isPasswordValid(form.password) ? 'register-password-hint' : undefined}
+                      className="relative w-full px-4 py-3 pr-12 rounded-xl placeholder-slate-400 focus:ring-2 focus-visible:ring-2 focus-visible:ring-offset-2 transition-all duration-300 backdrop-blur-sm border outline-none"
                       style={{
                         backgroundColor: 'color-mix(in srgb, var(--card) 10%, transparent)',
                         borderColor: 'color-mix(in srgb, var(--border) 80%, transparent)',
@@ -470,8 +475,9 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:opacity-70 transition-opacity"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:opacity-70 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded"
                       style={{ color: 'var(--muted-foreground)' }}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
                       {showPassword ? (
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

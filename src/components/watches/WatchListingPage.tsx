@@ -8,6 +8,8 @@ import { Shield, Award, Grid, List, X, ChevronDown, Filter, Search, ArrowUpDown,
 import WishlistButton from '@/components/shared/WishlistButton';
 import CompareButton from '@/components/compare/CompareButton';
 import Pagination from '../ui/Pagination';
+import { ProductGridSkeleton } from '../ui/ProductGridSkeleton';
+import { ProductListSkeleton } from '../ui/ProductListSkeleton';
 import * as ShapeIcons from '../../../public/icons';
 
 interface WatchFilters {
@@ -1008,13 +1010,11 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
 
         {/* Results Grid/List */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <div
-              className="animate-spin rounded-full h-12 w-12 border-b-2 mb-4"
-              style={{ borderColor: 'var(--primary)' }}
-            />
-            <p className="font-medium" style={{ color: 'var(--muted-foreground)' }}>Curating luxury timepieces...</p>
-          </div>
+          viewMode === 'grid' ? (
+            <ProductGridSkeleton count={12} columns={4} />
+          ) : (
+            <ProductListSkeleton count={6} />
+          )
         ) : products.length > 0 ? (
           <div className="space-y-4">
             <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" : "flex flex-col gap-4"}>

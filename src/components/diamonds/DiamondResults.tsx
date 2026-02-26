@@ -8,8 +8,9 @@ import { ChevronLeft, ChevronRight, ShoppingCart, Share2, Download, Star, Award,
 import Image from 'next/image'
 import CompareButton from '@/components/compare/CompareButton'
 import WishlistButton from '@/components/shared/WishlistButton'
-import { toast } from 'react-hot-toast'
-import { copyProductUrlToClipboard } from '@/lib/shareUtils'
+import { ShareMenu } from '@/components/shared/ShareMenu'
+import { ProductGridSkeleton } from '@/components/ui/ProductGridSkeleton'
+import { ProductListSkeleton } from '@/components/ui/ProductListSkeleton'
 
 // Modern carousel and details for Quick View modal
 interface QuickViewDiamondModalContentProps {
@@ -183,19 +184,21 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
                   variant="default"
                   className="shadow-lg"
                 />
-                <button
-                  onClick={async (e) => {
-                    e.stopPropagation();
-                    const type = Number(diamond.caratWeight) < 0.2 ? 'meleeDiamond' : 'diamond';
-                    const ok = await copyProductUrlToClipboard(type, diamond.id);
-                    toast[ok ? 'success' : 'error'](ok ? 'Link copied to clipboard!' : 'Failed to copy link');
-                  }}
-                  className="p-2.5 rounded-full shadow-lg transition-all duration-200 group border"
-                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
-                  title="Share"
-                >
-                  <Share2 className="w-5 h-5 group-hover:scale-110 transition-transform" style={{ color: 'var(--foreground)' }} />
-                </button>
+                <ShareMenu
+                  productType={Number(diamond.caratWeight) < 0.2 ? 'meleeDiamond' : 'diamond'}
+                  productId={diamond.id}
+                  productName={diamond.name}
+                  trigger={
+                    <button
+                      className="p-2.5 rounded-full shadow-lg transition-all duration-200 group border"
+                      style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+                      title="Share"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Share2 className="w-5 h-5 group-hover:scale-110 transition-transform" style={{ color: 'var(--foreground)' }} />
+                    </button>
+                  }
+                />
               </div>
             </div>
 
@@ -440,19 +443,21 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
                 showText={true}
                 className="font-semibold rounded-xl text-sm sm:text-base px-4 sm:px-6 py-2.5 sm:py-3 border border-border text-foreground"
               />
-              <button
-                onClick={async () => {
-                  const type = Number(diamond.caratWeight) < 0.2 ? 'meleeDiamond' : 'diamond';
-                  const ok = await copyProductUrlToClipboard(type, diamond.id);
-                  toast[ok ? 'success' : 'error'](ok ? 'Link copied to clipboard!' : 'Failed to copy link');
-                }}
-                className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 border font-semibold rounded-xl transition-all duration-200 text-sm sm:text-base"
-                style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
-                title="Share"
-              >
-                <Share2 className="w-5 h-5" />
-                Share
-              </button>
+              <ShareMenu
+                productType={Number(diamond.caratWeight) < 0.2 ? 'meleeDiamond' : 'diamond'}
+                productId={diamond.id}
+                productName={diamond.name}
+                trigger={
+                  <button
+                    className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 border font-semibold rounded-xl transition-all duration-200 text-sm sm:text-base"
+                    style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                    title="Share"
+                  >
+                    <Share2 className="w-5 h-5" />
+                    Share
+                  </button>
+                }
+              />
             </div>
             <div className="mt-4 text-center">
               <p className="text-xs sm:text-sm" style={{ color: 'var(--muted-foreground)' }}>
@@ -1134,12 +1139,11 @@ export default function DiamondResults({
 
       {/* Results Grid/List */}
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div
-            className="animate-spin rounded-full h-12 w-12 border-b-2"
-            style={{ borderColor: 'var(--primary)' }}
-          ></div>
-        </div>
+        viewMode === 'grid' ? (
+          <ProductGridSkeleton count={12} columns={4} />
+        ) : (
+          <ProductListSkeleton count={6} />
+        )
       ) : filteredDiamonds.length === 0 ? (
         <div
           className="text-center py-12 border rounded-lg"

@@ -46,7 +46,7 @@ export default function GenericProductResults({
   onAddToCart,
   productType,
   className = '',
-  placeholderImage = 'https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg'
+  placeholderImage = '/images/placeholder-product.svg'
 }: GenericProductResultsProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
 
