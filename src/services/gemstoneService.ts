@@ -67,7 +67,8 @@ export interface DetailedGemstone {
   sellerStockNumber: number;
   description: string;
   discount: string;
-  price: number;
+  price?: number;
+  totalPrice?: number;
   carat: number;
   shape: string;
   color: string;
@@ -163,7 +164,7 @@ export const transformDetailedGemstone = (detailed: DetailedGemstone): GemstonIt
     id: detailed.id,
     name: detailed.name,
     skuCode: detailed.stockNumber?.toString() || '',
-    totalPrice: detailed.price,
+    totalPrice: detailed.totalPrice ?? detailed.price,
     gemType: detailed.gemsType,
     image1: detailed.image1,
     image2: detailed.image2,
@@ -193,7 +194,7 @@ export const transformDetailedGemstone = (detailed: DetailedGemstone): GemstonIt
     sellerStockNumber: detailed.sellerStockNumber,
     description: detailed.description,
     discount: detailed.discount,
-    price: detailed.price,
+    price: detailed.totalPrice ?? detailed.price,
     hardness: detailed.hardness,
     fluoreScence: detailed.fluoreScence,
     process: detailed.process,

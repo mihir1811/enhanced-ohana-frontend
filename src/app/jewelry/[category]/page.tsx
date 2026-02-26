@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useLayoutEffect } from 'react';
+import { useState, useEffect, useCallback, useLayoutEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   Grid, List, Search, X, ShoppingCart,
@@ -15,6 +15,7 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import debounce from 'lodash.debounce';
 import WishlistButton from '@/components/shared/WishlistButton';
+import CompareButton from '@/components/compare/CompareButton';
 
 // Watch brand logos mapping
 const WATCH_BRAND_LOGOS = {
@@ -2548,10 +2549,22 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
               </div>
 
               <div className="flex items-center gap-2">
+                <div onClick={(e) => e.stopPropagation()}>
+                  <CompareButton
+                    product={{
+                      id: String(item.id),
+                      name: item.name,
+                      totalPrice: item.totalPrice,
+                      image1: item.image1
+                    }}
+                    productType="jewelry"
+                    size="md"
+                  />
+                </div>
                 <button 
                   onClick={(e) => {
                     e.stopPropagation()
-                    // Quick view logic
+                    handleCardClick()
                   }}
                   className="p-2.5 border-2 rounded-lg transition-all duration-200 group/icon"
                   style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
@@ -2594,8 +2607,19 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
           className="w-full h-full group-hover:scale-105 transition-transform duration-500"
         />
 
-        {/* Wishlist Button - Top Right */}
-        <div onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 z-10">
+        {/* Wishlist & Compare - Top Right */}
+        <div onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 z-10 flex items-center gap-2">
+          <CompareButton
+            product={{
+              id: String(item.id),
+              name: item.name,
+              totalPrice: item.totalPrice,
+              image1: item.image1
+            }}
+            productType="jewelry"
+            size="md"
+            className="bg-white/90 backdrop-blur-sm shadow-md hover:bg-white"
+          />
           <WishlistButton
             productId={Number(item.id)}
             productType="jewellery"
@@ -2678,7 +2702,7 @@ function JewelryCard({ item, viewMode }: JewelryCardProps) {
             <button 
               onClick={(e) => {
                 e.stopPropagation()
-                // Quick view logic
+                handleCardClick()
               }}
               className="p-2.5 border-2 rounded-lg transition-all duration-200 group/icon active:scale-95"
               style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}

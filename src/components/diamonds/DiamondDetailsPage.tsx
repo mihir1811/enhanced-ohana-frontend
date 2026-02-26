@@ -24,6 +24,8 @@ import { cartService } from '@/services/cartService';
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
 import { useRouter } from 'next/navigation'
+import { toast } from 'react-hot-toast'
+import { copyProductUrlToClipboard } from '@/lib/shareUtils'
 
 interface DiamondDetailsPageProps {
   diamond: Diamond | null;
@@ -182,7 +184,7 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
             {hasImages ? (
               <>
                 <Image
-                  src={images[imgIdx] || 'https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg'}
+                  src={images[imgIdx] || '/images/placeholder-product.svg'}
                   alt={`${diamond.shape} Diamond`}
                   width={600}
                   height={600}
@@ -231,7 +233,15 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
                 className="p-3 rounded-full shadow-lg transition-all duration-200 border backdrop-blur-sm"
                 style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
               />
-              <button className="p-3 rounded-full shadow-lg transition-all duration-200 border backdrop-blur-sm" style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}>
+              <button
+                onClick={async () => {
+                  const ok = await copyProductUrlToClipboard('diamond', diamond.id);
+                  toast[ok ? 'success' : 'error'](ok ? 'Link copied to clipboard!' : 'Failed to copy link');
+                }}
+                className="p-3 rounded-full shadow-lg transition-all duration-200 border backdrop-blur-sm"
+                style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
+                title="Share"
+              >
                 <Share2 className="w-5 h-5" style={{ color: 'var(--foreground)' }} />
               </button>
             </div>
@@ -248,7 +258,7 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
                   style={{ borderColor: imgIdx === idx ? 'var(--foreground)' : 'var(--border)' }}
                 >
                   <Image 
-                    src={img || 'https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg'} 
+                    src={img || '/images/placeholder-product.svg'} 
                     alt={`View ${idx + 1}`} 
                     width={80}
                     height={80}
@@ -315,8 +325,9 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
               </div>
               <div className="text-right">
                 <div className="text-3xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>
-                  {diamond.price ? formatPrice(diamond.price) : 'POA'}
+                  {(diamond.totalPrice ?? diamond.price) ? formatPrice(diamond.totalPrice ?? diamond.price) : 'POA'}
                 </div>
+                <div className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Total Price</div>
                 {diamond.discount && (
                   <div className="text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>
                     Save {diamond.discount}% off retail
@@ -353,6 +364,13 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
 
           {/* Key Features Cards */}
           <div className="grid grid-cols-2 gap-4">
+            {/* Total Price card - always show first */}
+            <div className="rounded-2xl border p-4 hover:shadow-md transition-shadow duration-200" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 flex items-center justify-center text-2xl mb-3">💰</div>
+              <h3 className="font-semibold mb-1" style={{ color: 'var(--foreground)' }}>Total Price</h3>
+              <div className="text-xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>{(diamond.totalPrice ?? diamond.price) ? formatPrice(diamond.totalPrice ?? diamond.price) : 'POA'}</div>
+              <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Final price</p>
+            </div>
             {/* Show all main diamond fields as cards */}
             {[
               { label: 'Carat Weight', value: diamond.caratWeight, icon: '⚖️', color: 'from-blue-500 to-blue-600', description: 'Weight measurement' },
@@ -407,9 +425,6 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
                 showText={false}
                 className="font-semibold"
               />
-              <button className="px-6 py-4 border-2 font-semibold rounded-2xl transition-all duration-200" style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}>
-                <Share2 className="w-5 h-5" />
-              </button>
             </div>
             
             {/* Chat with Seller Button */}
@@ -478,6 +493,7 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
                     {[
                       { icon: '💎', label: 'Shape', value: diamond.shape },
                       { icon: '⚖️', label: 'Carat Weight', value: diamond.caratWeight },
+                      { icon: '💰', label: 'Total Price', value: (diamond.totalPrice ?? diamond.price) ? formatPrice(diamond.totalPrice ?? diamond.price) : 'POA' },
                       { icon: '🎨', label: 'Color', value: diamond.color },
                       { icon: '🔍', label: 'Clarity', value: diamond.clarity },
                       { icon: '✂️', label: 'Cut', value: diamond.cut },
@@ -499,8 +515,8 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
                   <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--foreground)' }}>Investment Details</h3>
                   <div className="rounded-2xl border p-6 space-y-4" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                     <div className="flex justify-between items-center">
-                      <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>Current Price</span>
-                      <span className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>{diamond.price ? formatPrice(diamond.price) : 'POA'}</span>
+                      <span className="font-medium" style={{ color: 'var(--muted-foreground)' }}>Total Price</span>
+                      <span className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>{(diamond.totalPrice ?? diamond.price) ? formatPrice(diamond.totalPrice ?? diamond.price) : 'POA'}</span>
                     </div>
                     {diamond.rap && (
                       <div className="flex justify-between items-center">

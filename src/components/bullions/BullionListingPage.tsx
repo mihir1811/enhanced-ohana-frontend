@@ -3,9 +3,9 @@
 import React, { useEffect, useLayoutEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { JewelryItem, JewelryQueryParams } from '@/services/jewelryService';
 import { BullionProduct, BullionQueryParams } from '@/services/bullion.service';
-import { Shield, Award, TrendingUp, ArrowRight, Grid, List, Loader2, X, ChevronDown, Filter, Search, ArrowUpDown } from 'lucide-react';
+import { Shield, Award, TrendingUp, ArrowRight, Grid, List, Loader2, X, ChevronDown, Filter, Search, ArrowUpDown, Eye } from 'lucide-react';
+import WishlistButton from '@/components/shared/WishlistButton';
 import { SECTION_WIDTH } from '@/lib/constants';
 
 interface BullionFilters {
@@ -328,125 +328,176 @@ function FilterSections({ filters, onFiltersChange }: FilterSectionsProps) {
   );
 }
 
-// Bullion Card Component
+// Bullion Card Component - Watch-style design
 interface BullionCardProps {
   bullion: BullionProduct;
   viewMode: 'grid' | 'list';
   onClick: () => void;
 }
 
+const BULLION_PLACEHOLDER = '/images/placeholder-product.svg';
+
 function BullionCard({ bullion, viewMode, onClick }: BullionCardProps) {
-  const mainImage = 'https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg';
+  const mainImage = BULLION_PLACEHOLDER;
   const price = Number(bullion.price) || 0;
-  const name = `${bullion.metalWeight} ${bullion.metalType?.name || ''} ${bullion.metalShape?.name || ''}`;
+  const formatPrice = (p: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(p);
+  const name = `${bullion.metalWeight || ''} ${bullion.metalType?.name || ''} ${bullion.metalShape?.name || ''}`.trim() || 'Bullion';
 
   if (viewMode === 'list') {
     return (
-      <div className="rounded-lg shadow-sm hover:shadow-md transition-shadow border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-        <div className="flex gap-6 p-6">
-          <div 
-            onClick={onClick}
-            className="w-32 h-32 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer"
-            style={{ backgroundColor: 'var(--card)' }}
-          >
-            <Image
-              src={mainImage}
-              alt={name}
-              width={128}
-              height={128}
-              className="w-full h-full object-cover hover:scale-105 transition-transform"
-            />
-          </div>
-          
-          <div className="flex-1" style={{ color: 'var(--foreground)' }}>
-            <div className="flex items-start justify-between mb-2">
-              <div onClick={onClick} className="cursor-pointer flex-1">
-                <h3 className="text-lg font-semibold transition-colors mb-2" style={{ color: 'var(--foreground)' }}>
-                  {name}
-                </h3>
-                <div className="flex flex-wrap gap-2 text-sm" style={{ color: 'var(--muted-foreground)' }}>
-                  {bullion.metalType && (
-                    <span className="px-2 py-1 rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
-                      {bullion.metalType.name}
-                    </span>
-                  )}
-                  {bullion.metalWeight && (
-                    <span className="px-2 py-1 rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
-                      {bullion.metalWeight}
-                    </span>
-                  )}
-                  {bullion.metalFineness && (
-                    <span className="px-2 py-1 rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
-                      {bullion.metalFineness.name}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="text-right ml-4">
-                <p className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
-                  ${price.toLocaleString()}
+      <div
+        className="group relative rounded-2xl border overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col md:flex-row"
+        style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+        onClick={onClick}
+      >
+        <div className="relative w-full md:w-64 aspect-[4/5] md:aspect-square overflow-hidden shrink-0" style={{ backgroundColor: 'var(--muted)' }}>
+          <Image src={mainImage} alt={name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+          <WishlistButton
+            productId={bullion.id}
+            productType="jewellery"
+            className="absolute top-3 right-3 p-2 shadow-sm rounded-full"
+            style={{ backgroundColor: 'color-mix(in srgb, var(--card) 90%, transparent)' }}
+          />
+        </div>
+        <div className="p-6 flex flex-col flex-1">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-[0.2em] mb-1 block" style={{ color: 'var(--status-warning)' }}>
+                {bullion.metalType?.name || 'Bullion'}
+              </span>
+              <h3 className="text-xl font-bold transition-colors" style={{ color: 'var(--foreground)' }}>
+                {bullion.metalWeight} {bullion.metalShape?.name || ''}
+              </h3>
+              {bullion.design && (
+                <p className="text-sm mt-1 line-clamp-2" style={{ color: 'var(--muted-foreground)' }}>
+                  {bullion.design}
                 </p>
-              </div>
+              )}
             </div>
-            
-            <div className="text-sm mt-2 space-y-1" style={{ color: 'var(--muted-foreground)' }}>
-               {bullion.design && <p>Design: {bullion.design}</p>}
-               {bullion.condition && <p>Condition: {bullion.condition}</p>}
-               {bullion.stockNumber && <p>Stock #: {bullion.stockNumber}</p>}
+            <div className="text-right">
+              <span className="text-2xl font-black block" style={{ color: 'var(--foreground)' }}>
+                {formatPrice(price)}
+              </span>
+              <span className="text-xs font-medium uppercase" style={{ color: 'var(--muted-foreground)' }}>
+                Ref: {bullion.stockNumber || bullion.id}
+              </span>
             </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4 border-y" style={{ borderColor: 'var(--border)' }}>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--muted-foreground)' }}>Weight</span>
+              <span className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>{bullion.metalWeight || '—'}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--muted-foreground)' }}>Purity</span>
+              <span className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>{bullion.metalFineness?.name || '—'}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--muted-foreground)' }}>Shape</span>
+              <span className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>{bullion.metalShape?.name || '—'}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--muted-foreground)' }}>Condition</span>
+              <span className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>{bullion.condition || '—'}</span>
+            </div>
+          </div>
+          <div className="mt-6 flex items-center gap-3">
+            <button
+              onClick={(e) => { e.stopPropagation(); onClick(); }}
+              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-xl transition-all"
+              style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+            >
+              View Details
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onClick(); }}
+              className="p-3 border rounded-xl transition-all"
+              style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+              title="Quick View"
+            >
+              <Eye className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
-  // Grid view
+  // Grid view - Watch-style
   return (
-    <div className="rounded-lg shadow-sm hover:shadow-lg transition-all border overflow-hidden group" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-      <div onClick={onClick} className="relative aspect-square overflow-hidden cursor-pointer" style={{ backgroundColor: 'var(--card)' }}>
-        <Image
-          src={mainImage}
-          alt={name}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-        {bullion.availability && (
-          <div className="absolute top-2 right-2 text-xs px-2 py-1 rounded-full flex items-center gap-1" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
-            <Shield className="w-3 h-3" />
-            {bullion.availability}
-          </div>
-        )}
-      </div>
-      
-      <div onClick={onClick} className="p-4 cursor-pointer" style={{ color: 'var(--foreground)' }}>
-        <h3 className="text-lg font-semibold mb-2 line-clamp-2 transition-colors" style={{ color: 'var(--foreground)' }}>
-          {name}
-        </h3>
-        
-        <div className="flex flex-wrap gap-2 mb-3 text-xs">
-          {bullion.metalType && (
-            <span className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
-              {bullion.metalType.name}
+    <div
+      className="group relative rounded-2xl border overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col h-full"
+      style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+      onClick={onClick}
+    >
+      <div className="relative aspect-[4/5] overflow-hidden" style={{ backgroundColor: 'var(--muted)' }}>
+        <Image src={mainImage} alt={name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+        <div className="absolute top-3 left-3 flex flex-col gap-2">
+          {bullion.condition && (
+            <span
+              className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full shadow-sm"
+              style={{ backgroundColor: 'color-mix(in srgb, var(--card) 90%, transparent)', color: 'var(--foreground)' }}
+            >
+              {bullion.condition}
             </span>
           )}
-          {bullion.metalWeight && (
-            <span className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
-              {bullion.metalWeight}
+          {bullion.mintYear && (
+            <span
+              className="px-2.5 py-1 text-[10px] font-bold rounded-full shadow-sm"
+              style={{ backgroundColor: 'var(--status-warning)', color: 'white' }}
+            >
+              {bullion.mintYear}
             </span>
           )}
         </div>
-        
-        {bullion.metalFineness && (
-          <p className="text-sm mb-2" style={{ color: 'var(--muted-foreground)' }}>
-            Purity: {bullion.metalFineness.name}
-          </p>
-        )}
-        
-        <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
-          <p className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
-            ${price.toLocaleString()}
-          </p>
-          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-all" style={{ color: 'var(--muted-foreground)' }} />
+        <div className="absolute top-3 right-2 flex flex-col gap-2 translate-x-12 group-hover:translate-x-0 transition-transform duration-300">
+          <WishlistButton
+            productId={bullion.id}
+            productType="jewellery"
+            className="h-[40px] w-[40px] p-2 shadow-lg rounded-full transition-colors"
+            style={{ backgroundColor: 'var(--card)' }}
+          />
+          <button
+            className="cursor-pointer h-[40px] w-[40px] p-2 shadow-lg rounded-full transition-colors"
+            style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
+            onClick={(e) => { e.stopPropagation(); onClick(); }}
+            title="Quick View"
+          >
+            <Eye size={22} />
+          </button>
+        </div>
+      </div>
+      <div className="p-4 flex flex-col flex-1">
+        <div className="mb-1">
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1 block" style={{ color: 'var(--status-warning)' }}>
+            {bullion.metalType?.name || 'Bullion'}
+          </span>
+          <h3 className="font-bold line-clamp-1 transition-colors" style={{ color: 'var(--foreground)' }}>
+            {bullion.metalWeight} {bullion.metalShape?.name || ''}
+          </h3>
+        </div>
+        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+          <div className="flex items-center gap-1">
+            <Shield className="w-3 h-3" />
+            <span>{bullion.metalFineness?.name || '—'}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span>{bullion.metalWeight || '—'}</span>
+          </div>
+          {bullion.condition && (
+            <div className="flex items-center gap-1 capitalize">
+              <span>{bullion.condition}</span>
+            </div>
+          )}
+        </div>
+        <div className="mt-auto pt-4 flex items-center justify-between">
+          <span className="text-lg font-black" style={{ color: 'var(--foreground)' }}>
+            {formatPrice(price)}
+          </span>
+          <span className="text-[10px] font-medium uppercase" style={{ color: 'var(--muted-foreground)' }}>
+            Ref: {bullion.stockNumber || bullion.id}
+          </span>
         </div>
       </div>
     </div>

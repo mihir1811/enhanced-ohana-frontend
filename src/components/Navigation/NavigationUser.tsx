@@ -24,7 +24,6 @@ export default function NavigationUser() {
   const [dropdownPositions, setDropdownPositions] = useState<{ [key: string]: { left: number, top: number } }>({})
   const [mouseLeaveTimeout, setMouseLeaveTimeout] = useState<NodeJS.Timeout | null>(null)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [cartItems] = useState(3) // Mock cart count
   const [notifications] = useState(2) // Mock notification count
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false)
   const [cart, setCart] = useState<Cart | null>(null)
@@ -215,6 +214,15 @@ export default function NavigationUser() {
     loadCartForDrawer()
     setCartDrawerOpen(true)
   }, [loadCartForDrawer])
+
+  // Load cart on mount when logged in (for header badge count)
+  useEffect(() => {
+    if (token) {
+      loadCartForDrawer()
+    } else {
+      setCart(null)
+    }
+  }, [token, loadCartForDrawer])
 
   const closeCartDrawer = useCallback(() => {
     setCartDrawerOpen(false)
@@ -695,9 +703,9 @@ export default function NavigationUser() {
                 <svg className="w-5 h-5 transition-colors group-hover:text-[var(--status-warning)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m-2.4 0L3 3H1m6 10v6a1 1 0 001 1h8a1 1 0 001-1v-6M7 13l-1.4-7M7 13l1.5 7m8.5-7L15 20" />
                 </svg>
-                {cartItems > 0 && (
+                {(cart?.itemCount ?? 0) > 0 && (
                   <span className="absolute -top-1 -right-1 w-4 h-4 text-white text-[10px] rounded-full flex items-center justify-center font-bold animate-pulse shadow-sm" style={{ backgroundColor: 'var(--status-warning)', color: 'white' }}>
-                    {cartItems}
+                    {cart?.itemCount ?? 0}
                   </span>
                 )}
               </button>
@@ -1099,9 +1107,18 @@ export default function NavigationUser() {
           ) : cartError ? (
             <div className="space-y-3">
               <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>{cartError}</p>
-              <Link href="/user/cart" className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-                View Cart
-              </Link>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                  onClick={loadCartForDrawer}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg min-h-[44px] touch-target transition-colors"
+                  style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+                >
+                  Try Again
+                </button>
+                <Link href="/user/cart" className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border min-h-[44px] touch-target transition-colors" style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}>
+                  View Cart
+                </Link>
+              </div>
             </div>
           ) : cart && cart.items.length > 0 ? (
             <>

@@ -10,6 +10,7 @@ import Footer from '@/components/Footer';
 import { gemstoneService, GemstonItem } from '@/services/gemstoneService';
 import { GemstoneFilterValues } from '@/components/gemstones/GemstoneFilters';
 import WishlistButton from '@/components/shared/WishlistButton';
+import CompareButton from '@/components/compare/CompareButton';
 
 const SORT_OPTIONS = [
   { value: '-createdAt', label: 'Newest First' },
@@ -1046,7 +1047,19 @@ function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
                   {item.skuCode}
                 </p>
               </div>
-              <WishlistButton productId={Number(item.id)} productType="gemstone" />
+              <div className="flex items-center gap-2">
+                <CompareButton
+                  product={{
+                    id: item.id,
+                    name: item.name,
+                    price: item.totalPrice ?? 0,
+                    images: [item.image1, item.image2, item.image3].filter(Boolean) as string[],
+                  }}
+                  productType="gemstone"
+                  size="sm"
+                />
+                <WishlistButton productId={Number(item.id)} productType="gemstone" />
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-2 mb-3">
@@ -1107,6 +1120,16 @@ function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
               </div>
 
               <div className="flex items-center gap-2">
+                <CompareButton
+                  product={{
+                    id: item.id,
+                    name: item.name,
+                    price: item.totalPrice ?? 0,
+                    images: [item.image1, item.image2, item.image3].filter(Boolean) as string[],
+                  }}
+                  productType="gemstone"
+                  size="sm"
+                />
                 <button
                   onClick={goToDetails}
                   className="p-2 rounded-lg border"
@@ -1144,16 +1167,27 @@ function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
           </div>
         )}
 
+        <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
+          <CompareButton
+            product={{
+              id: item.id,
+              name: item.name,
+              price: item.totalPrice ?? 0,
+              images: [item.image1, item.image2, item.image3].filter(Boolean) as string[],
+            }}
+            productType="gemstone"
+            size="md"
+          />
+          {item.quantity && item.quantity > 1 && (
+            <div className="px-2 py-1 bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-md flex items-center gap-1.5">
+              <Layers className="w-3 h-3" />
+              Parcel
+            </div>
+          )}
+        </div>
         <div className="absolute top-3 right-3">
           <WishlistButton productId={Number(item.id)} productType="gemstone" />
         </div>
-
-        {item.quantity && item.quantity > 1 && (
-          <div className="absolute top-3 left-3 px-2 py-1 bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-md flex items-center gap-1.5">
-            <Layers className="w-3 h-3" />
-            Parcel
-          </div>
-        )}
       </div>
 
       <div className="p-4 flex flex-col flex-1" style={{ color: 'var(--foreground)' }}>
@@ -1221,6 +1255,16 @@ function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
               <ShoppingCart className="w-4 h-4" />
               Add to Cart
             </button>
+            <CompareButton
+              product={{
+                id: item.id,
+                name: item.name,
+                price: item.totalPrice ?? 0,
+                images: [item.image1, item.image2, item.image3].filter(Boolean) as string[],
+              }}
+              productType="gemstone"
+              size="sm"
+            />
             <button
               onClick={goToDetails}
               className="p-2 rounded border"

@@ -8,6 +8,9 @@ import { ChevronLeft, ChevronRight, ShoppingCart, Share2, Download, Star, Award,
 import Image from 'next/image'
 import CompareButton from '@/components/compare/CompareButton'
 import WishlistButton from '@/components/shared/WishlistButton'
+import { ShareMenu } from '@/components/shared/ShareMenu'
+import { ProductGridSkeleton } from '@/components/ui/ProductGridSkeleton'
+import { ProductListSkeleton } from '@/components/ui/ProductListSkeleton'
 
 // Modern carousel and details for Quick View modal
 interface QuickViewDiamondModalContentProps {
@@ -181,9 +184,21 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
                   variant="default"
                   className="shadow-lg"
                 />
-                <button className="p-2.5 rounded-full shadow-lg transition-all duration-200 group border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-                  <Share2 className="w-5 h-5 group-hover:scale-110 transition-transform" style={{ color: 'var(--foreground)' }} />
-                </button>
+                <ShareMenu
+                  productType={Number(diamond.caratWeight) < 0.2 ? 'meleeDiamond' : 'diamond'}
+                  productId={diamond.id}
+                  productName={diamond.name}
+                  trigger={
+                    <button
+                      className="p-2.5 rounded-full shadow-lg transition-all duration-200 group border"
+                      style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+                      title="Share"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Share2 className="w-5 h-5 group-hover:scale-110 transition-transform" style={{ color: 'var(--foreground)' }} />
+                    </button>
+                  }
+                />
               </div>
             </div>
 
@@ -428,10 +443,21 @@ function QuickViewDiamondModalContent(props: QuickViewDiamondModalContentProps) 
                 showText={true}
                 className="font-semibold rounded-xl text-sm sm:text-base px-4 sm:px-6 py-2.5 sm:py-3 border border-border text-foreground"
               />
-              <button className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 border font-semibold rounded-xl transition-all duration-200 text-sm sm:text-base" style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}>
-                <Share2 className="w-5 h-5" />
-                Share
-              </button>
+              <ShareMenu
+                productType={Number(diamond.caratWeight) < 0.2 ? 'meleeDiamond' : 'diamond'}
+                productId={diamond.id}
+                productName={diamond.name}
+                trigger={
+                  <button
+                    className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 border font-semibold rounded-xl transition-all duration-200 text-sm sm:text-base"
+                    style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                    title="Share"
+                  >
+                    <Share2 className="w-5 h-5" />
+                    Share
+                  </button>
+                }
+              />
             </div>
             <div className="mt-4 text-center">
               <p className="text-xs sm:text-sm" style={{ color: 'var(--muted-foreground)' }}>
@@ -693,13 +719,14 @@ export default function DiamondResults({
 
   const totalPages = Math.ceil(totalCount / pageSize)
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | string) => {
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(price)
+    }).format(numPrice)
   }
 
   // Grid view: Professional diamond card inspired by industry standards
@@ -777,6 +804,14 @@ export default function DiamondResults({
             className="absolute top-3 right-3 z-20"
             size="md"
           />
+          {/* Compare - Top Left */}
+          <div className="absolute top-3 left-3 z-20" onClick={e => e.stopPropagation()}>
+            <CompareButton
+              product={diamond}
+              productType="diamond"
+              size="md"
+            />
+          </div>
         </div>
 
         {/* Card Content */}
@@ -797,6 +832,11 @@ export default function DiamondResults({
           <h3 className="text-sm font-bold mb-2 leading-snug" style={{ color: 'var(--foreground)' }}>
             {diamond.shape?.toUpperCase()} {diamond.caratWeight}CT {diamond.color} {diamond.cut || 'II'} {diamond.clarity || 'VG'} {diamond.polish || 'VG'} {diamond.symmetry || 'VG'} {diamond.fluorescence?.toUpperCase() || 'FNT'}
           </h3>
+
+          {/* Price */}
+          <div className="text-lg font-bold mb-2" style={{ color: 'var(--foreground)' }}>
+            {(diamond.totalPrice ?? diamond.price) ? formatPrice(diamond.totalPrice ?? diamond.price) : 'POA'}
+          </div>
 
           {/* Measurements */}
           <div className="text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>
@@ -877,8 +917,8 @@ export default function DiamondResults({
           <h3 className="font-semibold text-base sm:text-lg truncate" style={{ color: 'var(--foreground)' }}>
             {diamond.caratWeight}ct {diamond.shape}
           </h3>
-          <span className="text-base sm:text-lg font-bold" style={{ color: 'var(--primary)' }}>
-            {formatPrice(typeof diamond.price === 'string' ? parseFloat(diamond.price) : diamond.price)}
+          <span className="text-base sm:text-lg font-bold" style={{ color: 'var(--foreground)' }}>
+            {(diamond.totalPrice ?? diamond.price) ? formatPrice(diamond.totalPrice ?? diamond.price) : 'POA'}
           </span>
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs sm:text-sm mb-1" style={{ color: 'var(--muted-foreground)' }}>
@@ -1099,12 +1139,11 @@ export default function DiamondResults({
 
       {/* Results Grid/List */}
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div
-            className="animate-spin rounded-full h-12 w-12 border-b-2"
-            style={{ borderColor: 'var(--primary)' }}
-          ></div>
-        </div>
+        viewMode === 'grid' ? (
+          <ProductGridSkeleton count={12} columns={4} />
+        ) : (
+          <ProductListSkeleton count={6} />
+        )
       ) : filteredDiamonds.length === 0 ? (
         <div
           className="text-center py-12 border rounded-lg"

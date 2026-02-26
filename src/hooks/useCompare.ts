@@ -8,7 +8,8 @@ import {
   toggleCompareVisibility,
   setCompareVisibility,
   reorderCompareProducts,
-  CompareProduct
+  CompareProduct,
+  COMPARE_MAX_PRODUCTS
 } from '@/features/compare/compareSlice'
 import { Diamond } from '@/components/diamonds/DiamondResults'
 
@@ -20,7 +21,8 @@ export const useCompare = () => {
   const dispatch = useDispatch<AppDispatch>()
   const compareState = useSelector((state: RootState) => state.compare)
   const products = compareState?.products || []
-  const maxProducts = compareState?.maxProducts || 6
+  // Always use COMPARE_MAX_PRODUCTS (ignore any stale persisted maxProducts)
+  const maxProducts = COMPARE_MAX_PRODUCTS
   const isVisible = compareState?.isVisible || false
 
   const addProduct = useCallback((product: ComparableProduct, type: 'diamond' | 'gemstone' | 'jewelry' | 'watch') => {
@@ -35,7 +37,7 @@ export const useCompare = () => {
           (typedProduct.model ? ` ${String(typedProduct.model)}` : '')
         ).trim() ||
         `${typedProduct.caratWeight || typedProduct.weight || ''}ct ${typedProduct.shape || typedProduct.cut || type}`,
-      price: typedProduct.price as number | string,
+      price: (typedProduct.totalPrice ?? typedProduct.price) as number | string,
       image: (typedProduct.images as string[])?.[0] || (typedProduct.image1 as string) || 'https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg',
       data: product as unknown as Diamond | { id: string; name: string; [key: string]: unknown },
       addedAt: Date.now()
@@ -76,8 +78,16 @@ export const useCompare = () => {
     return products.length
   }, [products.length])
 
-  const getProductsByType = useCallback((type: 'diamond' | 'gemstone' | 'jewelry') => {
+  const getProductsByType = useCallback((type: 'diamond' | 'gemstone' | 'jewelry' | 'watch') => {
     return products.filter(p => p.type === type)
+  }, [products])
+
+  /** Returns type groups for mixed-type compare lists. e.g. [{ type: 'diamond', count: 2 }, { type: 'watch', count: 1 }] */
+  const getTypeGroups = useCallback(() => {
+    const types: ('diamond' | 'gemstone' | 'jewelry' | 'watch')[] = ['diamond', 'gemstone', 'jewelry', 'watch']
+    return types
+      .map(type => ({ type, count: products.filter(p => p.type === type).length }))
+      .filter(g => g.count > 0)
   }, [products])
 
   return {
@@ -98,7 +108,8 @@ export const useCompare = () => {
     isProductInCompare,
     canAddMore,
     getCompareCount,
-    getProductsByType
+    getProductsByType,
+    getTypeGroups
   }
 }
 

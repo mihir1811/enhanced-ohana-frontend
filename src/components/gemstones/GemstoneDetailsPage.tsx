@@ -29,6 +29,8 @@ import { cartService } from "@/services/cartService";
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
 import { useRouter } from 'next/navigation'
+import { toast } from 'react-hot-toast'
+import { copyProductUrlToClipboard } from '@/lib/shareUtils'
 
 interface GemstoneDetailsPageProps {
   gemstone: GemstonItem | null;
@@ -185,8 +187,9 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
   const hasImages = images.length > 0;
 
   const formatPrice = (price: number | string | undefined) => {
-    if (!price) return "Price on Request";
+    if (price === undefined || price === null) return "Price on Request";
     const numPrice = typeof price === "string" ? parseFloat(price) : price;
+    if (isNaN(numPrice)) return "Price on Request";
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
@@ -194,6 +197,8 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
       maximumFractionDigits: 0,
     }).format(numPrice);
   };
+
+  const displayPrice = gemstone.totalPrice ?? (gemstone as { price?: number }).price;
 
   const getCertificationGrade = () => {
     const hasColor = gemstone.color && gemstone.color !== "N/A";
@@ -288,6 +293,27 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
                 </div>
               </div>
             )}
+
+            {/* Image overlay - Wishlist & Share (like watches) */}
+            <div className="absolute top-4 left-4 flex gap-2">
+              <WishlistButton
+                productId={Number(gemstone.id)}
+                productType="gemstone"
+                className="p-3 rounded-full shadow-lg border backdrop-blur-sm"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+              />
+              <button
+                onClick={async () => {
+                  const ok = await copyProductUrlToClipboard('gemstone', gemstone.id);
+                  toast[ok ? 'success' : 'error'](ok ? 'Link copied to clipboard!' : 'Failed to copy link');
+                }}
+                className="p-3 rounded-full shadow-lg border backdrop-blur-sm"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                title="Share"
+              >
+                <Share2 className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Thumbnail Gallery */}
@@ -366,8 +392,9 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
 
             {/* Price */}
             <div className="rounded-2xl p-6 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <div className="text-sm font-medium mb-1" style={{ color: 'var(--muted-foreground)' }}>Total Price</div>
               <div className="text-3xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>
-                {formatPrice(gemstone.totalPrice)}
+                {formatPrice(displayPrice)}
               </div>
               <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                 Final price including all fees
@@ -377,6 +404,12 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
 
           {/* Quick Specs */}
           <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <div className="text-sm mb-1" style={{ color: 'var(--muted-foreground)' }}>Total Price</div>
+              <div className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>
+                {formatPrice(displayPrice)}
+              </div>
+            </div>
             <div className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
               <div className="text-sm mb-1" style={{ color: 'var(--muted-foreground)' }}>Carat Weight</div>
               <div className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>
@@ -415,7 +448,7 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
               <span>{isAddingToCart ? 'Adding...' : 'Add to Cart'}</span>
             </button>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <button 
                 onClick={handleChatWithSeller}
                 className="flex items-center justify-center space-x-2 py-3 rounded-xl border transition-colors"
@@ -423,10 +456,6 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
               >
                 <MessageSquare className="w-4 h-4" />
                 <span>Chat</span>
-              </button>
-              <button className="flex items-center justify-center space-x-2 py-3 rounded-xl border transition-colors" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
-                <Share2 className="w-4 h-4" />
-                <span>Share</span>
               </button>
               <button className="flex items-center justify-center space-x-2 py-3 rounded-xl border transition-colors" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
                 <Download className="w-4 h-4" />
@@ -467,6 +496,12 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
                 <h3 className="text-lg font-semibold mb-3" style={{ color: 'var(--foreground)' }}>Gemstone Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
+                    <span style={{ color: 'var(--muted-foreground)' }}>Total Price:</span>
+                    <span className="ml-2 font-medium" style={{ color: 'var(--foreground)' }}>
+                      {formatPrice(displayPrice)}
+                    </span>
+                  </div>
+                  <div>
                     <span style={{ color: 'var(--muted-foreground)' }}>Type:</span>
                     <span className="ml-2 font-medium" style={{ color: 'var(--foreground)' }}>
                       {gemstone.gemType || "N/A"}
@@ -502,6 +537,12 @@ const GemstoneDetailsPage: React.FC<GemstoneDetailsPageProps> = ({
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span style={{ color: 'var(--muted-foreground)' }}>Total Price:</span>
+                    <span className="font-medium" style={{ color: 'var(--foreground)' }}>
+                      {formatPrice(displayPrice)}
+                    </span>
+                  </div>
                   <div className="flex justify-between">
                     <span style={{ color: 'var(--muted-foreground)' }}>Carat Weight:</span>
                     <span className="font-medium" style={{ color: 'var(--foreground)' }}>

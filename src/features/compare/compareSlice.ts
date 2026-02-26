@@ -28,6 +28,8 @@ export interface CompareProduct {
   addedAt: number
 }
 
+export const COMPARE_MAX_PRODUCTS = 4
+
 export interface CompareState {
   products: CompareProduct[]
   maxProducts: number
@@ -36,7 +38,7 @@ export interface CompareState {
 
 const initialState: CompareState = {
   products: [],
-  maxProducts: 6,
+  maxProducts: COMPARE_MAX_PRODUCTS,
   isVisible: false
 }
 

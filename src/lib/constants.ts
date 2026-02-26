@@ -1,6 +1,10 @@
 // UI Constants
 export const SECTION_WIDTH = 1400;
 
+// Site URL for shareable links (product URLs, etc.)
+// Use env in build; fallback to origin at runtime for dev, or production domain
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.gemworld.in';
+
 // API Configuration
 export const API_CONFIG = {
   // Base API URL - can be overridden by environment variable

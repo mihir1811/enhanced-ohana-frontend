@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
+import Link from 'next/link'
 import { Minus, Plus, Trash2, Heart, ShoppingBag, ArrowRight, Shield, Truck, Loader2 } from 'lucide-react'
 import { cartService, Cart, CartItem } from '@/services'
 import { RootState } from '@/store'
+import { CartSkeleton } from '@/components/ui/CartSkeleton'
 
 export default function UserCartPage() {
   const [cart, setCart] = useState<Cart | null>(null)
@@ -144,21 +146,7 @@ export default function UserCartPage() {
 
           {/* Loading State */}
           {loading ? (
-            <div 
-              className="text-center py-16 rounded-xl border"
-              style={{ 
-                backgroundColor: 'var(--card)',
-                borderColor: 'var(--border)'
-              }}
-            >
-              <Loader2 className="w-16 h-16 mx-auto mb-4 animate-spin" style={{ color: 'var(--primary)' }} />
-              <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--card-foreground)' }}>
-                Loading your cart...
-              </h3>
-              <p style={{ color: 'var(--muted-foreground)' }}>
-                Please wait while we fetch your items
-              </p>
-            </div>
+            <CartSkeleton />
           ) : error ? (
             /* Error State */
             <div 
@@ -205,15 +193,16 @@ export default function UserCartPage() {
               <p className="mb-8" style={{ color: 'var(--muted-foreground)' }}>
                 Discover our exquisite collection of diamonds and jewelry
               </p>
-              <button 
-                className="px-6 py-3 rounded-lg font-medium transition-colors"
+              <Link 
+                href="/diamonds"
+                className="inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium transition-colors min-h-[44px] touch-target"
                 style={{ 
                   backgroundColor: 'var(--primary)',
                   color: 'var(--primary-foreground)'
                 }}
               >
                 Start Shopping
-              </button>
+              </Link>
             </div>
           ) : (
             /* Cart Content */
@@ -468,8 +457,9 @@ export default function UserCartPage() {
                     <ArrowRight className="w-4 h-4" />
                   </button>
 
-                  <button 
-                    className="w-full px-6 py-3 rounded-lg font-medium transition-colors border"
+                  <Link 
+                    href="/diamonds"
+                    className="w-full inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium transition-colors border min-h-[44px] touch-target"
                     style={{ 
                       borderColor: 'var(--border)',
                       color: 'var(--foreground)',
@@ -477,7 +467,7 @@ export default function UserCartPage() {
                     }}
                   >
                     Continue Shopping
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>

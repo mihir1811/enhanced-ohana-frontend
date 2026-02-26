@@ -36,7 +36,7 @@ const sellerPersistConfig = {
 const comparePersistConfig = {
   key: 'compare',
   storage,
-  whitelist: ['products'], // Persist compare products
+  whitelist: ['products'], // Only persist products; maxProducts comes from slice constant
 }
 
 // Root persist configuration

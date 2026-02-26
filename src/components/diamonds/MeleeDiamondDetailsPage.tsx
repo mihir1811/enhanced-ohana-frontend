@@ -22,6 +22,8 @@ import { cartService } from '@/services/cartService';
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
 import { useRouter } from 'next/navigation'
+import { toast } from 'react-hot-toast'
+import { copyProductUrlToClipboard } from '@/lib/shareUtils'
 
 interface MeleeDiamondDetailsPageProps {
   diamond: Diamond | null;
@@ -126,7 +128,7 @@ const MeleeDiamondDetailsPage: React.FC<MeleeDiamondDetailsPageProps> = ({ diamo
             {hasImages ? (
               <>
                 <Image
-                  src={images[imgIdx] || 'https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg'}
+                  src={images[imgIdx] || '/images/placeholder-product.svg'}
                   alt={`${diamond.shape} Melee Diamond`}
                   width={600}
                   height={600}
@@ -171,7 +173,15 @@ const MeleeDiamondDetailsPage: React.FC<MeleeDiamondDetailsPageProps> = ({ diamo
                 className="p-3 rounded-full shadow-lg transition-all duration-200 border backdrop-blur-sm"
                 style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
               />
-              <button className="p-3 rounded-full shadow-lg transition-all duration-200 border backdrop-blur-sm" style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}>
+              <button
+                onClick={async () => {
+                  const ok = await copyProductUrlToClipboard('meleeDiamond', diamond.id);
+                  toast[ok ? 'success' : 'error'](ok ? 'Link copied to clipboard!' : 'Failed to copy link');
+                }}
+                className="p-3 rounded-full shadow-lg transition-all duration-200 border backdrop-blur-sm"
+                style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
+                title="Share"
+              >
                 <Share2 className="w-5 h-5" />
               </button>
             </div>
@@ -278,6 +288,13 @@ const MeleeDiamondDetailsPage: React.FC<MeleeDiamondDetailsPageProps> = ({ diamo
 
           {/* Key Melee Features Cards */}
           <div className="grid grid-cols-2 gap-4">
+            {/* Total Price card - always show first */}
+            <div className="rounded-2xl border p-4 hover:shadow-md transition-shadow duration-200" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-3" style={{ backgroundColor: 'color-mix(in srgb, var(--chart-1) 15%, transparent)' }}>💰</div>
+              <h3 className="font-semibold mb-1" style={{ color: 'var(--foreground)' }}>Total Price</h3>
+              <div className="text-xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>{diamond.totalPrice ? formatPrice(diamond.totalPrice) : formatPrice(diamond.price)}</div>
+              <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Final parcel price</p>
+            </div>
             {[
               { label: 'Total Carat Weight', value: `${diamond.totalCaratWeight} ct`, icon: '⚖️', color: 'var(--chart-1)', description: 'Total parcel weight' },
               { label: 'Total Pieces', value: diamond.totalPcs, icon: '🔢', color: 'var(--chart-2)', description: 'Approximate piece count' },
@@ -320,9 +337,6 @@ const MeleeDiamondDetailsPage: React.FC<MeleeDiamondDetailsPageProps> = ({ diamo
                 showText={false}
                 className="font-semibold"
               />
-              <button className="px-6 py-4 border-2 font-semibold rounded-2xl transition-all duration-200" style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}>
-                <Share2 className="w-5 h-5" />
-              </button>
             </div>
             
             {/* Chat with Seller Button */}

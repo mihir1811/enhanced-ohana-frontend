@@ -13,9 +13,9 @@ export interface UseWishlistReturn {
   isInitialized: boolean;
 
   // Actions
-  addToWishlist: (productId: number, productType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond') => Promise<boolean>;
+  addToWishlist: (productId: number, productType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond' | 'watch') => Promise<boolean>;
   removeFromWishlist: (wishlistItemId: number) => Promise<boolean>;
-  removeFromWishlistByProduct: (productId: number, explicitProductType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond') => Promise<boolean>;
+  removeFromWishlistByProduct: (productId: number, explicitProductType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond' | 'watch') => Promise<boolean>;
   toggleWishlist: (productId: number) => Promise<boolean>;
   isInWishlist: (productId: number) => boolean;
   loadWishlist: (page?: number, limit?: number) => Promise<void>;
@@ -51,7 +51,7 @@ export function useWishlistActions(): UseWishlistReturn {
  * Hook specifically for wishlist button components
  * Provides optimized state and handlers for wishlist buttons
  */
-export function useWishlistButton(productId: number, productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond' = 'jewellery') {
+export function useWishlistButton(productId: number, productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond' | 'watch' = 'jewellery') {
   const {
     isInWishlist,
     addToWishlist,

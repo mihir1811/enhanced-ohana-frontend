@@ -5,16 +5,33 @@ import { useCompare } from '@/hooks/useCompare'
 import { X, ArrowRight, Scale, Trash2, Eye, ShoppingCart, Plus, Minus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
+const PLURAL_MAP: Record<string, string> = {
+  diamond: 'diamonds',
+  gemstone: 'gemstones',
+  jewelry: 'jewelry',
+  watch: 'watches'
+}
+
+const TYPE_LABELS: Record<string, string> = {
+  diamond: 'Diamonds',
+  gemstone: 'Gemstones',
+  jewelry: 'Jewelry',
+  watch: 'Watches'
+}
+
 const ModernFloatingCompare = () => {
   const { 
     products, 
     removeProduct, 
     clearAll,
-    getCompareCount 
+    getCompareCount,
+    getTypeGroups,
+    maxProducts 
   } = useCompare()
   
   const router = useRouter()
   const count = getCompareCount()
+  const typeGroups = getTypeGroups()
   const [isExpanded, setIsExpanded] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
 
@@ -40,18 +57,9 @@ const ModernFloatingCompare = () => {
     }).format(numPrice)
   }
 
-  const handleViewComparison = () => {
-    const firstProductType = products[0]?.type
-    if (firstProductType) {
-      const pluralMap: Record<string, string> = {
-        diamond: 'diamonds',
-        gemstone: 'gemstones',
-        jewelry: 'jewelry',
-        watch: 'watches'
-      }
-      const path = pluralMap[firstProductType] || `${firstProductType}s`
-      router.push(`/compare/${path}`)
-    }
+  const handleViewComparison = (type: string) => {
+    const path = PLURAL_MAP[type] || `${type}s`
+    router.push(`/compare/${path}`)
   }
 
   return (
@@ -166,7 +174,7 @@ const ModernFloatingCompare = () => {
             {/* Progress Bar */}
             <div className="mb-4">
               <div className="flex items-center gap-1 mb-2">
-                {Array.from({ length: 4 }).map((_, index) => (
+                {Array.from({ length: maxProducts }).map((_, index) => (
                   <div
                     key={index}
                     className={`flex-1 h-2 rounded-full transition-colors duration-300 ${
@@ -176,21 +184,39 @@ const ModernFloatingCompare = () => {
                 ))}
               </div>
               <p className="text-xs text-gray-500 text-center">
-                {count === 4 ? 'Maximum reached' : `Add ${4 - count} more to compare`}
+                {count === maxProducts ? 'Maximum reached' : `Add ${maxProducts - count} more to compare`}
               </p>
             </div>
 
             {/* Action Buttons */}
             <div className="space-y-2">
-              <button
-                onClick={handleViewComparison}
-                disabled={count < 2}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl transition-colors font-medium"
-              >
-                <Eye className="w-4 h-4" />
-                View Comparison
-                <ArrowRight className="w-4 h-4" />
-              </button>
+              {typeGroups.length === 1 ? (
+                <button
+                  onClick={() => handleViewComparison(typeGroups[0].type)}
+                  disabled={typeGroups[0].count < 2}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl transition-colors font-medium"
+                >
+                  <Eye className="w-4 h-4" />
+                  View Comparison ({typeGroups[0].count} {TYPE_LABELS[typeGroups[0].type]})
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-gray-500">Compare by type:</p>
+                  {typeGroups.map(({ type, count: typeCount }) => (
+                    <button
+                      key={type}
+                      onClick={() => handleViewComparison(type)}
+                      disabled={typeCount < 2}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 text-white rounded-xl transition-colors font-medium text-sm"
+                    >
+                      <Eye className="w-4 h-4" />
+                      {typeCount} {TYPE_LABELS[type]}
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  ))}
+                </div>
+              )}
 
               <div className="flex gap-2">
                 <button
@@ -218,7 +244,7 @@ const ModernFloatingCompare = () => {
       </div>
 
       {/* Floating Add More Tip */}
-      {count < 4 && !isExpanded && (
+      {count < maxProducts && !isExpanded && (
         <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap opacity-75 animate-pulse">
           Click ⊕ on products to add
           <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>

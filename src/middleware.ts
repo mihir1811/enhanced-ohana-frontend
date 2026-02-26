@@ -6,11 +6,22 @@ export function middleware(request: NextRequest) {
   const role = request.cookies.get('role')?.value
   const pathname = request.nextUrl.pathname
 
-  const publicPaths = ['/', '/about', '/contact', '/login', '/register']
+  const publicPaths = ['/', '/about', '/about-us', '/contact', '/contact-us', '/login', '/register']
 
   // ✅ Allow public pages (including login/register) for everyone
   if (publicPaths.includes(pathname)) {
     return NextResponse.next()
+  }
+
+  // ✅ Allow public product browsing and auth flows (no login required)
+  const publicPrefixes = ['/diamonds', '/gemstones', '/jewelry', '/bullions', '/watches', '/auctions', '/education', '/compare', '/product', '/auth']
+  if (publicPrefixes.some(p => pathname === p || pathname.startsWith(p + '/'))) {
+    return NextResponse.next()
+  }
+
+  // 🚫 Protect user routes (profile, wishlist, orders, chat) - require any authenticated role
+  if (pathname.startsWith('/user') && role !== 'user' && role !== 'seller' && role !== 'admin') {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   // 🚫 Protect seller routes

@@ -67,9 +67,9 @@ export default function Navigation() {
       default: // user
         return [
           { href: '/user', label: 'Home', icon: '🏠' },
-          { href: '/products/diamonds', label: 'Diamonds', icon: '💎' },
-          { href: '/products/gemstones', label: 'Gemstones', icon: '💍' },
-          { href: '/products/jewelries', label: 'Jewelry', icon: '👑' },
+          { href: '/diamonds', label: 'Diamonds', icon: '💎' },
+          { href: '/gemstones', label: 'Gemstones', icon: '💍' },
+          { href: '/jewelry', label: 'Jewelry', icon: '👑' },
           { href: '/user/cart', label: 'Cart', icon: '🛒' },
         ]
     }

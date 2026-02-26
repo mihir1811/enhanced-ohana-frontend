@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast';
 
 interface WishlistButtonProps {
   productId: number;
-  productType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond';
+  productType?: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond' | 'watch';
   size?: 'sm' | 'md' | 'lg';
   variant?: 'default' | 'outline' | 'minimal';
   shape?: 'circle' | 'pill' | 'button';

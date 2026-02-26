@@ -20,7 +20,7 @@ export interface ProductSpecifications {
 export interface CartItem {
   id: string
   productId: string
-  productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond'
+  productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond' | 'watch'
   name: string
   price: number
   originalPrice?: number
@@ -77,7 +77,7 @@ interface RawUser {
 interface RawCartItem {
   id: string | number
   productId: string | number
-  productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond'
+  productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond' | 'watch'
   quantity: string | number
   createdAt: string
   updatedAt: string
@@ -88,7 +88,7 @@ interface RawCartItem {
 
 export interface AddToCartData {
   productId: number
-  productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond'
+  productType: 'diamond' | 'gemstone' | 'jewellery' | 'meleeDiamond' | 'watch'
   quantity: number
   specifications?: ProductSpecifications
 }
