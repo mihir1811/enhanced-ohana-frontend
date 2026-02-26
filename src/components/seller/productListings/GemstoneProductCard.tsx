@@ -210,6 +210,7 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, 
   const [showAuctionModal, setShowAuctionModal] = useState(false);
   const [showSelectWinner, setShowSelectWinner] = useState(false);
   const dropdownClosedRef = React.useRef(false);
+  const deleteModalClosedRef = React.useRef(false);
   const [auctionStart, setAuctionStart] = useState("");
   const [auctionEnd, setAuctionEnd] = useState("");
   const [creatingAuction, setCreatingAuction] = useState(false);
@@ -261,7 +262,7 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, 
   return (
     <div className="relative rounded-2xl shadow-lg border hover:shadow-2xl transition-all flex flex-col overflow-hidden group cursor-pointer" 
       onClick={(e) => {
-        if (dropdownClosedRef.current) return;
+        if (dropdownClosedRef.current || deleteModalClosedRef.current) return;
         setShowQuickView(true);
         if (onQuickView) onQuickView(product);
       }}
@@ -357,7 +358,10 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, 
               <DropdownMenu.Separator className="h-px my-1" style={{ backgroundColor: 'var(--border)' }} />
               <DropdownMenu.Item
                 className="flex items-center gap-2 px-3 py-2 hover:bg-red-50 cursor-pointer text-red-600"
-                onSelect={() => setShowDelete(true)}
+                onSelect={() => {
+                  setShowQuickView(false);
+                  setShowDelete(true);
+                }}
               >
                 <Trash2 className="w-4 h-4" />
                 Delete Product
@@ -714,7 +718,13 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, 
       {/* Delete Confirm Modal */}
       <ConfirmModal
         open={showDelete}
-        onOpenChange={setShowDelete}
+        onOpenChange={(open) => {
+          if (!open) {
+            deleteModalClosedRef.current = true;
+            setTimeout(() => { deleteModalClosedRef.current = false; }, 400);
+          }
+          setShowDelete(open);
+        }}
         title="Are you sure you want to delete this product?"
         description="This action cannot be undone."
         onYes={async () => {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { FileSpreadsheet, Upload, Loader2, X, FileCheck, Trash2 } from "lucide-react";
 import { diamondService } from "@/services/diamondService";
@@ -28,6 +28,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   productType: overrideProductType,
 }) => {
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const errorsRef = React.useRef<HTMLDivElement | null>(null);
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [isDragging, setIsDragging] = React.useState(false);
   const sellerType = useSelector((state: RootState) => state.seller.profile?.sellerType);
@@ -116,6 +117,13 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   };
 
   const clearResult = () => setUploadResult(null);
+
+  // Scroll to errors when they appear
+  useEffect(() => {
+    if (uploadResult?.errors && uploadResult.errors.length > 0 && errorsRef.current) {
+      errorsRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+  }, [uploadResult?.errors]);
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -217,7 +225,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 
       {/* Modal */}
       <div
-        className="relative w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col rounded-xl shadow-2xl border bg-[var(--card)] dark:bg-[var(--card)] text-[var(--card-foreground)] border-[var(--border)] dark:border-slate-700/50 z-10"
+        className="relative w-full max-w-md max-h-[90vh] min-h-[320px] overflow-hidden flex flex-col rounded-xl shadow-2xl border bg-[var(--card)] dark:bg-[var(--card)] text-[var(--card-foreground)] border-[var(--border)] dark:border-slate-700/50 z-10"
         role="dialog"
         aria-modal="true"
         aria-labelledby="bulk-upload-title"
@@ -237,8 +245,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
           </button>
         </div>
 
-        {/* Content */}
-        <div className="flex flex-col gap-5 overflow-y-auto flex-1 min-h-0 p-6">
+        {/* Content - scrollable area */}
+        <div className="flex flex-col gap-5 overflow-y-auto overflow-x-hidden flex-1 min-h-0 p-6 overscroll-contain">
           <input
             type="file"
             accept={ACCEPT_TYPES}
@@ -348,7 +356,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
           {/* Error panel */}
           {uploadResult?.errors && uploadResult.errors.length > 0 && (
             <div
-              className="w-full rounded-xl overflow-hidden border"
+              ref={errorsRef}
+              className="w-full rounded-xl overflow-hidden border shrink-0"
               style={{
                 backgroundColor: "color-mix(in srgb, var(--destructive) 8%, transparent)",
                 borderColor: "color-mix(in srgb, var(--destructive) 30%, transparent)",
@@ -367,7 +376,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                   </p>
                 )}
               </div>
-              <div className="max-h-48 overflow-y-auto p-3 space-y-2">
+              <div className="max-h-64 overflow-y-auto p-3 space-y-2">
                 {uploadResult.errors.map((err, idx) => (
                   <div
                     key={idx}
