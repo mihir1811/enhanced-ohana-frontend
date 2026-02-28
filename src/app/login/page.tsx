@@ -7,7 +7,8 @@ import { useAppDispatch } from '@/store/hooks'
 import { fetchSellerInfo } from '@/features/seller/sellerSlice'
 import Link from 'next/link'
 import { setCredentials } from '../../features/auth/authSlice'
-import { API_CONFIG, buildApiUrl } from '@/lib/constants'
+import { API_CONFIG } from '@/lib/constants'
+import { apiService } from '@/services/api'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -56,18 +57,12 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.LOGIN), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
+      const result = await apiService.post<{ user: { role: string }; accessToken: string; sellerId?: string }>(
+        API_CONFIG.ENDPOINTS.AUTH.LOGIN,
+        formData
+      )
 
-      const result = await response.json()
-
-      if (response.ok && result.success) {
+      if (result.success && result.data) {
         const { user, accessToken } = result.data
 
         // Save to Redux store
@@ -75,7 +70,7 @@ export default function LoginPage() {
 
         // If seller, fetch and store seller profile in sellerSlice
         if (user.role === 'seller') {
-          appDispatch(fetchSellerInfo(result?.data?.sellerId))
+          appDispatch(fetchSellerInfo(result.data?.sellerId))
         }
 
         // Save cookies for middleware
@@ -101,8 +96,7 @@ export default function LoginPage() {
         setError(result.message || 'Login failed. Please check your credentials.')
       }
     } catch (err) {
-      console.error('Login error:', err)
-      setError('Network error. Please check your connection and try again.')
+      setError(err instanceof Error ? err.message : 'Network error. Please check your connection and try again.')
     } finally {
       setIsLoading(false)
     }

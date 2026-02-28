@@ -1,4 +1,3 @@
-// File upload with PUT
 // Central API service configuration
 import { API_CONFIG } from '../lib/constants'
 
@@ -19,32 +18,18 @@ export interface ApiResponse<T = unknown> {
   }
 }
 
+/** Error with HTTP status for API failures */
+export interface ApiError extends Error {
+  status?: number
+}
+
+function createApiError(message: string, status?: number): ApiError {
+  const error = new Error(message) as ApiError
+  error.status = status
+  return error
+}
+
 class ApiService {
-  // File upload with PATCH
-  async uploadPatch<T>(endpoint: string, formData: FormData, token?: string): Promise<ApiResponse<T>> {
-    const config: RequestInit = {
-      method: 'PATCH',
-      headers: {
-        ...(token && { 'Authorization': `Bearer ${token}` }),
-      },
-      body: formData,
-    };
-
-    try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, config);
-      const data = await response.json();
-
-      if (!response.ok) {
-        const error: any = new Error(data.message || `HTTP error! status: ${response.status}`);
-        error.status = response.status;
-        throw error;
-      }
-
-      return data;
-    } catch (error) {
-      throw error;
-    }
-  }
   private baseURL: string
 
   constructor(baseURL: string) {
@@ -71,9 +56,31 @@ class ApiService {
       const data = await response.json()
 
       if (!response.ok) {
-        const error: any = new Error(data.message || `HTTP error! status: ${response.status}`);
-        error.status = response.status;
-        throw error;
+        throw createApiError(data.message || `HTTP error! status: ${response.status}`, response.status)
+      }
+
+      return data
+    } catch (error) {
+      throw error
+    }
+  }
+
+  // File upload with PATCH
+  async uploadPatch<T>(endpoint: string, formData: FormData, token?: string): Promise<ApiResponse<T>> {
+    const config: RequestInit = {
+      method: 'PATCH',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    }
+
+    try {
+      const response = await fetch(`${this.baseURL}${endpoint}`, config)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw createApiError(data.message || `HTTP error! status: ${response.status}`, response.status)
       }
 
       return data
@@ -139,12 +146,21 @@ class ApiService {
 
     try {
       const response = await fetch(`${this.baseURL}${endpoint}`, config)
-      const data = await response.json()
+      const text = await response.text()
+      let data: ApiResponse<T>
+      try {
+        data = text ? JSON.parse(text) : { success: false, message: 'Empty response', data: null as T }
+      } catch {
+        throw createApiError(
+          response.status === 500
+            ? 'Server error. Please try again or contact support.'
+            : `Request failed (${response.status})`,
+          response.status
+        )
+      }
 
       if (!response.ok) {
-        const error: any = new Error(data.message || `HTTP error! status: ${response.status}`);
-        error.status = response.status;
-        throw error;
+        throw createApiError(data.message || `HTTP error! status: ${response.status}`, response.status)
       }
 
       return data

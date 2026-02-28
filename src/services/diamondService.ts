@@ -1,6 +1,6 @@
 
 import { apiService, ApiResponse } from './api';
-import { API_CONFIG, buildApiUrl } from '../lib/constants';
+import { API_CONFIG } from '../lib/constants';
 
 export interface SellerInfo {
   id: string | number;
@@ -120,17 +120,7 @@ const sanitizeParams = (params: Record<string, any> | undefined): Record<string,
 class DiamondService {
   // Get seller info by sellerId
   async getSellerInfo(sellerId: string): Promise<ApiResponse<SellerInfo>> {
-    const url = buildApiUrl(API_CONFIG.ENDPOINTS.SELLER.INFO, { seller_id: sellerId });
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-    if (!response.ok) {
-      throw new Error('Failed to fetch seller info');
-    }
-    return response.json();
+    return apiService.get<SellerInfo>(API_CONFIG.ENDPOINTS.SELLER.INFO, { seller_id: sellerId });
   }
   // Bulk upload products via Excel (dynamic productType)
   async uploadExcel(file: File, productType: string = 'diamond', token?: string, hasUpdate: boolean = false): Promise<ApiResponse<ProductUploadResponse>> {
