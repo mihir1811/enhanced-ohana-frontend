@@ -318,9 +318,13 @@ const BiddingSection: React.FC<{
 
   const isOwner = user?.role === 'seller' && user?.sellerData?.id === auction.sellerId;
 
-  const startingPrice = 'totalPrice' in auction.product 
-    ? auction.product.totalPrice 
-    : auction.product.price;
+  const product = auction.product;
+  const startingPrice =
+    product != null && typeof product === 'object' && 'totalPrice' in product
+      ? Number((product as { totalPrice?: number }).totalPrice ?? 0)
+      : product != null && typeof product === 'object' && 'price' in product
+        ? Number((product as { price?: number }).price ?? 0)
+        : 0;
 
   const minBid = currentBid ? currentBid + 10 : startingPrice;
 
@@ -486,6 +490,29 @@ export default function AuctionDetailsPage() {
             <div className="text-6xl mb-4">😞</div>
             <h2 className="text-2xl font-semibold text-slate-900 mb-2">Auction Not Found</h2>
             <p className="text-slate-600 mb-6">{error}</p>
+            <Link 
+              href="/auctions" 
+              className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Auctions
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
+  if (!auction.product || typeof auction.product !== 'object') {
+    return (
+      <>
+        <NavigationUser />
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-6xl mb-4">📦</div>
+            <h2 className="text-2xl font-semibold text-slate-900 mb-2">Product data unavailable</h2>
+            <p className="text-slate-600 mb-6">This auction’s product details could not be loaded.</p>
             <Link 
               href="/auctions" 
               className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"
