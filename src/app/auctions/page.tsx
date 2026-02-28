@@ -153,28 +153,42 @@ const AuctionStatusBadge: React.FC<{ endTime: string; isActive: boolean; classNa
 // Enhanced auction card with detailed information
 const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }> = ({ auction, viewMode }) => {
   const { product, bids, endTime, seller, productType, isActive } = auction;
-  
+
+  // Skip rendering if product is missing (API may return null)
+  if (!product || typeof product !== 'object') {
+    return (
+      <div className="rounded-lg border p-4" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+        <div className="flex items-center justify-center h-48 text-sm" style={{ color: 'var(--muted-foreground)' }}>
+          Product not available
+        </div>
+      </div>
+    );
+  }
+
   // Get current bid (highest bid from bids array)
   const currentBid = bids.length > 0 ? Math.max(...bids.map(bid => bid.amount)) : null;
   
-  // Get display price based on product type
+  // Get display price based on product type (guard against null product)
   const getDisplayPrice = () => {
     if (currentBid) return currentBid;
-    
+    if (!product || typeof product !== 'object') return 0;
     if ('totalPrice' in product) {
       return product.totalPrice || product.basePrice;
-    } else if ('price' in product) {
+    }
+    if ('price' in product) {
       return product.price;
     }
     return 0;
   };
-  
+
   const displayPrice = getDisplayPrice();
-  
-  // Get starting price safely
-  const startingPrice = 'totalPrice' in product 
-    ? (product.basePrice ?? product.totalPrice ?? 0)
-    : (product.price ?? 0);
+
+  // Get starting price safely (guard against null product)
+  const startingPrice = !product || typeof product !== 'object'
+    ? 0
+    : 'totalPrice' in product
+      ? (product.basePrice ?? product.totalPrice ?? 0)
+      : (product.price ?? 0);
   
   const getProductTypeDisplay = () => {
     switch (productType) {
@@ -559,6 +573,7 @@ export default function AuctionsPage() {
     const { bids, product } = auction;
     const currentBid = bids.length > 0 ? Math.max(...bids.map(b => b.amount)) : null;
     if (currentBid) return currentBid;
+    if (!product || typeof product !== 'object') return 0;
     if ('totalPrice' in product) {
       return (product.totalPrice || product.basePrice) as number;
     }
@@ -570,7 +585,7 @@ export default function AuctionsPage() {
 
   const filteredAuctions = useMemo(() => {
     return auctions
-      .filter(a => !searchQuery || a.product.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      .filter(a => !searchQuery || (a.product?.name ?? '').toLowerCase().includes(searchQuery.toLowerCase()))
       .filter(a => {
         const price = getAuctionDisplayPrice(a);
         const minOk = priceMin === '' || price >= priceMin;

@@ -289,11 +289,14 @@ export function transformWishlistItemToUnified(item: RawWishlistItem): UnifiedPr
         return transformJewelryToUnified(product as RawJewelry);
     }
   } catch (error) {
-    // Fallback: try to create a basic unified product
-    const fallbackPrice = 'price' in product ? Number(product.price) || 0 : 
+    // Fallback: try to create a basic unified product (guard against null/undefined product)
+    if (!product || typeof product !== 'object') {
+      throw new Error('Invalid product data');
+    }
+    const fallbackPrice = 'price' in product ? Number(product.price) || 0 :
                           'totalPrice' in product ? Number(product.totalPrice) || 0 :
                           'basePrice' in product ? Number(product.basePrice) || 0 : 0;
-    
+
     return {
       id: product.id,
       name: product.name,
