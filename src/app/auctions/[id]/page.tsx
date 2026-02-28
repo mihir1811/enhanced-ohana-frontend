@@ -169,7 +169,7 @@ interface AuctionItem {
   isSold: false;
   bids: Bid[];
   seller: Seller;
-  product: GemsProduct | JewelryProduct;
+  product: GemsProduct | JewelryProduct | null;
 }
 
 // Countdown Timer Component
@@ -504,32 +504,16 @@ export default function AuctionDetailsPage() {
     );
   }
 
-  if (!auction.product || typeof auction.product !== 'object') {
-    return (
-      <>
-        <NavigationUser />
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-6xl mb-4">📦</div>
-            <h2 className="text-2xl font-semibold text-slate-900 mb-2">Product data unavailable</h2>
-            <p className="text-slate-600 mb-6">This auction’s product details could not be loaded.</p>
-            <Link 
-              href="/auctions" 
-              className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Auctions
-            </Link>
-          </div>
-        </div>
-        <Footer />
-      </>
-    );
-  }
-
   const currentBid = auction.bids.length > 0 ? Math.max(...auction.bids.map(bid => bid.amount)) : null;
   const isGemstone = auction.productType === 'gemstone';
   const isJewelry = auction.productType === 'jewellery';
+
+  // Fallback product when API returns product: null
+  const product: GemsProduct | JewelryProduct = (auction.product ?? {
+    id: auction.productId,
+    name: `${auction.productType} #${auction.productId}`,
+    description: '',
+  }) as GemsProduct;
 
   return (
     <>
@@ -548,7 +532,7 @@ export default function AuctionDetailsPage() {
               </Link>
               <div>
                 <h1 className="text-xl md:text-2xl font-semibold text-slate-900">
-                  {auction.product.name}
+                  {product.name}
                 </h1>
                 <div className="text-sm text-slate-600">
                   Auction #{auction.id} • {auction.seller.companyName}
@@ -571,7 +555,7 @@ export default function AuctionDetailsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             {/* Left Column - Images */}
             <div>
-              <ImageGallery product={auction.product} />
+              <ImageGallery product={product} />
             </div>
 
             {/* Right Column - Details */}
@@ -593,80 +577,80 @@ export default function AuctionDetailsPage() {
               <div className="bg-white rounded-lg border border-slate-200 p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-4">Product Details</h3>
                 
-                {isGemstone && 'gemsType' in auction.product && (
+                {isGemstone && 'gemsType' in product && (
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <div className="text-sm text-slate-600">Gemstone Type</div>
-                        <div className="font-medium">{auction.product.gemsType}</div>
+                        <div className="font-medium">{(product as GemsProduct).gemsType}</div>
                       </div>
                       <div>
                         <div className="text-sm text-slate-600">Sub Type</div>
-                        <div className="font-medium">{auction.product.subType}</div>
+                        <div className="font-medium">{(product as GemsProduct).subType}</div>
                       </div>
                       <div>
                         <div className="text-sm text-slate-600">Shape</div>
-                        <div className="font-medium">{auction.product.shape}</div>
+                        <div className="font-medium">{(product as GemsProduct).shape}</div>
                       </div>
                       <div>
                         <div className="text-sm text-slate-600">Carat Weight</div>
-                        <div className="font-medium">{auction.product.carat} ct</div>
+                        <div className="font-medium">{(product as GemsProduct).carat} ct</div>
                       </div>
                       <div>
                         <div className="text-sm text-slate-600">Color</div>
-                        <div className="font-medium">{auction.product.color}</div>
+                        <div className="font-medium">{(product as GemsProduct).color}</div>
                       </div>
                       <div>
                         <div className="text-sm text-slate-600">Clarity</div>
-                        <div className="font-medium">{auction.product.clarity}</div>
+                        <div className="font-medium">{(product as GemsProduct).clarity}</div>
                       </div>
                       <div>
                         <div className="text-sm text-slate-600">Origin</div>
-                        <div className="font-medium">{auction.product.origin}</div>
+                        <div className="font-medium">{(product as GemsProduct).origin}</div>
                       </div>
                       <div>
                         <div className="text-sm text-slate-600">Cut</div>
-                        <div className="font-medium">{auction.product.cut}</div>
+                        <div className="font-medium">{(product as GemsProduct).cut}</div>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {isJewelry && 'category' in auction.product && (
+                {isJewelry && 'category' in product && (
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <div className="text-sm text-slate-600">Category</div>
-                        <div className="font-medium">{auction.product.category}</div>
+                        <div className="font-medium">{(product as unknown as JewelryProduct).category}</div>
                       </div>
                       <div>
                         <div className="text-sm text-slate-600">Metal Type</div>
-                        <div className="font-medium">{auction.product.metalType}</div>
+                        <div className="font-medium">{(product as unknown as JewelryProduct).metalType}</div>
                       </div>
                       <div>
                         <div className="text-sm text-slate-600">Metal Purity</div>
-                        <div className="font-medium">{auction.product.metalPurity}</div>
+                        <div className="font-medium">{(product as unknown as JewelryProduct).metalPurity}</div>
                       </div>
                       <div>
                         <div className="text-sm text-slate-600">Metal Weight</div>
-                        <div className="font-medium">{auction.product.metalWeight}g</div>
+                        <div className="font-medium">{(product as unknown as JewelryProduct).metalWeight}g</div>
                       </div>
                       <div>
                         <div className="text-sm text-slate-600">Collection</div>
-                        <div className="font-medium">{auction.product.collection}</div>
+                        <div className="font-medium">{(product as unknown as JewelryProduct).collection}</div>
                       </div>
                       <div>
                         <div className="text-sm text-slate-600">Occasion</div>
-                        <div className="font-medium">{auction.product.occasion}</div>
+                        <div className="font-medium">{(product as unknown as JewelryProduct).occasion}</div>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {auction.product.description && (
+                {product.description && (
                   <div className="mt-4 pt-4 border-t border-slate-200">
                     <div className="text-sm text-slate-600 mb-2">Description</div>
-                    <div className="text-slate-900">{auction.product.description}</div>
+                    <div className="text-slate-900">{product.description}</div>
                   </div>
                 )}
               </div>

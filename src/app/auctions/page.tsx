@@ -71,6 +71,17 @@ interface JewelryProduct {
   image6?: string;
 }
 
+// Minimal product shape returned by live auctions API (backend may send this or null)
+interface LiveProductDto {
+  id: number
+  name: string
+  image?: string
+  price?: string | number
+  description?: string
+}
+
+type AuctionProduct = GemsProduct | JewelryProduct | LiveProductDto
+
 interface Bid {
   id: number;
   amount: number;
@@ -87,10 +98,13 @@ interface AuctionItem {
   endTime: string;
   isActive: boolean;
   isSold: boolean;
+  createdAt?: string;
+  updatedAt?: string;
   bids: Bid[];
   seller: Seller;
-  product: GemsProduct | JewelryProduct;
+  product?: AuctionProduct | null;
 }
+
 
 // Minimalist countdown timer with status badge
 const AuctionStatusBadge: React.FC<{ endTime: string; isActive: boolean; className?: string }> = ({ endTime, isActive, className }) => {
@@ -152,18 +166,19 @@ const AuctionStatusBadge: React.FC<{ endTime: string; isActive: boolean; classNa
 
 // Enhanced auction card with detailed information
 const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }> = ({ auction, viewMode }) => {
-  const { product, bids, endTime, seller, productType, isActive } = auction;
+  const { product: rawProduct, bids, endTime, seller, productType, isActive, productId } = auction;
 
-  // Skip rendering if product is missing (API may return null)
-  if (!product || typeof product !== 'object') {
-    return (
-      <div className="rounded-lg border p-4" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-        <div className="flex items-center justify-center h-48 text-sm" style={{ color: 'var(--muted-foreground)' }}>
-          Product not available
-        </div>
-      </div>
-    );
-  }
+  // If API returns product: null, render a safe fallback product instead of an empty card
+  const product = (rawProduct && typeof rawProduct === 'object')
+    ? rawProduct
+    : { id: productId, name: `${productType} #${productId}`, price: 0 };
+
+  const productImage: string | undefined =
+    ('image1' in product && typeof (product as any).image1 === 'string' && (product as any).image1)
+      ? (product as any).image1
+      : ('image' in product && typeof (product as any).image === 'string' && (product as any).image)
+        ? (product as any).image
+        : undefined;
 
   // Get current bid (highest bid from bids array)
   const currentBid = bids.length > 0 ? Math.max(...bids.map(bid => bid.amount)) : null;
@@ -171,12 +186,11 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
   // Get display price based on product type (guard against null product)
   const getDisplayPrice = () => {
     if (currentBid) return currentBid;
-    if (!product || typeof product !== 'object') return 0;
     if ('totalPrice' in product) {
-      return product.totalPrice || product.basePrice;
+      return Number(product.totalPrice ?? product.basePrice ?? 0) || 0;
     }
     if ('price' in product) {
-      return product.price;
+      return Number(product.price ?? 0) || 0;
     }
     return 0;
   };
@@ -184,11 +198,9 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
   const displayPrice = getDisplayPrice();
 
   // Get starting price safely (guard against null product)
-  const startingPrice = !product || typeof product !== 'object'
-    ? 0
-    : 'totalPrice' in product
-      ? (product.basePrice ?? product.totalPrice ?? 0)
-      : (product.price ?? 0);
+  const startingPrice = 'totalPrice' in product
+    ? (Number(product.basePrice ?? product.totalPrice ?? 0) || 0)
+    : (Number(('price' in product ? product.price : 0) ?? 0) || 0);
   
   const getProductTypeDisplay = () => {
     switch (productType) {
@@ -233,9 +245,9 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
             )}
 
             {/* Product Image */}
-            {product.image1 ? (
+            {productImage ? (
               <Image
-                src={product.image1}
+                src={productImage}
                 alt={product.name}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -274,47 +286,53 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
 
             {/* Product Details Badges */}
             <div className="mb-4 flex flex-wrap gap-2">
-              {isGemstone && 'shape' in product && (
+              {isGemstone && 'gemsType' in product && (() => {
+                const g = product as GemsProduct
+                return (
                 <>
                   <span className="text-xs px-2.5 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-md font-medium">
-                    {product.gemsType}
+                    {g.gemsType}
                   </span>
                   <span className="text-xs px-2.5 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-md font-medium">
-                    {product.shape}
+                    {g.shape}
                   </span>
                   <span className="text-xs px-2.5 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-md font-medium">
-                    {product.carat} ct
+                    {g.carat} ct
                   </span>
                   <span className="text-xs px-2.5 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-md font-medium">
-                    {product.color}
+                    {g.color}
                   </span>
                   <span className="text-xs px-2.5 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-md font-medium">
-                    {product.clarity}
+                    {g.clarity}
                   </span>
-                  {product.origin && (
+                  {g.origin && (
                     <span className="text-xs px-2.5 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-md font-medium">
-                      {product.origin}
+                      {g.origin}
                     </span>
                   )}
                 </>
-              )}
+                )
+              })()}
 
-              {isJewelry && 'category' in product && (
+              {isJewelry && 'metalType' in product && (() => {
+                const j = product as JewelryProduct
+                return (
                 <>
                   <span className="text-xs px-2.5 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-md font-medium">
-                    {product.category}
+                    {j.category}
                   </span>
                   <span className="text-xs px-2.5 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-md font-medium">
-                    {product.metalType}
+                    {j.metalType}
                   </span>
                   <span className="text-xs px-2.5 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-md font-medium">
-                    {product.metalPurity}
+                    {j.metalPurity}
                   </span>
                   <span className="text-xs px-2.5 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-md font-medium">
-                    {product.metalWeight}g
+                    {j.metalWeight}g
                   </span>
                 </>
-              )}
+                )
+              })()}
             </div>
 
             {/* Bottom Section - Price and Actions */}
@@ -425,9 +443,9 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
         )}
 
         {/* Product Image */}
-        {product.image1 ? (
+        {productImage ? (
           <Image
-            src={product.image1}
+            src={productImage}
             alt={product.name}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -460,33 +478,39 @@ const AuctionCard: React.FC<{ auction: AuctionItem; viewMode: 'grid' | 'list' }>
 
         {/* Product Details Badges */}
         <div className="mb-3 flex flex-wrap gap-2">
-          {isGemstone && 'shape' in product && (
+          {isGemstone && 'gemsType' in product && (() => {
+            const g = product as GemsProduct
+            return (
             <>
               <span className="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">
-                {product.shape}
+                {g.shape}
               </span>
               <span className="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">
-                {product.carat} ct
+                {g.carat} ct
               </span>
               <span className="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">
-                {product.color}
+                {g.color}
               </span>
             </>
-          )}
+            )
+          })()}
 
-          {isJewelry && 'category' in product && (
+          {isJewelry && 'metalType' in product && (() => {
+            const j = product as JewelryProduct
+            return (
             <>
               <span className="text-xs px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">
-                {product.metalType}
+                {j.metalType}
               </span>
               <span className="text-xs px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">
-                {product.metalPurity}
+                {j.metalPurity}
               </span>
               <span className="text-xs px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">
-                {product.metalWeight}g
+                {j.metalWeight}g
               </span>
             </>
-          )}
+            )
+          })()}
         </div>
 
         {/* Pricing Section */}
@@ -635,7 +659,7 @@ export default function AuctionsPage() {
   return (
     <>
       <NavigationUser />
-      
+
       <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
         <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 py-6`}>
           {/* Header */}
@@ -918,6 +942,7 @@ export default function AuctionsPage() {
                 </button>
               </div>
             )}
+
 
             {/* Auctions Grid/List */}
             {!loading && !error && auctions.length > 0 && (
