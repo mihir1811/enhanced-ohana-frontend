@@ -12,7 +12,6 @@ import { certificateCompanies } from '@/config/sellerConfigData';
 import toast from 'react-hot-toast';
 
 
-
 interface DiamondData {
   id: string;
   name: string;
@@ -24,6 +23,8 @@ interface DiamondData {
   origin: string;
   rap: string;
   price: string;
+  totalPrice?: string;
+  pricePerCarat?: string;
   discount: string;
   color: string;
   fancyColor: string;
@@ -112,6 +113,14 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
       opt.label.toLowerCase().replace(/[^a-z0-9]/g, '') === apiValAlpha
     );
     if (found) return found.value;
+    // Special handling for shapes like "Pear Brilliant" -> "Pear"
+    if (field === 'shape') {
+      const apiValNoSpace = apiValue.toLowerCase().replace(/\s+/g, '');
+      found = options.find(opt =>
+        apiValNoSpace.includes(opt.value.toLowerCase().replace(/\s+/g, ''))
+      );
+      if (found) return found.value;
+    }
     // Special mapping for process field (e.g. 'annealed' => 'Natural')
     if (field === 'process') {
       if (apiValue.toLowerCase() === 'annealed') {
@@ -124,14 +133,39 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
 
   const [form, setForm] = useState<typeof initialState>(() => {
     if (initialData) {
-      const p = parseFloat(initialData.price);
-      const c = parseFloat(initialData.caratWeight);
-      const ppc = (!isNaN(p) && !isNaN(c) && c > 0) ? (p / c).toFixed(2) : '';
+      // Prefer API totalPrice / pricePerCarat fields when present
+      const apiTotalPrice = (initialData as any).totalPrice ?? initialData.price;
+      const apiPricePerCarat = (initialData as any).pricePerCarat;
+      const c = parseFloat(String(initialData.caratWeight ?? ''));
+
+      let derivedPrice = '';
+      let derivedPricePerCarat = '';
+
+      if (apiTotalPrice != null && apiTotalPrice !== '') {
+        const p = parseFloat(String(apiTotalPrice));
+        if (!isNaN(p)) {
+          derivedPrice = p.toFixed(2);
+          if (!isNaN(c) && c > 0) {
+            derivedPricePerCarat = (p / c).toFixed(2);
+          }
+        }
+      }
+
+      // If API already sends pricePerCarat, prefer that
+      if (apiPricePerCarat != null && apiPricePerCarat !== '') {
+        derivedPricePerCarat = String(apiPricePerCarat);
+      }
 
       return {
         ...initialState,
         ...initialData,
-        pricePerCarat: ppc,
+        // Map API comment -> description so textarea is pre-filled
+        description: initialData.description || (initialData as any).comment || '',
+        // Normalize shape names like "Pear Brilliant" to canonical dropdown value
+        shape: getDropdownValue(shapes, initialData.shape, 'shape'),
+        // Use derived pricing so both fields are pre-filled
+        price: derivedPrice,
+        pricePerCarat: derivedPricePerCarat,
         fancyColor: getDropdownValue(fancyColors, initialData.fancyColor),
         fancyIntencity: getDropdownValue(fancyIntensities, initialData.fancyIntencity),
         fancyOvertone: getDropdownValue(fancyOvertones, initialData.fancyOvertone),
@@ -160,14 +194,35 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
         if (found) certName = found.label;
       }
 
-      const p = parseFloat(initialData.price);
-      const c = parseFloat(initialData.caratWeight);
-      const ppc = (!isNaN(p) && !isNaN(c) && c > 0) ? (p / c).toFixed(2) : '';
+      // Prefer API totalPrice / pricePerCarat fields when present
+      const apiTotalPrice = (initialData as any).totalPrice ?? initialData.price;
+      const apiPricePerCarat = (initialData as any).pricePerCarat;
+      const c = parseFloat(String(initialData.caratWeight ?? ''));
+
+      let derivedPrice = '';
+      let derivedPricePerCarat = '';
+
+      if (apiTotalPrice != null && apiTotalPrice !== '') {
+        const p = parseFloat(String(apiTotalPrice));
+        if (!isNaN(p)) {
+          derivedPrice = p.toFixed(2);
+          if (!isNaN(c) && c > 0) {
+            derivedPricePerCarat = (p / c).toFixed(2);
+          }
+        }
+      }
+
+      if (apiPricePerCarat != null && apiPricePerCarat !== '') {
+        derivedPricePerCarat = String(apiPricePerCarat);
+      }
 
       setForm({
         ...initialState,
         ...initialData,
-        pricePerCarat: ppc,
+        description: initialData.description || (initialData as any).comment || '',
+        shape: getDropdownValue(shapes, initialData.shape, 'shape'),
+        price: derivedPrice,
+        pricePerCarat: derivedPricePerCarat,
         fancyColor: getDropdownValue(fancyColors, initialData.fancyColor),
         fancyIntencity: getDropdownValue(fancyIntensities, initialData.fancyIntencity),
         fancyOvertone: getDropdownValue(fancyOvertones, initialData.fancyOvertone),
