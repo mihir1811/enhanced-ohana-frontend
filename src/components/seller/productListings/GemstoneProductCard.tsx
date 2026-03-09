@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Image from 'next/image';
+import Link from 'next/link';
 import { toast } from "react-hot-toast";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { MoreVertical, Eye, Pencil, Trash2, Images, ChevronLeft, ChevronRight, Clock, Gavel } from "lucide-react";
@@ -294,16 +295,16 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, 
               align="end"
               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
             >
-              <DropdownMenu.Item
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors"
-                onSelect={() => {
-                  setShowQuickView(false);
-                  window.location.href = `/seller/products/${product.id}/edit`;
-                }}
-                style={{ color: 'var(--foreground)' }}
-              >
-                <Pencil className="w-4 h-4" />
-                Edit Product
+              <DropdownMenu.Item asChild>
+                <Link
+                  href={`/seller/products/${product.id}/edit`}
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors outline-none"
+                  style={{ color: 'var(--foreground)' }}
+                  onClick={() => setShowQuickView(false)}
+                >
+                  <Pencil className="w-4 h-4" />
+                  Edit Product
+                </Link>
               </DropdownMenu.Item>
               {!product.isOnAuction && !product.isSold && (
                 <DropdownMenu.Item
@@ -449,14 +450,16 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, 
               🔥 Live Auction
             </span>
           )}
-          {product.carat || product.caratWeight ? (
+          {product.carat ?? product.caratWeight != null ? (
             <span className="rounded-full px-2 py-1 font-semibold" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
-              {product.carat || product.caratWeight} ct
+              {product.carat ?? product.caratWeight} ct
             </span>
           ) : null}
-          <span className="rounded-full px-2 py-1 font-semibold capitalize" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
-            {product.shape}
-          </span>
+          {product.shape ? (
+            <span className="rounded-full px-2 py-1 font-semibold capitalize" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+              {product.shape}
+            </span>
+          ) : null}
         </div>
         <div className="flex items-baseline gap-2">
           <span className="text-xl font-extrabold" style={{ color: 'var(--primary)' }}>
@@ -465,26 +468,27 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, 
         </div>
         
         {/* Auction Timer */}
+        {/* 
         {product.isOnAuction && product.auctionEndTime && (
           <CountdownTimer endTime={product.auctionEndTime} />
         )}
-        
+        */}
         <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs mb-2">
           <div className="flex items-center gap-1">
             <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>SKU:</span>
-            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.sellerSKU}</span>
+            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.sellerSKU ?? '-'}</span>
           </div>
           <div className="flex items-center gap-1">
             <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Stock #:</span>
-            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.stockNumber}</span>
+            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.stockNumber ?? '-'}</span>
           </div>
           <div className="flex items-center gap-1">
             <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Color:</span>
-            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.color}</span>
+            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.color ?? '-'}</span>
           </div>
           <div className="flex items-center gap-1">
             <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Shape:</span>
-            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.shape}</span>
+            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.shape ?? '-'}</span>
           </div>
           {product.quantity && product.quantity > 1 && (
             <div className="flex items-center gap-1 col-span-2">
@@ -502,7 +506,7 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, 
           </div>
           <div className="flex items-center gap-1">
             <span className="font-semibold">Stock:</span>
-            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.stockNumber}</span>
+            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.stockNumber ?? '-'}</span>
           </div>
         </div>
       </div>
@@ -627,16 +631,14 @@ const GemstoneProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, 
               >
                 Close
               </button>
-              <button
-                className="px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-colors"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowQuickView(false);
-                  window.location.href = `/seller/products/${product.id}/edit`;
-                }}
+              <Link
+                href={`/seller/products/${product.id}/edit`}
+                className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors inline-block"
+                style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+                onClick={(e) => e.stopPropagation()}
               >
                 Edit Product
-              </button>
+              </Link>
             </div>
           </div>
         </div>

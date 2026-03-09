@@ -97,21 +97,21 @@ const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
     return () => clearInterval(timer);
   }, [endTime]);
 
-  if (!timeLeft) {
-    return (
-      <div className="bg-gradient-to-r from-red-50 to-red-100 border-2 border-red-300 rounded-xl p-3 mt-3 shadow-sm">
-        <div className="flex items-center justify-center gap-2 text-red-700">
-          <div className="w-8 h-8 bg-red-200 rounded-full flex items-center justify-center">
-            <Clock className="w-4 h-4 text-red-600" />
-          </div>
-          <div className="text-center">
-            <div className="text-sm font-bold">Auction Ended</div>
-            <div className="text-xs opacity-75">This auction has concluded</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // if (!timeLeft) {
+  //   return (
+  //     <div className="bg-gradient-to-r from-red-50 to-red-100 border-2 border-red-300 rounded-xl p-3 mt-3 shadow-sm">
+  //       <div className="flex items-center justify-center gap-2 text-red-700">
+  //         <div className="w-8 h-8 bg-red-200 rounded-full flex items-center justify-center">
+  //           <Clock className="w-4 h-4 text-red-600" />
+  //         </div>
+  //         <div className="text-center">
+  //           <div className="text-sm font-bold">Auction Ended</div>
+  //           <div className="text-xs opacity-75">This auction has concluded</div>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   const isUrgent = timeLeft.days === 0 && timeLeft.hours < 2;
   const bgGradient = isUrgent 
@@ -420,9 +420,11 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
           </div>
         </div>
         {/* Auction Timer */}
+        {/*  
         {product.isOnAuction && product.auctionEndTime && (
           <CountdownTimer endTime={product.auctionEndTime} />
         )}
+          */}
         <div className="flex items-center justify-between text-xs mt-auto" style={{ color: 'var(--muted-foreground)' }}>
           <div className="flex items-center gap-1">
             <span className="font-semibold">Updated:</span>
