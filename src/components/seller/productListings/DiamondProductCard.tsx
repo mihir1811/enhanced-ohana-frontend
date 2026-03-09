@@ -24,7 +24,7 @@ export interface DiamondProduct {
   shape: string;
   isDeleted: boolean;
   updatedAt: string;
-  sellerSKU: string;
+  // sellerSKU: string;
   isOnAuction?: boolean;
   isSold?: boolean;
   auctionId?: number;
@@ -39,31 +39,31 @@ interface Props {
   onUpdateProduct?: (product: DiamondProduct) => void;
 }
 
-const getStatusTag = (isDeleted: boolean, stockNumber: number) => {
-  if (isDeleted)
-    return (
-      <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-        Deleted
-      </span>
-    );
-  if (stockNumber <= 0)
-    return (
-      <span className="bg-gray-700 text-white text-xs px-2 py-1 rounded-full">
-        Out of Stock
-      </span>
-    );
-  if (stockNumber < 10)
-    return (
-      <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
-        Low Stock
-      </span>
-    );
-  return (
-    <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-      In Stock
-    </span>
-  );
-};
+// const getStatusTag = (isDeleted: boolean, stockNumber: number) => {
+//   if (isDeleted)
+//     return (
+//       <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+//         Deleted
+//       </span>
+//     );
+//   if (stockNumber <= 0)
+//     return (
+//       <span className="bg-gray-700 text-white text-xs px-2 py-1 rounded-full">
+//         Out of Stock
+//       </span>
+//     );
+//   if (stockNumber < 10)
+//     return (
+//       <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+//         Low Stock
+//       </span>
+//     );
+//   return (
+//     <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+//       In Stock
+//     </span>
+//   );
+// };
 
 const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
   const [timeLeft, setTimeLeft] = useState<{
@@ -97,21 +97,21 @@ const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
     return () => clearInterval(timer);
   }, [endTime]);
 
-  if (!timeLeft) {
-    return (
-      <div className="bg-gradient-to-r from-red-50 to-red-100 border-2 border-red-300 rounded-xl p-3 mt-3 shadow-sm">
-        <div className="flex items-center justify-center gap-2 text-red-700">
-          <div className="w-8 h-8 bg-red-200 rounded-full flex items-center justify-center">
-            <Clock className="w-4 h-4 text-red-600" />
-          </div>
-          <div className="text-center">
-            <div className="text-sm font-bold">Auction Ended</div>
-            <div className="text-xs opacity-75">This auction has concluded</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // if (!timeLeft) {
+  //   return (
+  //     <div className="bg-gradient-to-r from-red-50 to-red-100 border-2 border-red-300 rounded-xl p-3 mt-3 shadow-sm">
+  //       <div className="flex items-center justify-center gap-2 text-red-700">
+  //         <div className="w-8 h-8 bg-red-200 rounded-full flex items-center justify-center">
+  //           <Clock className="w-4 h-4 text-red-600" />
+  //         </div>
+  //         <div className="text-center">
+  //           <div className="text-sm font-bold">Auction Ended</div>
+  //           <div className="text-xs opacity-75">This auction has concluded</div>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   const isUrgent = timeLeft.days === 0 && timeLeft.hours < 2;
   const bgGradient = isUrgent 
@@ -317,9 +317,9 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
         </DropdownMenu.Root>
       </div>
       {/* Status tag */}
-      <div className="absolute top-3 left-3 z-10">
+      {/* <div className="absolute top-3 left-3 z-10">
         {getStatusTag(product.isDeleted, product.stockNumber)}
-      </div>
+      </div> */}
       {/* Image */}
       <div className="relative w-full aspect-[4/3] flex items-center justify-center" style={{ backgroundColor: 'var(--muted)' }}>
         <img
@@ -399,34 +399,32 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
         </div>
         <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs mb-2">
           <div className="flex items-center gap-1">
-            <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>SKU:</span>
-            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.sellerSKU}</span>
-          </div>
-          <div className="flex items-center gap-1">
             <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Stock #:</span>
             <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.stockNumber}</span>
           </div>
           <div className="flex items-center gap-1">
             <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Color:</span>
-            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.color}</span>
+            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.color || '-'}</span>
           </div>
           <div className="flex items-center gap-1">
             <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Clarity:</span>
-            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.clarity}</span>
+            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.clarity || '-'}</span>
           </div>
           <div className="flex items-center gap-1">
             <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Cut:</span>
-            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.cut}</span>
+            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.cut || '-'}</span>
           </div>
           <div className="flex items-center gap-1">
             <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Shape:</span>
-            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.shape}</span>
+            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.shape || '-'}</span>
           </div>
         </div>
         {/* Auction Timer */}
+        {/*  
         {product.isOnAuction && product.auctionEndTime && (
           <CountdownTimer endTime={product.auctionEndTime} />
         )}
+          */}
         <div className="flex items-center justify-between text-xs mt-auto" style={{ color: 'var(--muted-foreground)' }}>
           <div className="flex items-center gap-1">
             <span className="font-semibold">Updated:</span>
@@ -435,8 +433,8 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
             </span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="font-semibold">Stock:</span>
-            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.stockNumber}</span>
+            {/* <span className="font-semibold">Stock:</span>
+            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.stockNumber}</span> */}
             {/* {product.isOnAuction && (
               <div className="ml-2 relative">
                 <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg border-2 border-white animate-pulse">
@@ -471,9 +469,9 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
             </button>
             <h2 className="text-xl font-bold mb-2">{product.name}</h2>
             <div className="flex items-center gap-2 mb-2">
-              {getStatusTag(product.isDeleted, product.stockNumber)}
+              {/* {getStatusTag(product.isDeleted, product.stockNumber)} */}
               <span className="rounded-full px-2 py-1 text-xs font-semibold tracking-wide uppercase" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
-                {product.shape}
+                {product.shape || '-'}
               </span>
             </div>
             <div className="relative w-full h-64 flex items-center justify-center mb-4" style={{ backgroundColor: 'var(--muted)' }}>
@@ -536,12 +534,11 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
               <span className="text-2xl font-extrabold" style={{ color: 'var(--primary)' }}>${Number(product.price).toLocaleString()}</span>
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mb-4">
-              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>SKU:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.sellerSKU}</span></div>
-              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Stock #:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.stockNumber}</span></div>
-              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Color:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.color}</span></div>
-              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Clarity:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.clarity}</span></div>
-              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Cut:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.cut}</span></div>
-              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Shape:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.shape}</span></div>
+              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Stock #:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.stockNumber || '-'}</span></div>
+              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Color:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.color || '-'}</span></div>
+              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Clarity:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.clarity || '-'}</span></div>
+              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Cut:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.cut || '-'}</span></div>
+              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Shape:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.shape || '-'}</span></div>
               <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Updated:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{new Date(product.updatedAt).toLocaleDateString()}</span></div>
               <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Auction:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.isOnAuction ? 'Yes' : 'No'}</span></div>
               <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Sold:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.isSold ? 'Yes' : 'No'}</span></div>

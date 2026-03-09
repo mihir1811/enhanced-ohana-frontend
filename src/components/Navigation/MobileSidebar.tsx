@@ -65,7 +65,7 @@ export default function MobileSidebar({
         { href: '/gemstones', label: 'Gemstones', icon: '💍' },
         { href: '/jewelry', label: 'Jewelry', icon: '📿' },
         { href: '/watches', label: 'Watches', icon: '⌚' },
-        { href: '/auctions', label: 'Auctions', icon: '🔨' },
+        // { href: '/auctions', label: 'Auctions', icon: '🔨' },
         { href: '/diamonds?diamondType=lab-grown', label: 'Lab Grown Diamonds', icon: '⚗️' },
         { href: '/bullions', label: 'Bullions', icon: '🥇' },
         { href: '/user', label: 'My Dashboard', icon: '✨' }

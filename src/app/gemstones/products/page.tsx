@@ -9,8 +9,7 @@ import NavigationUser from '@/components/Navigation/NavigationUser';
 import Footer from '@/components/Footer';
 import { gemstoneService, GemstonItem } from '@/services/gemstoneService';
 import { GemstoneFilterValues } from '@/components/gemstones/GemstoneFilters';
-import WishlistButton from '@/components/shared/WishlistButton';
-import CompareButton from '@/components/compare/CompareButton';
+import { GemstoneCard } from '@/components/gemstones/GemstoneCard';
 
 const SORT_OPTIONS = [
   { value: '-createdAt', label: 'Newest First' },
@@ -1407,7 +1406,14 @@ export default function GemstoneProductsPage() {
                     : 'space-y-4'
                 }>
                   {gemstones.map(item => (
-                    <GemstoneCard key={item.id} item={item} viewMode={viewMode} />
+                    <GemstoneCard
+                      key={item.id}
+                      gemstone={item}
+                      viewMode={viewMode}
+                      detailHref={`/gemstones/single/${item.id}`}
+                      onSelect={() => router.push(`/gemstones/single/${item.id}`)}
+                      onAddToCart={() => {}}
+                    />
                   ))}
                 </div>
 
@@ -1461,229 +1467,5 @@ export default function GemstoneProductsPage() {
       <Footer />
       </div>
     </>
-  );
-}
-
-// Gemstone Card Component
-interface GemstoneCardProps {
-  item: GemstonItem;
-  viewMode: 'grid' | 'list';
-}
-
-function GemstoneCard({ item, viewMode }: GemstoneCardProps) {
-  const router = useRouter();
-  const goToDetails = () => {
-    router.push(`/gemstones/single/${item.id}`);
-  };
-  if (viewMode === 'list') {
-    return (
-      <div className="rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-        <div className="flex gap-6">
-          <div className="w-32 h-32 rounded-lg flex-shrink-0 overflow-hidden relative" style={{ backgroundColor: 'var(--card)' }}>
-            {item.image1 ? (
-              <Link href={`/gemstones/single/${item.id}`}>
-                <Image
-                  src={item.image1}
-                  alt={item.name}
-                  width={128}
-                  height={128}
-                  className="w-full h-full object-cover rounded-lg"
-                />
-              </Link>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-slate-400">
-                No Image
-              </div>
-            )}
-          </div>
-          
-          <div className="flex-1">
-            <div className="flex items-start justify-between mb-2">
-              <Link href={`/gemstones/single/${item.id}`} className="text-lg font-medium" style={{ color: 'var(--foreground)' }}>
-                {item.name}
-              </Link>
-              <div className="flex items-center gap-2">
-                <CompareButton
-                  product={{
-                    id: item.id,
-                    name: item.name,
-                    price: item.totalPrice ?? 0,
-                    images: [item.image1, item.image2, item.image3].filter(Boolean) as string[],
-                  }}
-                  productType="gemstone"
-                  size="sm"
-                />
-                <WishlistButton productId={Number(item.id)} productType="gemstone" />
-              </div>
-            </div>
-            
-            <p className="text-sm mb-2" style={{ color: 'var(--muted-foreground)' }}>{item.skuCode}</p>
-            
-            <div className="flex items-center gap-4 mb-3">
-              <span className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>
-                ${item.totalPrice?.toLocaleString() || 'Price on request'}
-              </span>
-              
-              {item.gemType && (
-                <span className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
-                  {item.gemType.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
-                </span>
-              )}
-              
-              {item.caratWeight && (
-                <span className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
-                  {item.caratWeight}ct
-                </span>
-              )}
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2" style={{ color: 'var(--muted-foreground)' }}>
-                <MapPin className="w-4 h-4" />
-                <span className="text-sm">Seller ID: {item.sellerId.slice(-8)}</span>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <CompareButton
-                  product={{
-                    id: item.id,
-                    name: item.name,
-                    price: item.totalPrice ?? 0,
-                    images: [item.image1, item.image2, item.image3].filter(Boolean) as string[],
-                  }}
-                  productType="gemstone"
-                  size="sm"
-                />
-                <button
-                  onClick={goToDetails}
-                  className="p-2 rounded-lg border"
-                  style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, currentColor 14%, transparent)' }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
-                >
-                  <Eye className="w-4 h-4" />
-                </button>
-                <button className="p-2 rounded-lg" style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}>
-                  <ShoppingCart className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-      <div className="relative aspect-square" style={{ backgroundColor: 'var(--card)' }}>
-        {item.image1 ? (
-          <Link href={`/gemstones/single/${item.id}`}>
-            <Image
-              src={item.image1}
-              alt={item.name}
-              width={400}
-              height={400}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          </Link>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-400">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-2 bg-slate-200 rounded-full flex items-center justify-center">
-                <Star className="w-8 h-8 text-slate-400" />
-              </div>
-              <p className="text-sm">No Image</p>
-            </div>
-          </div>
-        )}
-        
-        <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
-          <CompareButton
-            product={{
-              id: item.id,
-              name: item.name,
-              price: item.totalPrice ?? 0,
-              images: [item.image1, item.image2, item.image3].filter(Boolean) as string[],
-            }}
-            productType="gemstone"
-            size="md"
-          />
-          {item.isOnAuction && (
-            <div className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
-              Auction
-            </div>
-          )}
-        </div>
-        <div className="absolute top-3 right-3">
-          <WishlistButton productId={Number(item.id)} productType="gemstone" />
-        </div>
-      </div>
-      
-      <div className="p-4" style={{ color: 'var(--foreground)' }}>
-        <Link href={`/gemstones/single/${item.id}`} className="font-medium mb-1 line-clamp-1" style={{ color: 'var(--foreground)' }}>
-          {item.name}
-        </Link>
-        <p className="text-sm mb-2" style={{ color: 'var(--muted-foreground)' }}>{item.skuCode}</p>
-        
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>
-            ${item.totalPrice?.toLocaleString() || 'POA'}
-          </span>
-          
-          <div className="flex gap-1">
-            {item.gemType && (
-              <span className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
-                {item.gemType.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
-              </span>
-            )}
-            {item.caratWeight && (
-              <span className="px-2 py-1 text-xs rounded" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
-                {item.caratWeight}ct
-              </span>
-            )}
-          </div>
-        </div>
-        
-        <div className="flex items-center justify-between text-sm mb-3" style={{ color: 'var(--muted-foreground)' }}>
-          <div className="flex items-center gap-1">
-            <MapPin className="w-3 h-3" />
-            <span>ID: {item.sellerId.slice(-8)}</span>
-          </div>
-          
-          {item.origin && (
-            <div className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-              {item.origin}
-            </div>
-          )}
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <button className="flex-1 px-3 py-2 text-sm rounded flex items-center justify-center gap-2" style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}>
-            <ShoppingCart className="w-4 h-4" />
-            Add to Cart
-          </button>
-          <CompareButton
-            product={{
-              id: item.id,
-              name: item.name,
-              price: item.totalPrice ?? 0,
-              images: [item.image1, item.image2, item.image3].filter(Boolean) as string[],
-            }}
-            productType="gemstone"
-            size="sm"
-          />
-          <button
-            onClick={goToDetails}
-            className="p-2 rounded border"
-            style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, currentColor 14%, transparent)' }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
-          >
-            <Eye className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-    </div>
   );
 }

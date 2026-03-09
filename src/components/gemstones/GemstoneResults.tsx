@@ -2,10 +2,9 @@
 
 import React, { useState } from 'react'
 import Pagination from '../ui/Pagination';
-import { Heart, ShoppingCart, Share2, Download, Star, Award, Shield, Eye, Grid, List, ArrowUpDown, ChevronDown, Filter as FilterIcon} from 'lucide-react'
-import WishlistButton from '@/components/shared/WishlistButton'
+import { Star, Grid, List, ArrowUpDown, ChevronDown, Filter as FilterIcon } from 'lucide-react'
 import { GemstonItem } from '@/services/gemstoneService';
-import CompareButton from '@/components/compare/CompareButton'
+import { GemstoneCard } from '@/components/gemstones/GemstoneCard'
 
 export interface GemstoneResultsProps {
   gemstones: GemstonItem[];
@@ -220,6 +219,8 @@ const GemstoneResults: React.FC<GemstoneResultsProps> = ({
                 <GemstoneCard
                   key={gemstone.id}
                   gemstone={gemstone}
+                  viewMode="grid"
+                  detailHref={gemstoneType === 'melee' ? `/gemstones/melee/${gemstone.id}` : `/gemstones/single/${gemstone.id}`}
                   onSelect={() => onGemstoneSelect(gemstone)}
                   onAddToCart={() => onAddToCart(gemstone)}
                 />
@@ -228,9 +229,11 @@ const GemstoneResults: React.FC<GemstoneResultsProps> = ({
           ) : (
             <div className="space-y-4 mb-8">
               {gemstones.map(gemstone => (
-                <GemstoneListItem
+                <GemstoneCard
                   key={gemstone.id}
                   gemstone={gemstone}
+                  viewMode="list"
+                  detailHref={gemstoneType === 'melee' ? `/gemstones/melee/${gemstone.id}` : `/gemstones/single/${gemstone.id}`}
                   onSelect={() => onGemstoneSelect(gemstone)}
                   onAddToCart={() => onAddToCart(gemstone)}
                 />
@@ -256,226 +259,6 @@ const GemstoneResults: React.FC<GemstoneResultsProps> = ({
           onClick={() => setShowSortDropdown(false)}
         />
       )}
-    </div>
-  );
-};
-
-// Gemstone Card Component for Grid View
-interface GemstoneCardProps {
-  gemstone: GemstonItem;
-  onSelect: () => void;
-  onAddToCart: () => void;
-}
-
-const GemstoneCard: React.FC<GemstoneCardProps> = ({ gemstone, onSelect, onAddToCart }) => {
-  const formatPrice = (price: number | string | undefined) => {
-    if (!price) return 'POA';
-    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(numPrice);
-  };
-
-  return (
-    <div className="rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-      <div className="relative aspect-square" style={{ backgroundColor: 'var(--muted)' }}>
-        <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
-          <CompareButton
-            product={{
-              id: gemstone.id,
-              name: gemstone.name,
-              price: gemstone.totalPrice ?? 0,
-              images: [gemstone.image1, gemstone.image2, gemstone.image3, gemstone.image4, gemstone.image5, gemstone.image6].filter(Boolean) as string[],
-            }}
-            productType="gemstone"
-            size="md"
-          />
-        </div>
-        {gemstone.image1 ? (
-          <img 
-            src={gemstone.image1} 
-            alt={gemstone.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--muted-foreground)' }}>
-            <div className="text-center">
-              <Star className="w-12 h-12 mx-auto mb-2 opacity-20" />
-              <p className="text-xs font-bold uppercase tracking-wider opacity-40">No Image</p>
-            </div>
-          </div>
-        )}
-        
-        <div className="absolute top-3 right-3">
-          <WishlistButton productId={Number(gemstone.id)} productType="gemstone" />
-        </div>
-        
-        {gemstone.isOnAuction && (
-          <div className="absolute top-3 left-3 px-3 py-1 text-white text-[10px] font-bold uppercase tracking-widest rounded-full shadow-lg" style={{ backgroundColor: 'var(--destructive)' }}>
-            Auction
-          </div>
-        )}
-      </div>
-      
-      <div className="p-5">
-        <div className="mb-1">
-          {gemstone.gemType && (
-            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--status-warning)' }}>
-              {gemstone.gemType.replace('-', ' ')}
-            </span>
-          )}
-        </div>
-        <h3 className="font-bold mb-2 line-clamp-1 group-hover:text-amber-600 transition-colors" style={{ color: 'var(--foreground)' }}>{gemstone.name}</h3>
-        <p className="text-xs font-medium mb-4" style={{ color: 'var(--muted-foreground)' }}>{gemstone.skuCode}</p>
-        
-        <div className="flex items-center justify-between mb-5">
-          <span className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>
-            {formatPrice(gemstone.totalPrice)}
-          </span>
-          
-          {gemstone.caratWeight && (
-            <span className="px-2.5 py-1 rounded-lg text-xs font-bold" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 10%, transparent)', color: 'var(--status-warning)' }}>
-              {gemstone.caratWeight}ct
-            </span>
-          )}
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onSelect}
-            className="flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-sm"
-            style={{ backgroundColor: 'var(--foreground)', color: 'var(--background)' }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-          >
-            <Eye className="w-4 h-4" />
-            View
-          </button>
-          <button
-            onClick={onAddToCart}
-            className="p-2.5 border rounded-xl transition-all active:scale-95 shadow-sm"
-            style={{ borderColor: 'var(--border)', backgroundColor: 'var(--background)', color: 'var(--foreground)' }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--accent)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--background)'}
-          >
-            <ShoppingCart className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Gemstone List Item Component for List View
-const GemstoneListItem: React.FC<GemstoneCardProps> = ({ gemstone, onSelect, onAddToCart }) => {
-  const formatPrice = (price: number | string | undefined) => {
-    if (!price) return 'Price on Request';
-    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(numPrice);
-  };
-
-  return (
-    <div className="rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 border group" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-      <div className="flex flex-col sm:flex-row gap-8">
-        <div className="w-full sm:w-48 h-48 rounded-xl flex-shrink-0 relative overflow-hidden" style={{ backgroundColor: 'var(--muted)' }}>
-          {gemstone.image1 ? (
-            <img 
-              src={gemstone.image1} 
-              alt={gemstone.name}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--muted-foreground)' }}>
-              <Star className="w-12 h-12 opacity-20" />
-            </div>
-          )}
-          <div className="absolute top-3 left-3 z-10">
-            <CompareButton
-              product={{
-                id: gemstone.id,
-                name: gemstone.name,
-                price: gemstone.totalPrice ?? 0,
-                images: [gemstone.image1, gemstone.image2, gemstone.image3, gemstone.image4, gemstone.image5, gemstone.image6].filter(Boolean) as string[],
-              }}
-              productType="gemstone"
-              size="sm"
-            />
-          </div>
-        </div>
-        
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between mb-2">
-            <div>
-              <div className="mb-1">
-                {gemstone.gemType && (
-                  <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--status-warning)' }}>
-                    {gemstone.gemType.replace('-', ' ')}
-                  </span>
-                )}
-              </div>
-              <h3 className="text-2xl font-bold group-hover:text-amber-600 transition-colors" style={{ color: 'var(--foreground)' }}>{gemstone.name}</h3>
-              <p className="text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>{gemstone.skuCode}</p>
-            </div>
-            <WishlistButton productId={Number(gemstone.id)} productType="gemstone" />
-          </div>
-          
-          <div className="flex items-center gap-6 mb-6 mt-4">
-            <span className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>
-              {formatPrice(gemstone.totalPrice)}
-            </span>
-            
-            <div className="flex gap-2">
-              {gemstone.caratWeight && (
-                <span className="px-3 py-1.5 rounded-lg text-sm font-bold" style={{ backgroundColor: 'color-mix(in srgb, var(--status-warning) 10%, transparent)', color: 'var(--status-warning)' }}>
-                  {gemstone.caratWeight}ct
-                </span>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
-            <div className="text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>
-              {gemstone.origin && (
-                <span className="flex items-center gap-2">
-                  <Award className="w-4 h-4" />
-                  Origin: {gemstone.origin}
-                </span>
-              )}
-            </div>
-            
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <button
-                onClick={onSelect}
-                className="flex-1 sm:flex-none px-6 py-3 border rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-sm"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--background)', color: 'var(--foreground)' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--accent)'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--background)'}
-              >
-                <Eye className="w-4 h-4" />
-                View Details
-              </button>
-              <button
-                onClick={onAddToCart}
-                className="flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg"
-                style={{ backgroundColor: 'var(--status-warning)', color: 'white' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--status-warning) 80%, black)'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--status-warning)'}
-              >
-                <ShoppingCart className="w-4 h-4" />
-                Add to Cart
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

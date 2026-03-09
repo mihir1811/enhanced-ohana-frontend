@@ -387,9 +387,11 @@ export default function JewelryProductCard({ product, onQuickView, onDelete, onU
           </div>
         </div>
         {/* Auction Timer */}
+        {/* 
         {product.isOnAuction && product.auctionEndTime && (
           <CountdownTimer endTime={product.auctionEndTime} />
         )}
+        */}
         <div className="flex items-center justify-between text-xs mt-auto" style={{ color: 'var(--muted-foreground)' }}>
           <div className="flex items-center gap-1">
             <span className="font-semibold">Updated:</span>

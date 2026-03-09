@@ -158,6 +158,22 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
 
   const certification = getCertificationGrade();
 
+  const displayDescription =
+    (diamond as any).description || (diamond as any).comment || '';
+
+  const isLabGrown = diamond.stoneType === 'labGrownDiamond';
+  const stoneTypeLabel = isLabGrown ? 'Lab-Grown Diamond' : 'Natural Diamond';
+
+  const pricePerCaratLabel = diamond.pricePerCarat
+    ? `${formatPrice(diamond.pricePerCarat)} / ct`
+    : null;
+
+  const fancyColorLabel = diamond.fancyColor
+    ? [diamond.fancyColor, diamond.fancyIntencity, diamond.fancyOvertone]
+        .filter(Boolean)
+        .join(' • ')
+    : null;
+
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-8">
       {/* Breadcrumb */}
@@ -336,9 +352,9 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
               </div>
             </div>
 
-            {/* Status Badges */}
-            <div className="flex items-center gap-3">
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold border`} style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}>
+            {/* Status & Type Badges */}
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold border" style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}>
                 <CheckCircle className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
                 {diamond.isSold ? 'Sold' : 'Available'}
               </span>
@@ -350,58 +366,76 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
               )}
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold border" style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}>
                 <Shield className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
-                Certified
+                {diamond.certificateNumber ? 'Certified' : 'Uncertified'}
               </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold border" style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}>
+                <Award className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
+                {stoneTypeLabel}
+              </span>
+              {fancyColorLabel && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold border" style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}>
+                  <Star className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
+                  {fancyColorLabel}
+                </span>
+              )}
             </div>
 
             {/* Description */}
-            {diamond.description && (
+            {displayDescription && (
               <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--card)' }}>
-                <p className="leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>{diamond.description}</p>
+                <p className="leading-relaxed text-sm sm:text-base" style={{ color: 'var(--muted-foreground)' }}>{displayDescription}</p>
               </div>
             )}
           </div>
 
-          {/* Key Features Cards */}
-          <div className="grid grid-cols-2 gap-4">
-            {/* Total Price card - always show first */}
+          {/* Key Highlights */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Pricing highlight */}
             <div className="rounded-2xl border p-4 hover:shadow-md transition-shadow duration-200" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
               <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 flex items-center justify-center text-2xl mb-3">💰</div>
               <h3 className="font-semibold mb-1" style={{ color: 'var(--foreground)' }}>Total Price</h3>
-              <div className="text-xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>{(diamond.totalPrice ?? diamond.price) ? formatPrice(diamond.totalPrice ?? diamond.price) : 'POA'}</div>
-              <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Final price</p>
-            </div>
-            {/* Show all main diamond fields as cards */}
-            {[
-              { label: 'Carat Weight', value: diamond.caratWeight, icon: '⚖️', color: 'from-blue-500 to-blue-600', description: 'Weight measurement' },
-              { label: 'Color Grade', value: diamond.color, icon: '🎨', color: 'from-purple-500 to-purple-600', description: 'Color classification' },
-              { label: 'Clarity', value: diamond.clarity, icon: '💎', color: 'from-emerald-500 to-emerald-600', description: 'Internal characteristics' },
-              { label: 'Cut Quality', value: diamond.cut, icon: '✂️', color: 'from-amber-500 to-amber-600', description: 'Light performance' },
-              { label: 'Origin', value: diamond.origin, icon: '📍', color: 'from-green-500 to-green-600', description: 'Origin of diamond' },
-              { label: 'Shade', value: diamond.shade, icon: '🌈', color: 'from-yellow-500 to-yellow-600', description: 'Diamond shade' },
-              { label: 'Fancy Color', value: diamond.fancyColor, icon: '🎨', color: 'from-pink-500 to-pink-600', description: 'Fancy color' },
-              { label: 'Fancy Intensity', value: diamond.fancyIntencity, icon: '🔥', color: 'from-red-500 to-red-600', description: 'Fancy color intensity' },
-              { label: 'Fancy Overtone', value: diamond.fancyOvertone, icon: '🌀', color: 'from-indigo-500 to-indigo-600', description: 'Fancy color overtone' },
-              { label: 'Symmetry', value: diamond.symmetry, icon: '🔀', color: 'from-gray-500 to-gray-600', description: 'Symmetry' },
-              { label: 'Polish', value: diamond.polish, icon: '✨', color: 'from-blue-400 to-blue-500', description: 'Polish' },
-              { label: 'Fluorescence', value: diamond.fluorescence, icon: '💡', color: 'from-yellow-400 to-yellow-500', description: 'Fluorescence' },
-              { label: 'Stone Type', value: diamond.stoneType, icon: '🪨', color: 'from-gray-400 to-gray-500', description: 'Stone type' },
-              { label: 'Process', value: diamond.process, icon: '⚙️', color: 'from-gray-300 to-gray-400', description: 'Process' },
-              { label: 'Treatment', value: diamond.treatment, icon: '🧪', color: 'from-green-300 to-green-400', description: 'Treatment' },
-              { label: 'Inscription', value: diamond.inscription, icon: '🔏', color: 'from-gray-300 to-gray-400', description: 'Inscription' },
-              { label: 'Certificate Number', value: diamond.certificateNumber, icon: '📄', color: 'from-blue-300 to-blue-400', description: 'Certificate number' },
-              { label: 'Seller SKU', value: diamond.sellerSKU, icon: '🏷️', color: 'from-gray-200 to-gray-300', description: 'Seller SKU' },
-              { label: 'Stock Number', value: diamond.stockNumber, icon: '🔢', color: 'from-gray-200 to-gray-300', description: 'Stock number' },
-            ].filter(f => f.value).map(feature => (
-              <div key={feature.label} className="rounded-2xl border p-4 hover:shadow-md transition-shadow duration-200" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${feature.color} flex items-center justify-center text-2xl mb-3`}>
-                  {feature.icon}
-                </div>
-                <h3 className="font-semibold mb-1" style={{ color: 'var(--foreground)' }}>{feature.label}</h3>
-                <div className="text-xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>{feature.value || 'N/A'}</div>
-                <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{feature.description}</p>
+              <div className="text-xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>
+                {(diamond.totalPrice ?? diamond.price) ? formatPrice(diamond.totalPrice ?? diamond.price) : 'POA'}
               </div>
-            ))}
+              {pricePerCaratLabel && (
+                <p className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>
+                  {pricePerCaratLabel}
+                </p>
+              )}
+            </div>
+
+            {/* 4C summary */}
+            <div className="rounded-2xl border p-4 hover:shadow-md transition-shadow duration-200 flex flex-col gap-2" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-2xl mb-1">💎</div>
+              <h3 className="font-semibold" style={{ color: 'var(--foreground)' }}>4C Summary</h3>
+              <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm mt-1">
+                {[ 
+                  { label: 'Carat', value: diamond.caratWeight },
+                  { label: 'Shape', value: diamond.shape },
+                  { label: 'Clarity', value: diamond.clarity },
+                  { label: 'Color', value: diamond.color || diamond.fancyColor },
+                  { label: 'Cut', value: diamond.cut },
+                  { label: 'Fluorescence', value: diamond.fluorescence }
+                ].filter(item => item.value).map(item => (
+                  <div key={item.label} className="flex flex-col">
+                    <span className="text-[11px] uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>{item.label}</span>
+                    <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Fancy color highlight */}
+            {fancyColorLabel && (
+              <div className="rounded-2xl border p-4 hover:shadow-md transition-shadow duration-200 sm:col-span-2" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 flex items-center justify-center text-2xl mb-3">🌈</div>
+                <h3 className="font-semibold mb-1" style={{ color: 'var(--foreground)' }}>Fancy Color</h3>
+                <div className="text-sm font-semibold mb-1" style={{ color: 'var(--foreground)' }}>{fancyColorLabel}</div>
+                <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                  Special fancy color characteristics that influence the diamond&apos;s appearance and value.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}
