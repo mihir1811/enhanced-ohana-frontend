@@ -47,7 +47,7 @@ export interface UserUpdateResponse {
 }
 
 class UserService {
-  private baseURL = API_CONFIG.BASE_URL.replace('/api/v1', '') // Remove /api/v1 since it's added in endpoints
+  private baseURL = API_CONFIG.BASE_URL
   
   private getAuthHeaders(token: string) {
     return {
@@ -90,7 +90,7 @@ class UserService {
 
   async getUserProfile(token: string): Promise<UserUpdateResponse> {
     try {
-      const response = await fetch(`${this.baseURL}/api/v1/user/profile`, {
+      const response = await fetch(`${this.baseURL}/user/profile`, {
         method: 'GET',
         headers: this.getAuthHeaders(token)
       })
@@ -120,7 +120,7 @@ class UserService {
       const formData = new FormData()
       formData.append('profilePicture', profilePicture)
 
-      const response = await fetch(`${this.baseURL}/api/v1/user/profile-picture`, {
+      const response = await fetch(`${this.baseURL}/user/profile-picture`, {
         method: 'PATCH',
         headers: {
           'Accept': 'application/json',

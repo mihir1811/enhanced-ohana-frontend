@@ -149,7 +149,7 @@ class AuthService {
   }
 
   async forgotPassword(email: string): Promise<ApiResponse<void>> {
-    return apiService.post('/auth/forgot-password', { email })
+    return apiService.post('/auth/forget-password', { email })
   }
 
   async resetPassword(token: string, password: string): Promise<ApiResponse<void>> {

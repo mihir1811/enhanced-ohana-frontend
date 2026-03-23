@@ -63,8 +63,11 @@ export default function NavigationUser() {
     setIsDropdownOpen(!isDropdownOpen)
   }, [isDropdownOpen])
 
+  const shouldAttachGlobalListeners = isDropdownOpen || isSearchFocused || activeNavDropdown !== null || cartDrawerOpen
+
   // Close dropdown when clicking outside
   useEffect(() => {
+    if (!shouldAttachGlobalListeners) return
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node
 
@@ -131,26 +134,9 @@ export default function NavigationUser() {
         clearTimeout(mouseLeaveTimeout)
       }
     }
-  }, [setIsSearchFocused, activeNavDropdown, mouseLeaveTimeout])
+  }, [shouldAttachGlobalListeners, setIsSearchFocused, activeNavDropdown, mouseLeaveTimeout])
 
-  // Recalculate position on window resize
-  useEffect(() => {
-    const handleResize = () => {
-      // Position calculations no longer needed
-    }
-
-    const handleScroll = () => {
-      // Position calculations no longer needed
-    }
-
-    window.addEventListener('resize', handleResize)
-    window.addEventListener('scroll', handleScroll)
-
-    return () => {
-      window.removeEventListener('resize', handleResize)
-      window.removeEventListener('scroll', handleScroll)
-    }
-  }, [isDropdownOpen])
+  // Note: we intentionally avoid attaching additional scroll/resize listeners here.
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -215,14 +201,15 @@ export default function NavigationUser() {
     setCartDrawerOpen(true)
   }, [loadCartForDrawer])
 
-  // Load cart on mount when logged in (for header badge count)
+  // Lazy cart loading: do not fetch cart data until the drawer is opened.
+  // Still clear stale cart state when the user logs out (and the drawer is closed).
   useEffect(() => {
-    if (token) {
-      loadCartForDrawer()
-    } else {
+    if (!cartDrawerOpen) {
       setCart(null)
+      setCartError(null)
+      setCartLoading(false)
     }
-  }, [token, loadCartForDrawer])
+  }, [token, cartDrawerOpen])
 
   const closeCartDrawer = useCallback(() => {
     setCartDrawerOpen(false)

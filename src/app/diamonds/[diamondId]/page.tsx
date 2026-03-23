@@ -1,65 +1,47 @@
-"use client";
-
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
 import DiamondDetailsPage from '@/components/diamonds/DiamondDetailsPage';
 import diamondService from '@/services/diamondService';
 import { transformApiDiamond } from '@/components/diamonds/diamondUtils';
 import NavigationUser from '@/components/Navigation/NavigationUser';
 import Footer from '@/components/Footer';
 import { SECTION_WIDTH } from '@/lib/constants';
-import { Diamond } from '@/components/diamonds/DiamondResults';
 import { ProductDetailSkeleton } from '@/components/ui/ProductDetailSkeleton';
+import { Card } from '@/components/ui/card';
 
-export default function DiamondDetailPage() {
-  const params = useParams<{ diamondId: string }>();
-  const diamondId = params?.diamondId as string;
-  const [diamond, setDiamond] = useState<Diamond | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default async function DiamondDetailPage({
+  params,
+}: {
+  params: { diamondId: string };
+}) {
+  const diamondId = params?.diamondId;
 
-  const fetchDiamond = () => {
-    if (!diamondId) return;
-    setLoading(true);
-    setError(null);
-    diamondService.getDiamondById(diamondId)
-      .then(apiRes => {
-        if (apiRes?.data) {
-          setDiamond(transformApiDiamond(apiRes.data));
-        } else {
-          setDiamond(null);
-        }
-      })
-      .catch(() => {
-        setDiamond(null);
-        setError('Failed to load diamond');
-      })
-      .finally(() => setLoading(false));
-  };
+  let diamond = null;
+  let error: string | null = null;
 
-  useEffect(() => {
-    fetchDiamond();
-  }, [diamondId]);
+  try {
+    if (!diamondId) {
+      error = 'Failed to load diamond';
+    } else {
+      const apiRes = await diamondService.getDiamondById(diamondId);
+      if (apiRes?.data) {
+        diamond = transformApiDiamond(apiRes.data);
+      } else {
+        diamond = null;
+      }
+    }
+  } catch {
+    error = 'Failed to load diamond';
+  }
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       <NavigationUser />
       <div className="mx-auto px-4 sm:px-6 lg:px-8" style={{ maxWidth: SECTION_WIDTH }}>
-        {loading ? (
-          <ProductDetailSkeleton />
-        ) : error ? (
-          <div className="text-center py-16 rounded-xl border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-            <p className="mb-4" style={{ color: 'var(--destructive)' }}>{error}</p>
-            <button
-              onClick={fetchDiamond}
-              className="px-6 py-3 rounded-lg font-medium"
-              style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-            >
-              Try Again
-            </button>
-          </div>
+        {error ? (
+          <Card className="text-center py-16 rounded-xl gap-0">
+            <p className="mb-4 text-destructive">{error}</p>
+          </Card>
         ) : (
-          <DiamondDetailsPage diamond={diamond} />
+          diamond ? <DiamondDetailsPage diamond={diamond} /> : <ProductDetailSkeleton />
         )}
       </div>
       <Footer />

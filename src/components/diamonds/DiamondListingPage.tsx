@@ -8,6 +8,7 @@ import { cartService } from '@/services/cartService';
 import { useAppSelector } from '@/store/hooks';
 import * as ShapeIcons from '../../../public/icons';
 import { ChevronDown, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface DiamondListingPageProps {
   diamondType: 'lab-grown-single' | 'lab-grown-melee' | 'natural-single' | 'natural-melee';
@@ -34,7 +35,9 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
   fetchDiamonds,
 }) => {
   const token = useAppSelector((state) => state.auth.token);
+  const router = useRouter();
   const [filters, setFilters] = useState<DiamondFilterValues>(() => getDefaultDiamondFilters(diamondType));
+  const [appliedFilters, setAppliedFilters] = useState<DiamondFilterValues>(() => getDefaultDiamondFilters(diamondType));
   const [diamonds, setDiamonds] = useState<Diamond[]>([]);
   const [loading, setLoading] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
@@ -143,11 +146,22 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
       })
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [diamondType, currentPage, pageSize, filters]);
+  }, [diamondType, currentPage, pageSize, appliedFilters]);
 
   const handleFiltersChange = (newFilters: DiamondFilterValues) => {
     setFilters(newFilters);
-    setCurrentPage(1); // Reset to first page on filter change
+  };
+
+  const applyFilters = () => {
+    setAppliedFilters(filters);
+    setCurrentPage(1);
+  };
+
+  const clearAndApplyFilters = () => {
+    const cleared = getDefaultDiamondFilters(diamondType);
+    setFilters(cleared);
+    setAppliedFilters(cleared);
+    setCurrentPage(1);
   };
 
 
@@ -176,19 +190,19 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
   // Count applied filters
   const totalAppliedFilters = useMemo(() => {
     let count = 0;
-    if (filters.shape.length > 0) count += filters.shape.length;
-    if (filters.color && filters.color.length > 0) count += filters.color.length;
-    if (filters.clarity.length > 0) count += filters.clarity.length;
-    if (filters.cut.length > 0) count += filters.cut.length;
-    if (filters.polish && filters.polish.length > 0) count += filters.polish.length;
-    if (filters.symmetry && filters.symmetry.length > 0) count += filters.symmetry.length;
-    if (filters.certification && filters.certification.length > 0) count += filters.certification.length;
-    if (filters.fluorescence && filters.fluorescence.length > 0) count += filters.fluorescence.length;
-    if (filters.fancyColor && filters.fancyColor.length > 0) count += filters.fancyColor.length;
-    if (filters.fancyIntensity && filters.fancyIntensity.length > 0) count += filters.fancyIntensity.length;
-    if (filters.fancyOvertone && filters.fancyOvertone.length > 0) count += filters.fancyOvertone.length;
+    if (appliedFilters.shape.length > 0) count += appliedFilters.shape.length;
+    if (appliedFilters.color && appliedFilters.color.length > 0) count += appliedFilters.color.length;
+    if (appliedFilters.clarity.length > 0) count += appliedFilters.clarity.length;
+    if (appliedFilters.cut.length > 0) count += appliedFilters.cut.length;
+    if (appliedFilters.polish && appliedFilters.polish.length > 0) count += appliedFilters.polish.length;
+    if (appliedFilters.symmetry && appliedFilters.symmetry.length > 0) count += appliedFilters.symmetry.length;
+    if (appliedFilters.certification && appliedFilters.certification.length > 0) count += appliedFilters.certification.length;
+    if (appliedFilters.fluorescence && appliedFilters.fluorescence.length > 0) count += appliedFilters.fluorescence.length;
+    if (appliedFilters.fancyColor && appliedFilters.fancyColor.length > 0) count += appliedFilters.fancyColor.length;
+    if (appliedFilters.fancyIntensity && appliedFilters.fancyIntensity.length > 0) count += appliedFilters.fancyIntensity.length;
+    if (appliedFilters.fancyOvertone && appliedFilters.fancyOvertone.length > 0) count += appliedFilters.fancyOvertone.length;
     return count;
-  }, [filters]);
+  }, [appliedFilters]);
 
   // Mount the drawer immediately when opening
   useEffect(() => {
@@ -317,11 +331,8 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
                         {totalAppliedFilters} {totalAppliedFilters === 1 ? 'filter' : 'filters'} applied
                       </span>
                       <button
-                        onClick={() => handleFiltersChange(getDefaultDiamondFilters(diamondType))}
-                        className="text-sm font-medium transition-colors"
-                        style={{ color: 'var(--primary)' }}
-                        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'color-mix(in srgb, var(--primary) 80%, black)' }}
-                        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--primary)' }}
+                        onClick={clearAndApplyFilters}
+                        className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
                       >
                         Clear all
                       </button>
@@ -1003,11 +1014,11 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
               {/* Sticky Footer */}
               <div className="sticky bottom-0 left-0 w-full border-t px-6 py-4 z-20" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                 <button
-                  className="w-full py-3 rounded-lg font-semibold transition-all"
-                  style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in srgb, var(--primary) 90%, black)'; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--primary)'; }}
-                  onClick={() => setShowFilters(false)}
+                      className="w-full py-3 rounded-lg font-semibold transition-all bg-primary text-primary-foreground hover:bg-primary/90"
+                      onClick={() => {
+                        applyFilters();
+                        setShowFilters(false);
+                      }}
                 >
                   Show Results
                 </button>
@@ -1031,13 +1042,16 @@ const DiamondListingPage: React.FC<DiamondListingPageProps> = ({
           onDiamondSelect={(diamond) => {
             if (diamond?.id) {
               const isMelee = diamondType.includes('melee');
-              window.location.href = isMelee ? `/diamonds/melee/${diamond.id}` : `/diamonds/${diamond.id}`;
+              router.push(isMelee ? `/diamonds/melee/${diamond.id}` : `/diamonds/${diamond.id}`);
             }
           } }
             diamondType={diamondType}
             selectedShapes={filters.shape}
             onShapeChange={(shapes) => {
-              handleFiltersChange({ ...filters, shape: shapes });
+              const next = { ...filters, shape: shapes };
+              setFilters(next);
+              setAppliedFilters(next);
+              setCurrentPage(1);
             }}
             onAddToCart={async (diamondId: string) => {
               if (!token) {
