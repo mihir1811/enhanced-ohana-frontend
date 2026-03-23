@@ -563,6 +563,13 @@ export default function RegisterPage() {
                 style={{ borderColor: 'color-mix(in srgb, var(--border) 60%, transparent)' }}
               >
                 <div className="text-center space-y-4">
+                  <Link
+                    href="/forgot-password"
+                    className="inline-block text-sm transition-colors"
+                    style={{ color: 'var(--status-warning)' }}
+                  >
+                    Forgot your password?
+                  </Link>
                   <p
                     className="text-slate-400"
                     style={{ color: 'var(--muted-foreground)' }}
