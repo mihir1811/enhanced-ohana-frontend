@@ -3,9 +3,9 @@ import diamondService from '@/services/diamondService';
 import { transformApiDiamond } from '@/components/diamonds/diamondUtils';
 import NavigationUser from '@/components/Navigation/NavigationUser';
 import Footer from '@/components/Footer';
-import { SECTION_WIDTH } from '@/lib/constants';
 import { ProductDetailSkeleton } from '@/components/ui/ProductDetailSkeleton';
 import { Card } from '@/components/ui/card';
+import { BuyerPageShell } from '@/components/buyer/BuyerPageShell';
 
 export default async function DiamondDetailPage({
   params,
@@ -35,7 +35,7 @@ export default async function DiamondDetailPage({
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       <NavigationUser />
-      <div className="mx-auto px-4 sm:px-6 lg:px-8" style={{ maxWidth: SECTION_WIDTH }}>
+      <BuyerPageShell className="py-6">
         {error ? (
           <Card className="text-center py-16 rounded-xl gap-0">
             <p className="mb-4 text-destructive">{error}</p>
@@ -43,7 +43,7 @@ export default async function DiamondDetailPage({
         ) : (
           diamond ? <DiamondDetailsPage diamond={diamond} /> : <ProductDetailSkeleton />
         )}
-      </div>
+      </BuyerPageShell>
       <Footer />
     </div>
   );

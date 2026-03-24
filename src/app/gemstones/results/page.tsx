@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react'
 import GenericProductResults, { GenericProduct } from '@/components/products/GenericProductResults'
+import { BuyerPageShell } from '@/components/buyer/BuyerPageShell'
+import { BuyerSectionHeader } from '@/components/buyer/BuyerSectionHeader'
 
 // Mock gemstone data for demonstration
 const mockGemstones: GenericProduct[] = [
@@ -63,17 +65,13 @@ const GemstoneResultsExample = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            Gemstone Collection
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400">
-            Discover our curated selection of fine gemstones with compare functionality
-          </p>
-        </div>
-
+    <div className="min-h-screen bg-background text-foreground">
+      <BuyerPageShell className="py-8">
+        <BuyerSectionHeader
+          title="Gemstone Collection"
+          description="Discover our curated selection of fine gemstones with compare functionality"
+          className="mb-10"
+        />
         <GenericProductResults
           products={mockGemstones}
           loading={false}
@@ -86,7 +84,7 @@ const GemstoneResultsExample = () => {
           productType="gemstone"
           placeholderImage="https://www.mariposakids.co.nz/wp-content/uploads/2014/08/image-placeholder2.jpg"
         />
-      </div>
+      </BuyerPageShell>
     </div>
   )
 }

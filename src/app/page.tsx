@@ -2,12 +2,15 @@ import React from 'react'
 import Link from 'next/link'
 import NavigationUser from '@/components/Navigation/NavigationUser'
 import Footer from '@/components/Footer'
-import { ArrowRight, Shield, Award, Globe, ShoppingBag, Gem, CreditCard, TrendingUp } from 'lucide-react'
+import { CreditCard, Globe, Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { auctionService } from '@/services/auctionService'
 import { SECTION_WIDTH } from '@/lib/constants'
+import { BuyerHeroCard } from '@/components/buyer/BuyerHeroCard'
+import { BuyerCategoryCard } from '@/components/buyer/BuyerCategoryCard'
+import { BuyerPageShell } from '@/components/buyer/BuyerPageShell'
+import { BuyerSectionHeader } from '@/components/buyer/BuyerSectionHeader'
 
 export default async function HomePage() {
   let liveAuctions: any[] = []
@@ -34,78 +37,16 @@ export default async function HomePage() {
       <NavigationUser />
 
       {/* Hero Section */}
-      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          {/* Dynamic Gradient using CSS Variables */}
-          <div
-            className="absolute inset-0 transition-all duration-300"
-            style={{
-              background: `linear-gradient(to bottom right, var(--hero-gradient-start), var(--hero-gradient-via), var(--hero-gradient-end))`
-            }}
+      <section className="py-10 sm:py-14">
+        <BuyerPageShell className="py-0 lg:py-0">
+          <BuyerHeroCard
+            eyebrow="Verified. Secure. Global."
+            title="Elegance in Every Carat"
+            subtitle="Buy and sell authenticated Diamonds, Gemstones, Jewelry, and Bullions on the most secure global platform."
+            primaryCta={{ label: 'Explore Marketplace', href: '/diamonds' }}
+            secondaryCta={{ label: 'Become a Seller', href: '/register' }}
           />
-
-          {/* Animated decorative blobs */}
-          <div
-            className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-[100px] animate-pulse"
-            style={{ background: 'color-mix(in srgb, var(--chart-3) 22%, transparent)' }}
-          />
-          <div
-            className="absolute bottom-0 left-0 w-[500px] h-[500px] rounded-full blur-[100px] animate-pulse delay-1000"
-            style={{ background: 'color-mix(in srgb, var(--chart-5) 20%, transparent)' }}
-          />
-        </div>
-
-        <div className="container relative z-20 px-4 md:px-6 text-center">
-          <div className="max-w-5xl mx-auto space-y-8">
-            <div className="inline-block animate-fade-in-up">
-              <span
-                className="py-2.5 px-5 rounded-full text-sm font-bold tracking-wide backdrop-blur-md shadow-sm border"
-                style={{
-                  backgroundColor: 'color-mix(in srgb, var(--card) 70%, transparent)',
-                  borderColor: 'color-mix(in srgb, var(--border) 80%, transparent)',
-                  color: 'var(--foreground)'
-                }}
-              >
-                ✨ The World's Premier Luxury Marketplace
-              </span>
-            </div>
-
-            <h1 className="text-6xl md:text-8xl font-black tracking-tight leading-none text-foreground transition-colors duration-300 drop-shadow-sm">
-              Elegance in <br className="hidden md:block" />
-              <span
-                className="bg-clip-text text-transparent animate-gradient-x"
-                style={{
-                  backgroundImage:
-                    'linear-gradient(to right, var(--chart-3), var(--chart-4), var(--chart-5))'
-                }}
-              >
-                Every Carat
-              </span>
-            </h1>
-
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed transition-colors duration-300 font-medium">
-              Buy and sell authenticated Diamonds, Gemstones, Jewelry, and Bullions on the most secure global platform.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-5 justify-center pt-10">
-              <Button
-                size="lg"
-                className="text-lg px-10 h-14 rounded-full font-bold shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 border-0"
-                style={{
-                  backgroundImage:
-                    'linear-gradient(to right, var(--primary), color-mix(in srgb, var(--primary) 80%, var(--chart-3) 20%))',
-                  color: 'var(--primary-foreground)'
-                }}
-              >
-                Explore Marketplace
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-              <Button size="lg" variant="outline" className="border-2 border-border text-foreground hover:bg-muted text-lg px-10 h-14 rounded-full font-bold transition-all bg-transparent backdrop-blur-sm">
-                Become a Seller
-              </Button>
-            </div>
-          </div>
-        </div>
+        </BuyerPageShell>
       </section>
 
       {/* Live Auctions */}
@@ -146,120 +87,48 @@ export default async function HomePage() {
       </section>
 
       {/* Categories Section - Colorful Cards with CSS Variables */}
-      <section className="py-32 bg-background transition-colors duration-300 relative">
+      <section className="py-24 bg-background transition-colors duration-300 relative">
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-50"></div>
-        <div className="container relative px-4 md:px-6 mx-auto">
-          <div className="text-center mb-20 space-y-4">
-            <h2 className="text-4xl md:text-6xl font-bold text-foreground tracking-tight">
-              Curated Collections
-            </h2>
-            <p className="text-lg font-medium text-muted-foreground max-w-2xl mx-auto">
-              Discover verified listings across our premium categories.
-            </p>
-          </div>
+        <BuyerPageShell className="relative py-0 lg:py-0">
+          <BuyerSectionHeader
+            title="Curated Collections"
+            description="Discover verified listings across our premium categories."
+            className="text-center mb-14 mx-auto max-w-3xl"
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Diamond Card - Blue Theme */}
-            <Link href="/diamonds" className="group block h-full">
-              <div
-                className="h-full relative overflow-hidden p-8 rounded-[2rem] border transition-all duration-300 hover:shadow-2xl hover:-translate-y-2"
-                style={{
-                  backgroundColor: 'var(--card-diamond-bg)',
-                  borderColor: 'var(--card-diamond-border)'
-                }}
-              >
-                <div
-                  className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
-                  style={{
-                    backgroundColor: 'var(--card-diamond-icon-bg)',
-                    color: 'var(--card-diamond-icon-text)'
-                  }}
-                >
-                  <Gem className="w-10 h-10" />
-                </div>
-                <h3 className="text-2xl font-bold text-foreground mb-3">Diamonds</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  GIA Certified loose diamonds, varying cuts and clarities.
-                </p>
-              </div>
-            </Link>
-
-            {/* Gemstones Card - Purple/Pink Theme */}
-            <Link href="/gemstones" className="group block h-full">
-              <div
-                className="h-full relative overflow-hidden p-8 rounded-[2rem] border transition-all duration-300 hover:shadow-2xl hover:-translate-y-2"
-                style={{
-                  backgroundColor: 'var(--card-gem-bg)',
-                  borderColor: 'var(--card-gem-border)'
-                }}
-              >
-                <div
-                  className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
-                  style={{
-                    backgroundColor: 'var(--card-gem-icon-bg)',
-                    color: 'var(--card-gem-icon-text)'
-                  }}
-                >
-                  <Award className="w-10 h-10" />
-                </div>
-                <h3 className="text-2xl font-bold text-foreground mb-3">Gemstones</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Rare Sapphires, Rubies, Emeralds, and more.
-                </p>
-              </div>
-            </Link>
-
-            {/* Jewelry Card - Rose/Red Theme */}
-            <Link href="/jewelry" className="group block h-full">
-              <div
-                className="h-full relative overflow-hidden p-8 rounded-[2rem] border transition-all duration-300 hover:shadow-2xl hover:-translate-y-2"
-                style={{
-                  backgroundColor: 'var(--card-jewelry-bg)',
-                  borderColor: 'var(--card-jewelry-border)'
-                }}
-              >
-                <div
-                  className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
-                  style={{
-                    backgroundColor: 'var(--card-jewelry-icon-bg)',
-                    color: 'var(--card-jewelry-icon-text)'
-                  }}
-                >
-                  <ShoppingBag className="w-10 h-10" />
-                </div>
-                <h3 className="text-2xl font-bold text-foreground mb-3">Fine Jewelry</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Exquisite rings, necklaces, and bespoke pieces.
-                </p>
-              </div>
-            </Link>
-
-            {/* Bullions Card - Amber/Gold Theme */}
-            <Link href="/bullions" className="group block h-full">
-              <div
-                className="h-full relative overflow-hidden p-8 rounded-[2rem] border transition-all duration-300 hover:shadow-2xl hover:-translate-y-2"
-                style={{
-                  backgroundColor: 'var(--card-bullion-bg)',
-                  borderColor: 'var(--card-bullion-border)'
-                }}
-              >
-                <div
-                  className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
-                  style={{
-                    backgroundColor: 'var(--card-bullion-icon-bg)',
-                    color: 'var(--card-bullion-icon-text)'
-                  }}
-                >
-                  <TrendingUp className="w-10 h-10" />
-                </div>
-                <h3 className="text-2xl font-bold text-foreground mb-3">Bullions</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Investment grade Gold and Silver bars and coins.
-                </p>
-              </div>
-            </Link>
+            <BuyerCategoryCard
+              href="/diamonds"
+              title="Diamonds"
+              description="GIA Certified loose diamonds, varying cuts and clarities."
+              className="h-full"
+            />
+            <BuyerCategoryCard
+              href="/gemstones"
+              title="Gemstones"
+              description="Rare Sapphires, Rubies, Emeralds, and more."
+              className="h-full"
+            />
+            <BuyerCategoryCard
+              href="/jewelry"
+              title="Fine Jewelry"
+              description="Exquisite rings, necklaces, and bespoke pieces."
+              className="h-full"
+            />
+            <BuyerCategoryCard
+              href="/bullions"
+              title="Bullions"
+              description="Investment grade Gold and Silver bars and coins."
+              className="h-full"
+            />
+            <BuyerCategoryCard
+              href="/watches"
+              title="Watches"
+              description="Curated luxury timepieces with verified provenance."
+              className="h-full"
+            />
           </div>
-        </div>
+        </BuyerPageShell>
       </section>
 
       {/* Features/Trust Section - Warm Luxury Tint */}

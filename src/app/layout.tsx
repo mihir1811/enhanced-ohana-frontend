@@ -5,6 +5,7 @@ import { AppProviders } from "../provider";
 import ConditionalNavigation from "../components";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import dynamic from "next/dynamic";
+import { BuyerThemeWrapper } from "@/components/theme/BuyerThemeWrapper";
 
 const FloatingCompareBar = dynamic(
   () => import("@/components/compare/FloatingCompareBar")
@@ -32,10 +33,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <AppProviders>
-            <FloatingCompareBar />
-            {children}
-          </AppProviders>
+          <BuyerThemeWrapper>
+            <AppProviders>
+              <FloatingCompareBar />
+              {children}
+            </AppProviders>
+          </BuyerThemeWrapper>
         </ThemeProvider>
       </body>
     </html>

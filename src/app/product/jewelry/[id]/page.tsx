@@ -6,7 +6,7 @@ import JewelryDetailsPage, { JewelryDetailsItem } from '@/components/jewelry/Jew
 import { jewelryService } from '@/services/jewelryService';
 import NavigationUser from '@/components/Navigation/NavigationUser';
 import Footer from '@/components/Footer';
-import { SECTION_WIDTH } from '@/lib/constants';
+import { BuyerPageShell } from '@/components/buyer/BuyerPageShell';
 
 export default function JewelryDetailPage() {
   const params = useParams();
@@ -32,13 +32,13 @@ export default function JewelryDetailPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       <NavigationUser />
-      <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 sm:px-6 lg:px-8`}>
+      <BuyerPageShell className="py-6">
         {loading ? (
           <div className="py-20 text-center text-gray-500 text-lg">Loading jewelry details...</div>
         ) : (
           <JewelryDetailsPage jewelry={jewelry} />
         )}
-      </div>
+      </BuyerPageShell>
       <Footer />
     </div>
   );

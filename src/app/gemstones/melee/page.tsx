@@ -10,6 +10,8 @@ import Footer from '@/components/Footer';
 import { gemstoneService, GemstonItem } from '@/services/gemstoneService';
 import { GemstoneFilterValues } from '@/components/gemstones/GemstoneFilters';
 import { GemstoneCard } from '@/components/gemstones/GemstoneCard';
+import { BuyerPageShell } from '@/components/buyer/BuyerPageShell'
+import { BuyerSectionHeader } from '@/components/buyer/BuyerSectionHeader'
 
 const SORT_OPTIONS = [
   { value: '-createdAt', label: 'Newest First' },
@@ -325,16 +327,13 @@ export default function MeleeGemstonesPage() {
       <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
         <NavigationUser />
       
-      <div className="max-w-[1380px] container mx-auto px-6 pb-8 pt-4">
+      <BuyerPageShell className="py-6">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>
-            {categoryTitle}
-          </h1>
-          <p style={{ color: 'var(--muted-foreground)' }}>
-            Browse our collection of high-quality melee gemstones available in bulk quantities
-          </p>
-        </div>
+        <BuyerSectionHeader
+          title={categoryTitle}
+          description="Browse our collection of high-quality melee gemstones available in bulk quantities"
+          className="mb-8"
+        />
 
         {/* Search and Controls */}
         <div className="rounded-lg p-4 mb-8 shadow-sm border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
@@ -993,7 +992,7 @@ export default function MeleeGemstonesPage() {
             )}
           </div>
         </div>
-      </div>
+      </BuyerPageShell>
 
       <Footer />
       </div>

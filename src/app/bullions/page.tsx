@@ -5,21 +5,21 @@ import NavigationUser from '@/components/Navigation/NavigationUser'
 import Footer from '@/components/Footer'
 import BullionListingPage from '@/components/bullions/BullionListingPage'
 import { bullionService } from '@/services/bullion.service'
-import { Shield, Award, TrendingUp } from 'lucide-react'
-
-const SECTION_WIDTH = 1400
+import { BuyerPageShell } from '@/components/buyer/BuyerPageShell'
+import { BuyerSectionHeader } from '@/components/buyer/BuyerSectionHeader'
 
 export default function BullionsPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       <NavigationUser />
       {/* Main Content */}
-      <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-2 sm:px-6 lg:px-6`}>
+      <BuyerPageShell className="py-6">
+        <BuyerSectionHeader title="Precious Metal Bullions" className="mb-10" />
         <BullionListingPage
           fetchBullions={(params) => bullionService.getBullions(params)}
           title="Precious Metal Bullions"
         />
-      </div>
+      </BuyerPageShell>
       
       <Footer />
     </div>

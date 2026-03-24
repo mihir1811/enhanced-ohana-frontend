@@ -6,8 +6,8 @@ import WatchDetailsPage from '@/components/watches/WatchDetailsPage';
 import { watchService, WatchProduct } from '@/services/watch.service';
 import NavigationUser from '@/components/Navigation/NavigationUser';
 import Footer from '@/components/Footer';
-import { SECTION_WIDTH } from '@/lib/constants';
 import { ProductDetailSkeleton } from '@/components/ui/ProductDetailSkeleton';
+import { BuyerPageShell } from '@/components/buyer/BuyerPageShell';
 
 export default function WatchDetailPage() {
   const params = useParams<{ id: string }>();
@@ -43,7 +43,7 @@ export default function WatchDetailPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       <NavigationUser />
-      <div className="mx-auto px-4 sm:px-6 lg:px-8" style={{ maxWidth: SECTION_WIDTH }}>
+      <BuyerPageShell className="py-6">
         {loading ? (
           <ProductDetailSkeleton />
         ) : error ? (
@@ -60,7 +60,7 @@ export default function WatchDetailPage() {
         ) : (
           <WatchDetailsPage watch={watch} />
         )}
-      </div>
+      </BuyerPageShell>
       <Footer />
     </div>
   );

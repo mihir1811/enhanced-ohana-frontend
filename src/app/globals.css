@@ -119,6 +119,32 @@
   --newsletter-bg-start: #7c3aed;
   --newsletter-bg-via: #4f46e5;
   --newsletter-bg-end: #2563eb;
+
+  /* User-only theme tokens (clean light + purple + white) */
+  --user-primary: #7c3aed;
+  --user-primary-foreground: #ffffff;
+  --user-background: #f8f7ff;
+  --user-foreground: #0f172a;
+  --user-card: rgba(255, 255, 255, 0.82);
+  --user-card-foreground: #0f172a;
+  --user-muted: rgba(124, 58, 237, 0.06);
+  --user-muted-foreground: #4b5563;
+  --user-border: rgba(124, 58, 237, 0.18);
+  --user-glass-bg: rgba(255, 255, 255, 0.72);
+  --user-status-warning-bg: color-mix(in srgb, var(--user-primary) 15%, transparent);
+
+  /* Public buyer theme tokens (clean light + purple + white) */
+  --buyer-primary: #7c3aed;
+  --buyer-primary-foreground: #ffffff;
+  --buyer-background: #f8f7ff;
+  --buyer-foreground: #0f172a;
+  --buyer-card: rgba(255, 255, 255, 0.86);
+  --buyer-card-foreground: #0f172a;
+  --buyer-muted: rgba(124, 58, 237, 0.07);
+  --buyer-muted-foreground: #4b5563;
+  --buyer-border: rgba(124, 58, 237, 0.20);
+  --buyer-glass-bg: rgba(255, 255, 255, 0.76);
+  --buyer-status-warning-bg: color-mix(in srgb, var(--buyer-primary) 15%, transparent);
 }
 
 .dark {
@@ -197,6 +223,32 @@
   --newsletter-bg-start: #4c1d95;
   --newsletter-bg-via: #3730a3;
   --newsletter-bg-end: #1e3a8a;
+
+  /* User-only theme tokens (clean light + purple + white) */
+  --user-primary: #a78bfa;
+  --user-primary-foreground: #0b1020;
+  --user-background: #0b1220;
+  --user-foreground: #f8fafc;
+  --user-card: rgba(17, 24, 39, 0.74);
+  --user-card-foreground: #f8fafc;
+  --user-muted: rgba(167, 139, 250, 0.14);
+  --user-muted-foreground: #cbd5e1;
+  --user-border: rgba(167, 139, 250, 0.22);
+  --user-glass-bg: rgba(17, 24, 39, 0.58);
+  --user-status-warning-bg: color-mix(in srgb, var(--user-primary) 20%, transparent);
+
+  /* Public buyer theme tokens (clean dark + purple + near-white) */
+  --buyer-primary: #a78bfa;
+  --buyer-primary-foreground: #0b1020;
+  --buyer-background: #0b1220;
+  --buyer-foreground: #f8fafc;
+  --buyer-card: rgba(17, 24, 39, 0.74);
+  --buyer-card-foreground: #f8fafc;
+  --buyer-muted: rgba(167, 139, 250, 0.16);
+  --buyer-muted-foreground: #cbd5e1;
+  --buyer-border: rgba(167, 139, 250, 0.24);
+  --buyer-glass-bg: rgba(17, 24, 39, 0.60);
+  --buyer-status-warning-bg: color-mix(in srgb, var(--buyer-primary) 20%, transparent);
 }
 
 @layer base {
@@ -208,6 +260,120 @@
     background-color: var(--background);
     color: var(--foreground);
   }
+}
+
+/* User-only theme wrapper.
+   Overrides global theme variables with purple/white tokens for `/user/*` pages. */
+.user-theme {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  overflow: hidden;
+  width: 100%;
+
+  /* Redirect existing theme variables to user-scoped tokens */
+  --background: var(--user-background);
+  --foreground: var(--user-foreground);
+  --card: var(--user-card);
+  --card-foreground: var(--user-card-foreground);
+  --muted: var(--user-muted);
+  --muted-foreground: var(--user-muted-foreground);
+  --border: var(--user-border);
+  --primary: var(--user-primary);
+  --primary-foreground: var(--user-primary-foreground);
+  --accent: var(--user-primary);
+  --accent-foreground: var(--user-primary-foreground);
+  --status-warning: var(--user-primary);
+  --status-warning-bg: var(--user-status-warning-bg);
+
+  background-color: var(--background);
+}
+
+.user-theme::before {
+  content: '';
+  position: absolute;
+  inset: -200px;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--user-primary) 28%, transparent), transparent 60%),
+    radial-gradient(circle at bottom left, color-mix(in srgb, var(--user-primary) 18%, transparent), transparent 60%);
+  filter: blur(64px);
+  opacity: 0.95;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.user-theme::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--user-primary) 6%, transparent),
+    transparent 40%
+  );
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Public buyer theme wrapper.
+   Overrides global theme variables with purple/white tokens for public buyer routes. */
+.buyer-theme {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  overflow: hidden;
+  width: 100%;
+
+  /* Redirect existing theme variables to buyer-scoped tokens */
+  --background: var(--buyer-background);
+  --foreground: var(--buyer-foreground);
+  --card: var(--buyer-card);
+  --card-foreground: var(--buyer-card-foreground);
+  --muted: var(--buyer-muted);
+  --muted-foreground: var(--buyer-muted-foreground);
+  --border: var(--buyer-border);
+  --primary: var(--buyer-primary);
+  --primary-foreground: var(--buyer-primary-foreground);
+  --accent: var(--buyer-primary);
+  --accent-foreground: var(--buyer-primary-foreground);
+  --status-warning: var(--buyer-primary);
+  --status-warning-bg: var(--buyer-status-warning-bg);
+
+  background-color: var(--background);
+}
+
+.buyer-theme::before {
+  content: '';
+  position: absolute;
+  inset: -220px;
+  background:
+    radial-gradient(
+      circle at top right,
+      color-mix(in srgb, var(--buyer-primary) 28%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      circle at bottom left,
+      color-mix(in srgb, #ffffff 18%, transparent),
+      transparent 60%
+    );
+  filter: blur(68px);
+  opacity: 0.96;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.buyer-theme::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--buyer-primary) 8%, transparent),
+    transparent 42%
+  );
+  z-index: -1;
+  pointer-events: none;
 }
 
 /* Custom Animations */

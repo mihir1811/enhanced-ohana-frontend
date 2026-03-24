@@ -4,18 +4,20 @@ import NavigationUser from '@/components/Navigation/NavigationUser'
 import Footer from '@/components/Footer'
 import WatchListingPage from '@/components/watches/WatchListingPage'
 import { watchService } from '@/services/watch.service'
-import { SECTION_WIDTH } from '@/lib/constants'
+import { BuyerPageShell } from '@/components/buyer/BuyerPageShell'
+import { BuyerSectionHeader } from '@/components/buyer/BuyerSectionHeader'
 
 export default function WatchesPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       <NavigationUser />
-      <div className="mx-auto px-4 sm:px-6 lg:px-8" style={{ maxWidth: SECTION_WIDTH }}>
+      <BuyerPageShell className="py-6">
+        <BuyerSectionHeader title="Luxury Watches" className="mb-10" />
         <WatchListingPage
           fetchWatches={(params) => watchService.getWatches(params)}
           title="Luxury Watches"
         />
-      </div>
+      </BuyerPageShell>
       <Footer />
     </div>
   )

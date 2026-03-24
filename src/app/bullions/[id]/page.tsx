@@ -6,7 +6,7 @@ import BullionDetailsPage from '@/components/bullions/BullionDetailsPage';
 import { bullionService, BullionProduct } from '@/services/bullion.service';
 import NavigationUser from '@/components/Navigation/NavigationUser';
 import Footer from '@/components/Footer';
-import { SECTION_WIDTH } from '@/lib/constants';
+import { BuyerPageShell } from '@/components/buyer/BuyerPageShell';
 
 export default function BullionDetailPage() {
   const params = useParams<{ id: string }>();
@@ -36,13 +36,13 @@ export default function BullionDetailPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       <NavigationUser />
-      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8" style={{ maxWidth: SECTION_WIDTH }}>
+      <BuyerPageShell className="py-6">
         {loading ? (
           <div className="py-20 text-center text-lg" style={{ color: 'var(--muted-foreground)' }}>Loading bullion details...</div>
         ) : (
           <BullionDetailsPage bullion={bullion} />
         )}
-      </div>
+      </BuyerPageShell>
       <Footer />
     </div>
   );

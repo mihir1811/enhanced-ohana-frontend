@@ -11,6 +11,7 @@ import Pagination from '../ui/Pagination';
 import { ProductGridSkeleton } from '../ui/ProductGridSkeleton';
 import { ProductListSkeleton } from '../ui/ProductListSkeleton';
 import * as ShapeIcons from '../../../public/icons';
+import { SECTION_WIDTH } from '@/lib/constants';
 
 interface WatchFilters {
   brand: string[];
@@ -108,8 +109,13 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [showAll, setShowAll] = useState(false);
 
-  const filteredOptions = options.filter(option =>
-    option.label.toLowerCase().includes(searchQuery.toLowerCase())
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+  const filteredOptions = useMemo(
+    () =>
+      options.filter((option) =>
+        option.label.toLowerCase().includes(normalizedSearchQuery)
+      ),
+    [options, normalizedSearchQuery]
   );
 
   const displayOptions = showAll ? filteredOptions : filteredOptions.slice(0, 8);
@@ -579,6 +585,21 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
     return count;
   }, [filters]);
 
+  const sortedProducts = useMemo(() => {
+    const items = [...products];
+    switch (sortBy) {
+      case 'price_low':
+        return items.sort((a, b) => Number(a.price) - Number(b.price));
+      case 'price_high':
+        return items.sort((a, b) => Number(b.price) - Number(a.price));
+      case 'brand':
+        return items.sort((a, b) => a.brand.localeCompare(b.brand));
+      case 'newest':
+      default:
+        return items;
+    }
+  }, [products, sortBy]);
+
   const FilterSections = () => (
     <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
       {/* Brand Section */}
@@ -769,7 +790,7 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
         }
       `}</style>
       <div className="min-h-screen transition-colors duration-300" style={{ backgroundColor: 'var(--background)' }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+      <div className={`py-5`}>
         <div className="flex flex-col md:flex-row gap-6 relative">
           {/* Mobile Filter Drawer */}
           {drawerVisible && (
@@ -1015,10 +1036,10 @@ const WatchListingPage: React.FC<WatchListingPageProps> = ({ fetchWatches, title
           ) : (
             <ProductListSkeleton count={6} />
           )
-        ) : products.length > 0 ? (
+        ) : sortedProducts.length > 0 ? (
           <div className="space-y-4">
             <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" : "flex flex-col gap-4"}>
-              {products.map((product) => (
+              {sortedProducts.map((product) => (
                 viewMode === 'grid' ? (
                   <WatchGridCard key={product.id} product={product} />
                 ) : (

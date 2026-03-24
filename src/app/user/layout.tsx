@@ -12,14 +12,14 @@ export default function UserLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation Header */}
-      <NavigationUser />
-      
-      {/* Main Content */}
-      <main className="user-layout">
-        {children}
-      </main>
+    <div className="min-h-screen user-theme">
+      <div className="relative z-10">
+        {/* Navigation Header */}
+        <NavigationUser />
+        
+        {/* Main Content */}
+        <main>{children}</main>
+      </div>
     </div>
   )
 }

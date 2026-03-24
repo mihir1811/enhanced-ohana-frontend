@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ChevronDown, CheckSquare, X, MousePointer2 } from 'lucide-react'
 
 function FilterSection({ title, children, actions }: { title: string; children: React.ReactNode; actions?: React.ReactNode }) {
@@ -206,6 +206,12 @@ export default function GemstoneFilters({
   const [showAllMineralClassifications, setShowAllMineralClassifications] = useState(false)
   const [showAllOrigins, setShowAllOrigins] = useState(false)
 
+  const birthstoneMonthOptions = useMemo(
+    () => BIRTHSTONE_MONTHS.map((month) => month.month),
+    []
+  );
+  const colorOptions = useMemo(() => COLORS.map((color) => color.name), []);
+
   const [rangeSelection, setRangeSelection] = useState<{
     isActive: boolean;
     category: keyof GemstoneFilterValues | null;
@@ -361,8 +367,8 @@ export default function GemstoneFilters({
                 }
               `}
               style={{
-                backgroundColor: isSelected ? 'var(--status-warning)' : 'transparent',
-                borderColor: isSelected ? 'var(--status-warning)' : 'var(--border)',
+                backgroundColor: isSelected ? 'var(--primary)' : 'transparent',
+                borderColor: isSelected ? 'var(--primary)' : 'var(--border)',
                 color: isSelected ? 'white' : 'var(--muted-foreground)'
               }}
               onMouseEnter={(e) => {
@@ -387,7 +393,6 @@ export default function GemstoneFilters({
   }
 
   const ColorButtonGroup = () => {
-    const colorOptions = COLORS.map(c => c.name);
     return (
     <div className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-11 gap-3">
       {COLORS.map((color) => {
@@ -408,8 +413,8 @@ export default function GemstoneFilters({
               }
             `}
             style={{
-              backgroundColor: isRangeStart ? 'color-mix(in srgb, var(--status-info) 10%, transparent)' : isSelected ? 'color-mix(in srgb, var(--status-warning) 10%, transparent)' : 'var(--card)',
-              borderColor: isRangeStart ? 'var(--status-info)' : isSelected ? 'var(--status-warning)' : 'var(--border)',
+              backgroundColor: isRangeStart ? 'color-mix(in srgb, var(--status-info) 10%, transparent)' : isSelected ? 'color-mix(in srgb, var(--primary) 10%, transparent)' : 'var(--card)',
+              borderColor: isRangeStart ? 'var(--status-info)' : isSelected ? 'var(--primary)' : 'var(--border)',
             }}
           >
             <div className="flex flex-col items-center gap-2">
@@ -419,7 +424,7 @@ export default function GemstoneFilters({
               />
               <span
                 className="text-xs font-bold"
-                style={{ color: isSelected ? 'var(--status-warning)' : 'var(--muted-foreground)' }}
+                style={{ color: isSelected ? 'var(--primary)' : 'var(--muted-foreground)' }}
               >
                 {color.name}
               </span>
@@ -447,8 +452,8 @@ export default function GemstoneFilters({
           title={isRangeActive ? "Cancel Range" : "Select Range"}
           className={`cursor-pointer p-1.5 rounded-md transition-all duration-200 ${
             isRangeActive
-              ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 ring-1 ring-blue-500/30'
-              : 'text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+              ? 'bg-primary text-primary-foreground ring-1 ring-primary/30 shadow-xs'
+              : 'bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted ring-1 ring-border/40'
           }`}
         >
           <MousePointer2 className="w-3.5 h-3.5" />
@@ -456,7 +461,7 @@ export default function GemstoneFilters({
         <button
           onClick={() => selectAll(category, options)}
           title="Select All"
-          className="cursor-pointer p-1.5 rounded-md text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+          className="cursor-pointer p-1.5 rounded-md bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200 ring-1 ring-border/40"
         >
           <CheckSquare className="w-3.5 h-3.5" />
         </button>
@@ -502,10 +507,10 @@ export default function GemstoneFilters({
 
       {/* Dual Range Sliders */}
       <div className="relative pt-2 pb-3">
-        <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+        <div className="relative h-2 bg-primary/15 dark:bg-primary/25 rounded-full">
           {/* Active Range Bar */}
           <div
-            className="absolute h-2 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-full"
+            className="absolute h-2 bg-gradient-to-r from-primary to-accent rounded-full"
             style={{
               left: `${((value.min - min) / (max - min)) * 100}%`,
               right: `${100 - ((value.max - min) / (max - min)) * 100}%`
@@ -526,7 +531,7 @@ export default function GemstoneFilters({
               onChange('min', newValue)
             }
           }}
-          className="absolute w-full h-2 top-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-yellow-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-yellow-500 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg"
+          className="absolute w-full h-2 top-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg"
         />
 
         {/* Max Slider */}
@@ -542,7 +547,7 @@ export default function GemstoneFilters({
               onChange('max', newValue)
             }
           }}
-          className="absolute w-full h-2 top-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-yellow-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-yellow-500 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg"
+          className="absolute w-full h-2 top-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg"
         />
       </div>
 
@@ -559,7 +564,7 @@ export default function GemstoneFilters({
             step={step}
             value={value.min}
             onChange={(e) => onChange('min', parseFloat(e.target.value) || min)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
           />
         </div>
         <div>
@@ -573,7 +578,7 @@ export default function GemstoneFilters({
             step={step}
             value={value.max}
             onChange={(e) => onChange('max', parseFloat(e.target.value) || max)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
           />
         </div>
       </div>
@@ -597,7 +602,7 @@ export default function GemstoneFilters({
       <div className="mt-4 flex justify-center">
         <button
           onClick={onClick}
-          className="cursor-pointer px-6 py-2 text-sm font-medium text-yellow-600 dark:text-yellow-500 border border-yellow-300 dark:border-yellow-700 rounded-full hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-all duration-200 flex items-center gap-2"
+          className="cursor-pointer px-6 py-2 text-sm font-medium text-primary dark:text-primary border border-primary/40 dark:border-primary/60 rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 transition-all duration-200 flex items-center gap-2"
         >
           {isExpanded ? (
             <>
@@ -639,32 +644,31 @@ export default function GemstoneFilters({
 
         <FilterSection 
           title="Birthstones"
-          actions={<FilterActionButtons category="birthstones" options={BIRTHSTONE_MONTHS.map(m => m.month)} />}
+          actions={<FilterActionButtons category="birthstones" options={birthstoneMonthOptions} />}
         >
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {BIRTHSTONE_MONTHS.map((item) => {
               const isSelected = filters.birthstones?.includes(item.month)
               const isRangeStart = rangeSelection.isActive && rangeSelection.category === 'birthstones' && rangeSelection.startItem === item.month;
-              const birthstoneOptions = BIRTHSTONE_MONTHS.map(m => m.month);
 
               return (
                 <button
                   key={item.month}
-                  onClick={() => handleArrayFilterChange('birthstones', item.month, birthstoneOptions)}
+                  onClick={() => handleArrayFilterChange('birthstones', item.month, birthstoneMonthOptions)}
                   className={`p-4 rounded-3xl cursor-pointer transition-all duration-200 border text-center
                     ${isRangeStart
                       ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-900 dark:text-blue-100 border-blue-500 ring-2 ring-blue-300 shadow-md'
                       :
                     isSelected
-                      ? "border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30 text-gray-900 dark:text-gray-100"
+                      ? "border-primary bg-primary/10 dark:bg-primary/15 text-gray-900 dark:text-gray-100"
                       : "border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300"
                     }
-                    hover:border-yellow-500/30 dark:hover:border-yellow-500/30
+                    hover:border-primary/30 dark:hover:border-primary/30
                   `}
                 >
                   <span className="block text-sm font-medium mb-1">{item.month}</span>
                   <span className={`block text-xs ${isSelected
-                      ? "text-yellow-600 dark:text-yellow-400"
+                      ? "text-primary"
                       : "text-gray-600 dark:text-gray-400"
                     }`}>
                     {item.stone}
@@ -721,7 +725,7 @@ export default function GemstoneFilters({
 
         <FilterSection 
           title="Color"
-          actions={<FilterActionButtons category="color" options={COLORS.map(c => c.name)} />}
+          actions={<FilterActionButtons category="color" options={colorOptions} />}
         >
           <ColorButtonGroup />
         </FilterSection>
@@ -834,7 +838,7 @@ export default function GemstoneFilters({
         </button>
         <button
           onClick={onSearch}
-          className="cursor-pointer px-6 py-3 rounded-3xl bg-gradient-to-r from-yellow-600 to-yellow-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+          className="cursor-pointer px-6 py-3 rounded-3xl bg-gradient-to-r from-primary to-accent text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
         >
           Search Gemstones
         </button>

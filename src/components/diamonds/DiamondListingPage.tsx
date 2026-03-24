@@ -12,20 +12,16 @@ import { useRouter } from 'next/navigation';
 
 interface DiamondListingPageProps {
   diamondType: 'lab-grown-single' | 'lab-grown-melee' | 'natural-single' | 'natural-melee';
+  /**
+   * API response shape differs by endpoint (sometimes `data` is the array,
+   * sometimes it is nested under `data.data`). We normalize at runtime inside
+   * this component, so keep the prop type permissive.
+   */
   fetchDiamonds: (params?: Record<string, unknown>) => Promise<{
     success: boolean;
     message: string;
-    data: {
-      data: ApiDiamondData[];
-      meta?: {
-        total?: number;
-        lastPage?: number;
-        currentPage?: number;
-        perPage?: number;
-        prev?: number | null;
-        next?: number | null;
-      };
-    };
+    data: unknown;
+    meta?: unknown;
   }>;
   title?: string;
 }

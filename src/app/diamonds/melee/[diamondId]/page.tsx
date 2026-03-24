@@ -7,8 +7,8 @@ import { diamondService } from '@/services/diamondService';
 import { transformApiDiamond } from '@/components/diamonds/diamondUtils';
 import NavigationUser from '@/components/Navigation/NavigationUser';
 import Footer from '@/components/Footer';
-import { SECTION_WIDTH } from '@/lib/constants';
 import { Diamond } from '@/components/diamonds/DiamondResults';
+import { BuyerPageShell } from '@/components/buyer/BuyerPageShell';
 
 export default function MeleeDiamondDetailPage() {
   const params = useParams<{ diamondId: string }>();
@@ -37,13 +37,13 @@ export default function MeleeDiamondDetailPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       <NavigationUser />
-      <div className="mx-auto px-4 sm:px-6 lg:px-8" style={{ maxWidth: SECTION_WIDTH }}>
+      <BuyerPageShell className="py-6">
         {loading ? (
           <div className="py-20 text-center text-lg" style={{ color: 'var(--muted-foreground)' }}>Loading melee diamond details...</div>
         ) : (
           <MeleeDiamondDetailsPage diamond={diamond} />
         )}
-      </div>
+      </BuyerPageShell>
       <Footer />
     </div>
   );

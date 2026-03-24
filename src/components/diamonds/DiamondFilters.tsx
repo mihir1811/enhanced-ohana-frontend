@@ -246,13 +246,13 @@ export default function DiamondFilters({
                       selected.includes(shape) ? 'shadow-sm' : ''
                     }`}
                     style={{
-                      backgroundColor: selected.includes(shape) ? 'color-mix(in srgb, var(--status-warning) 10%, transparent)' : 'var(--card)',
-                      borderColor: selected.includes(shape) ? 'var(--status-warning)' : 'var(--border)',
-                      color: selected.includes(shape) ? 'var(--status-warning)' : 'var(--foreground)'
+                      backgroundColor: selected.includes(shape) ? 'color-mix(in srgb, var(--primary) 10%, transparent)' : 'var(--card)',
+                      borderColor: selected.includes(shape) ? 'var(--primary)' : 'var(--border)',
+                      color: selected.includes(shape) ? 'var(--primary)' : 'var(--foreground)'
                     }}
                     onMouseEnter={(e) => {
                       if (!selected.includes(shape)) {
-                        e.currentTarget.style.borderColor = 'var(--status-warning)';
+                        e.currentTarget.style.borderColor = 'var(--primary)';
                       }
                     }}
                     onMouseLeave={(e) => {
@@ -274,7 +274,7 @@ export default function DiamondFilters({
         <button
           onClick={() => setShowAllCategories(!showAllCategories)}
           className="text-xs hover:underline w-full text-left font-medium"
-          style={{ color: 'var(--status-warning)' }}
+          style={{ color: 'var(--primary)' }}
         >
           {showAllCategories ? 'Show Less Shapes' : `Show All Shapes (${DIAMOND_SHAPES.length} total)`}
         </button>
@@ -303,17 +303,17 @@ export default function DiamondFilters({
       {selected.length > 0 && (
         <div className="flex items-center justify-between p-3 rounded-lg border" 
           style={{ 
-            backgroundColor: 'color-mix(in srgb, var(--status-warning) 5%, transparent)', 
-            borderColor: 'color-mix(in srgb, var(--status-warning) 20%, transparent)' 
+            backgroundColor: 'color-mix(in srgb, var(--primary) 5%, transparent)', 
+            borderColor: 'color-mix(in srgb, var(--primary) 20%, transparent)' 
           }}
         >
-          <span className="text-sm font-medium" style={{ color: 'var(--status-warning)' }}>
+          <span className="text-sm font-medium" style={{ color: 'var(--primary)' }}>
             {selected.length} selected
           </span>
           <button
             onClick={() => onChange([])}
             className="text-xs underline hover:no-underline transition-all"
-            style={{ color: 'var(--status-warning)' }}
+            style={{ color: 'var(--primary)' }}
           >
             Clear all
           </button>
@@ -327,12 +327,12 @@ export default function DiamondFilters({
             key={option}
             className={`flex items-center gap-2 p-2 rounded-md cursor-pointer border transition-all duration-75 group focus-within:ring-0 ${selected.includes(option) ? 'shadow-sm' : ''}`}
             style={{
-              backgroundColor: selected.includes(option) ? 'color-mix(in srgb, var(--status-warning) 10%, transparent)' : 'var(--card)',
-              borderColor: selected.includes(option) ? 'var(--status-warning)' : 'var(--border)',
+              backgroundColor: selected.includes(option) ? 'color-mix(in srgb, var(--primary) 10%, transparent)' : 'var(--card)',
+              borderColor: selected.includes(option) ? 'var(--primary)' : 'var(--border)',
             }}
             onMouseEnter={(e) => {
               if (!selected.includes(option)) {
-                e.currentTarget.style.borderColor = 'var(--status-warning)';
+                e.currentTarget.style.borderColor = 'var(--primary)';
               }
             }}
             onMouseLeave={(e) => {
@@ -364,7 +364,7 @@ export default function DiamondFilters({
               />
               <div 
                 className="absolute inset-0 rounded pointer-events-none transition-all duration-75 scale-0 peer-checked:scale-100"
-                style={{ backgroundColor: 'var(--status-warning)' }}
+                style={{ backgroundColor: 'var(--primary)' }}
               />
               <svg
                 className="pointer-events-none absolute left-0 top-0 w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-75 z-10"
@@ -379,7 +379,7 @@ export default function DiamondFilters({
               </svg>
             </span>
             <span className={`text-sm font-medium transition-colors duration-150 ${selected.includes(option) ? 'font-semibold' : ''}`}
-              style={{ color: selected.includes(option) ? 'var(--status-warning)' : 'var(--foreground)' }}
+              style={{ color: selected.includes(option) ? 'var(--primary)' : 'var(--foreground)' }}
             >
               {option}
             </span>
@@ -417,7 +417,7 @@ export default function DiamondFilters({
         <span className="text-xs font-medium" style={{ color: 'var(--foreground)' }}>
           Current Range:
         </span>
-        <span className="text-xs font-bold" style={{ color: 'var(--status-warning)' }}>
+        <span className="text-xs font-bold" style={{ color: 'var(--primary)' }}>
           {value.min.toLocaleString()}{unit} - {value.max.toLocaleString()}{unit}
         </span>
       </div>
@@ -441,8 +441,8 @@ export default function DiamondFilters({
               color: 'var(--foreground)'
             }}
             onFocus={(e) => {
-              e.currentTarget.style.borderColor = 'var(--status-warning)';
-              e.currentTarget.style.boxShadow = '0 0 0 1px var(--status-warning)';
+              e.currentTarget.style.borderColor = 'var(--primary)';
+              e.currentTarget.style.boxShadow = '0 0 0 1px var(--primary)';
             }}
             onBlur={(e) => {
               e.currentTarget.style.borderColor = 'var(--border)';
@@ -469,8 +469,8 @@ export default function DiamondFilters({
               color: 'var(--foreground)'
             }}
             onFocus={(e) => {
-              e.currentTarget.style.borderColor = 'var(--status-warning)';
-              e.currentTarget.style.boxShadow = '0 0 0 1px var(--status-warning)';
+              e.currentTarget.style.borderColor = 'var(--primary)';
+              e.currentTarget.style.boxShadow = '0 0 0 1px var(--primary)';
             }}
             onBlur={(e) => {
               e.currentTarget.style.borderColor = 'var(--border)';
@@ -502,9 +502,9 @@ export default function DiamondFilters({
                 color: 'var(--muted-foreground)' 
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'var(--status-warning)';
-                e.currentTarget.style.color = 'var(--status-warning)';
-                e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--status-warning) 5%, transparent)';
+                e.currentTarget.style.borderColor = 'var(--primary)';
+                e.currentTarget.style.color = 'var(--primary)';
+                e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--primary) 5%, transparent)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.borderColor = 'var(--border)';
@@ -538,9 +538,9 @@ export default function DiamondFilters({
                 color: 'var(--muted-foreground)' 
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'var(--status-warning)';
-                e.currentTarget.style.color = 'var(--status-warning)';
-                e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--status-warning) 5%, transparent)';
+                e.currentTarget.style.borderColor = 'var(--primary)';
+                e.currentTarget.style.color = 'var(--primary)';
+                e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--primary) 5%, transparent)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.borderColor = 'var(--border)';
