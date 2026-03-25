@@ -1,16 +1,34 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { ChevronDown, CheckSquare, X, MousePointer2 } from 'lucide-react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
-function FilterSection({ title, children, actions }: { title: string; children: React.ReactNode; actions?: React.ReactNode }) {
+function Expand({
+  label,
+  children,
+  actions,
+  defaultOpen = true
+}: {
+  label: string
+  children: React.ReactNode
+  actions?: React.ReactNode
+  defaultOpen?: boolean
+}) {
+  const [open, setOpen] = useState(defaultOpen)
   return (
-    <div className="filter-group border-b pb-5 mb-5 last:border-0" style={{ borderColor: 'var(--border)' }}>
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-bold tracking-wide uppercase" style={{ color: 'var(--foreground)' }}>{title}</h3>
+    <div className="rounded-2xl border" style={{ borderColor: 'var(--border)', backgroundColor: 'color-mix(in srgb, var(--card) 92%, transparent)' }}>
+      <div className="flex items-center gap-2 px-4 py-3 md:px-5 md:py-4">
+        <button
+          type="button"
+          className="flex-1 flex items-center justify-between text-left"
+          onClick={() => setOpen((prev) => !prev)}
+        >
+          <h3 className="text-sm font-bold tracking-wide uppercase" style={{ color: 'var(--foreground)' }}>{label}</h3>
+          {open ? <ChevronUp className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} /> : <ChevronDown className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />}
+        </button>
         {actions && <div className="flex items-center gap-1">{actions}</div>}
       </div>
-      <div className="mt-2">{children}</div>
+      {open && <div className="px-4 pb-4 md:px-5 md:pb-5">{children}</div>}
     </div>
   )
 }
@@ -211,6 +229,21 @@ export default function GemstoneFilters({
     []
   );
   const colorOptions = useMemo(() => COLORS.map((color) => color.name), []);
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    count += filters.gemstoneType.length;
+    count += filters.shape.length;
+    count += filters.color.length;
+    count += filters.clarity.length;
+    count += filters.cut.length;
+    count += filters.certification.length;
+    count += filters.origin.length;
+    count += filters.treatment.length;
+    count += filters.birthstones.length;
+    count += filters.minerals.length;
+    if (filters.searchTerm.trim()) count += 1;
+    return count;
+  }, [filters]);
 
   const [rangeSelection, setRangeSelection] = useState<{
     isActive: boolean;
@@ -360,10 +393,10 @@ export default function GemstoneFilters({
             <button
               key={option}
               onClick={() => handleArrayFilterChange(category, option, options)}
-              className={`cursor-pointer group w-full px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border
+              className={`cursor-pointer group w-full px-3 py-2 rounded-full text-sm font-medium transition-all duration-200 border
                 ${isSelected
-                  ? "text-white shadow-md"
-                  : "bg-transparent border-border text-muted-foreground"
+                  ? "text-white shadow-md scale-[1.01]"
+                  : "bg-transparent border-border text-muted-foreground hover:scale-[1.01]"
                 }
               `}
               style={{
@@ -420,7 +453,7 @@ export default function GemstoneFilters({
             <div className="flex flex-col items-center gap-2">
               <div
                 className="w-6 h-6 rounded-full shadow-sm ring-2"
-                style={{ background: color.color, ringColor: 'var(--card)' }}
+                style={{ background: color.color, borderColor: 'var(--card)' }}
               />
               <span
                 className="text-xs font-bold"
@@ -449,29 +482,30 @@ export default function GemstoneFilters({
       <>
         <button
           onClick={() => toggleRangeMode(category)}
-          title={isRangeActive ? "Cancel Range" : "Select Range"}
-          className={`cursor-pointer p-1.5 rounded-md transition-all duration-200 ${
+          title={isRangeActive ? "Cancel Range" : "Range Select"}
+          className={`cursor-pointer px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-200 border ${
             isRangeActive
-              ? 'bg-primary text-primary-foreground ring-1 ring-primary/30 shadow-xs'
-              : 'bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted ring-1 ring-border/40'
+              ? 'bg-primary text-primary-foreground border-primary'
+              : 'bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted border-border'
           }`}
         >
-          <MousePointer2 className="w-3.5 h-3.5" />
+          Range
         </button>
         <button
           onClick={() => selectAll(category, options)}
           title="Select All"
-          className="cursor-pointer p-1.5 rounded-md bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200 ring-1 ring-border/40"
+          className="cursor-pointer px-2.5 py-1 rounded-md text-xs font-medium bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200 border"
+          style={{ borderColor: 'var(--border)' }}
         >
-          <CheckSquare className="w-3.5 h-3.5" />
+          Select all
         </button>
         {hasSelection && (
           <button
             onClick={() => clearCategory(category)}
             title="Clear"
-            className="cursor-pointer p-1.5 rounded-md text-red-400 hover:text-red-600 dark:text-red-500/70 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200"
+            className="cursor-pointer px-2.5 py-1 rounded-md text-xs font-medium text-red-500 hover:text-red-600 hover:bg-red-50 transition-all duration-200 border border-red-200"
           >
-            <X className="w-3.5 h-3.5" />
+            Clear
           </button>
         )}
       </>
@@ -489,101 +523,196 @@ export default function GemstoneFilters({
     min: number
     max: number
     value: { min: number; max: number }
-    onChange: (rangeKey: 'min' | 'max', value: number) => void
+    onChange: (range: { min: number; max: number }) => void
     step?: number
     unit?: string
-  }) => (
-    <div className="space-y-3">
-      {/* Range Display */}
-      <div className="flex items-center justify-between px-2">
-        <span className="text-sm font-semibold dark:text-gray-300">
-          {value.min.toLocaleString()}{unit}
+  }) => {
+    const normalizedMin = Number.isFinite(value.min) ? value.min : min
+    const normalizedMax = Number.isFinite(value.max) ? value.max : max
+
+    const safeSetMin = (next: number) => {
+      const clamped = Math.max(min, Math.min(next, normalizedMax))
+      onChange({ min: clamped, max: normalizedMax })
+    }
+
+    const safeSetMax = (next: number) => {
+      const clamped = Math.min(max, Math.max(next, normalizedMin))
+      onChange({ min: normalizedMin, max: clamped })
+    }
+
+    return (
+    <div className="space-y-2">
+      {/* Current Range Display */}
+      <div className="flex items-center justify-between px-1 py-1">
+        <span className="text-xs font-medium" style={{ color: 'var(--foreground)' }}>
+          Current Range:
         </span>
-        <span className="text-xs text-gray-500 dark:text-gray-400">to</span>
-        <span className="text-sm font-semibold dark:text-gray-300">
-          {value.max.toLocaleString()}{unit}
+        <span className="text-xs font-bold" style={{ color: 'var(--primary)' }}>
+          {normalizedMin.toLocaleString()}{unit} - {normalizedMax.toLocaleString()}{unit}
         </span>
       </div>
 
-      {/* Dual Range Sliders */}
-      <div className="relative pt-2 pb-3">
-        <div className="relative h-2 bg-primary/15 dark:bg-primary/25 rounded-full">
-          {/* Active Range Bar */}
+      {/* Input Fields */}
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--muted-foreground)' }}>Minimum {unit}</label>
+          <input
+            type="number"
+            min={min}
+            max={max}
+            step={step}
+            value={normalizedMin}
+            onChange={(e) => safeSetMin(Number(e.target.value))}
+            className="w-full px-2 py-2 text-xs border rounded-md focus:ring-1 transition-all outline-none"
+            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'var(--primary)';
+              e.currentTarget.style.boxShadow = '0 0 0 1px var(--primary)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'var(--border)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+            placeholder={`Min ${unit}`}
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--muted-foreground)' }}>Maximum {unit}</label>
+          <input
+            type="number"
+            min={min}
+            max={max}
+            step={step}
+            value={normalizedMax}
+            onChange={(e) => safeSetMax(Number(e.target.value))}
+            className="w-full px-2 py-2 text-xs border rounded-md focus:ring-1 transition-all outline-none"
+            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'var(--primary)';
+              e.currentTarget.style.boxShadow = '0 0 0 1px var(--primary)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'var(--border)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+            placeholder={`Max ${unit}`}
+          />
+        </div>
+      </div>
+
+      <div className="relative h-7 mt-1">
+        <div
+          className="absolute left-0 right-0 top-1/2 h-2 -translate-y-1/2 rounded-full"
+          style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 18%, transparent)' }}
+        >
           <div
-            className="absolute h-2 bg-gradient-to-r from-primary to-accent rounded-full"
+            className="absolute h-2 rounded-full"
             style={{
+              background: 'linear-gradient(to right, var(--primary), var(--accent))',
               left: `${((value.min - min) / (max - min)) * 100}%`,
-              right: `${100 - ((value.max - min) / (max - min)) * 100}%`
+              right: `${100 - ((normalizedMax - min) / (max - min)) * 100}%`,
             }}
           />
         </div>
 
-        {/* Min Slider */}
         <input
           type="range"
           min={min}
           max={max}
           step={step}
-          value={value.min}
-          onChange={(e) => {
-            const newValue = parseFloat(e.target.value)
-            if (newValue <= value.max) {
-              onChange('min', newValue)
-            }
-          }}
-          className="absolute w-full h-2 top-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg"
+          value={normalizedMin}
+          onChange={(e) => safeSetMin(Number(e.target.value))}
+          className="absolute left-0 top-0 w-full h-7 appearance-none bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-primary [&::-moz-range-thumb]:cursor-pointer"
+          style={{ zIndex: 20 }}
         />
 
-        {/* Max Slider */}
         <input
           type="range"
           min={min}
           max={max}
           step={step}
-          value={value.max}
-          onChange={(e) => {
-            const newValue = parseFloat(e.target.value)
-            if (newValue >= value.min) {
-              onChange('max', newValue)
-            }
-          }}
-          className="absolute w-full h-2 top-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg"
+          value={normalizedMax}
+          onChange={(e) => safeSetMax(Number(e.target.value))}
+          className="absolute left-0 top-0 w-full h-7 appearance-none bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-primary [&::-moz-range-thumb]:cursor-pointer"
+          style={{ zIndex: 30 }}
         />
       </div>
 
-      {/* Number Inputs */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs mb-1.5 text-gray-600 dark:text-gray-400">
-            Minimum{unit && ` (${unit})`}
-          </label>
-          <input
-            type="number"
-            min={min}
-            max={max}
-            step={step}
-            value={value.min}
-            onChange={(e) => onChange('min', parseFloat(e.target.value) || min)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-          />
+      {/* Quick Presets */}
+      {unit === 'USD' && (
+        <div className="flex flex-wrap gap-1 items-center mt-1">
+          <span className="text-xs font-medium mr-1" style={{ color: 'var(--muted-foreground)' }}>
+            Quick Select:
+          </span>
+          {[
+            { label: 'Under $5K', min: 0, max: 5000 },
+            { label: '$5K-$10K', min: 5000, max: 10000 },
+            { label: '$10K-$25K', min: 10000, max: 25000 },
+            { label: '$25K+', min: 25000, max: 100000 }
+          ].map((preset) => (
+            <button
+              key={preset.label}
+              onClick={() => onChange({ min: preset.min, max: preset.max })}
+              className="px-2 py-0.5 text-xs rounded-full border transition-all"
+              style={{
+                backgroundColor: 'var(--card)',
+                borderColor: 'var(--border)',
+                color: 'var(--muted-foreground)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--primary)';
+                e.currentTarget.style.color = 'var(--primary)';
+                e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--primary) 5%, transparent)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border)';
+                e.currentTarget.style.color = 'var(--muted-foreground)';
+                e.currentTarget.style.backgroundColor = 'var(--card)';
+              }}
+            >
+              {preset.label}
+            </button>
+          ))}
         </div>
-        <div>
-          <label className="block text-xs mb-1.5 text-gray-600 dark:text-gray-400">
-            Maximum{unit && ` (${unit})`}
-          </label>
-          <input
-            type="number"
-            min={min}
-            max={max}
-            step={step}
-            value={value.max}
-            onChange={(e) => onChange('max', parseFloat(e.target.value) || max)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-          />
+      )}
+      {unit === 'ct' && (
+        <div className="flex flex-wrap gap-1 items-center mt-1">
+          <span className="text-xs font-medium mr-1" style={{ color: 'var(--muted-foreground)' }}>
+            Popular Sizes:
+          </span>
+          {[
+            { label: '0.5-1ct', min: 0.5, max: 1.0 },
+            { label: '1-2ct', min: 1.0, max: 2.0 },
+            { label: '2-3ct', min: 2.0, max: 3.0 },
+            { label: '3ct+', min: 3.0, max: 10.0 }
+          ].map((preset) => (
+            <button
+              key={preset.label}
+              onClick={() => onChange({ min: preset.min, max: preset.max })}
+              className="px-2 py-0.5 text-xs rounded-full border transition-all"
+              style={{
+                backgroundColor: 'var(--card)',
+                borderColor: 'var(--border)',
+                color: 'var(--muted-foreground)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--primary)';
+                e.currentTarget.style.color = 'var(--primary)';
+                e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--primary) 5%, transparent)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border)';
+                e.currentTarget.style.color = 'var(--muted-foreground)';
+                e.currentTarget.style.backgroundColor = 'var(--card)';
+              }}
+            >
+              {preset.label}
+            </button>
+          ))}
         </div>
-      </div>
+      )}
     </div>
-  )
+  )}
 
   const ShowMoreButton = ({ 
     isExpanded, 
@@ -622,9 +751,29 @@ export default function GemstoneFilters({
 
   return (
     <div className={`bg-white/80 dark:bg-slate-900/80 rounded-2xl shadow-sm border p-8 backdrop-blur-xl ${className}`} style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-      <div className="space-y-6">
-        <FilterSection 
-          title="Gemstone Type"
+      <div className="mb-6 rounded-2xl border p-4 md:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3" style={{ borderColor: 'var(--border)', backgroundColor: 'color-mix(in srgb, var(--muted) 30%, transparent)' }}>
+        <div>
+          <h2 className="text-base md:text-lg font-semibold" style={{ color: 'var(--foreground)' }}>
+            Refine {gemstoneType === 'single' ? 'Single Gemstones' : 'Melee Gemstones'}
+          </h2>
+          <p className="text-xs md:text-sm" style={{ color: 'var(--muted-foreground)' }}>
+            {activeFilterCount > 0 ? `${activeFilterCount} filters selected` : 'No filters selected yet'}
+          </p>
+        </div>
+        {activeFilterCount > 0 && (
+          <button
+            onClick={clearFilters}
+            className="cursor-pointer px-4 py-2 rounded-xl border text-sm font-medium transition-all"
+            style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+          >
+            Reset All
+          </button>
+        )}
+      </div>
+
+      <div className="space-y-4 md:space-y-5">
+        <Expand
+          label="Gemstone Type"
           actions={<FilterActionButtons category="gemstoneType" options={GEMSTONE_TYPES} />}
         >
           <ButtonFilterGroup 
@@ -640,10 +789,10 @@ export default function GemstoneFilters({
             totalItems={GEMSTONE_TYPES.length}
             visibleItems={12}
           />
-        </FilterSection>
+        </Expand>
 
-        <FilterSection 
-          title="Birthstones"
+        <Expand
+          label="Birthstones"
           actions={<FilterActionButtons category="birthstones" options={birthstoneMonthOptions} />}
         >
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -677,10 +826,10 @@ export default function GemstoneFilters({
               )
             })}
           </div>
-        </FilterSection>
+        </Expand>
 
-        <FilterSection 
-          title="Shape"
+        <Expand
+          label="Shape"
           actions={<FilterActionButtons category="shape" options={SHAPES} />}
         >
           <ButtonFilterGroup 
@@ -696,46 +845,46 @@ export default function GemstoneFilters({
             totalItems={SHAPES.length}
             visibleItems={12}
           />
-        </FilterSection>
+        </Expand>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 gap-4">
 
-          <FilterSection title="Carat Weight">
+          <Expand label="Carat Weight">
             <RangeFilter
               min={0}
               max={50}
               value={filters.caratWeight}
-              onChange={(rangeKey, value) => handleRangeChange('caratWeight', rangeKey, value)}
+              onChange={(range) => onFiltersChange({ ...filters, caratWeight: range })}
               step={0.01}
               unit="ct"
             />
-          </FilterSection>
+          </Expand>
 
-          <FilterSection title="Price Range">
+          <Expand label="Price Range">
             <RangeFilter
               min={0}
               max={1000000}
               value={filters.priceRange}
-              onChange={(rangeKey, value) => handleRangeChange('priceRange', rangeKey, value)}
+              onChange={(range) => onFiltersChange({ ...filters, priceRange: range })}
               step={100}
-              unit="$"
+              unit="USD"
             />
-          </FilterSection>
+          </Expand>
         </div>
 
-        <FilterSection 
-          title="Color"
+        <Expand
+          label="Color"
           actions={<FilterActionButtons category="color" options={colorOptions} />}
         >
           <ColorButtonGroup />
-        </FilterSection>
+        </Expand>
 
-        <FilterSection 
-          title="Clarity"
+        <Expand
+          label="Clarity"
           actions={<FilterActionButtons category="clarity" options={CLARITY_OPTIONS} />}
         >
           <ButtonFilterGroup options={CLARITY_OPTIONS} category="clarity" />
-        </FilterSection>
+        </Expand>
 
         {/* <FilterSection title="Mineral Classification">
           <ButtonFilterGroup 
@@ -753,22 +902,22 @@ export default function GemstoneFilters({
           />
         </FilterSection> */}
 
-        <FilterSection 
-          title="Treatments"
+        <Expand
+          label="Treatments"
           actions={<FilterActionButtons category="treatment" options={TREATMENTS} />}
         >
           <ButtonFilterGroup options={TREATMENTS} category="treatment" />
-        </FilterSection>
+        </Expand>
 
-        <FilterSection 
-          title="Certification"
+        <Expand
+          label="Certification"
           actions={<FilterActionButtons category="certification" options={CERTIFICATIONS} />}
         >
           <ButtonFilterGroup options={CERTIFICATIONS} category="certification" />
-        </FilterSection>
+        </Expand>
 
-        <FilterSection 
-          title="Origin"
+        <Expand
+          label="Origin"
           actions={<FilterActionButtons category="origin" options={ORIGINS} />}
         >
           <ButtonFilterGroup 
@@ -784,64 +933,67 @@ export default function GemstoneFilters({
             totalItems={ORIGINS.length}
             visibleItems={12}
           />
-        </FilterSection>
+        </Expand>
 
-        <FilterSection 
-          title="Cut Grade"
+        <Expand
+          label="Cut Grade"
           actions={<FilterActionButtons category="cut" options={CUT_GRADES} />}
         >
           <ButtonFilterGroup options={CUT_GRADES} category="cut" />
-        </FilterSection>
+        </Expand>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          <FilterSection title="Length (mm)">
+        <div className="grid md:grid-cols-3 gap-4">
+          <Expand label="Length (mm)">
             <RangeFilter
               min={0}
               max={100}
               value={filters.length}
-              onChange={(rangeKey, value) => handleRangeChange('length', rangeKey, value)}
+              onChange={(range) => onFiltersChange({ ...filters, length: range })}
               step={0.1}
               unit="mm"
             />
-          </FilterSection>
+          </Expand>
 
-          <FilterSection title="Width (mm)">
+          <Expand label="Width (mm)">
             <RangeFilter
               min={0}
               max={100}
               value={filters.width}
-              onChange={(rangeKey, value) => handleRangeChange('width', rangeKey, value)}
+              onChange={(range) => onFiltersChange({ ...filters, width: range })}
               step={0.1}
               unit="mm"
             />
-          </FilterSection>
+          </Expand>
 
-          <FilterSection title="Height (mm)">
+          <Expand label="Height (mm)">
             <RangeFilter
               min={0}
               max={100}
               value={filters.height}
-              onChange={(rangeKey, value) => handleRangeChange('height', rangeKey, value)}
+              onChange={(range) => onFiltersChange({ ...filters, height: range })}
               step={0.1}
               unit="mm"
             />
-          </FilterSection>
+          </Expand>
         </div>
       </div>
 
-      <div className="flex gap-3 pt-6 mt-6 border-t justify-center" style={{ borderColor: 'var(--border)' }}>
+      <div className="sticky bottom-0 z-10 mt-6 pt-4 border-t backdrop-blur supports-[backdrop-filter]:bg-[color:var(--card)]/80" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <button
           onClick={clearFilters}
-          className="cursor-pointer px-6 py-3 rounded-3xl border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
+          className="cursor-pointer px-6 py-3 rounded-2xl border text-sm font-semibold transition-all duration-200 hover:opacity-90"
+          style={{ borderColor: 'var(--border)', color: 'var(--foreground)', backgroundColor: 'var(--card)' }}
         >
           Clear Filters
         </button>
         <button
           onClick={onSearch}
-          className="cursor-pointer px-6 py-3 rounded-3xl bg-gradient-to-r from-primary to-accent text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+          className="cursor-pointer px-6 py-3 rounded-2xl bg-gradient-to-r from-primary to-accent text-white text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
         >
           Search Gemstones
         </button>
+        </div>
       </div>
     </div>
   )

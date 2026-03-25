@@ -160,7 +160,7 @@ export function GemstoneCarousel({ shapes, selectedShapes, onShapeSelect }: Gems
   }, [isAutoPlaying, startAutoplay, stopAutoplay])
 
   return (
-    <div className={`relative mb-0 px-4 max-w-[${SECTION_WIDTH}px] mx-auto`}>
+    <div className={`relative mb-0 px-4 sm:px-6 lg:px-8 max-w-[${SECTION_WIDTH}px] mx-auto`}>
       <div className='flex justify-between items-center'>
         <h2 className="text-3xl font-bold text-left mb-8" style={{ color: 'var(--foreground)' }}>
           Explore Gemstone Types

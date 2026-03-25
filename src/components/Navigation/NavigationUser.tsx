@@ -714,7 +714,7 @@ export default function NavigationUser() {
                 !user?.email ? (
                   <Link 
                     href="/login" 
-                    className="px-3 py-2 lg:px-4 lg:py-2 rounded-lg transition-colors text-sm font-semibold"
+                    className="px-3 py-2 lg:px-4 lg:py-2 rounded-lg m-0 transition-colors text-sm font-semibold"
                     style={{ 
                       backgroundColor: 'var(--status-warning)', 
                       color: 'white' 

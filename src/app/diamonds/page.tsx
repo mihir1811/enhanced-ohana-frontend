@@ -1942,7 +1942,7 @@ export default function DiamondsSearchPage() {
       </div>
 
       <div className="w-full py-7 ">
-        <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4`}>
+        <div className={`max-w-[${SECTION_WIDTH}px] px-4 sm:px-6 lg:px-8 mx-auto`}>
 
           <DiamondShapesCarousel 
             title="Select Diamond Shapes" 
@@ -1952,7 +1952,7 @@ export default function DiamondsSearchPage() {
         </div>
       </div>
       {/* Search Form */}
-      <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 py-12`}>
+      <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 sm:px-6 lg:px-8 py-12`}>
         <div className="bg-white/80 dark:bg-slate-900/80 rounded-2xl shadow-sm border p-8 backdrop-blur-xl relative" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
           <div className="flex items-center mb-8">
             <Search className="w-8 h-8 mr-3" style={{ color: 'var(--primary)' }} />

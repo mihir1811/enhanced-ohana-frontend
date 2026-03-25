@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Search, Filter, Diamond, Gem } from 'lucide-react'
+import { Search, Filter, ChevronDown, ChevronUp } from 'lucide-react'
 import NavigationUser from '@/components/Navigation/NavigationUser'
 import Footer from '@/components/Footer'
 import { ProductConfig, FilterConfig } from '@/types/products'
@@ -30,6 +30,121 @@ interface ProductSearchPageProps {
   heroSubtitle?: string
 }
 
+function RangeFilterField({
+  min,
+  max,
+  value,
+  onChange,
+  step = 1,
+  unit = ''
+}: {
+  min: number
+  max: number
+  value: { min: number; max: number }
+  onChange: (range: { min: number; max: number }) => void
+  step?: number
+  unit?: string
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between px-1 py-1">
+        <span className="text-xs font-medium" style={{ color: 'var(--foreground)' }}>
+          Current Range:
+        </span>
+        <span className="text-xs font-bold" style={{ color: 'var(--primary)' }}>
+          {value.min.toLocaleString()}{unit} - {value.max.toLocaleString()}{unit}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--muted-foreground)' }}>
+            Minimum {unit}
+          </label>
+          <input
+            type="number"
+            value={value.min}
+            onChange={(e) => onChange({ ...value, min: parseFloat(e.target.value) || min })}
+            min={min}
+            max={max}
+            step={step}
+            className="w-full px-2 py-2 text-xs border rounded-md focus:ring-1 transition-all outline-none"
+            style={{
+              backgroundColor: 'var(--card)',
+              borderColor: 'var(--border)',
+              color: 'var(--foreground)'
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'var(--primary)';
+              e.currentTarget.style.boxShadow = '0 0 0 1px var(--primary)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'var(--border)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+            placeholder={`Min ${unit}`}
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--muted-foreground)' }}>
+            Maximum {unit}
+          </label>
+          <input
+            type="number"
+            value={value.max}
+            onChange={(e) => onChange({ ...value, max: parseFloat(e.target.value) || max })}
+            min={min}
+            max={max}
+            step={step}
+            className="w-full px-2 py-2 text-xs border rounded-md focus:ring-1 transition-all outline-none"
+            style={{
+              backgroundColor: 'var(--card)',
+              borderColor: 'var(--border)',
+              color: 'var(--foreground)'
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'var(--primary)';
+              e.currentTarget.style.boxShadow = '0 0 0 1px var(--primary)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'var(--border)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+            placeholder={`Max ${unit}`}
+          />
+        </div>
+      </div>
+
+      {unit === 'USD' && (
+        <div className="flex flex-wrap gap-1 items-center mt-1">
+          <span className="text-xs font-medium mr-1" style={{ color: 'var(--muted-foreground)' }}>
+            Quick Select:
+          </span>
+          {[
+            { label: 'Under $5K', min: 0, max: 5000 },
+            { label: '$5K-$10K', min: 5000, max: 10000 },
+            { label: '$10K-$25K', min: 10000, max: 25000 },
+            { label: '$25K+', min: 25000, max: 100000 }
+          ].map((preset) => (
+            <button
+              key={preset.label}
+              onClick={() => onChange({ min: preset.min, max: preset.max })}
+              className="px-2 py-0.5 text-xs rounded-full border transition-all"
+              style={{
+                backgroundColor: 'var(--card)',
+                borderColor: 'var(--border)',
+                color: 'var(--muted-foreground)'
+              }}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function ProductSearchPage({ 
   productType, 
   config, 
@@ -41,6 +156,7 @@ export default function ProductSearchPage({
   const initialCategory = searchParams ? (searchParams.get('category') || 'single') : 'single'
   
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
+  const [showGemstoneFilters, setShowGemstoneFilters] = useState(true)
   const [selectedGemstones, setSelectedGemstones] = useState<string[]>([])
   
   // Gemstone filters state
@@ -55,19 +171,11 @@ export default function ProductSearchPage({
     certification: [],
     origin: [],
     treatment: [],
-    enhancement: [],
-    transparency: [],
-    luster: [],
-    phenomena: [],
     minerals: [],
     birthstones: [],
     length: { min: 0, max: 100 },
     width: { min: 0, max: 100 },
     height: { min: 0, max: 100 },
-    location: [],
-    companyName: '',
-    vendorLocation: '',
-    reportNumber: '',
     searchTerm: ''
   })
   
@@ -250,34 +358,14 @@ export default function ProductSearchPage({
             <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
               {filter.label} ({(searchForm[filter.key] as PriceRange)?.min} - {(searchForm[filter.key] as PriceRange)?.max})
             </label>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Minimum</label>
-                <input
-                  type="number"
-                  step={filter.step || 1}
-                  min={filter.min}
-                  max={filter.max}
-                  value={(searchForm[filter.key] as PriceRange)?.min || filter.min || 0}
-                  onChange={(e) => handleRangeChange(filter.key, 'min', parseFloat(e.target.value) || filter.min || 0)}
-                  className="w-full p-3 border rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
-                />
-              </div>
-              <div>
-                <label className="block text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Maximum</label>
-                <input
-                  type="number"
-                  step={filter.step || 1}
-                  min={filter.min}
-                  max={filter.max}
-                  value={(searchForm[filter.key] as PriceRange)?.max || filter.max || 100}
-                  onChange={(e) => handleRangeChange(filter.key, 'max', parseFloat(e.target.value) || filter.max || 100)}
-                  className="w-full p-3 border rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
-                />
-              </div>
-            </div>
+            <RangeFilterField
+              min={filter.min || 0}
+              max={filter.max || 100}
+              step={filter.step || 1}
+              value={(searchForm[filter.key] as PriceRange) || { min: filter.min || 0, max: filter.max || 100 }}
+              onChange={(range) => setSearchForm(prev => ({ ...prev, [filter.key]: range }))}
+              unit={filter.key.toLowerCase().includes('price') ? 'USD' : ''}
+            />
           </div>
         )
 
@@ -329,6 +417,43 @@ export default function ProductSearchPage({
     setSelectedGemstones(filters.gemstoneType)
   }
 
+  const gemstoneSelectedCount = useMemo(() => {
+    let count = 0
+    count += gemstoneFilters.gemstoneType.length
+    count += gemstoneFilters.shape.length
+    count += gemstoneFilters.color.length
+    count += gemstoneFilters.clarity.length
+    count += gemstoneFilters.cut.length
+    count += gemstoneFilters.certification.length
+    count += gemstoneFilters.origin.length
+    count += gemstoneFilters.treatment.length
+    count += gemstoneFilters.birthstones.length
+    return count
+  }, [gemstoneFilters])
+
+  const resetGemstoneFilters = () => {
+    const resetValues: GemstoneFilterValues = {
+      gemstoneType: [],
+      shape: [],
+      caratWeight: { min: 0, max: 50 },
+      color: [],
+      clarity: [],
+      cut: [],
+      priceRange: { min: 0, max: 1000000 },
+      certification: [],
+      origin: [],
+      treatment: [],
+      minerals: [],
+      birthstones: [],
+      length: { min: 0, max: 100 },
+      width: { min: 0, max: 100 },
+      height: { min: 0, max: 100 },
+      searchTerm: ''
+    }
+    setGemstoneFilters(resetValues)
+    setSelectedGemstones([])
+  }
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       {/* Navigation */}
@@ -349,41 +474,82 @@ export default function ProductSearchPage({
       <div className={`max-w-[${SECTION_WIDTH}px] mx-auto px-4 py-12`}>
         {/* Conditional rendering: GemstoneFilters for gemstones, generic form for others */}
         {productType === 'gemstones' ? (
-          <GemstoneFilters 
-            filters={gemstoneFilters}
-            onFiltersChange={handleGemstoneFiltersChange}
-            onSearch={() => {
-              const params = new URLSearchParams();
-              
-              // Add common gemstone filters
-              if (gemstoneFilters.gemstoneType.length > 0) params.set('gemType', gemstoneFilters.gemstoneType.join(','));
-              if (gemstoneFilters.shape.length > 0) params.set('shape', gemstoneFilters.shape.join(','));
-              if (gemstoneFilters.color.length > 0) params.set('color', gemstoneFilters.color.join(','));
-              if (gemstoneFilters.clarity.length > 0) params.set('clarity', gemstoneFilters.clarity.join(','));
-              if (gemstoneFilters.cut.length > 0) params.set('cut', gemstoneFilters.cut.join(','));
-              if (gemstoneFilters.certification.length > 0) params.set('certification', gemstoneFilters.certification.join(','));
-              if (gemstoneFilters.origin.length > 0) params.set('origin', gemstoneFilters.origin.join(','));
-              if (gemstoneFilters.treatment.length > 0) params.set('treatment', gemstoneFilters.treatment.join(','));
-              
-              // Ranges
-              if (gemstoneFilters.priceRange.min > 0) params.set('priceMin', gemstoneFilters.priceRange.min.toString());
-              if (gemstoneFilters.priceRange.max < 1000000) params.set('priceMax', gemstoneFilters.priceRange.max.toString());
-              if (gemstoneFilters.caratWeight.min > 0) params.set('caratMin', gemstoneFilters.caratWeight.min.toString());
-              if (gemstoneFilters.caratWeight.max < 50) params.set('caratMax', gemstoneFilters.caratWeight.max.toString());
-              
-              // Dimensions
-              if (gemstoneFilters.length.min > 0) params.set('lengthMin', gemstoneFilters.length.min.toString());
-              if (gemstoneFilters.length.max < 100) params.set('lengthMax', gemstoneFilters.length.max.toString());
-              if (gemstoneFilters.width.min > 0) params.set('widthMin', gemstoneFilters.width.min.toString());
-              if (gemstoneFilters.width.max < 100) params.set('widthMax', gemstoneFilters.width.max.toString());
-              if (gemstoneFilters.height.min > 0) params.set('heightMin', gemstoneFilters.height.min.toString());
-              if (gemstoneFilters.height.max < 100) params.set('heightMax', gemstoneFilters.height.max.toString());
+          <div className="space-y-4">
+            <div
+              className="rounded-xl border p-4 md:p-5"
+              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}
+            >
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold" style={{ color: 'var(--foreground)' }}>
+                    Gemstone Filters
+                  </h2>
+                  <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                    {gemstoneSelectedCount > 0
+                      ? `${gemstoneSelectedCount} filters selected`
+                      : 'Select filters to narrow your search'}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={resetGemstoneFilters}
+                    className="px-3 py-2 text-sm rounded-lg border transition-colors"
+                    style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                  >
+                    Reset
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowGemstoneFilters((prev) => !prev)}
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-lg border transition-colors"
+                    style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                  >
+                    {showGemstoneFilters ? 'Hide Filters' : 'Show Filters'}
+                    {showGemstoneFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+            </div>
 
-              const path = initialCategory === 'melee' ? '/gemstones/melee' : '/gemstones/products';
-              router.push(`${path}?${params.toString()}`);
-            }}
-            gemstoneType={initialCategory === 'melee' ? 'melee' : 'single'}
-          />
+            {showGemstoneFilters && (
+              <GemstoneFilters
+                filters={gemstoneFilters}
+                onFiltersChange={handleGemstoneFiltersChange}
+                onSearch={() => {
+                  const params = new URLSearchParams();
+
+                  // Add common gemstone filters
+                  if (gemstoneFilters.gemstoneType.length > 0) params.set('gemType', gemstoneFilters.gemstoneType.join(','));
+                  if (gemstoneFilters.shape.length > 0) params.set('shape', gemstoneFilters.shape.join(','));
+                  if (gemstoneFilters.color.length > 0) params.set('color', gemstoneFilters.color.join(','));
+                  if (gemstoneFilters.clarity.length > 0) params.set('clarity', gemstoneFilters.clarity.join(','));
+                  if (gemstoneFilters.cut.length > 0) params.set('cut', gemstoneFilters.cut.join(','));
+                  if (gemstoneFilters.certification.length > 0) params.set('certification', gemstoneFilters.certification.join(','));
+                  if (gemstoneFilters.origin.length > 0) params.set('origin', gemstoneFilters.origin.join(','));
+                  if (gemstoneFilters.treatment.length > 0) params.set('treatment', gemstoneFilters.treatment.join(','));
+
+                  // Ranges
+                  if (gemstoneFilters.priceRange.min > 0) params.set('priceMin', gemstoneFilters.priceRange.min.toString());
+                  if (gemstoneFilters.priceRange.max < 1000000) params.set('priceMax', gemstoneFilters.priceRange.max.toString());
+                  if (gemstoneFilters.caratWeight.min > 0) params.set('caratMin', gemstoneFilters.caratWeight.min.toString());
+                  if (gemstoneFilters.caratWeight.max < 50) params.set('caratMax', gemstoneFilters.caratWeight.max.toString());
+
+                  // Dimensions
+                  if (gemstoneFilters.length.min > 0) params.set('lengthMin', gemstoneFilters.length.min.toString());
+                  if (gemstoneFilters.length.max < 100) params.set('lengthMax', gemstoneFilters.length.max.toString());
+                  if (gemstoneFilters.width.min > 0) params.set('widthMin', gemstoneFilters.width.min.toString());
+                  if (gemstoneFilters.width.max < 100) params.set('widthMax', gemstoneFilters.width.max.toString());
+                  if (gemstoneFilters.height.min > 0) params.set('heightMin', gemstoneFilters.height.min.toString());
+                  if (gemstoneFilters.height.max < 100) params.set('heightMax', gemstoneFilters.height.max.toString());
+
+                  const path = initialCategory === 'melee' ? '/gemstones/melee' : '/gemstones/products';
+                  router.push(`${path}?${params.toString()}`);
+                }}
+                gemstoneType={initialCategory === 'melee' ? 'melee' : 'single'}
+              />
+            )}
+          </div>
         ) : (
           <div className="bg-white rounded-2xl shadow-2xl border p-8" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex items-center mb-8">
@@ -430,28 +596,14 @@ export default function ProductSearchPage({
             <label className="block text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>
               Price Range (${(searchForm.priceRange as PriceRange)?.min?.toLocaleString()} - ${(searchForm.priceRange as PriceRange)?.max?.toLocaleString()})
             </label>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Minimum ($)</label>
-                <input
-                  type="number"
-                  value={(searchForm.priceRange as PriceRange)?.min || 0}
-                  onChange={(e) => handleRangeChange('priceRange', 'min', parseInt(e.target.value) || 0)}
-                  className="w-full p-3 border rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
-                />
-              </div>
-              <div>
-                <label className="block text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Maximum ($)</label>
-                <input
-                  type="number"
-                  value={(searchForm.priceRange as PriceRange)?.max || 0}
-                  onChange={(e) => handleRangeChange('priceRange', 'max', parseInt(e.target.value) || 0)}
-                  className="w-full p-3 border rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
-                />
-              </div>
-            </div>
+            <RangeFilterField
+              min={0}
+              max={1000000}
+              step={100}
+              value={(searchForm.priceRange as PriceRange) || { min: 0, max: 1000000 }}
+              onChange={(range) => setSearchForm(prev => ({ ...prev, priceRange: range }))}
+              unit="USD"
+            />
           </div>
 
           {/* Basic Filters */}
