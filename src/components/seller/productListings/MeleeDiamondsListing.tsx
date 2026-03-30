@@ -9,6 +9,19 @@ import { toast } from 'react-hot-toast';
 import { getCookie } from '@/lib/cookie-utils';
 
 const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType?: string }) => {
+  const fallbackImage =
+    'https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg?s=2048x2048&w=is&k=20&c=dFWJz1EFJt7Tq2lA-hgTpSW119YywTWtS4EwU3fpKrE=';
+  const normalizeImageSrc = (src?: string | null) => {
+    const raw = String(src || '').trim();
+    if (!raw) return fallbackImage;
+    if (/^https?:\/\//i.test(raw) || raw.startsWith('/')) return raw;
+    return `/${raw.replace(/^\.?\/*/, '')}`;
+  };
+  const toSafeNumber = (value: unknown, fallback = 0) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  };
+
   const [diamonds, setDiamonds] = useState<DiamondProduct[]>([]);
   const [view, setView] = useState<'list' | 'grid'>('grid');
   const [loading, setLoading] = useState(true);
@@ -104,13 +117,13 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
               (d.name as string | undefined)
               || `Melee Parcel ${String(d.color ?? '')} ${String(d.clarity ?? '')} - ${String(d.caratWeight ?? d.carat ?? '')}ct`,
             price: String((d.price as number | string | undefined) ?? (d.totalPrice as number | string | undefined) ?? 0),
-            image1: (d.image1 as string | null | undefined) ?? (images[0] ?? null),
-            image2: (d.image2 as string | null | undefined) ?? (images[1] ?? null),
-            image3: (d.image3 as string | null | undefined) ?? (images[2] ?? null),
-            image4: (d.image4 as string | null | undefined) ?? (images[3] ?? null),
-            image5: (d.image5 as string | null | undefined) ?? (images[4] ?? null),
-            image6: (d.image6 as string | null | undefined) ?? (images[5] ?? null),
-            stockNumber: Number(d.stockNumber ?? 0),
+            image1: normalizeImageSrc((d.image1 as string | null | undefined) ?? (images[0] ?? null)),
+            image2: normalizeImageSrc((d.image2 as string | null | undefined) ?? (images[1] ?? null)),
+            image3: normalizeImageSrc((d.image3 as string | null | undefined) ?? (images[2] ?? null)),
+            image4: normalizeImageSrc((d.image4 as string | null | undefined) ?? (images[3] ?? null)),
+            image5: normalizeImageSrc((d.image5 as string | null | undefined) ?? (images[4] ?? null)),
+            image6: normalizeImageSrc((d.image6 as string | null | undefined) ?? (images[5] ?? null)),
+            stockNumber: toSafeNumber(d.stockNumber, 0),
             color: String(d.color ?? ''),
             clarity: String(d.clarity ?? ''),
             cut: String(d.cut ?? ''),
