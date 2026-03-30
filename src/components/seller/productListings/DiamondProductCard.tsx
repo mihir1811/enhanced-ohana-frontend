@@ -113,6 +113,8 @@ const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
   //   );
   // }
 
+  if (!timeLeft) return null;
+
   const isUrgent = timeLeft.days === 0 && timeLeft.hours < 2;
   const bgGradient = isUrgent 
     ? "bg-gradient-to-br from-orange-50 via-red-50 to-pink-50" 
@@ -322,7 +324,7 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
         {getStatusTag(product.isDeleted, product.stockNumber)}
       </div> */}
       {/* Image */}
-      <div className="relative w-full aspect-[4/3] flex items-center justify-center" style={{ backgroundColor: 'var(--muted)' }}>
+      <div className="relative w-full aspect-square flex items-center justify-center" style={{ backgroundColor: 'var(--muted)' }}>
         <img
           src={displayImages[imgIdx]}
           alt={product.name}
