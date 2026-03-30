@@ -207,7 +207,7 @@ class DiamondService {
 
   // Get melee natural diamonds with filters
   async getMeleeNaturalDiamonds(params?: DiamondFilters): Promise<ApiResponse<DiamondData[]>> {
-    return apiService.get<DiamondData[]>('/melee-diamond', sanitizeParams({ ...params, stoneType: 'naturalDiamond' }));
+    return apiService.get<DiamondData[]>('/melee-diamond', sanitizeParams({ ...params }));
   }
 
   // Get single diamond by ID
