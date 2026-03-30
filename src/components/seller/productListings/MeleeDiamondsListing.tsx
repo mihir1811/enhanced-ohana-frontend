@@ -6,6 +6,7 @@ import DiamondProductCard, { DiamondProduct } from './DiamondProductCard';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { toast } from 'react-hot-toast';
+import { getCookie } from '@/lib/cookie-utils';
 
 const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType?: string }) => {
   const [diamonds, setDiamonds] = useState<DiamondProduct[]>([]);
@@ -18,10 +19,36 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
   const handleBulkFileSelect = () => {
     setBulkModalOpen(false);
     setRefreshKey((k) => k + 1);
+  };
+  const visibleIds = diamonds.map((d) => d.id);
+  const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id));
+  const selectedCount = selectedIds.size;
+
+  const toggleSelectOne = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllVisible = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        visibleIds.forEach((id) => next.delete(id));
+      } else {
+        visibleIds.forEach((id) => next.add(id));
+      }
+      return next;
+    });
   };
 
   useEffect(() => {
@@ -90,7 +117,6 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
             shape: String(d.shape ?? ''),
             isDeleted: Boolean(d.isDeleted ?? false),
             updatedAt: String((d.updatedAt as string | undefined) ?? new Date().toISOString()),
-            sellerSKU: String(d.sellerSKU ?? ''),
             isOnAuction: Boolean(d.isOnAuction ?? false),
             isSold: Boolean(d.isSold ?? false),
             auctionEndTime: (d.auctionEndTime as string | undefined) ?? undefined,
@@ -102,6 +128,7 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
         setDiamonds(diamondsArr);
         setTotal(totalCount);
         setError(null);
+        setSelectedIds(new Set());
       })
       .catch(() => {
         setError('Failed to load melee diamonds');
@@ -124,6 +151,15 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
             type="button"
           >
             Bulk Upload
+          </button>
+          <button
+            type="button"
+            disabled={selectedCount === 0}
+            onClick={() => setBulkDeleteOpen(true)}
+            className="px-4 py-2 rounded font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: 'var(--destructive)', color: 'white' }}
+          >
+            Delete Selected ({selectedCount})
           </button>
           <BulkUploadModal
             open={bulkModalOpen}
@@ -199,6 +235,14 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
               >
                 <thead className="border-b" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }}>
                   <tr>
+                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>
+                      <input
+                        type="checkbox"
+                        checked={allVisibleSelected}
+                        onChange={toggleSelectAllVisible}
+                        aria-label="Select all melee diamonds"
+                      />
+                    </th>
                     <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Image</th>
                     <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Name</th>
                     <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Price</th>
@@ -211,6 +255,14 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
                 <tbody>
                   {diamonds.map((diamond) => (
                     <tr key={diamond.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
+                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(diamond.id)}
+                          onChange={() => toggleSelectOne(diamond.id)}
+                          aria-label={`Select ${diamond.name}`}
+                        />
+                      </td>
                       <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
                         <div className="w-12 h-12 relative rounded overflow-hidden">
                           <Image
@@ -263,15 +315,29 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
               {diamonds.map((diamond) => (
-            <DiamondProductCard
-              key={diamond.id}
-              product={diamond}
-              isMelee={true}
-              onDelete={(p) => {
-                setDiamonds((prev) => prev.filter((d) => d.id !== p.id));
-                setTotal((prev) => Math.max(0, prev - 1));
-              }}
-            />
+            <div key={diamond.id} className="relative">
+              <label className="absolute z-10 top-3 left-3 h-6 w-6 rounded bg-white/90 border border-gray-300 flex items-center justify-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(diamond.id)}
+                  onChange={() => toggleSelectOne(diamond.id)}
+                  aria-label={`Select ${diamond.name}`}
+                />
+              </label>
+              <DiamondProductCard
+                product={diamond}
+                isMelee={true}
+                onDelete={(p) => {
+                  setDiamonds((prev) => prev.filter((d) => d.id !== p.id));
+                  setTotal((prev) => Math.max(0, prev - 1));
+                  setSelectedIds((prev) => {
+                    const next = new Set(prev);
+                    next.delete(p.id);
+                    return next;
+                  });
+                }}
+              />
+            </div>
           ))}
         </div>
       )}
@@ -313,10 +379,15 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
         const idToDelete = deleteId;
         setDeleteId(null);
         try {
-          const token = typeof window !== 'undefined' ? (document.cookie.match(/token=([^;]+)/)?.[1] || '') : '';
+          const token = getCookie('token') || '';
           await diamondService.deleteMeleeDiamond(idToDelete, token);
           setDiamonds((prev) => prev.filter((d) => d.id !== idToDelete));
           setTotal((prev) => Math.max(0, prev - 1));
+          setSelectedIds((prev) => {
+            const next = new Set(prev);
+            next.delete(idToDelete);
+            return next;
+          });
           toast.success('Melee parcel deleted successfully');
         } catch (err) {
           toast.error('Failed to delete melee parcel');
@@ -326,6 +397,27 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
     onNo={() => setDeleteId(null)}
     title="Delete Melee Parcel"
     description="Are you sure you want to delete this melee parcel? This action cannot be undone."
+  />
+  <ConfirmModal
+    open={bulkDeleteOpen}
+    onOpenChange={setBulkDeleteOpen}
+    title="Delete selected melee parcels?"
+    description={`This will permanently delete ${selectedCount} selected melee parcel(s).`}
+    onYes={async () => {
+      try {
+        const token = getCookie('token') || '';
+        const ids = Array.from(selectedIds);
+        await diamondService.bulkDeleteMeleeDiamonds(ids, token);
+        setDiamonds((prev) => prev.filter((d) => !selectedIds.has(d.id)));
+        setTotal((prev) => Math.max(0, prev - ids.length));
+        setSelectedIds(new Set());
+        setBulkDeleteOpen(false);
+        toast.success('Selected melee parcels deleted successfully');
+      } catch {
+        toast.error('Failed to delete selected melee parcels');
+      }
+    }}
+    onNo={() => setBulkDeleteOpen(false)}
   />
     </div>
   );

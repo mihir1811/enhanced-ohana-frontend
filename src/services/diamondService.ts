@@ -154,6 +154,14 @@ class DiamondService {
     }
     return apiService.delete(`/melee-diamond/${diamondId}`, token);
   }
+
+  async bulkDeleteDiamonds(ids: number[], token?: string): Promise<ApiResponse<unknown>> {
+    return apiService.post('/diamond/bulk-delete', { ids }, token);
+  }
+
+  async bulkDeleteMeleeDiamonds(ids: number[], token?: string): Promise<ApiResponse<unknown>> {
+    return apiService.post('/melee-diamond/bulk-delete', { ids }, token);
+  }
   // Update diamond by ID (with file upload)
   async updateDiamond(id: string | number, formData: FormData, token?: string): Promise<ApiResponse<DiamondData>> {
     // Ensure ID is properly formatted for the API endpoint
