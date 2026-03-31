@@ -348,4 +348,13 @@ export const gemstoneService = {
     // DELETE /gem-stone/:id with Accept and Authorization headers
     return api.delete(`/gem-stone/${id}`, token);
   },
+
+  bulkDeleteGemstones: async (ids: number[], token: string) => {
+    try {
+      return await api.post('/gemstone/bulk-delete', { ids }, token);
+    } catch {
+      // Fallback for deployments still using hyphenated route.
+      return api.post('/gem-stone/bulk-delete', { ids }, token);
+    }
+  },
 };

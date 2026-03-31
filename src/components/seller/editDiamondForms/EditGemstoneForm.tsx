@@ -256,6 +256,7 @@ interface GemstoneData {
   videoURL: string;
   totalPrice: string;
   pricePerCarat?: string | number;
+  caratPerPcs?: string | number;
   carat: string;
   discount: string;
   qualityGrade: string;
@@ -266,12 +267,14 @@ interface GemstoneData {
   hardness: string;
   origin: string;
   fluoreScence: string;
+  fluoreScenceIntensity?: string;
   treatment: string;
   refrectiveIndex: string;
   birefringence: string;
   process: string;
   cut: string;
   dimension: string;
+  measurement?: string;
   spacificGravity: string;
   certificateCompanyName: string;
   certificateCompanyId?: number;
@@ -290,6 +293,11 @@ interface EditGemstoneFormProps {
 }
 
 const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCancel }) => {
+  const normalizeMeasurement = (value: string) => {
+    const numbers = String(value || '').match(/\d+(\.\d+)?/g) || [];
+    if (numbers.length >= 3) return `${numbers[0]}*${numbers[1]}*${numbers[2]}`;
+    return value;
+  };
   const [form, setForm] = useState<GemstoneData & { images: File[] }>(() => {
     let certId = initialData.certificateCompanyId;
     let certName = initialData.certificateCompanyName || '';
@@ -309,6 +317,10 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
       ...initialData,
       totalPrice: initialData.totalPrice !== undefined ? String(initialData.totalPrice) : '',
       pricePerCarat: initialData.pricePerCarat !== undefined ? String(initialData.pricePerCarat) : '',
+      carat: String(initialData.carat ?? initialData.caratPerPcs ?? ''),
+      color: String((initialData as unknown as Record<string, unknown>).color ?? (initialData as unknown as Record<string, unknown>).primaryColor ?? ''),
+      fluoreScence: String(initialData.fluoreScence ?? initialData.fluoreScenceIntensity ?? ''),
+      dimension: String(initialData.dimension ?? initialData.measurement ?? ''),
       certificateCompanyId: certId,
       certificateCompanyName: certName,
       certificateNumber: initialData.certificateNumber || '',
@@ -386,12 +398,10 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
       const token = getCookie('token');
       if (!token) throw new Error('User not authenticated');
       const formData = new FormData();
-      // For each image slot, set only one value (file or URL)
+      // Send only newly selected files; backend keeps existing image URLs when omitted.
       for (let i = 0; i < 6; i++) {
         if (form.images[i]) {
           formData.append(`image${i + 1}`, form.images[i]);
-        } else if (imagePreviews[i]) {
-          formData.append(`image${i + 1}`, imagePreviews[i]);
         }
       }
       // Explicit mapping for known fields to match UpdateGemsStoneRequestDto
@@ -400,6 +410,7 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
       if (form.composition) formData.append('composition', form.composition);
       if (form.qualityGrade) formData.append('qualityGrade', form.qualityGrade);
       if (form.quantity) formData.append('quantity', form.quantity);
+      formData.append('availability', 'true');
       if (form.videoURL) formData.append('videoURL', form.videoURL);
       if (form.stockNumber) formData.append('stockNumber', form.stockNumber);
       if (form.description) formData.append('description', form.description);
@@ -410,16 +421,16 @@ const EditGemstoneForm: React.FC<EditGemstoneFormProps> = ({ initialData, onCanc
       if (form.pricePerCarat) formData.append('pricePerCarat', form.pricePerCarat);
       
       // Physical Properties
-      if (form.carat) formData.append('carat', form.carat);
+      if (form.carat) formData.append('caratPerPcs', form.carat);
       if (form.shape) formData.append('shape', form.shape);
-      if (form.color) formData.append('color', form.color);
+      if (form.color) formData.append('primaryColor', form.color);
       if (form.clarity) formData.append('clarity', form.clarity);
       if (form.hardness) formData.append('hardness', form.hardness);
       if (form.origin) formData.append('origin', form.origin);
-      if (form.fluoreScence) formData.append('fluoreScence', form.fluoreScence);
+      if (form.fluoreScence) formData.append('fluoreScenceIntensity', form.fluoreScence);
       if (form.process) formData.append('process', form.process);
       if (form.cut) formData.append('cut', form.cut);
-      if (form.dimension) formData.append('dimension', form.dimension);
+      if (form.dimension) formData.append('measurement', normalizeMeasurement(form.dimension));
       if (form.refrectiveIndex) formData.append('refrectiveIndex', form.refrectiveIndex);
       if (form.birefringence) formData.append('birefringence', form.birefringence);
       if (form.spacificGravity) formData.append('spacificGravity', form.spacificGravity);
