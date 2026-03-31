@@ -205,7 +205,7 @@ class DiamondService {
 
   // Get melee lab grown diamonds with filters
   async getMeleeLabDiamonds(params?: DiamondFilters): Promise<ApiResponse<DiamondData[]>> {
-    return apiService.get<DiamondData[]>('/melee-diamond', sanitizeParams({ ...params, stoneType: 'labGrownDiamond' }));
+    return apiService.get<DiamondData[]>('/melee-diamond', sanitizeParams(params));
   }
 
   // Get natural diamonds with filters
@@ -248,7 +248,13 @@ class DiamondService {
 
   // Get melee diamonds by seller
   async getMeleeDiamondsBySeller(sellerId: string, params?: SearchParams): Promise<ApiResponse<DiamondData[]>> {
-    return apiService.get<DiamondData[]>(`/melee-diamond/seller/${sellerId}`, sanitizeParams(params));
+    const queryParams = { sellerId, ...params };
+    try {
+      return await apiService.get<DiamondData[]>('/melee-diamond', sanitizeParams(queryParams));
+    } catch {
+      // Backward compatibility for deployments exposing /seller/:id path.
+      return apiService.get<DiamondData[]>(`/melee-diamond/seller/${sellerId}`, sanitizeParams(params));
+    }
   }
 
   // Get jewelry by seller

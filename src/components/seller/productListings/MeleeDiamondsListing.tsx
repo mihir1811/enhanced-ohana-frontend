@@ -66,16 +66,9 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
 
   useEffect(() => {
     setLoading(true);
-    let fetchPromise;
-    if (stoneType === 'labGrownDiamond') {
-      fetchPromise = diamondService.getMeleeLabDiamonds({ page, limit, sellerId });
-    } else if (stoneType === 'naturalDiamond') {
-      fetchPromise = diamondService.getMeleeNaturalDiamonds({ page, limit, sellerId });
-    } else {
-      fetchPromise = sellerId 
-        ? diamondService.getMeleeDiamondsBySeller(sellerId, { page, limit })
-        : diamondService.getMeleeDiamonds({ page, limit });
-    }
+    const fetchPromise = sellerId
+      ? diamondService.getMeleeDiamondsBySeller(sellerId, { page, limit })
+      : diamondService.getMeleeDiamonds({ page, limit });
 
     fetchPromise
       .then((res) => {

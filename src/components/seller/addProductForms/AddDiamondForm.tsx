@@ -226,6 +226,7 @@ type DiamondFormState = {
   symmetry: string,
   fluorescence: string,
   treatment: string,
+  growthType: string,
   process: string,
   measurement: string,
   diameter: string,
@@ -288,6 +289,7 @@ const initialState: DiamondFormState = {
   symmetry: '',
   fluorescence: '',
   treatment: '',
+  growthType: '',
   process: '',
   measurement: '',
   diameter: '',
@@ -633,6 +635,10 @@ function AddDiamondForm() {
     { value: 'naturalDiamond', label: 'Natural' },
     { value: 'labGrownDiamond', label: 'Lab Grown' },
   ];
+  const growthTypes = [
+    { value: 'CVD', label: 'CVD' },
+    { value: 'HPHT', label: 'HPHT' },
+  ];
 
   const fillRandomData = () => {
     const getRandom = (arr: Option[]) => arr[Math.floor(Math.random() * arr.length)].value;
@@ -652,6 +658,7 @@ function AddDiamondForm() {
     const randomShade = getRandom(shades);
     const randomTreatment = getRandom(treatments);
     const randomProcess = getRandom(processes);
+    const randomGrowthType = growthTypes[Math.floor(Math.random() * growthTypes.length)].value;
 
     if (isMelee) {
       // Melee Random Data
@@ -701,6 +708,7 @@ function AddDiamondForm() {
         shade: randomShade,
         treatment: randomTreatment,
         process: randomProcess,
+        growthType: sellerType === 'labGrownDiamond' ? randomGrowthType : '',
         sizeMin: diaMin,
         sizeMax: diaMax,
       }));
@@ -736,6 +744,7 @@ function AddDiamondForm() {
         shade: randomShade,
         treatment: randomTreatment,
         process: randomProcess,
+        growthType: sellerType === 'labGrownDiamond' ? randomGrowthType : '',
         inscription: `GIA ${getRandomInt(10000000, 99999999)}`,
         gridleMin: getRandomFloat(0.5, 2.0, 1),
         gridleMax: getRandomFloat(2.1, 4.0, 1),
@@ -916,6 +925,7 @@ function AddDiamondForm() {
           { key: 'symmetry', backendKey: 'symmetryFrom' },
           { key: 'shade', backendKey: 'shadeFrom' },
           { key: 'treatment' },
+          { key: 'growthType' },
           // { key: 'process' }, // Removed: Not in backend DTO
           { key: 'certificateNumber' },
           { key: 'fancyColorFrom' },
@@ -958,6 +968,7 @@ function AddDiamondForm() {
           { key: 'culetSize' },
           { key: 'polish' },
           { key: 'treatment', backendKey: 'enhancement' },
+          { key: 'growthType' },
           { key: 'inscription', backendKey: 'laserInscription' },
           { key: 'certificateNumber' },
           { key: 'videoURL' },
@@ -1688,6 +1699,21 @@ function AddDiamondForm() {
                 placeholder="Select treatment..."
               />
             </div>
+            {sellerType === 'labGrownDiamond' && (
+              <div className="space-y-2">
+                <Label htmlFor="growthType" className="font-medium">
+                  Growth Type<RequiredMark />
+                </Label>
+                <SearchableDropdown
+                  name="growthType"
+                  value={form.growthType}
+                  onChange={(value) => setForm(prev => ({ ...prev, growthType: value }))}
+                  options={growthTypes}
+                  placeholder="Select growth type..."
+                  required
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="process" className="font-medium">
                 Process
