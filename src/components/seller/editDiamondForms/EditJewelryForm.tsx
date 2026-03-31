@@ -322,11 +322,11 @@ type EditJewelryFormProps = {
 // Helper to normalize API data to form state
 function normalizeInitialData(data: JewelryItem): JewelryFormState {
   return {
-    name: data?.name || '',
+    name: data?.name || data?.productTitle || '',
     skuCode: data?.skuCode || '',
     category: data?.category || '',
     subcategory: data?.subcategory || '',
-    collection: data?.collection || '',
+    collection: data?.collection || data?.collectionName || '',
     gender: data?.gender || '',
     occasion: data?.occasion || '',
     metalType: data?.metalType || '',
@@ -339,13 +339,13 @@ function normalizeInitialData(data: JewelryItem): JewelryFormState {
     description: data?.description || '',
     videoURL: data?.videoURL || '',
     stones: Array.isArray(data?.stones) && data.stones.length > 0 ? data.stones.map(s => ({
-      type: s.type || '',
-      shape: s.shape || '',
-      carat: s.carat ? String(s.carat) : '',
-      color: s.color || '',
-      clarity: s.clarity || '',
+      type: s.type || s.centerStoneType || '',
+      shape: s.shape || s.centerStoneShape || '',
+      carat: s.carat ? String(s.carat) : (s.centerStoneTotalWeight ? String(s.centerStoneTotalWeight) : ''),
+      color: s.color || s.centerStoneColor || '',
+      clarity: s.clarity || s.centerStoneClarity || '',
       cut: s.cut || '',
-      certification: s.certification || '',
+      certification: s.certification || s.centerStoneCertification || '',
     })) : [{ type: '', shape: '', carat: '', color: '', clarity: '', cut: '', certification: '' }],
     attributes: typeof data?.attributes === 'object' && data.attributes !== null ? {
       style: data.attributes.style || '',
@@ -421,7 +421,6 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
   const validate = () => {
     const errs: Record<string, string> = {};
     if (!form.name) errs.name = 'Name is required';
-    if (!form.skuCode) errs.skuCode = 'SKU Code is required';
     if (!form.category) errs.category = 'Category is required';
     if (!form.subcategory) errs.subcategory = 'Subcategory is required';
     if (!form.metalType) errs.metalType = 'Metal type is required';
@@ -452,50 +451,51 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
           formData.append(`image${i + 1}`, existingImages[i]);
         }
       }
-      // Always append 'name' field explicitly
-      formData.append('name', form.name ?? '');
-      // Attach all other fields (except name, images, id, image1-6, and auction fields)
-      Object.entries(form).forEach(([key, value]) => {
-        if (
-          key !== 'images' &&
-          key !== 'id' &&
-          key !== 'name' &&
-          !/^image[1-6]$/.test(key) &&
-          value !== undefined && value !== null && value !== ''
-        ) {
-          if (typeof value === 'boolean') {
-            formData.append(key, value ? 'true' : 'false');
-          } else if (Array.isArray(value)) {
-            // For stones array, serialize as JSON to preserve data types
-            if (key === 'stones') {
-              const processedStones = (value as Stone[])
-                .filter((stone: Stone) => stone && typeof stone === 'object' && !('lastModified' in stone)) // Filter out File objects
-                .map((stone: Stone) => ({
-                  ...stone,
-                  carat: stone.carat ? parseFloat(String(stone.carat)) : null
-                }))
-                .filter((stone) => Boolean(stone.type || stone.shape || stone.carat || stone.color || stone.clarity || stone.cut || stone.certification));
-              
-              if (processedStones.length > 0) {
-                formData.append('stones', JSON.stringify(processedStones));
-              }
-            }
-          } else if (typeof value === 'object') {
-            // For attributes object, serialize as JSON to preserve data types
-            if (key === 'attributes') {
-              const processedAttributes = { ...value as Attribute };
-              // Convert length_cm to number if it exists, for the API
-              const attributesForAPI = {
-                ...processedAttributes,
-                length_cm: processedAttributes.length_cm ? parseFloat(processedAttributes.length_cm) : ''
-              };
-              formData.append('attributes', JSON.stringify(attributesForAPI));
-            }
-          } else {
-            formData.append(key, String(value));
-          }
+      // Map current UI model to latest backend DTO keys.
+      const dtoFieldMap: Record<string, string> = {
+        name: 'productTitle',
+        category: 'category',
+        subcategory: 'subcategory',
+        collection: 'collectionName',
+        gender: 'gender',
+        occasion: 'occasion',
+        metalType: 'metalType',
+        metalPurity: 'metalPurity',
+        metalWeight: 'metalWeight',
+        basePrice: 'basePrice',
+        makingCharge: 'makingCharge',
+        totalPrice: 'totalPrice',
+        description: 'description',
+        videoURL: 'videoURL',
+      };
+      Object.entries(dtoFieldMap).forEach(([oldKey, newKey]) => {
+        const value = (form as Record<string, unknown>)[oldKey];
+        if (value !== undefined && value !== null && value !== '') {
+          formData.append(newKey, String(value));
         }
       });
+
+      const processedStones = form.stones
+        .filter((stone) => Boolean(stone.type || stone.shape || stone.carat || stone.color || stone.clarity || stone.certification))
+        .map((stone) => ({
+          centerStoneType: stone.type || undefined,
+          centerStoneShape: stone.shape || undefined,
+          centerStoneColor: stone.color || undefined,
+          centerStoneClarity: stone.clarity || undefined,
+          centerStoneCertification: stone.certification || undefined,
+          centerStoneTotalWeight: stone.carat || undefined,
+        }));
+      if (processedStones.length > 0) {
+        formData.append('stones', JSON.stringify(processedStones));
+      }
+
+      if (form.attributes && Object.values(form.attributes).some(v => v !== '' && v !== false)) {
+        const attributesForAPI = {
+          ...form.attributes,
+          length_cm: form.attributes.length_cm ? parseFloat(form.attributes.length_cm) : undefined,
+        };
+        formData.append('attributes', JSON.stringify(attributesForAPI));
+      }
 
       // Get Bearer token
       const token = getCookie('token');
@@ -612,20 +612,20 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block font-medium mb-1">Base Price *</label>
-            <input name="basePrice" value={form.basePrice} onChange={handleChange} required className="input" type="number" min="0" placeholder="e.g. 5000" />
+            <input name="basePrice" value={form.basePrice} onChange={handleChange} required className="input" type="number" min="0" step="any" placeholder="e.g. 5000" />
             {errors.basePrice && <div className="text-red-500 text-xs">{errors.basePrice}</div>}
           </div>
           <div>
             <label className="block font-medium mb-1">Making Charge</label>
-            <input name="makingCharge" value={form.makingCharge} onChange={handleChange} className="input" type="number" min="0" placeholder="e.g. 200" />
+            <input name="makingCharge" value={form.makingCharge} onChange={handleChange} className="input" type="number" min="0" step="any" placeholder="e.g. 200" />
           </div>
           <div>
             <label className="block font-medium mb-1">Tax (%)</label>
-            <input name="tax" value={form.tax} onChange={handleChange} className="input" type="number" min="0" placeholder="e.g. 5" />
+            <input name="tax" value={form.tax} onChange={handleChange} className="input" type="number" min="0" step="any" placeholder="e.g. 5" />
           </div>
           <div>
             <label className="block font-medium mb-1">Total Price *</label>
-            <input name="totalPrice" value={form.totalPrice} onChange={handleChange} required className="input" type="number" min="0" placeholder="e.g. 5200" />
+            <input name="totalPrice" value={form.totalPrice} onChange={handleChange} required className="input" type="number" min="0" step="any" placeholder="e.g. 5200" />
             {errors.totalPrice && <div className="text-red-500 text-xs">{errors.totalPrice}</div>}
           </div>
           <div>
@@ -648,7 +648,7 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
           </div>
           <div>
             <label className="block font-medium mb-1">Metal Weight (grams) *</label>
-            <input name="metalWeight" value={form.metalWeight} onChange={handleChange} className="input" type="number" min="0" placeholder="e.g. 15.5" />
+            <input name="metalWeight" value={form.metalWeight} onChange={handleChange} className="input" type="number" min="0" step="any" placeholder="e.g. 15.5" />
           </div>
 
         </div>
@@ -681,7 +681,7 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
               <option value="" disabled hidden>Select Shape</option>
               {DROPDOWN_OPTIONS.gemstoneShape.map((opt: DropdownOption) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
-            <input type="number" min="0" step="0.01" value={stone.carat} onChange={e => handleStoneChange(idx, 'carat', e.target.value)} className="input" placeholder="Carat" />
+            <input type="number" min="0" step="any" value={stone.carat} onChange={e => handleStoneChange(idx, 'carat', e.target.value)} className="input" placeholder="Carat" />
             <select value={stone.color} onChange={e => handleStoneChange(idx, 'color', e.target.value)} className="input">
               <option value="" disabled hidden>Select Color</option>
               {DROPDOWN_OPTIONS.gemstoneColor.map((opt: DropdownOption) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
@@ -718,7 +718,7 @@ const EditJewelryForm: React.FC<EditJewelryFormProps> = ({ initialData }) => {
             <option value="" disabled hidden>Select Clasp Type</option>
             {DROPDOWN_OPTIONS.clasp_type.map((opt: DropdownOption) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
           </select>
-          <input type="number" min="0" value={form.attributes.length_cm} onChange={e => handleAttributeChange('length_cm', e.target.value)} className="input" placeholder="Length (cm)" />
+          <input type="number" min="0" step="any" value={form.attributes.length_cm} onChange={e => handleAttributeChange('length_cm', e.target.value)} className="input" placeholder="Length (cm)" />
           <div className="flex items-center gap-2">
             <input type="checkbox" checked={form.attributes.is_adjustable} onChange={e => handleAttributeChange('is_adjustable', e.target.checked)} />
             <span>Is Adjustable?</span>

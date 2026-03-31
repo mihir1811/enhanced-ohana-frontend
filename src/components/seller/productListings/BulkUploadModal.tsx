@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { FileSpreadsheet, Upload, Loader2, X, FileCheck, Trash2 } from "lucide-react";
 import { diamondService } from "@/services/diamondService";
+import { jewelryService } from "@/services/jewelryService";
 import { getCookie } from "@/lib/cookie-utils";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
@@ -81,8 +82,15 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     try {
       const token = getCookie("token");
       if (!token) throw new Error("User not authenticated");
-      const apiProductType = productType === "melee-gemstone" ? "gemstone" : productType;
-      const result = await diamondService.uploadExcel(selectedFile, apiProductType, token, hasUpdate);
+      let result: unknown;
+      if (productType === "jewellery") {
+        // Jewellery uses dedicated backend parser with 3-sheet format:
+        // jewellery + attributes + stones
+        result = await jewelryService.uploadJewelryExcel(selectedFile, token, hasUpdate);
+      } else {
+        const apiProductType = productType === "melee-gemstone" ? "gemstone" : productType;
+        result = await diamondService.uploadExcel(selectedFile, apiProductType, token, hasUpdate);
+      }
       const raw = result as unknown as Record<string, unknown>;
       const data = (raw?.data ?? raw) as {
         success?: boolean;

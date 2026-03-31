@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 // import Link from 'next/link';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
@@ -13,7 +12,6 @@ import AddWatchForm from '@/components/seller/addProductForms/AddWatchForm';
 
 export default function Page() {
   const profile = useSelector((state: RootState) => state.seller.profile);
-  const [selectedType, setSelectedType] = useState<'jewellery' | 'watch'>('jewellery');
 
   // Type guard to check if profile is SellerData with sellerType
   const sellerType = profile && 'sellerType' in profile ? profile.sellerType : undefined;
@@ -23,36 +21,14 @@ export default function Page() {
   };
 
   const renderForm = () => {
-    // If it's a jewelry seller, they can switch between Jewelry and Watch
+    // Jewellery sellers can add only jewelry products
     if (sellerType === 'jewellery') {
       return (
         <div className="space-y-8">
           <div className="flex flex-col gap-4">
             <h1 className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>Add New Product</h1>
-            <div className="flex gap-4 border-b">
-              <button
-                onClick={() => setSelectedType('jewellery')}
-                className={`pb-4 px-6 font-medium transition-all ${
-                  selectedType === 'jewellery'
-                    ? 'border-b-2 border-primary text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Jewelry
-              </button>
-              <button
-                onClick={() => setSelectedType('watch')}
-                className={`pb-4 px-6 font-medium transition-all ${
-                  selectedType === 'watch'
-                    ? 'border-b-2 border-primary text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Watch
-              </button>
-            </div>
           </div>
-          {selectedType === 'jewellery' ? <AddJewelryForm /> : <AddWatchForm />}
+          <AddJewelryForm />
         </div>
       );
     }

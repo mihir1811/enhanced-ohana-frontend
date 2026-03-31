@@ -89,11 +89,6 @@ export default function SellerProductsPage() {
             id: 'jewellery',
             label: 'Jewelry Products',
             content: <JewelryListing />
-          },
-          {
-            id: 'watch',
-            label: 'Watch Products',
-            content: <WatchListing />
           }
         ]
       
