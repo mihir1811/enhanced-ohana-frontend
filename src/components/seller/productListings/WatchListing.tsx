@@ -23,6 +23,8 @@ const WatchListing = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [quickViewProduct, setQuickViewProduct] = useState<WatchProduct | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
   const handleBulkFileSelect = () => {
     // Called after successful upload in modal
@@ -75,6 +77,7 @@ const WatchListing = () => {
         setWatches(watchesArr);
         setTotal(totalCount);
         setError(null);
+        setSelectedIds(new Set());
       })
       .catch((err) => {
         console.error(err);
@@ -85,6 +88,30 @@ const WatchListing = () => {
   }, [page, limit, refreshKey, sellerId]);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
+  const visibleIds = watches.map((w) => Number(w.id)).filter((id) => Number.isFinite(id));
+  const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id));
+  const selectedCount = selectedIds.size;
+
+  const toggleSelectOne = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllVisible = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        visibleIds.forEach((id) => next.delete(id));
+      } else {
+        visibleIds.forEach((id) => next.add(id));
+      }
+      return next;
+    });
+  };
 
   return (
     <div>
@@ -98,6 +125,15 @@ const WatchListing = () => {
             type="button"
           >
             Bulk Upload
+          </button>
+          <button
+            type="button"
+            disabled={selectedCount === 0}
+            onClick={() => setBulkDeleteOpen(true)}
+            className="px-4 py-2 rounded font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: 'var(--destructive)', color: 'white' }}
+          >
+            Delete Selected ({selectedCount})
           </button>
           <BulkUploadModal
             open={bulkModalOpen}
@@ -168,6 +204,14 @@ const WatchListing = () => {
               >
                 <thead className="border-b" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }}>
                   <tr>
+                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>
+                      <input
+                        type="checkbox"
+                        checked={allVisibleSelected}
+                        onChange={toggleSelectAllVisible}
+                        aria-label="Select all watches"
+                      />
+                    </th>
                     <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Image</th>
                     <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Brand</th>
                     <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Model</th>
@@ -180,6 +224,14 @@ const WatchListing = () => {
                 <tbody>
                   {watches.map((watch) => (
                     <tr key={watch.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
+                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(Number(watch.id))}
+                          onChange={() => toggleSelectOne(Number(watch.id))}
+                          aria-label={`Select ${watch.brand} ${watch.model}`}
+                        />
+                      </td>
                       <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
                          {watch.image1 ? (
                             <Image 
@@ -240,15 +292,23 @@ const WatchListing = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {watches.map((watch) => (
-                <WatchProductCard
-                  key={watch.id}
-                  product={watch}
-                  onQuickView={(p) => setQuickViewProduct(p)}
-                  onDelete={() => {
-                     // Handled by ConfirmModal (if we want to trigger it from card, we need to pass setDeleteId)
-                     setDeleteId(watch.id);
-                  }}
-                />
+                <div key={watch.id} className="relative">
+                  <label className="absolute z-10 top-3 right-14 h-6 w-6 rounded bg-white/90 border border-gray-300 flex items-center justify-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(Number(watch.id))}
+                      onChange={() => toggleSelectOne(Number(watch.id))}
+                      aria-label={`Select ${watch.brand} ${watch.model}`}
+                    />
+                  </label>
+                  <WatchProductCard
+                    product={watch}
+                    onQuickView={(p) => setQuickViewProduct(p)}
+                    onDelete={() => {
+                      setDeleteId(watch.id);
+                    }}
+                  />
+                </div>
               ))}
             </div>
           )}
@@ -285,12 +345,41 @@ const WatchListing = () => {
                 await watchService.deleteWatch(idToDelete);
                 setWatches((prev) => prev.filter((d) => d.id !== idToDelete));
                 setTotal((prev) => Math.max(0, prev - 1));
+                setSelectedIds((prev) => {
+                  const next = new Set(prev);
+                  next.delete(idToDelete);
+                  return next;
+                });
                 toast.success('Product deleted successfully!');
               } catch {
                 toast.error('Failed to delete product.');
               }
             }}
             onNo={() => setDeleteId(null)}
+          />
+          <ConfirmModal
+            open={bulkDeleteOpen}
+            onOpenChange={setBulkDeleteOpen}
+            title="Delete selected watches?"
+            description={`This will permanently delete ${selectedCount} selected watch product(s).`}
+            onYes={async () => {
+              try {
+                const ids = Array.from(selectedIds)
+                  .map((id) => Number(id))
+                  .filter((id) => Number.isInteger(id) && id > 0);
+                if (ids.length === 0) throw new Error('Please select at least one watch');
+                await watchService.bulkDeleteWatches(ids);
+                setWatches((prev) => prev.filter((w) => !selectedIds.has(Number(w.id))));
+                setTotal((prev) => Math.max(0, prev - ids.length));
+                setSelectedIds(new Set());
+                setBulkDeleteOpen(false);
+                toast.success('Selected watches deleted successfully');
+              } catch (err: unknown) {
+                const message = err instanceof Error ? err.message : 'Failed to delete selected watches';
+                toast.error(message);
+              }
+            }}
+            onNo={() => setBulkDeleteOpen(false)}
           />
           {/* Quick View Modal for List View and Grid View (triggered by listing) */}
           <QuickViewModal
