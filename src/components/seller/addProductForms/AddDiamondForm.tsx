@@ -3,15 +3,26 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
-import { useTheme } from 'next-themes';
 import { diamondService } from '@/services/diamondService';
+import { SECTION_WIDTH } from '@/lib/constants';
 import { getCookie } from '@/lib/cookie-utils';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Gem, Layers } from 'lucide-react';
+import {
+  Gem,
+  Layers,
+  Info,
+  Images,
+  Sparkles,
+  Ruler,
+  BadgeCheck,
+  CircleDollarSign,
+  ArrowLeft,
+} from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { 
@@ -32,6 +43,61 @@ import {
 const RequiredMark = ({ show = true }: { show?: boolean }) => (
   show ? <span className="text-destructive ml-0.5">*</span> : null
 );
+
+function SellerFormSection({
+  title,
+  description,
+  icon,
+  children,
+}: {
+  title: string;
+  description?: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      className="rounded-xl border p-5 sm:p-6 space-y-6 shadow-sm"
+      style={{
+        backgroundColor: 'var(--card)',
+        borderColor: 'var(--border)',
+        boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.04)',
+      }}
+    >
+      <div
+        className="flex items-start gap-3 pb-4 border-b -mx-5 sm:-mx-6 px-5 sm:px-6"
+        style={{ borderColor: 'var(--border)' }}
+      >
+        {icon ? (
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border"
+            style={{
+              backgroundColor: 'var(--muted)',
+              borderColor: 'var(--border)',
+              color: 'var(--primary)',
+            }}
+          >
+            {icon}
+          </div>
+        ) : null}
+        <div className="min-w-0 flex-1">
+          <h3
+            className="text-base font-semibold tracking-tight"
+            style={{ color: 'var(--foreground)' }}
+          >
+            {title}
+          </h3>
+          {description ? (
+            <p className="text-sm mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+              {description}
+            </p>
+          ) : null}
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
 
 interface Option {
   value: string;
@@ -61,7 +127,6 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { resolvedTheme } = useTheme();
 
   const filteredOptions = options.filter(option =>
     option.label.toLowerCase().includes(searchTerm.toLowerCase())
@@ -146,10 +211,10 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
 
       {isOpen && (
       <div
-        className="absolute z-50 w-full mt-2 rounded-xl border border-border bg-popover text-popover-foreground 
+        className="absolute z-50 w-full mt-2 rounded-xl border bg-popover text-popover-foreground 
                        shadow-xl ring-1 ring-black/5 outline-none animate-in fade-in-0 zoom-in-95 
                        max-h-60 overflow-auto p-1"
-        style={resolvedTheme === 'dark' ? { backgroundColor: '#000000' } : { backgroundColor: '#ffffff' }}
+        style={{ borderColor: 'var(--border)' }}
       >
           {filteredOptions.length > 0 ? (
             filteredOptions.map((option) => (
@@ -1055,63 +1120,105 @@ function AddDiamondForm() {
   };
 
   return (
-    <form className="w-full max-w-[1200px] mx-auto flex flex-col gap-8 pb-32" onSubmit={handleSubmit}>
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">
-            {isMelee ? 'Add Melee Diamond Parcel' : 'Add Single Diamond'}
-          </h2>
-          <p className="text-muted-foreground">
-            {isMelee
-              ? 'Fill in the parcel details (ranges, pieces, sizes) to add a new melee diamond lot.'
-              : 'Fill in the details below to add a new single stone diamond to your inventory.'}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button type="button" variant="outline" onClick={fillRandomData} className="gap-2">
-            <span className="text-lg">🎲</span> Fill Random Data
-          </Button>
-
-          {/* Modern Segmented Control */}
-        <div className="inline-flex p-1 rounded-xl border border-border/60 bg-muted/60 dark:bg-muted/30">
-          <button
-            type="button"
-            onClick={() => handleTabChange('Single')}
-            className={`relative flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${
-              activeTab === 'Single'
-                ? 'bg-blue-500 text-white shadow-md scale-[1.02]'
-                : 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted/70 dark:text-muted-foreground dark:hover:bg-muted/60'
-            }`}
-          >
-            <Gem className="w-4 h-4" />
-            Single Diamond
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTabChange('Melee')}
-            className={`relative flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${
-              activeTab === 'Melee'
-                ? 'bg-blue-500 text-white shadow-md scale-[1.02]'
-                : 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted/70 dark:text-muted-foreground dark:hover:bg-muted/60'
-            }`}
-          >
-            <Layers className="w-4 h-4" />
-            Melee Parcel
-          </button>
-        </div>
-      </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-8">
-        {/* Basic Information Card */}
-        <section className="bg-card rounded-2xl border border-border shadow-sm p-6 space-y-6">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="h-8 w-1 bg-primary rounded-full"></div>
-            <h3 className="text-lg font-semibold text-foreground">Basic Information</h3>
+    <form
+      className="w-full mx-auto flex flex-col gap-6 pb-36 max-w-full"
+      style={{ maxWidth: SECTION_WIDTH }}
+      onSubmit={handleSubmit}
+    >
+      {/* Page header — seller portal card style */}
+      <div
+        className="rounded-xl border p-5 sm:p-6"
+        style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+      >
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="space-y-2 min-w-0">
+            <Link
+              href="/seller/products"
+              className="inline-flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-80 w-fit"
+              style={{ color: 'var(--muted-foreground)' }}
+            >
+              <ArrowLeft className="w-4 h-4 shrink-0" />
+              Back to products
+            </Link>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight" style={{ color: 'var(--foreground)' }}>
+              {isMelee ? 'Add melee diamond parcel' : 'Add single diamond'}
+            </h1>
+            <p className="text-sm sm:text-base max-w-2xl" style={{ color: 'var(--muted-foreground)' }}>
+              {isMelee
+                ? 'Parcel details, ranges, pieces, and sizes for a new melee inventory lot.'
+                : 'Complete the grading and listing fields to publish a new single-stone diamond.'}
+            </p>
           </div>
 
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={fillRandomData}
+              className="gap-2 rounded-lg border"
+              style={{ borderColor: 'var(--border)' }}
+            >
+              <span className="text-base leading-none" aria-hidden="true">
+                🎲
+              </span>
+              Fill sample data
+            </Button>
+
+            <div
+              className="inline-flex p-1 rounded-lg border"
+              style={{
+                backgroundColor: 'var(--muted)',
+                borderColor: 'var(--border)',
+              }}
+              role="group"
+              aria-label="Listing type"
+            >
+              <button
+                type="button"
+                onClick={() => handleTabChange('Single')}
+                className="relative flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                style={
+                  activeTab === 'Single'
+                    ? {
+                        backgroundColor: 'var(--primary)',
+                        color: 'var(--primary-foreground)',
+                        boxShadow: '0 1px 2px rgb(0 0 0 / 0.08)',
+                      }
+                    : {
+                        color: 'var(--muted-foreground)',
+                      }
+                }
+              >
+                <Gem className="w-4 h-4 shrink-0" />
+                <span className="hidden sm:inline">Single</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTabChange('Melee')}
+                className="relative flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                style={
+                  activeTab === 'Melee'
+                    ? {
+                        backgroundColor: 'var(--primary)',
+                        color: 'var(--primary-foreground)',
+                        boxShadow: '0 1px 2px rgb(0 0 0 / 0.08)',
+                      }
+                    : {
+                        color: 'var(--muted-foreground)',
+                      }
+                }
+              >
+                <Layers className="w-4 h-4 shrink-0" />
+                <span className="hidden sm:inline">Melee</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6">
+        {/* Basic Information Card */}
+        <SellerFormSection title="Basic information" icon={<Info className="h-5 w-5" strokeWidth={2} />}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="stoneType" className="text-sm font-medium text-foreground">
@@ -1165,16 +1272,11 @@ function AddDiamondForm() {
               />
             </div>
           </div>
-        </section>
+        </SellerFormSection>
 
 
         {/* Media Card */}
-        <section className="bg-card rounded-2xl border border-border shadow-sm p-6 space-y-6">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="h-8 w-1 bg-primary rounded-full"></div>
-            <h3 className="text-lg font-semibold text-foreground">Media</h3>
-          </div>
-
+        <SellerFormSection title="Media" icon={<Images className="h-5 w-5" strokeWidth={2} />}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Image Upload */}
             <div className="space-y-4">
@@ -1293,8 +1395,8 @@ function AddDiamondForm() {
                   >
                     {!form.certification ? (
                       <div className="flex flex-col items-center gap-3 text-center">
-                        <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
-                          <svg className="w-6 h-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                          <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
                         </div>
@@ -1366,16 +1468,12 @@ function AddDiamondForm() {
               </div>
             </div>
           </div>
-        </section>
+        </SellerFormSection>
 
 
 
         {/* Diamond Grading Card */}
-        <section className="bg-card rounded-2xl border border-border shadow-sm p-6 space-y-6">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="h-8 w-1 bg-primary rounded-full"></div>
-            <h3 className="text-lg font-semibold text-foreground">Diamond Grading</h3>
-          </div>
+        <SellerFormSection title="Diamond grading" icon={<Gem className="h-5 w-5" strokeWidth={2} />}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
               <Label htmlFor="shape" className="font-medium">
@@ -1629,14 +1727,10 @@ function AddDiamondForm() {
             )}
 
           </div>
-        </section>
+        </SellerFormSection>
 
         {/* Finish & Treatments Card */}
-        <section className="bg-card rounded-2xl border border-border shadow-sm p-6 space-y-6">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="h-8 w-1 bg-primary rounded-full"></div>
-            <h3 className="text-lg font-semibold text-foreground">Finish & Treatments</h3>
-          </div>
+        <SellerFormSection title="Finish & treatments" icon={<Sparkles className="h-5 w-5" strokeWidth={2} />}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
               <Label htmlFor="polish" className="font-medium">
@@ -1727,15 +1821,15 @@ function AddDiamondForm() {
               />
             </div>
           </div>
-        </section>
+        </SellerFormSection>
 
         {/* Melee Parcel Card */}
         {isMelee && (
-          <section className="bg-card rounded-2xl border border-border shadow-sm p-6 space-y-6">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="h-8 w-1 bg-primary rounded-full"></div>
-              <h3 className="text-lg font-semibold text-foreground">Melee Parcel Details</h3>
-            </div>
+          <SellerFormSection
+            title="Melee parcel details"
+            description="Pieces, sizing, and sieve ranges for this lot."
+            icon={<Layers className="h-5 w-5" strokeWidth={2} />}
+          >
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="certificateCompanyName" className="font-medium">
@@ -1851,15 +1945,11 @@ function AddDiamondForm() {
                 />
               </div>
             </div>
-          </section>
+          </SellerFormSection>
         )}
         {/* Measurements Card */}
         {!isMelee && (
-          <section className="bg-card rounded-2xl border border-border shadow-sm p-6 space-y-6">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="h-8 w-1 bg-primary rounded-full"></div>
-              <h3 className="text-lg font-semibold text-foreground">Measurements & Proportions</h3>
-            </div>
+          <SellerFormSection title="Measurements & proportions" icon={<Ruler className="h-5 w-5" strokeWidth={2} />}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="measurement" className="text-sm font-medium leading-none text-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
@@ -2060,16 +2150,12 @@ function AddDiamondForm() {
                 </div>
               </div>
             </div>
-          </section>
+          </SellerFormSection>
         )}
 
         {/* Certification Card */}
         {activeTab !== 'Melee' && (
-          <section className="bg-card rounded-2xl border border-border shadow-sm p-6 space-y-6">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="h-8 w-1 bg-primary rounded-full"></div>
-              <h3 className="text-lg font-semibold text-foreground">Certification</h3>
-            </div>
+          <SellerFormSection title="Certification" icon={<BadgeCheck className="h-5 w-5" strokeWidth={2} />}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="relative group space-y-2">
                 <Label htmlFor="certificateCompanyName" className="font-medium text-foreground">
@@ -2110,15 +2196,11 @@ function AddDiamondForm() {
                 />
               </div>
             </div>
-          </section>
+          </SellerFormSection>
         )}
 
         {/* Pricing & Details Card */}
-        <section className="bg-card rounded-2xl border border-border shadow-sm p-6 space-y-6">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="h-8 w-1 bg-primary rounded-full"></div>
-            <h3 className="text-lg font-semibold text-foreground">Pricing & Details</h3>
-          </div>
+        <SellerFormSection title="Pricing & details" icon={<CircleDollarSign className="h-5 w-5" strokeWidth={2} />}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
               <Label htmlFor="stockNumber" className="font-medium">
@@ -2237,7 +2319,7 @@ function AddDiamondForm() {
               )}
             </div>
           </div>
-        </section>
+        </SellerFormSection>
 
         {/* Error Display */}
         {error && (
@@ -2248,9 +2330,16 @@ function AddDiamondForm() {
         )}
       </div>
 
-      {/* Sticky Footer */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-lg border-t border-border z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-        <div className="max-w-[1200px] mx-auto flex items-center justify-between gap-4">
+      {/* Sticky Footer — offset for collapsed seller sidebar on lg+ */}
+      <div
+        className="fixed bottom-0 left-0 right-0 lg:left-20 z-40 border-t bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75"
+        style={{ borderColor: 'var(--border)', boxShadow: '0 -4px 6px -1px rgb(0 0 0 / 0.06)' }}
+      >
+        <div className="p-4">
+        <div
+          className="mx-auto flex items-center justify-end md:justify-between gap-4 px-1"
+          style={{ maxWidth: SECTION_WIDTH }}
+        >
            <div className="hidden md:flex items-center text-sm text-muted-foreground">
               <span className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
@@ -2289,6 +2378,7 @@ function AddDiamondForm() {
             )}
           </Button>
           </div>
+        </div>
         </div>
       </div>
     </form>
