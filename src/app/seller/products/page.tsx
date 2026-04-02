@@ -102,13 +102,8 @@ export default function SellerProductsPage() {
         ]
       
       case 'watch':
-        return [
-          {
-            id: 'watch',
-            label: 'Watch Products',
-            content: <WatchListing />
-          }
-        ]
+        // Render watch listing directly (no tabs UI)
+        return []
       
       default:
         return []
@@ -159,6 +154,8 @@ export default function SellerProductsPage() {
       </div>
       {isLoading ? (
         <PageLoader />
+      ) : sellerType === 'watch' ? (
+        <WatchListing />
       ) : tabs.length > 0 ? (
         <ReusableTabs
           tabs={tabs}

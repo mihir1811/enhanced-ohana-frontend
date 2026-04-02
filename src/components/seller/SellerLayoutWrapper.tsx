@@ -6,6 +6,7 @@ import SellerHeader from './SellerHeader'
 import SellerBreadcrumbs from './SellerBreadcrumbs'
 import { PageLoader } from './Loader'
 import { LoadingProvider } from '@/contexts/LoadingContext'
+import { SECTION_WIDTH } from '@/lib/constants'
 
 interface SellerLayoutWrapperProps {
   children: React.ReactNode
@@ -71,7 +72,7 @@ export default function SellerLayoutWrapper({ children }: SellerLayoutWrapperPro
           
           {/* Page Content */}
           <main className="px-4 py-8 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-7xl">
+            <div className={`mx-auto max-w-[${SECTION_WIDTH}px]`}>
               <SellerBreadcrumbs />
               {children}
             </div>
