@@ -45,6 +45,16 @@ export default function RegisterPage() {
   }
 
   const canSubmit = form.name && form.userName && form.email && isPasswordValid(form.password)
+  const fieldWrapperClass = 'relative'
+  const inputBaseClass =
+    'relative w-full h-12 px-4 rounded-xl border outline-0 placeholder:text-[color:var(--muted-foreground)]/70 transition-colors duration-200 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0'
+  const inputBaseStyle = {
+    backgroundColor: 'var(--background)',
+    borderColor: '#222',
+    color: 'var(--foreground)',
+    boxShadow: 'none',
+    outline: 'none'
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -330,14 +340,7 @@ export default function RegisterPage() {
                   >
                     Full Name
                   </label>
-                  <div className="relative group">
-                    <div
-                      className="absolute inset-0 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{
-                        background:
-                          'linear-gradient(to right, color-mix(in srgb, var(--status-warning) 20%, transparent), color-mix(in srgb, var(--primary) 20%, transparent))'
-                      }}
-                    ></div>
+                  <div className={fieldWrapperClass}>
                     <input
                       id="name"
                       name="name"
@@ -345,17 +348,15 @@ export default function RegisterPage() {
                       required
                       value={form.name}
                       onChange={handleChange}
-                      className="relative w-full px-4 py-3 rounded-xl placeholder-slate-400 focus:ring-2 transition-all duration-300 backdrop-blur-sm border outline-none"
+                      className={inputBaseClass}
                       style={{
-                        backgroundColor: 'color-mix(in srgb, var(--card) 10%, transparent)',
-                        borderColor: 'color-mix(in srgb, var(--border) 80%, transparent)',
-                        color: 'var(--foreground)',
-                        boxShadow: '0 0 0 1px color-mix(in srgb, var(--border) 40%, transparent)'
+                        ...inputBaseStyle,
                       }}
                       placeholder="Enter your full name"
                     />
                   </div>
                 </div>
+                
 
                 {/* Username Field */}
                 <div className="space-y-2">
@@ -366,14 +367,7 @@ export default function RegisterPage() {
                   >
                     Username
                   </label>
-                  <div className="relative group">
-                    <div
-                      className="absolute inset-0 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{
-                        background:
-                          'linear-gradient(to right, color-mix(in srgb, var(--status-warning) 20%, transparent), color-mix(in srgb, var(--primary) 20%, transparent))'
-                      }}
-                    ></div>
+                  <div className={fieldWrapperClass}>
                     <input
                       id="userName"
                       name="userName"
@@ -381,12 +375,10 @@ export default function RegisterPage() {
                       required
                       value={form.userName}
                       onChange={handleChange}
-                      className="relative w-full px-4 py-3 rounded-xl placeholder-slate-400 focus:ring-2 transition-all duration-300 backdrop-blur-sm border outline-none"
+                      className={inputBaseClass}
                       style={{
-                        backgroundColor: 'color-mix(in srgb, var(--card) 10%, transparent)',
-                        borderColor: 'color-mix(in srgb, var(--border) 80%, transparent)',
-                        color: 'var(--foreground)',
-                        boxShadow: '0 0 0 1px color-mix(in srgb, var(--border) 40%, transparent)'
+                        ...inputBaseStyle,
+                        borderColor: '#000000'
                       }}
                       placeholder="Choose a username"
                     />
@@ -402,14 +394,7 @@ export default function RegisterPage() {
                   >
                     Email Address
                   </label>
-                  <div className="relative group">
-                    <div
-                      className="absolute inset-0 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{
-                        background:
-                          'linear-gradient(to right, color-mix(in srgb, var(--status-warning) 20%, transparent), color-mix(in srgb, var(--primary) 20%, transparent))'
-                      }}
-                    ></div>
+                  <div className={fieldWrapperClass}>
                     <input
                       id="email"
                       name="email"
@@ -417,12 +402,10 @@ export default function RegisterPage() {
                       required
                       value={form.email}
                       onChange={handleChange}
-                      className="relative w-full px-4 py-3 rounded-xl placeholder-slate-400 focus:ring-2 transition-all duration-300 backdrop-blur-sm border outline-none"
+                      className={inputBaseClass}
                       style={{
-                        backgroundColor: 'color-mix(in srgb, var(--card) 10%, transparent)',
-                        borderColor: 'color-mix(in srgb, var(--border) 80%, transparent)',
-                        color: 'var(--foreground)',
-                        boxShadow: '0 0 0 1px color-mix(in srgb, var(--border) 40%, transparent)'
+                        ...inputBaseStyle,
+                        borderColor: '#000000'
                       }}
                       placeholder="Enter your email"
                     />
@@ -445,14 +428,7 @@ export default function RegisterPage() {
                       </span>
                     )}
                   </div>
-                  <div className="relative group">
-                    <div
-                      className="absolute inset-0 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{
-                        background:
-                          'linear-gradient(to right, color-mix(in srgb, var(--status-warning) 20%, transparent), color-mix(in srgb, var(--primary) 20%, transparent))'
-                      }}
-                    ></div>
+                  <div className={fieldWrapperClass}>
                     <input
                       id="password"
                       name="password"
@@ -463,31 +439,24 @@ export default function RegisterPage() {
                       onChange={handleChange}
                       aria-invalid={!!error || (!!form.password && !isPasswordValid(form.password))}
                       aria-describedby={form.password && !isPasswordValid(form.password) ? 'register-password-hint' : undefined}
-                      className="relative w-full px-4 py-3 pr-12 rounded-xl placeholder-slate-400 focus:ring-2 focus-visible:ring-2 focus-visible:ring-offset-2 transition-all duration-300 backdrop-blur-sm border outline-none"
+                      className={`${inputBaseClass} pr-12`}
                       style={{
-                        backgroundColor: 'color-mix(in srgb, var(--card) 10%, transparent)',
-                        borderColor: 'color-mix(in srgb, var(--border) 80%, transparent)',
-                        color: 'var(--foreground)',
-                        boxShadow: '0 0 0 1px color-mix(in srgb, var(--border) 40%, transparent)'
+                        ...inputBaseStyle,
+                        borderColor: '#000000'
                       }}
                       placeholder="Create a strong password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:opacity-70 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded"
+                      className="absolute cursor-pointer right-4 top-1/2 -translate-y-1/2 p-1 hover:opacity-70 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded"
                       style={{ color: 'var(--muted-foreground)' }}
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
                       {showPassword ? (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
+                    <svg className='w-5 h-5' width="800px" height="800px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5c-6.307 0-9.367 5.683-9.91 6.808a.435.435 0 0 0 0 .384C2.632 13.317 5.692 19 12 19s9.367-5.683 9.91-6.808a.435.435 0 0 0 0-.384C21.368 10.683 18.308 5 12 5z"/><circle cx="12" cy="12" r="3" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
                       ) : (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
-                        </svg>
+                        <svg className='w-5 h-5' fill="#000000" width="800px" height="800px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" data-name="Layer 1"><path d="M10.94,6.08A6.93,6.93,0,0,1,12,6c3.18,0,6.17,2.29,7.91,6a15.23,15.23,0,0,1-.9,1.64,1,1,0,0,0-.16.55,1,1,0,0,0,1.86.5,15.77,15.77,0,0,0,1.21-2.3,1,1,0,0,0,0-.79C19.9,6.91,16.1,4,12,4a7.77,7.77,0,0,0-1.4.12,1,1,0,1,0,.34,2ZM3.71,2.29A1,1,0,0,0,2.29,3.71L5.39,6.8a14.62,14.62,0,0,0-3.31,4.8,1,1,0,0,0,0,.8C4.1,17.09,7.9,20,12,20a9.26,9.26,0,0,0,5.05-1.54l3.24,3.25a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42Zm6.36,9.19,2.45,2.45A1.81,1.81,0,0,1,12,14a2,2,0,0,1-2-2A1.81,1.81,0,0,1,10.07,11.48ZM12,18c-3.18,0-6.17-2.29-7.9-6A12.09,12.09,0,0,1,6.8,8.21L8.57,10A4,4,0,0,0,14,15.43L15.59,17A7.24,7.24,0,0,1,12,18Z"/></svg>
                       )}
                     </button>
                   </div>
@@ -505,28 +474,41 @@ export default function RegisterPage() {
                       (Optional)
                     </span>
                   </label>
-                  <div className="relative group">
-                    <div
-                      className="absolute inset-0 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{
-                        background:
-                          'linear-gradient(to right, color-mix(in srgb, var(--status-warning) 20%, transparent), color-mix(in srgb, var(--primary) 20%, transparent))'
-                      }}
-                    ></div>
+                  <div className={fieldWrapperClass}>
                     <input
                       id="profilePicture"
                       name="profilePicture"
                       type="file"
                       accept="image/*"
                       onChange={handleFileChange}
-                      className="relative w-full px-4 py-3 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium hover:file:opacity-90 focus:ring-2 transition-all duration-300 backdrop-blur-sm border outline-none"
-                      style={{
-                        backgroundColor: 'color-mix(in srgb, var(--card) 10%, transparent)',
-                        borderColor: 'color-mix(in srgb, var(--border) 80%, transparent)',
-                        color: 'var(--foreground)',
-                        boxShadow: '0 0 0 1px color-mix(in srgb, var(--border) 40%, transparent)'
-                      }}
+                      className="sr-only"
                     />
+                    <div
+                      className="h-12 rounded-xl border flex items-center px-2"
+                      style={{
+                        backgroundColor: 'var(--background)',
+                        borderColor: '#000000',
+                        color: 'var(--foreground)'
+                      }}
+                    >
+                      <label
+                        htmlFor="profilePicture"
+                        className="h-8 px-3 rounded-md border text-sm font-medium flex items-center cursor-pointer select-none"
+                        style={{
+                          borderColor: '#000000',
+                          color: 'var(--foreground)',
+                          backgroundColor: 'transparent'
+                        }}
+                      >
+                        Choose file
+                      </label>
+                      <span
+                        className="ml-3 text-sm truncate"
+                        style={{ color: 'var(--muted-foreground)' }}
+                      >
+                        {file?.name || 'No file chosen'}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -563,6 +545,13 @@ export default function RegisterPage() {
                 style={{ borderColor: 'color-mix(in srgb, var(--border) 60%, transparent)' }}
               >
                 <div className="text-center space-y-4">
+                  <Link
+                    href="/forgot-password"
+                    className="inline-block text-sm transition-colors"
+                    style={{ color: 'var(--status-warning)' }}
+                  >
+                    Forgot your password?
+                  </Link>
                   <p
                     className="text-slate-400"
                     style={{ color: 'var(--muted-foreground)' }}

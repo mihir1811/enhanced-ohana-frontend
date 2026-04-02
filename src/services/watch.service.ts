@@ -238,6 +238,30 @@ class WatchService {
       throw error;
     }
   }
+
+  async bulkDeleteWatches(ids: number[]) {
+    try {
+      const token = getCookie('token');
+      if (!token) throw new Error('No authentication token found');
+
+      const response = await fetch(buildApiUrl(`${API_CONFIG.ENDPOINTS.WATCH.BASE}/bulk-delete`), {
+        method: 'POST',
+        headers: this.getHeaders(token),
+        body: JSON.stringify({ ids }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to bulk delete watches');
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Error bulk deleting watches:', error);
+      throw error;
+    }
+  }
 }
 
 export const watchService = new WatchService();

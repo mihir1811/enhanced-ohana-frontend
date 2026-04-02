@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { FileSpreadsheet, Upload, Loader2, X, FileCheck, Trash2 } from "lucide-react";
 import { diamondService } from "@/services/diamondService";
+import { jewelryService } from "@/services/jewelryService";
 import { getCookie } from "@/lib/cookie-utils";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
@@ -31,6 +32,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   const errorsRef = React.useRef<HTMLDivElement | null>(null);
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [isDragging, setIsDragging] = React.useState(false);
+  const [hasUpdate, setHasUpdate] = React.useState(false);
   const sellerType = useSelector((state: RootState) => state.seller.profile?.sellerType);
 
   let productType = overrideProductType || "diamond";
@@ -80,24 +82,43 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     try {
       const token = getCookie("token");
       if (!token) throw new Error("User not authenticated");
-      const apiProductType = productType === "melee-gemstone" ? "gemstone" : productType;
-      const result = await diamondService.uploadExcel(selectedFile, apiProductType, token);
+      let result: unknown;
+      if (productType === "jewellery") {
+        // Jewellery uses dedicated backend parser with 3-sheet format:
+        // jewellery + attributes + stones
+        result = await jewelryService.uploadJewelryExcel(selectedFile, token, hasUpdate);
+      } else {
+        const apiProductType = productType === "melee-gemstone" ? "gemstone" : productType;
+        result = await diamondService.uploadExcel(selectedFile, apiProductType, token, hasUpdate);
+      }
       const raw = result as unknown as Record<string, unknown>;
       const data = (raw?.data ?? raw) as {
         success?: boolean;
-        inserted?: number;
+        inserted?: number | null;
+        updated?: number | null;
         failed?: number;
         errors?: Array<{ row: number; errors: Array<{ field: string; constraints?: Record<string, string> }> }>;
         message?: string;
       };
+
       const inserted = data?.inserted ?? 0;
+      const updated = data?.updated ?? 0;
       const failed = data?.failed ?? 0;
       const errs = data?.errors ?? [];
+
       setUploadResult({ inserted, failed, errors: errs });
-      if (inserted > 0) {
+
+      const hasSuccessChanges = inserted > 0 || updated > 0;
+
+      if (hasSuccessChanges) {
+        const parts: string[] = [];
+        if (inserted > 0) parts.push(`${inserted} inserted`);
+        if (updated > 0) parts.push(`${updated} updated`);
+
         toast.success(
-          `Uploaded ${inserted} item(s) successfully${failed > 0 ? `. ${failed} row(s) failed.` : ""}`
+          `Bulk upload successful: ${parts.join(", ")}${failed > 0 ? `. ${failed} row(s) failed.` : ""}`
         );
+
         if (failed === 0) {
           onFileSelect(selectedFile);
           setSelectedFile(null);
@@ -105,6 +126,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
       } else if (errs.length > 0) {
         toast.error(`${errs.length} row(s) failed. See details below.`);
       } else {
+        console.log(data, "bulk-upload-response");
         toast.error(data?.message || "Failed to upload. Check file format and column names.");
       }
     } catch (err: unknown) {
@@ -295,6 +317,21 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 
           {/* Actions */}
           <div className="flex flex-col gap-3">
+            <label className="flex items-start gap-3 rounded-xl border border-[var(--border)] dark:border-slate-600 p-3 bg-[var(--card)]/60 dark:bg-slate-800/30">
+              <input
+                type="checkbox"
+                checked={hasUpdate}
+                onChange={(e) => setHasUpdate(e.target.checked)}
+                disabled={uploading}
+                className="mt-1"
+              />
+              <div className="text-sm">
+                <div className="font-medium text-[var(--foreground)]">Update existing products</div>
+                <div className="text-[var(--muted-foreground)]">
+                  Enable this to update rows that already exist (the file must include the identifier column the backend expects).
+                </div>
+              </div>
+            </label>
             <button
               type="button"
               onClick={handleUpload}

@@ -113,6 +113,8 @@ const CountdownTimer: React.FC<{ endTime: string }> = ({ endTime }) => {
   //   );
   // }
 
+  if (!timeLeft) return null;
+
   const isUrgent = timeLeft.days === 0 && timeLeft.hours < 2;
   const bgGradient = isUrgent 
     ? "bg-gradient-to-br from-orange-50 via-red-50 to-pink-50" 
@@ -184,6 +186,7 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
   const [auctionStart, setAuctionStart] = useState("");
   const [auctionEnd, setAuctionEnd] = useState("");
   const [creatingAuction, setCreatingAuction] = useState(false);
+  const safeStockNumber = Number.isFinite(Number(product.stockNumber)) ? Number(product.stockNumber) : 0;
 
   const images = [
     product.image1,
@@ -321,7 +324,7 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
         {getStatusTag(product.isDeleted, product.stockNumber)}
       </div> */}
       {/* Image */}
-      <div className="relative w-full aspect-[4/3] flex items-center justify-center" style={{ backgroundColor: 'var(--muted)' }}>
+      <div className="relative w-full aspect-square flex items-center justify-center" style={{ backgroundColor: 'var(--muted)' }}>
         <img
           src={displayImages[imgIdx]}
           alt={product.name}
@@ -400,7 +403,7 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
         <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs mb-2">
           <div className="flex items-center gap-1">
             <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Stock #:</span>
-            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.stockNumber}</span>
+            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{safeStockNumber}</span>
           </div>
           <div className="flex items-center gap-1">
             <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Color:</span>
@@ -534,7 +537,7 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
               <span className="text-2xl font-extrabold" style={{ color: 'var(--primary)' }}>${Number(product.price).toLocaleString()}</span>
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mb-4">
-              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Stock #:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.stockNumber || '-'}</span></div>
+              <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Stock #:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{safeStockNumber}</span></div>
               <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Color:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.color || '-'}</span></div>
               <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Clarity:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.clarity || '-'}</span></div>
               <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Cut:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.cut || '-'}</span></div>

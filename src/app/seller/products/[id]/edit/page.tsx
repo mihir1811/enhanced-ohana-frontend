@@ -62,28 +62,13 @@ export default function EditProductPage() {
             setProductType('gemstone');
             break;
           case 'jewellery':
-            // For jewellery sellers, it could be jewelry or watch
-            try {
-              const jewelryRes = await jewelryService.getJewelryById(String(id));
-              if (jewelryRes.success) {
-                setProductData(jewelryRes.data);
-                setProductType('jewellery');
-                break;
-              }
-            } catch (err) {
-              console.log('Not found in jewelry, trying watch');
+            const jewelryRes = await jewelryService.getJewelryById(String(id));
+            if (jewelryRes.success) {
+              setProductData(jewelryRes.data);
+              setProductType('jewellery');
+              break;
             }
-            
-            try {
-              const watchRes = await watchService.getWatchById(id);
-              if (watchRes.data || watchRes) {
-                setProductData(watchRes.data || watchRes);
-                setProductType('watch');
-              }
-            } catch (err) {
-              console.error('Failed to find product in jewelry or watch services');
-              throw new Error('Product not found');
-            }
+            throw new Error('Jewelry product not found');
             break;
           default:
             toast.error('Unknown seller type');

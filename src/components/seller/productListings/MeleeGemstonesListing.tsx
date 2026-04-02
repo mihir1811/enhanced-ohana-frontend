@@ -9,6 +9,7 @@ import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { toast } from 'react-hot-toast';
 import { useSelector } from 'react-redux';
 import { ApiResponse } from '@/services/api';
+import { getCookie } from '@/lib/cookie-utils';
 
 // Redux state interface
 interface RootState {
@@ -38,8 +39,34 @@ const MeleeGemstonesListing = () => {
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [deleteId, setDeleteId] = useState<string | number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
   const sellerId = useSelector((state: RootState) => state.seller.profile?.id) || 'default-seller-id';
+  const visibleIds = gemstones.map((g) => Number(g.id)).filter((id) => Number.isFinite(id));
+  const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id));
+  const selectedCount = selectedIds.size;
+
+  const toggleSelectOne = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllVisible = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        visibleIds.forEach((id) => next.delete(id));
+      } else {
+        visibleIds.forEach((id) => next.add(id));
+      }
+      return next;
+    });
+  };
 
   const handleBulkFileSelect = () => {
     setBulkModalOpen(false);
@@ -55,6 +82,7 @@ const MeleeGemstonesListing = () => {
         const totalCount = res?.data?.meta?.total || 0;
         setTotal(totalCount || 0);
         setError(null);
+        setSelectedIds(new Set());
       })
       .catch(() => {
         setError('Failed to load melee gemstones');
@@ -77,6 +105,15 @@ const MeleeGemstonesListing = () => {
             type="button"
           >
             Bulk Upload
+          </button>
+          <button
+            type="button"
+            disabled={selectedCount === 0}
+            onClick={() => setBulkDeleteOpen(true)}
+            className="px-4 py-2 rounded font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: 'var(--destructive)', color: 'white' }}
+          >
+            Delete Selected ({selectedCount})
           </button>
           <BulkUploadModal
             open={bulkModalOpen}
@@ -146,6 +183,14 @@ const MeleeGemstonesListing = () => {
               <table className="min-w-full rounded-lg shadow border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
                 <thead className="border-b" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }}>
                   <tr>
+                    <th className="px-4 py-2 text-left">
+                      <input
+                        type="checkbox"
+                        checked={allVisibleSelected}
+                        onChange={toggleSelectAllVisible}
+                        aria-label="Select all melee gemstones"
+                      />
+                    </th>
                     <th className="px-4 py-2 text-left">Image</th>
                     <th className="px-4 py-2 text-left">Name</th>
                     <th className="px-4 py-2 text-left">Price</th>
@@ -157,6 +202,14 @@ const MeleeGemstonesListing = () => {
                 <tbody>
                   {gemstones.map((gem) => (
                     <tr key={gem.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
+                      <td className="px-4 py-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(Number(gem.id))}
+                          onChange={() => toggleSelectOne(Number(gem.id))}
+                          aria-label={`Select ${gem.name || gem.gemsType || 'gemstone'}`}
+                        />
+                      </td>
                       <td className="px-4 py-2">
                         <Image
                           src={gem.image1 || 'https://media.istockphoto.com/id/1493089752/vector/box-and-package-icon-concept.jpg'}
@@ -227,20 +280,34 @@ const MeleeGemstonesListing = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
               {gemstones.map((gem) => (
-                <GemstoneProductCard
-                  key={gem.id}
-                  product={gem}
-                  isMelee
-                  onDelete={() => {
-                    setGemstones((prev) => prev.filter((g) => g.id !== gem.id));
-                    setTotal((prev) => Math.max(0, prev - 1));
-                  }}
-                  onUpdateProduct={(updatedProduct) => {
-                    setGemstones((prev) => prev.map((g) =>
-                      g.id === updatedProduct.id ? updatedProduct : g
-                    ));
-                  }}
-                />
+                <div key={gem.id} className="relative">
+                  <label className="absolute z-10 top-3 right-14 h-6 w-6 rounded bg-white/90 border border-gray-300 flex items-center justify-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(Number(gem.id))}
+                      onChange={() => toggleSelectOne(Number(gem.id))}
+                      aria-label={`Select ${gem.name || gem.gemsType || 'gemstone'}`}
+                    />
+                  </label>
+                  <GemstoneProductCard
+                    product={gem}
+                    isMelee
+                    onDelete={() => {
+                      setGemstones((prev) => prev.filter((g) => g.id !== gem.id));
+                      setTotal((prev) => Math.max(0, prev - 1));
+                      setSelectedIds((prev) => {
+                        const next = new Set(prev);
+                        next.delete(Number(gem.id));
+                        return next;
+                      });
+                    }}
+                    onUpdateProduct={(updatedProduct) => {
+                      setGemstones((prev) => prev.map((g) =>
+                        g.id === updatedProduct.id ? updatedProduct : g
+                      ));
+                    }}
+                  />
+                </div>
               ))}
             </div>
           )}
@@ -278,10 +345,15 @@ const MeleeGemstonesListing = () => {
             const idToDelete = deleteId;
             setDeleteId(null);
             try {
-              const token = typeof window !== 'undefined' ? (document.cookie.match(/token=([^;]+)/)?.[1] || '') : '';
+              const token = getCookie('token') || '';
               await gemstoneService.deleteGemstone(idToDelete, token);
               setGemstones((prev) => prev.filter((g) => g.id !== idToDelete));
               setTotal((prev) => Math.max(0, prev - 1));
+              setSelectedIds((prev) => {
+                const next = new Set(prev);
+                next.delete(Number(idToDelete));
+                return next;
+              });
               toast.success('Melee gemstone parcel deleted successfully');
             } catch (err) {
               toast.error('Failed to delete melee gemstone parcel');
@@ -291,6 +363,32 @@ const MeleeGemstonesListing = () => {
         onNo={() => setDeleteId(null)}
         title="Delete Melee Gemstone Parcel"
         description="Are you sure you want to delete this melee gemstone parcel? This action cannot be undone."
+      />
+      <ConfirmModal
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        title="Delete selected melee gemstones?"
+        description={`This will permanently delete ${selectedCount} selected melee gemstone(s).`}
+        onYes={async () => {
+          try {
+            const token = getCookie('token');
+            if (!token) throw new Error('User not authenticated');
+            const ids = Array.from(selectedIds)
+              .map((id) => Number(id))
+              .filter((id) => Number.isInteger(id) && id > 0);
+            if (ids.length === 0) throw new Error('Please select at least one melee gemstone');
+            await gemstoneService.bulkDeleteGemstones(ids, token);
+            setGemstones((prev) => prev.filter((g) => !selectedIds.has(Number(g.id))));
+            setTotal((prev) => Math.max(0, prev - ids.length));
+            setSelectedIds(new Set());
+            setBulkDeleteOpen(false);
+            toast.success('Selected melee gemstones deleted successfully');
+          } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Failed to delete selected melee gemstones';
+            toast.error(message);
+          }
+        }}
+        onNo={() => setBulkDeleteOpen(false)}
       />
     </div>
   );

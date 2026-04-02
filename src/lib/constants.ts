@@ -17,7 +17,7 @@ export const API_CONFIG = {
       LOGIN: '/auth/login',
       REGISTER: '/auth/register',
       REFRESH: '/auth/refresh',
-      FORGOT_PASSWORD: '/auth/forgot-password',
+      FORGOT_PASSWORD: '/auth/forget-password',
       RESET_PASSWORD: '/auth/reset-password',
       VERIFY_EMAIL: '/auth/verify-email',
       RESEND_VERIFICATION: '/auth/resend-verification',
@@ -63,16 +63,16 @@ export const API_CONFIG = {
     
     // Gemstones
     GEMSTONES: {
-      BASE: '/gemstone',
-      SEARCH: '/gemstone/search',
-      BY_SELLER: '/gemstone/seller',
+      BASE: '/gem-stone',
+      SEARCH: '/gem-stone/search',
+      BY_SELLER: '/gem-stone/seller',
     },
     
     // Jewelry
     JEWELRY: {
-      BASE: '/jewelry',
-      SEARCH: '/jewelry/search',
-      BY_SELLER: '/jewelry/seller',
+      BASE: '/jewellery',
+      SEARCH: '/jewellery/search',
+      BY_SELLER: '/jewellery/seller',
     },
 
     // Bullion

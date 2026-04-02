@@ -451,7 +451,7 @@ export default function LoginPage() {
                 {/* Forgot Password */}
                 <div className="flex justify-end">
                   <Link
-                    href="#"
+                    href="/forgot-password"
                     className="text-sm transition-colors"
                     style={{ color: 'var(--status-warning)' }}
                   >

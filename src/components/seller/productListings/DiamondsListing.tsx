@@ -6,8 +6,22 @@ import DiamondProductCard, { DiamondProduct } from './DiamondProductCard';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { toast } from 'react-hot-toast';
+import { getCookie } from '@/lib/cookie-utils';
 
 const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType?: string }) => {
+  const fallbackImage =
+    'https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg?s=2048x2048&w=is&k=20&c=dFWJz1EFJt7Tq2lA-hgTpSW119YywTWtS4EwU3fpKrE=';
+  const normalizeImageSrc = (src?: string | null) => {
+    const raw = String(src || '').trim();
+    if (!raw) return fallbackImage;
+    if (/^https?:\/\//i.test(raw) || raw.startsWith('/')) return raw;
+    return `/${raw.replace(/^\.?\/*/, '')}`;
+  };
+  const toSafeNumber = (value: unknown, fallback = 0) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  };
+
   const [diamonds, setDiamonds] = useState<DiamondProduct[]>([]);
   const [view, setView] = useState<'list' | 'grid'>('grid');
   const [loading, setLoading] = useState(true);
@@ -18,11 +32,37 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
   const handleUpdateProduct = (updated: DiamondProduct) => {
     setDiamonds((prev) =>
       prev.map((d) => (d.id === updated.id ? { ...d, ...updated } : d)),
     );
+  };
+  const visibleIds = diamonds.map((d) => d.id);
+  const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id));
+  const selectedCount = selectedIds.size;
+
+  const toggleSelectOne = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllVisible = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        visibleIds.forEach((id) => next.delete(id));
+      } else {
+        visibleIds.forEach((id) => next.add(id));
+      }
+      return next;
+    });
   };
 
   const handleBulkFileSelect = () => {
@@ -32,18 +72,18 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
   };
 
   useEffect(() => {
-    console.log(page, limit, "page, limit")
     setLoading(true);
     
     let fetchPromise;
-    if (stoneType === 'labGrownDiamond') {
-      fetchPromise = diamondService.getLabDiamonds({ page, limit, sellerId });
+    if (sellerId) {
+      // For seller-side tabs, use seller filter without hard stoneType filter to avoid enum/value drift.
+      fetchPromise = diamondService.getDiamonds({ page, limit, sellerId });
+    } else if (stoneType === 'labGrownDiamond') {
+      fetchPromise = diamondService.getLabDiamonds({ page, limit });
     } else if (stoneType === 'naturalDiamond') {
-      fetchPromise = diamondService.getNaturalDiamonds({ page, limit, sellerId });
+      fetchPromise = diamondService.getNaturalDiamonds({ page, limit });
     } else {
-      fetchPromise = sellerId 
-        ? diamondService.getDiamondsBySeller(sellerId, { page, limit })
-        : diamondService.getDiamonds({ page, limit });
+      fetchPromise = diamondService.getDiamonds({ page, limit });
     }
 
     fetchPromise
@@ -86,20 +126,19 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
               (d.name as string | undefined)
               || `${String(d.shape ?? '')} ${String(d.color ?? '')} ${String(d.clarity ?? '')} Diamond - ${String((d as Record<string, unknown>).carat ?? (d as Record<string, unknown>).caratWeight ?? '')}ct`,
             price: String((d.price as number | string | undefined) ?? (d.totalPrice as number | string | undefined) ?? 0),
-            image1: (d.image1 as string | null | undefined) ?? (images[0] ?? null),
-            image2: (d.image2 as string | null | undefined) ?? (images[1] ?? null),
-            image3: (d.image3 as string | null | undefined) ?? (images[2] ?? null),
-            image4: (d.image4 as string | null | undefined) ?? (images[3] ?? null),
-            image5: (d.image5 as string | null | undefined) ?? (images[4] ?? null),
-            image6: (d.image6 as string | null | undefined) ?? (images[5] ?? null),
-            stockNumber: Number(d.stockNumber ?? 0),
+            image1: normalizeImageSrc((d.image1 as string | null | undefined) ?? (images[0] ?? null)),
+            image2: normalizeImageSrc((d.image2 as string | null | undefined) ?? (images[1] ?? null)),
+            image3: normalizeImageSrc((d.image3 as string | null | undefined) ?? (images[2] ?? null)),
+            image4: normalizeImageSrc((d.image4 as string | null | undefined) ?? (images[3] ?? null)),
+            image5: normalizeImageSrc((d.image5 as string | null | undefined) ?? (images[4] ?? null)),
+            image6: normalizeImageSrc((d.image6 as string | null | undefined) ?? (images[5] ?? null)),
+            stockNumber: toSafeNumber(d.stockNumber, 0),
             color: String(d.color ?? ''),
             clarity: String(d.clarity ?? ''),
             cut: String(d.cut ?? ''),
             shape: String(d.shape ?? ''),
             isDeleted: Boolean(d.isDeleted ?? false),
             updatedAt: String((d.updatedAt as string | undefined) ?? new Date().toISOString()),
-            sellerSKU: String(d.sellerSKU ?? ''),
             isOnAuction: Boolean(d.isOnAuction ?? false),
             isSold: Boolean(d.isSold ?? false),
             auctionId: typeof d.auctionId === 'number' ? d.auctionId : undefined,
@@ -112,13 +151,14 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
         setDiamonds(diamondsArr);
         setTotal(totalCount);
         setError(null);
+        setSelectedIds(new Set());
       })
       .catch(() => {
         setError('Failed to load diamonds');
         setDiamonds([]);
       })
       .finally(() => setLoading(false));
-  }, [page, limit, refreshKey]);
+  }, [page, limit, refreshKey, sellerId, stoneType]);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
@@ -135,6 +175,15 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
             type="button"
           >
             Bulk Upload
+          </button>
+          <button
+            type="button"
+            disabled={selectedCount === 0}
+            onClick={() => setBulkDeleteOpen(true)}
+            className="px-4 py-2 rounded font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: 'var(--destructive)', color: 'white' }}
+          >
+            Delete Selected ({selectedCount})
           </button>
           <BulkUploadModal
             open={bulkModalOpen}
@@ -213,6 +262,14 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
               >
                 <thead className="border-b" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }}>
                   <tr>
+                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>
+                      <input
+                        type="checkbox"
+                        checked={allVisibleSelected}
+                        onChange={toggleSelectAllVisible}
+                        aria-label="Select all diamonds"
+                      />
+                    </th>
                     <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Image</th>
                     <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Name</th>
                     <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Price</th>
@@ -228,8 +285,16 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
                   {diamonds.map((diamond) => (
                     <tr key={diamond.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
                       <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(diamond.id)}
+                          onChange={() => toggleSelectOne(diamond.id)}
+                          aria-label={`Select ${diamond.name}`}
+                        />
+                      </td>
+                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
                         <Image
-                          src={diamond.image1 || "https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg?s=2048x2048&w=is&k=20&c=dFWJz1EFJt7Tq2lA-hgTpSW119YywTWtS4EwU3fpKrE="}
+                          src={normalizeImageSrc(diamond.image1)}
                           alt={diamond.name}
                           width={64}
                           height={64}
@@ -290,15 +355,29 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
               {diamonds.map((diamond) => (
-                <DiamondProductCard
-                  key={diamond.id}
-                  product={diamond}
-                  onDelete={() => {
-                    setDiamonds((prev) => prev.filter((d) => d.id !== diamond.id));
-                    setTotal((prev) => Math.max(0, prev - 1));
-                  }}
-                  onUpdateProduct={handleUpdateProduct}
-                />
+                <div key={diamond.id} className="relative">
+                  <label className="absolute z-10 top-3 left-3 h-6 w-6 rounded bg-white/90 border border-gray-300 flex items-center justify-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(diamond.id)}
+                      onChange={() => toggleSelectOne(diamond.id)}
+                      aria-label={`Select ${diamond.name}`}
+                    />
+                  </label>
+                  <DiamondProductCard
+                    product={diamond}
+                    onDelete={() => {
+                      setDiamonds((prev) => prev.filter((d) => d.id !== diamond.id));
+                      setTotal((prev) => Math.max(0, prev - 1));
+                      setSelectedIds((prev) => {
+                        const next = new Set(prev);
+                        next.delete(diamond.id);
+                        return next;
+                      });
+                    }}
+                    onUpdateProduct={handleUpdateProduct}
+                  />
+                </div>
               ))}
             </div>
           )}
@@ -336,12 +415,38 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
                 await diamondService.deleteDiamond(idToDelete, token);
                 setDiamonds((prev) => prev.filter((d) => d.id !== idToDelete));
                 setTotal((prev) => Math.max(0, prev - 1));
+                setSelectedIds((prev) => {
+                  const next = new Set(prev);
+                  next.delete(idToDelete);
+                  return next;
+                });
                 toast.success('Product deleted successfully!');
               } catch {
                 toast.error('Failed to delete product.');
               }
             }}
             onNo={() => setDeleteId(null)}
+          />
+          <ConfirmModal
+            open={bulkDeleteOpen}
+            onOpenChange={setBulkDeleteOpen}
+            title="Delete selected diamonds?"
+            description={`This will permanently delete ${selectedCount} selected diamond(s).`}
+            onYes={async () => {
+              try {
+                const token = getCookie('token') || '';
+                const ids = Array.from(selectedIds);
+                await diamondService.bulkDeleteDiamonds(ids, token);
+                setDiamonds((prev) => prev.filter((d) => !selectedIds.has(d.id)));
+                setTotal((prev) => Math.max(0, prev - ids.length));
+                setSelectedIds(new Set());
+                setBulkDeleteOpen(false);
+                toast.success('Selected diamonds deleted successfully');
+              } catch {
+                toast.error('Failed to delete selected diamonds');
+              }
+            }}
+            onNo={() => setBulkDeleteOpen(false)}
           />
         </>
       )}

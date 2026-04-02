@@ -387,6 +387,16 @@ const AddWatchForm = () => {
               className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Crown Type</label>
+            <input
+              type="text"
+              name="crownType"
+              value={formData.crownType}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+          </div>
         </div>
       </section>
 
@@ -443,6 +453,16 @@ const AddWatchForm = () => {
             />
           </div>
           <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Movement Details</label>
+            <input
+              type="text"
+              name="movementDetails"
+              value={formData.movementDetails}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+          </div>
+          <div>
             <label className="block text-sm font-medium text-foreground mb-1">Water Resistance</label>
             <input
               type="text"
@@ -458,6 +478,46 @@ const AddWatchForm = () => {
               type="text"
               name="complications"
               value={formData.complications}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Features</label>
+            <input
+              type="text"
+              name="features"
+              value={formData.features}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Stones On Dial</label>
+            <input
+              type="number"
+              name="stonesOnDial"
+              value={formData.stonesOnDial || ''}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Bezel Type</label>
+            <input
+              type="text"
+              name="bezelType"
+              value={formData.bezelType}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Bezel Material</label>
+            <input
+              type="text"
+              name="bezelMaterial"
+              value={formData.bezelMaterial}
               onChange={handleChange}
               className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
@@ -499,6 +559,16 @@ const AddWatchForm = () => {
               className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Clasp Material</label>
+            <input
+              type="text"
+              name="claspMaterial"
+              value={formData.claspMaterial}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+          </div>
         </div>
       </section>
 
@@ -529,6 +599,59 @@ const AddWatchForm = () => {
               placeholder="e.g. New, Used, Mint"
               className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Wrist Size Fit</label>
+            <input
+              type="number"
+              step="0.01"
+              name="wristSizeFit"
+              value={formData.wristSizeFit || ''}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Lug Width</label>
+            <input
+              type="number"
+              name="lugWidth"
+              value={formData.lugWidth || ''}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Collection</label>
+            <input
+              type="text"
+              name="collection"
+              value={formData.collection}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Certification</label>
+            <input
+              type="text"
+              name="certification"
+              value={formData.certification}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+          </div>
+          <div className="flex items-end">
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="availabilityStatus"
+                checked={!!formData.availabilityStatus}
+                onChange={handleChange}
+                className="rounded border-border text-primary focus:ring-primary"
+              />
+              <span className="text-sm">Availability Status</span>
+            </label>
           </div>
           <div className="flex flex-col space-y-2">
             <label className="block text-sm font-medium text-foreground">Includes</label>
@@ -572,6 +695,17 @@ const AddWatchForm = () => {
       <section className="space-y-4 pt-4 border-t border-border">
         <h3 className="text-lg font-semibold text-foreground">Additional Information</h3>
         <div className="grid grid-cols-1 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">Video URL</label>
+            <input
+              type="url"
+              name="videoURL"
+              value={formData.videoURL}
+              onChange={handleChange}
+              placeholder="https://example.com/watch.mp4"
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">Description</label>
             <textarea

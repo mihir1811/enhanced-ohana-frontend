@@ -31,6 +31,15 @@ interface DiamondDetailsPageProps {
   diamond: Diamond | null;
 }
 
+const normalizeImageSrc = (src?: string | null): string | null => {
+  if (!src) return null;
+  const trimmed = src.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  if (trimmed.startsWith('/')) return trimmed;
+  return `/${trimmed}`;
+};
+
 const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
   const [imgIdx, setImgIdx] = useState(0);
   const [activeTab, setActiveTab] = useState<'overview' | 'specifications' | 'certification' | 'seller'>('overview');
@@ -128,9 +137,13 @@ const DiamondDetailsPage: React.FC<DiamondDetailsPageProps> = ({ diamond }) => {
   }
 
   // Collect all image fields from API if present
-  const images = Array.isArray(diamond.images) && diamond.images.length > 0
-    ? diamond.images
-    : [diamond.image1, diamond.image2, diamond.image3, diamond.image4, diamond.image5, diamond.image6].filter(Boolean);
+  const images = (
+    Array.isArray(diamond.images) && diamond.images.length > 0
+      ? diamond.images
+      : [diamond.image1, diamond.image2, diamond.image3, diamond.image4, diamond.image5, diamond.image6]
+  )
+    .map((img) => normalizeImageSrc(img))
+    .filter((img): img is string => Boolean(img));
   const hasImages = images.length > 0;
 
   const formatPrice = (price: number | string) => {

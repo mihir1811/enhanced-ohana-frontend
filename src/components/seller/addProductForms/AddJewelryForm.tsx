@@ -323,6 +323,7 @@ const AddJewelryForm = () => {
   const [submitting, setSubmitting] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
   const [selectedMetalType, setSelectedMetalType] = useState<string | undefined>(undefined);
+  const randomFrom = <T,>(items: T[]): T => items[Math.floor(Math.random() * items.length)];
 
   // --- Handlers ---
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -360,11 +361,61 @@ const AddJewelryForm = () => {
     setForm(f => ({ ...f, images: f.images.filter((_, i: number) => i !== idx) }));
   };
 
+  const handleFillRandomData = () => {
+    const category = randomFrom(DROPDOWN_OPTIONS.category).value;
+    const subcategoryOptions = DROPDOWN_OPTIONS.subcategory[category as keyof typeof DROPDOWN_OPTIONS.subcategory] || [];
+    const metalType = randomFrom(DROPDOWN_OPTIONS.metalType).value;
+    const purityOptions = DROPDOWN_OPTIONS.metalPurity[metalType as keyof typeof DROPDOWN_OPTIONS.metalPurity] || [];
+    const basePrice = Math.floor(30000 + Math.random() * 170000);
+    const makingCharge = Math.floor(basePrice * 0.08);
+    const discount = Math.floor(basePrice * 0.03);
+
+    setSelectedCategory(category);
+    setSelectedMetalType(metalType);
+    setForm((f) => ({
+      ...f,
+      name: `Premium ${category} ${Math.floor(100 + Math.random() * 900)}`,
+      skuCode: `JW-${Date.now().toString().slice(-6)}`,
+      stockNumber: `STK-${Math.floor(1000 + Math.random() * 9000)}`,
+      category,
+      subcategory: subcategoryOptions.length ? randomFrom(subcategoryOptions).value : '',
+      collection: randomFrom(['Signature', 'Heritage', 'Eternal']),
+      gender: randomFrom(DROPDOWN_OPTIONS.gender).value,
+      occasion: randomFrom(['Wedding', 'Daily Wear', 'Party']),
+      metalType,
+      metalPurity: purityOptions.length ? randomFrom(purityOptions).value : '',
+      metalWeight: (3 + Math.random() * 12).toFixed(2),
+      basePrice: String(basePrice),
+      makingCharge: String(makingCharge),
+      tax: '',
+      totalPrice: String(basePrice + makingCharge - discount),
+      description: 'Crafted jewelry piece with elegant finish and premium quality.',
+      videoURL: '',
+      stones: [
+        {
+          type: randomFrom(DROPDOWN_OPTIONS.gemstoneType).value,
+          shape: randomFrom(DROPDOWN_OPTIONS.gemstoneShape).value,
+          carat: (0.2 + Math.random() * 1.8).toFixed(2),
+          color: randomFrom(DROPDOWN_OPTIONS.gemstoneColor).value,
+          clarity: randomFrom(DROPDOWN_OPTIONS.gemstoneClarity).value,
+          cut: randomFrom(DROPDOWN_OPTIONS.gemstoneCut).value,
+          certification: randomFrom(DROPDOWN_OPTIONS.gemstoneCertification).value,
+        },
+      ],
+      attributes: {
+        style: randomFrom(DROPDOWN_OPTIONS.style).value,
+        chain_type: randomFrom(DROPDOWN_OPTIONS.chain_type).value,
+        clasp_type: randomFrom(DROPDOWN_OPTIONS.clasp_type).value,
+        length_cm: String(16 + Math.floor(Math.random() * 8)),
+        is_adjustable: Math.random() > 0.5,
+      },
+    }));
+  };
+
   // --- Validation ---
   const validate = () => {
     const errs: Record<string, string> = {};
     if (!form.name) errs.name = 'Name is required';
-    if (!form.skuCode) errs.skuCode = 'SKU Code is required';
     if (!form.category) errs.category = 'Category is required';
     if (!form.subcategory) errs.subcategory = 'Subcategory is required';
     if (!form.metalType) errs.metalType = 'Metal type is required';
@@ -386,44 +437,42 @@ const AddJewelryForm = () => {
     setSubmitting(true);
     try {
       const formData = new FormData();
-      // Append primitive fields
-      const fieldMap: Record<string, string> = {
-        name: 'name',
-        skuCode: 'skuCode',
+      // Map current UI model to latest backend DTO keys.
+      const dtoFieldMap: Record<string, string> = {
+        name: 'productTitle',
+        stockNumber: 'stockNumber',
         category: 'category',
-        basePrice: 'basePrice',
-        makingCharge: 'makingCharge',
-        tax: 'tax',
-        totalPrice: 'totalPrice',
-        videoURL: 'videoURL',
         subcategory: 'subcategory',
-        collection: 'collection',
+        collection: 'collectionName',
         gender: 'gender',
         occasion: 'occasion',
         metalType: 'metalType',
         metalPurity: 'metalPurity',
         metalWeight: 'metalWeight',
+        basePrice: 'basePrice',
+        makingCharge: 'makingCharge',
+        totalPrice: 'totalPrice',
         description: 'description',
+        videoURL: 'videoURL',
       };
-      // Ensure number fields are sent as numbers, not strings
-      const numberFields = ['metalWeight', 'basePrice', 'makingCharge', 'tax', 'totalPrice'];
-      Object.keys(fieldMap).forEach(key => {
-        const value = (form as Record<string, unknown>)[key];
+      Object.entries(dtoFieldMap).forEach(([oldKey, newKey]) => {
+        const value = (form as Record<string, unknown>)[oldKey];
         if (typeof value !== 'undefined' && value !== null && value !== '') {
-          if (numberFields.includes(key)) {
-            // Only append if value is a valid number
-            const num = Number(value);
-            if (!isNaN(num)) formData.append(fieldMap[key], num.toString());
-          } else {
-            formData.append(fieldMap[key], String(value));
-          }
+          formData.append(newKey, String(value));
         }
       });
-      // Stones as JSON string (array), ensure carat is number
+      // Required by latest backend enum
+      formData.append('available', 'AVAILABLE');
+
+      // Stones as DTO-compatible JSON
       if (form.stones && form.stones.length > 0) {
         const stonesPayload = form.stones.map((stone: Stone) => ({
-          ...stone,
-          carat: stone.carat === '' ? undefined : Number(stone.carat)
+          centerStoneType: stone.type || undefined,
+          centerStoneShape: stone.shape || undefined,
+          centerStoneColor: stone.color || undefined,
+          centerStoneClarity: stone.clarity || undefined,
+          centerStoneCertification: stone.certification || undefined,
+          centerStoneTotalWeight: stone.carat || undefined,
         }));
         formData.append('stones', JSON.stringify(stonesPayload));
       }
@@ -431,6 +480,11 @@ const AddJewelryForm = () => {
       if (form.attributes && Object.values(form.attributes).some(v => v !== '' && v !== false)) {
         formData.append('attributes', JSON.stringify(form.attributes));
       }
+      form.images.forEach((file, index) => {
+        if (index < 6) {
+          formData.append(`image${index + 1}`, file);
+        }
+      });
       // Get Bearer token
       let token = '';
       if (typeof window !== 'undefined') {
@@ -465,11 +519,17 @@ const AddJewelryForm = () => {
 
   // --- UI ---
   return (
-    <form className="w-full mx-auto p-6 bg-white rounded-2xl shadow flex flex-col gap-8" onSubmit={handleSubmit}>
-      <h2 className="text-2xl font-bold mb-2">Add Jewelry</h2>
+    <form className="w-full max-w-7xl mx-auto flex flex-col gap-6 rounded-2xl bg-gray-50 p-3 md:p-4" onSubmit={handleSubmit}>
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 md:p-6 shadow-sm">
+        <h2 className="text-2xl font-bold text-gray-900">Add Jewelry</h2>
+        <p className="mt-1 text-sm text-gray-600">
+          Create a clean and complete jewelry listing with product, pricing, stone, and media details.
+        </p>
+      </div>
       {/* Product Information */}
-      <section>
-        <h3 className="text-lg font-semibold mb-2">Product Information</h3>
+      <section className="section-card">
+        <h3 className="text-lg font-semibold mb-1 text-gray-900">Product Information</h3>
+        <p className="text-sm text-gray-500 mb-4">Add title, category, and customer targeting details.</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block font-medium mb-1">Product Name *</label>
@@ -517,8 +577,9 @@ const AddJewelryForm = () => {
         </div>
       </section>
       {/* Media */}
-      <section>
-        <h3 className="text-lg font-semibold mb-2">Media</h3>
+      <section className="section-card">
+        <h3 className="text-lg font-semibold mb-1 text-gray-900">Media</h3>
+        <p className="text-sm text-gray-500 mb-4">Upload upto 6 product images and optional video URL.</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block font-medium mb-1">Product Images *</label>
@@ -561,25 +622,26 @@ const AddJewelryForm = () => {
         </div>
       </section>
       {/* Pricing & Metal */}
-      <section>
-        <h3 className="text-lg font-semibold mb-2">Pricing & Metal</h3>
+      <section className="section-card">
+        <h3 className="text-lg font-semibold mb-1 text-gray-900">Pricing & Metal</h3>
+        <p className="text-sm text-gray-500 mb-4">Define your pricing and core metal details.</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block font-medium mb-1">Base Price *</label>
-            <input name="basePrice" value={form.basePrice} onChange={handleChange} required className="input" type="number" min="0" placeholder="e.g. 5000" />
+            <input name="basePrice" value={form.basePrice} onChange={handleChange} required className="input" type="number" min="0" step="any" placeholder="e.g. 5000" />
             {errors.basePrice && <div className="text-red-500 text-xs">{errors.basePrice}</div>}
           </div>
           <div>
             <label className="block font-medium mb-1">Making Charge</label>
-            <input name="makingCharge" value={form.makingCharge} onChange={handleChange} className="input" type="number" min="0" placeholder="e.g. 200" />
+            <input name="makingCharge" value={form.makingCharge} onChange={handleChange} className="input" type="number" min="0" step="any" placeholder="e.g. 200" />
           </div>
           <div>
             <label className="block font-medium mb-1">Tax (%)</label>
-            <input name="tax" value={form.tax} onChange={handleChange} className="input" type="number" min="0" placeholder="e.g. 5" />
+            <input name="tax" value={form.tax} onChange={handleChange} className="input" type="number" min="0" step="any" placeholder="e.g. 5" />
           </div>
           <div>
             <label className="block font-medium mb-1">Total Price *</label>
-            <input name="totalPrice" value={form.totalPrice} onChange={handleChange} required className="input" type="number" min="0" placeholder="e.g. 5200" />
+            <input name="totalPrice" value={form.totalPrice} onChange={handleChange} required className="input" type="number" min="0" step="any" placeholder="e.g. 5200" />
             {errors.totalPrice && <div className="text-red-500 text-xs">{errors.totalPrice}</div>}
           </div>
           <div>
@@ -602,18 +664,19 @@ const AddJewelryForm = () => {
           </div>
           <div>
             <label className="block font-medium mb-1">Metal Weight (grams) *</label>
-            <input name="metalWeight" value={form.metalWeight} onChange={handleChange} className="input" type="number" min="0" placeholder="e.g. 15.5" />
+            <input name="metalWeight" value={form.metalWeight} onChange={handleChange} className="input" type="number" min="0" step="any" placeholder="e.g. 15.5" />
           </div>
           <div>
             <label className="block font-medium mb-1">Stock Number *</label>
-            <input name="stockNumber" value={form.stockNumber} onChange={handleChange} required className="input" type="number" min="0" placeholder="e.g. 1001" />
+            <input name="stockNumber" value={form.stockNumber} onChange={handleChange} required className="input" type="number" min="0" step="any" placeholder="e.g. 1001" />
             {errors.stockNumber && <div className="text-red-500 text-xs">{errors.stockNumber}</div>}
           </div>
         </div>
       </section>
       {/* Description */}
-      <section>
-        <h3 className="text-lg font-semibold mb-2">Description</h3>
+      <section className="section-card">
+        <h3 className="text-lg font-semibold mb-1 text-gray-900">Description</h3>
+        <p className="text-sm text-gray-500 mb-4">Write product highlights and key selling points.</p>
         <div className="grid grid-cols-1">
           <div>
             <label className="block font-medium mb-1">Product Description *</label>
@@ -623,14 +686,15 @@ const AddJewelryForm = () => {
         </div>
       </section>
       {/* Gemstones */}
-      <section>
-        <h3 className="text-lg font-semibold mb-2">Gemstones</h3>
+      <section className="section-card">
+        <h3 className="text-lg font-semibold mb-1 text-gray-900">Gemstones</h3>
+        <p className="text-sm text-gray-500 mb-4">Add one or more stones used in the jewelry.</p>
         <div className="flex items-center justify-between mb-2">
           <span className="font-semibold">Gemstones</span>
-          <button type="button" className="text-blue-600 font-bold" onClick={handleAddStone}>+ Add Gemstone</button>
+          <button type="button" className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-100" onClick={handleAddStone}>+ Add Gemstone</button>
         </div>
         {form.stones && form.stones.length > 0 && form.stones.map((stone: Stone, idx: number) => (
-          <div key={idx} className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2 bg-gray-50 p-3 rounded-lg">
+          <div key={idx} className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 border border-gray-200 bg-gray-50 p-3 rounded-xl">
             <select value={stone.type} onChange={e => handleStoneChange(idx, 'type', e.target.value)} className="input">
               <option value="" disabled hidden>Select Type</option>
               {DROPDOWN_OPTIONS.gemstoneType.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
@@ -639,7 +703,7 @@ const AddJewelryForm = () => {
               <option value="" disabled hidden>Select Shape</option>
               {DROPDOWN_OPTIONS.gemstoneShape.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
-            <input type="number" min="0" value={stone.carat} onChange={e => handleStoneChange(idx, 'carat', e.target.value)} className="input" placeholder="Carat" />
+            <input type="number" min="0" step="any" value={stone.carat} onChange={e => handleStoneChange(idx, 'carat', e.target.value)} className="input" placeholder="Carat" />
             <select value={stone.color} onChange={e => handleStoneChange(idx, 'color', e.target.value)} className="input">
               <option value="" disabled hidden>Select Color</option>
               {DROPDOWN_OPTIONS.gemstoneColor.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
@@ -656,14 +720,15 @@ const AddJewelryForm = () => {
               <option value="" disabled hidden>Select Certification</option>
               {DROPDOWN_OPTIONS.gemstoneCertification.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
-            <button type="button" className="text-red-500 font-bold" onClick={() => handleRemoveStone(idx)}>Remove</button>
+            <button type="button" className="rounded-md border border-red-200 bg-red-50 px-2 py-1 text-red-600 text-sm font-semibold transition hover:bg-red-100" onClick={() => handleRemoveStone(idx)}>Remove</button>
           </div>
         ))}
       </section>
       {/* Attributes */}
-      <section>
-        <h3 className="text-lg font-semibold mb-2">Attributes</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2 bg-gray-50 p-3 rounded-lg">
+      <section className="section-card">
+        <h3 className="text-lg font-semibold mb-1 text-gray-900">Attributes</h3>
+        <p className="text-sm text-gray-500 mb-4">Provide style and fitting details for better filtering.</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2 border border-gray-200 bg-gray-50 p-3 rounded-xl">
           <select value={form.attributes.style} onChange={e => handleAttributeChange('style', e.target.value)} className="input">
             <option value="" disabled hidden>Select Style</option>
             {DROPDOWN_OPTIONS.style.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
@@ -676,7 +741,7 @@ const AddJewelryForm = () => {
             <option value="" disabled hidden>Select Clasp Type</option>
             {DROPDOWN_OPTIONS.clasp_type.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
           </select>
-          <input type="number" min="0" value={form.attributes.length_cm} onChange={e => handleAttributeChange('length_cm', e.target.value)} className="input" placeholder="Length (cm)" />
+          <input type="number" min="0" step="any" value={form.attributes.length_cm} onChange={e => handleAttributeChange('length_cm', e.target.value)} className="input" placeholder="Length (cm)" />
           <div className="flex items-center gap-2">
             <input type="checkbox" checked={form.attributes.is_adjustable} onChange={e => handleAttributeChange('is_adjustable', e.target.checked)} />
             <span>Is Adjustable?</span>
@@ -684,7 +749,10 @@ const AddJewelryForm = () => {
         </div>
       </section>
       {/* Submit Button */}
-      <div className="flex justify-end gap-4 mt-4">
+      <div className="sticky bottom-0 z-10 flex justify-end gap-3 border border-gray-200 bg-white/95 backdrop-blur rounded-xl p-3 shadow-sm">
+        <button type="button" className="btn-secondary" onClick={handleFillRandomData} disabled={submitting}>
+          Fill Random Data
+        </button>
         <button type="reset" className="btn-secondary" onClick={() => setForm({
           name: '', skuCode: '', category: '', subcategory: '', collection: '', gender: '', occasion: '',
           metalType: '', metalPurity: '', metalWeight: '', basePrice: '', makingCharge: '', tax: '', totalPrice: '',
@@ -696,41 +764,58 @@ const AddJewelryForm = () => {
         <button type="submit" className="btn-primary" disabled={submitting}>{submitting ? 'Submitting...' : 'Add Jewelry'}</button>
       </div>
       <style jsx>{`
+        .section-card {
+          border-radius: 1rem;
+          border: 1px solid #e5e7eb;
+          background: #fff;
+          padding: 1.25rem;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
         .input {
           width: 100%;
-          padding: 0.5rem 0.75rem;
-          border-radius: 0.5rem;
-          border: 1px solid #e5e7eb;
-          background: #f9fafb;
-          font-size: 1rem;
+          padding: 0.625rem 0.8rem;
+          border-radius: 0.75rem;
+          border: 1px solid #d1d5db;
+          background: #ffffff;
+          font-size: 0.95rem;
           margin-bottom: 0.5rem;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        label.block {
+          font-size: 0.86rem;
+          font-weight: 600;
+          color: #374151;
+          margin-bottom: 0.35rem;
         }
         .input:focus {
-          outline: 2px solid #2563eb;
-          border-color: #2563eb;
+          outline: none;
+          border-color: #111827;
+          box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
         }
         .btn-primary {
-          background: #2563eb;
+          background: #111827;
           color: #fff;
-          padding: 0.5rem 1.5rem;
-          border-radius: 0.5rem;
+          padding: 0.6rem 1.2rem;
+          border-radius: 0.75rem;
           font-weight: 600;
-          transition: background 0.2s;
+          border: 1px solid #111827;
+          transition: all 0.2s ease;
         }
         .btn-primary:hover {
-          background: #1d4ed8;
+          background: #1f2937;
         }
         .btn-secondary {
-          background: #f3f4f6;
+          background: #fff;
           color: #374151;
-          padding: 0.5rem 1.5rem;
-          border-radius: 0.5rem;
+          padding: 0.6rem 1.2rem;
+          border-radius: 0.75rem;
           font-weight: 600;
-          border: 1px solid #e5e7eb;
-          transition: background 0.2s;
+          border: 1px solid #d1d5db;
+          transition: all 0.2s ease;
         }
         .btn-secondary:hover {
-          background: #e5e7eb;
+          background: #f9fafb;
+          border-color: #9ca3af;
         }
       `}</style>
     </form>

@@ -18,10 +18,12 @@ export interface JewelryQueryParams {
 export interface JewelryItem {
   id: number;
   name?: string;
+  productTitle?: string;
   skuCode?: string;
   category?: string;
   subcategory?: string;
   collection?: string;
+  collectionName?: string;
   gender?: string;
   occasion?: string;
   metalType?: string;
@@ -73,6 +75,12 @@ export interface JewelryItem {
     clarity?: string;
     cut?: string;
     certification?: string;
+    centerStoneType?: string;
+    centerStoneShape?: string;
+    centerStoneColor?: string;
+    centerStoneClarity?: string;
+    centerStoneCertification?: string;
+    centerStoneTotalWeight?: string | number;
     stoneType?: string;
     stoneCaratWeight?: number;
     stoneColor?: string;
@@ -171,7 +179,7 @@ export const jewelryService = {
   },
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getJewelriesBySeller: async <T = any>({ sellerId, page = 1, limit = 10, search = '', sort = '-createdAt' }: { sellerId: string, page?: number, limit?: number, search?: string, sort?: string }) => {
+  getJewelriesBySeller: async <T = any>({ sellerId, page = 1, limit = 10, search = '', sort = '-createdAt', category }: { sellerId: string, page?: number, limit?: number, search?: string, sort?: string, category?: string }) => {
     // Compose query string with sellerId and other params
     const params = new URLSearchParams({
       sellerId,
@@ -185,6 +193,9 @@ export const jewelryService = {
       params.append('searchBy', 'skuCode');
       params.append('searchBy', 'attributes.style');
       params.append('searchBy', 'stones.type');
+    }
+    if (category) {
+      params.append('category', category);
     }
     return api.get<T>(`/jewellery?${params.toString()}`);
   },
@@ -202,5 +213,13 @@ export const jewelryService = {
   deleteJewelry: async (id: string, token: string) => {
     // Send DELETE request for jewelry
     return api.delete(`/jewellery/${id}`, token);
+  },
+  bulkDeleteJewelry: async (ids: number[], token: string) => {
+    return api.post('/jewellery/bulk-delete', { ids }, token);
+  },
+  uploadJewelryExcel: async (file: File, token: string, hasUpdate: boolean = false) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.upload(`/jewellery/bulk-upload?has_update=${hasUpdate}`, formData, token);
   },
 };

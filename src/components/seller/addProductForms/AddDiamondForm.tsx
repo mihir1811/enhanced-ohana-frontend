@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Gem, Layers } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 import { 
   diamondColors, 
   fancyColors, 
@@ -224,6 +226,7 @@ type DiamondFormState = {
   symmetry: string,
   fluorescence: string,
   treatment: string,
+  growthType: string,
   process: string,
   measurement: string,
   diameter: string,
@@ -286,6 +289,7 @@ const initialState: DiamondFormState = {
   symmetry: '',
   fluorescence: '',
   treatment: '',
+  growthType: '',
   process: '',
   measurement: '',
   diameter: '',
@@ -316,6 +320,8 @@ const initialState: DiamondFormState = {
 
 function AddDiamondForm() {
   const router = useRouter();
+  const profile = useSelector((state: RootState) => state.seller.profile);
+  const sellerType = profile && 'sellerType' in profile ? profile.sellerType : undefined;
   const [form, setForm] = useState<DiamondFormState>(initialState);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -338,6 +344,31 @@ function AddDiamondForm() {
   const hasPriceCalculation = !isNaN(priceNumber) && !isNaN(caratNumber) && caratNumber > 0;
   const displayTotalPrice = hasPriceCalculation ? priceNumber.toFixed(2) : '';
   const displayPricePerCarat = hasPriceCalculation ? (priceNumber / caratNumber).toFixed(2) : '';
+  const forcedStoneType =
+    sellerType === 'labGrownDiamond'
+      ? 'lab grown'
+      : sellerType === 'naturalDiamond' || sellerType === 'eseller'
+        ? 'natural'
+        : '';
+
+  const mapStoneTypeForApi = (stoneTypeValue: string) => {
+    return stoneTypeValue === 'labGrownDiamond' || stoneTypeValue === 'lab grown'
+      ? 'lab grown'
+      : 'natural';
+  };
+  const normalizeMeleeMeasurement = (value: string) => {
+    const numbers = String(value || '').match(/\d+(\.\d+)?/g) || [];
+    if (numbers.length >= 3) return `${numbers[0]}*${numbers[1]}*${numbers[2]}`;
+    if (numbers.length === 2) return `${numbers[0]}*${numbers[1]}*${numbers[1]}`;
+    if (numbers.length === 1) return `${numbers[0]}*${numbers[0]}*${numbers[0]}`;
+    return '';
+  };
+
+  useEffect(() => {
+    if (!forcedStoneType) return;
+    const uiStoneType = forcedStoneType === 'lab grown' ? 'labGrownDiamond' : 'naturalDiamond';
+    setForm((prev) => (prev.stoneType === uiStoneType ? prev : { ...prev, stoneType: uiStoneType }));
+  }, [forcedStoneType]);
 
   useEffect(() => {
     if (isMelee) {
@@ -604,6 +635,10 @@ function AddDiamondForm() {
     { value: 'naturalDiamond', label: 'Natural' },
     { value: 'labGrownDiamond', label: 'Lab Grown' },
   ];
+  const growthTypes = [
+    { value: 'CVD', label: 'CVD' },
+    { value: 'HPHT', label: 'HPHT' },
+  ];
 
   const fillRandomData = () => {
     const getRandom = (arr: Option[]) => arr[Math.floor(Math.random() * arr.length)].value;
@@ -612,7 +647,9 @@ function AddDiamondForm() {
     const getRandomInt = (min: number, max: number) => 
       Math.floor(Math.random() * (max - min + 1)) + min;
 
-    const randomStoneType = stoneTypes[Math.floor(Math.random() * stoneTypes.length)].value;
+    const randomStoneType = forcedStoneType
+      ? (forcedStoneType === 'lab grown' ? 'labGrownDiamond' : 'naturalDiamond')
+      : stoneTypes[Math.floor(Math.random() * stoneTypes.length)].value;
     const randomShape = getRandom(shapes);
     const randomPrice = getRandomInt(1000, 50000).toString();
     const randomStock = getRandomInt(10000, 99999).toString();
@@ -621,6 +658,7 @@ function AddDiamondForm() {
     const randomShade = getRandom(shades);
     const randomTreatment = getRandom(treatments);
     const randomProcess = getRandom(processes);
+    const randomGrowthType = growthTypes[Math.floor(Math.random() * growthTypes.length)].value;
 
     if (isMelee) {
       // Melee Random Data
@@ -670,6 +708,7 @@ function AddDiamondForm() {
         shade: randomShade,
         treatment: randomTreatment,
         process: randomProcess,
+        growthType: sellerType === 'labGrownDiamond' ? randomGrowthType : '',
         sizeMin: diaMin,
         sizeMax: diaMax,
       }));
@@ -705,6 +744,7 @@ function AddDiamondForm() {
         shade: randomShade,
         treatment: randomTreatment,
         process: randomProcess,
+        growthType: sellerType === 'labGrownDiamond' ? randomGrowthType : '',
         inscription: `GIA ${getRandomInt(10000000, 99999999)}`,
         gridleMin: getRandomFloat(0.5, 2.0, 1),
         gridleMax: getRandomFloat(2.1, 4.0, 1),
@@ -873,21 +913,19 @@ function AddDiamondForm() {
           { key: 'clarityTo', backendKey: 'clarityMax' },
           { key: 'colorFrom' },
           { key: 'colorTo' },
-          { key: 'fluorescence', backendKey: 'fluoreScenceFrom' },
+          { key: 'fluorescence', backendKey: 'fluoreScenceIntensityFrom' },
           { key: 'sieveSizeMin' },
           { key: 'sieveSizeMax' },
           { key: 'polish', backendKey: 'polishFrom' },
           { key: 'shape' },
-          { key: 'sizeMin', backendKey: 'measurementMin' },
-          { key: 'sizeMax', backendKey: 'measurementMax' },
           { key: 'discount' },
-          { key: 'stoneType' },
           { key: 'videoURL' },
           { key: 'caratWeight', backendKey: 'totalCaratWeight' },
           { key: 'cut', backendKey: 'cutFrom' },
           { key: 'symmetry', backendKey: 'symmetryFrom' },
           { key: 'shade', backendKey: 'shadeFrom' },
           { key: 'treatment' },
+          { key: 'growthType' },
           // { key: 'process' }, // Removed: Not in backend DTO
           { key: 'certificateNumber' },
           { key: 'fancyColorFrom' },
@@ -915,7 +953,7 @@ function AddDiamondForm() {
           { key: 'shape' },
           { key: 'symmetry' },
           { key: 'clarity' },
-          { key: 'fluorescence' },
+          { key: 'fluorescence', backendKey: 'fluorescenceIntensity' },
           { key: 'measurement' },
           { key: 'ratio' },
           { key: 'table' },
@@ -929,10 +967,10 @@ function AddDiamondForm() {
           { key: 'pavilionDepth' },
           { key: 'culetSize' },
           { key: 'polish' },
-          { key: 'treatment' },
-          { key: 'inscription' },
+          { key: 'treatment', backendKey: 'enhancement' },
+          { key: 'growthType' },
+          { key: 'inscription', backendKey: 'laserInscription' },
           { key: 'certificateNumber' },
-          { key: 'stoneType' },
           { key: 'videoURL' },
         ];
       }
@@ -945,6 +983,19 @@ function AddDiamondForm() {
           formData.append(backendKey || key, String(val));
         }
       });
+      if (isMelee) {
+        // Backend expects measurementMin/measurementMax in X*Y*Z format.
+        const measurementFromInput = normalizeMeleeMeasurement(form.measurement);
+        const fallbackMin = normalizeMeleeMeasurement(form.sizeMin);
+        const fallbackMax = normalizeMeleeMeasurement(form.sizeMax);
+        const measurementMin = measurementFromInput || fallbackMin || fallbackMax;
+        const measurementMax = measurementFromInput || fallbackMax || fallbackMin;
+        if (measurementMin) formData.append('measurementMin', measurementMin);
+        if (measurementMax) formData.append('measurementMax', measurementMax);
+      }
+      // // Always send normalized stone type from seller type rules
+      // const resolvedStoneType = forcedStoneType || mapStoneTypeForApi(form.stoneType);
+      // formData.append('stoneType', resolvedStoneType);
 
       // Add Calculated Prices
       formData.append('totalPrice', totalPrice);
@@ -1076,6 +1127,7 @@ function AddDiamondForm() {
                 ]}
                 placeholder="Select stone type..."
                 required
+                disabled={Boolean(forcedStoneType)}
               />
             </div>
             <div className="space-y-2">
@@ -1647,6 +1699,21 @@ function AddDiamondForm() {
                 placeholder="Select treatment..."
               />
             </div>
+            {sellerType === 'labGrownDiamond' && (
+              <div className="space-y-2">
+                <Label htmlFor="growthType" className="font-medium">
+                  Growth Type<RequiredMark />
+                </Label>
+                <SearchableDropdown
+                  name="growthType"
+                  value={form.growthType}
+                  onChange={(value) => setForm(prev => ({ ...prev, growthType: value }))}
+                  options={growthTypes}
+                  placeholder="Select growth type..."
+                  required
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="process" className="font-medium">
                 Process

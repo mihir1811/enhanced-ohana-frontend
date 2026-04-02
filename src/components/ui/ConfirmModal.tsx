@@ -24,17 +24,29 @@ export function ConfirmModal({
   preventAutoClose?: boolean
   children?: ReactNode
 }) {
+  const resetBodyInteractivity = () => {
+    document.body.style.pointerEvents = ""
+    document.body.style.overflow = ""
+    document.documentElement.style.overflow = ""
+  }
+
   // Fix: Radix Dialog leaves pointer-events: none on body after close (controlled dialogs).
   // setTimeout ensures cleanup runs after Radix's internal teardown.
   useEffect(() => {
     if (open) return
     const id = setTimeout(() => {
-      document.body.style.pointerEvents = ""
-      document.body.style.overflow = ""
-      document.documentElement.style.overflow = ""
+      resetBodyInteractivity()
     }, 50)
     return () => clearTimeout(id)
   }, [open])
+
+  // Also cleanup on unmount (e.g. item deleted causes component removal
+  // while dialog is still open/closing).
+  useEffect(() => {
+    return () => {
+      resetBodyInteractivity()
+    }
+  }, [])
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>

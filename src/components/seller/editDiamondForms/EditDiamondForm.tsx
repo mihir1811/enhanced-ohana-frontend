@@ -333,7 +333,7 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
 
       // Only append specific fields as per the curl request
       const fieldsToInclude = [
-        'stoneType', 'stockNumber', 'description',
+        'stockNumber', 'description',
         'rap', 'discount', 'caratWeight', 'cut', 'color', 'shade',
         'fancyColor', 'fancyIntencity', 'fancyOvertone', 'shape', 'symmetry',
         'clarity', 'fluorescence', 'measurement', 'ratio', 'table',
@@ -350,7 +350,16 @@ const EditDiamondForm: React.FC<EditDiamondFormProps> = ({ initialData }) => {
         }
         const value = form[key as keyof typeof form];
         if (value !== null && value !== undefined && value !== '') {
-          formDataToSend.append(key, value.toString());
+          const backendKey =
+            key === 'fluorescence'
+              ? 'fluorescenceIntensity'
+              : key === 'treatment'
+                ? 'enhancement'
+                : key === 'inscription'
+                  ? 'laserInscription'
+                  : key;
+
+          formDataToSend.append(backendKey, value.toString());
         }
       });
 

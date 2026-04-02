@@ -118,6 +118,12 @@ const sanitizeParams = (params: Record<string, any> | undefined): Record<string,
 }
 
 class DiamondService {
+  private getTokenFromBrowserCookie(): string | undefined {
+    // Used only when called from the browser (document is not available on the server).
+    if (typeof document === 'undefined') return undefined;
+    const match = document.cookie.match(/(?:^|;)\s*token=([^;]+)/);
+    return match?.[1];
+  }
   // Get seller info by sellerId
   async getSellerInfo(sellerId: string): Promise<ApiResponse<SellerInfo>> {
     const url = buildApiUrl(API_CONFIG.ENDPOINTS.SELLER.INFO, { seller_id: sellerId });
@@ -153,6 +159,14 @@ class DiamondService {
       throw new Error('Invalid diamond ID provided');
     }
     return apiService.delete(`/melee-diamond/${diamondId}`, token);
+  }
+
+  async bulkDeleteDiamonds(ids: number[], token?: string): Promise<ApiResponse<unknown>> {
+    return apiService.post('/diamond/bulk-delete', { ids }, token);
+  }
+
+  async bulkDeleteMeleeDiamonds(ids: number[], token?: string): Promise<ApiResponse<unknown>> {
+    return apiService.post('/melee-diamond/bulk-delete', { ids }, token);
   }
   // Update diamond by ID (with file upload)
   async updateDiamond(id: string | number, formData: FormData, token?: string): Promise<ApiResponse<DiamondData>> {
@@ -197,7 +211,7 @@ class DiamondService {
 
   // Get melee lab grown diamonds with filters
   async getMeleeLabDiamonds(params?: DiamondFilters): Promise<ApiResponse<DiamondData[]>> {
-    return apiService.get<DiamondData[]>('/melee-diamond', sanitizeParams({ ...params, stoneType: 'labGrownDiamond' }));
+    return apiService.get<DiamondData[]>('/melee-diamond', sanitizeParams(params));
   }
 
   // Get natural diamonds with filters
@@ -207,25 +221,27 @@ class DiamondService {
 
   // Get melee natural diamonds with filters
   async getMeleeNaturalDiamonds(params?: DiamondFilters): Promise<ApiResponse<DiamondData[]>> {
-    return apiService.get<DiamondData[]>('/melee-diamond', sanitizeParams({ ...params, stoneType: 'naturalDiamond' }));
+    return apiService.get<DiamondData[]>('/melee-diamond', sanitizeParams({ ...params }));
   }
 
   // Get single diamond by ID
-  async getDiamondById(id: string | number): Promise<ApiResponse<DiamondData>> {
+  async getDiamondById(id: string | number, token?: string): Promise<ApiResponse<DiamondData>> {
     const diamondId = typeof id === 'string' ? parseInt(id, 10) : id;
     if (isNaN(diamondId)) {
       throw new Error('Invalid diamond ID provided');
     }
-    return apiService.get<DiamondData>(`/diamond/${diamondId}`);
+    const authToken = token ?? this.getTokenFromBrowserCookie();
+    return apiService.get<DiamondData>(`${API_CONFIG.ENDPOINTS.DIAMONDS.BASE}/${diamondId}`, undefined, authToken);
   }
 
   // Get melee diamond by ID
-  async getMeleeDiamondById(id: string | number): Promise<ApiResponse<DiamondData>> {
+  async getMeleeDiamondById(id: string | number, token?: string): Promise<ApiResponse<DiamondData>> {
     const diamondId = typeof id === 'string' ? parseInt(id, 10) : id;
     if (isNaN(diamondId)) {
       throw new Error('Invalid diamond ID provided');
     }
-    return apiService.get<DiamondData>(`/melee-diamond/${diamondId}`);
+    const authToken = token ?? this.getTokenFromBrowserCookie();
+    return apiService.get<DiamondData>(`/melee-diamond/${diamondId}`, undefined, authToken);
   }
 
   // Search diamonds
@@ -235,12 +251,24 @@ class DiamondService {
 
   // Get diamonds by seller
   async getDiamondsBySeller(sellerId: string, params?: SearchParams): Promise<ApiResponse<DiamondData[]>> {
-    return apiService.get<DiamondData[]>(`/diamond/seller/${sellerId}`, sanitizeParams(params));
+    const queryParams = { sellerId, ...params };
+    try {
+      return await apiService.get<DiamondData[]>('/diamond', sanitizeParams(queryParams));
+    } catch {
+      // Backward compatibility for deployments exposing /seller/:id path.
+      return apiService.get<DiamondData[]>(`/diamond/seller/${sellerId}`, sanitizeParams(params));
+    }
   }
 
   // Get melee diamonds by seller
   async getMeleeDiamondsBySeller(sellerId: string, params?: SearchParams): Promise<ApiResponse<DiamondData[]>> {
-    return apiService.get<DiamondData[]>(`/melee-diamond/seller/${sellerId}`, sanitizeParams(params));
+    const queryParams = { sellerId, ...params };
+    try {
+      return await apiService.get<DiamondData[]>('/melee-diamond', sanitizeParams(queryParams));
+    } catch {
+      // Backward compatibility for deployments exposing /seller/:id path.
+      return apiService.get<DiamondData[]>(`/melee-diamond/seller/${sellerId}`, sanitizeParams(params));
+    }
   }
 
   // Get jewelry by seller

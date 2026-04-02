@@ -189,6 +189,11 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
   const [loading, setLoading] = useState(false);
   const [selectedGemsType, setSelectedGemsType] = useState<string | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const normalizeMeasurement = (value: string) => {
+    const numbers = String(value || '').match(/\d+(\.\d+)?/g) || [];
+    if (numbers.length >= 3) return `${numbers[0]}*${numbers[1]}*${numbers[2]}`;
+    return value;
+  };
 
   // --- Helper to pick random element ---
   const getRandomElement = <T extends { value: string }>(arr: T[]) => {
@@ -282,6 +287,7 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
       if (form.composition) formData.append('composition', form.composition);
       if (form.qualityGrade) formData.append('qualityGrade', form.qualityGrade);
       if (form.quantity) formData.append('quantity', form.quantity);
+      formData.append('availability', 'true');
       
       // Images: image1 to image6
       form.images.forEach((img, idx) => {
@@ -300,16 +306,16 @@ function AddGemstoneForm({ onCancel }: { onCancel: () => void }) {
       if (form.pricePerCarat) formData.append('pricePerCarat', form.pricePerCarat);
       
       // Physical Properties
-      if (form.carat) formData.append('carat', form.carat);
+      if (form.carat) formData.append('caratPerPcs', form.carat);
       if (form.shape) formData.append('shape', form.shape);
-      if (form.color) formData.append('color', form.color);
+      if (form.color) formData.append('primaryColor', form.color);
       if (form.clarity) formData.append('clarity', form.clarity);
       if (form.hardness) formData.append('hardness', form.hardness);
       if (form.origin) formData.append('origin', form.origin);
-      if (form.fluoreScence) formData.append('fluoreScence', form.fluoreScence);
+      if (form.fluoreScence) formData.append('fluoreScenceIntensity', form.fluoreScence);
       if (form.process) formData.append('process', form.process);
       if (form.cut) formData.append('cut', form.cut);
-      if (form.dimension) formData.append('dimension', form.dimension);
+      if (form.dimension) formData.append('measurement', normalizeMeasurement(form.dimension));
       if (form.refrectiveIndex) formData.append('refrectiveIndex', form.refrectiveIndex);
       if (form.birefringence) formData.append('birefringence', form.birefringence);
       if (form.spacificGravity) formData.append('spacificGravity', form.spacificGravity);

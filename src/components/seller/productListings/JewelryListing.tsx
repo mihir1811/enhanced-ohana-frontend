@@ -7,6 +7,9 @@ import BulkUploadModal from './BulkUploadModal';
 import JewelryProductCard, { JewelryProduct } from './JewelryProductCard';
 import { jewelryService } from '@/services/jewelryService';
 import { useSelector } from 'react-redux';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { toast } from 'react-hot-toast';
+import { getCookie } from '@/lib/cookie-utils';
 
 // Redux state interface
 interface RootState {
@@ -21,10 +24,12 @@ interface RootState {
 interface JewelryApiData {
   id: string | number;
   name: string;
+  productTitle?: string;
   skuCode: string;
   category: string;
   subcategory: string;
   collection: string;
+  collectionName?: string;
   gender: string;
   occasion: string;
   metalType: string;
@@ -59,8 +64,10 @@ interface JewelryApiData {
 }
 
 const JewelryListing = () => {
+  const categoryTabs = ['All', 'Rings', 'Necklaces', 'Chains', 'Earrings', 'Bracelets', 'Watches', 'Accessories'] as const;
   const [jewelry, setJewelry] = useState<JewelryProduct[]>([]);
   const [view, setView] = useState<'list' | 'grid'>('grid');
+  const [activeCategory, setActiveCategory] = useState<(typeof categoryTabs)[number]>('All');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -68,23 +75,54 @@ const JewelryListing = () => {
   const [total, setTotal] = useState(0);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const handleBulkFileSelect = () => {
     setBulkModalOpen(false);
     setRefreshKey((k) => k + 1);
   };
   const sellerId = useSelector((state: RootState) => state.seller.profile?.id) || 'default-seller-id'; // Replace with actual sellerId from auth/user context
+  const visibleIds = jewelry.map((j) => Number(j.id)).filter((id) => Number.isFinite(id));
+  const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id));
+  const selectedCount = selectedIds.size;
+
+  const toggleSelectOne = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllVisible = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        visibleIds.forEach((id) => next.delete(id));
+      } else {
+        visibleIds.forEach((id) => next.add(id));
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     setLoading(true);
-    jewelryService.getJewelriesBySeller({ sellerId, page, limit })
+    jewelryService.getJewelriesBySeller({
+      sellerId,
+      page,
+      limit,
+      category: activeCategory === 'All' ? undefined : activeCategory,
+    })
       .then((res) => {
         const items: JewelryProduct[] = (res?.data?.data || []).map((j: JewelryApiData) => ({
           id: String(j.id),
-          name: j.name,
+          name: j.name || j.productTitle || '-',
           skuCode: j.skuCode,
           category: j.category,
           subcategory: j.subcategory,
-          collection: j.collection,
+          collection: j.collection || j.collectionName,
           gender: j.gender,
           occasion: j.occasion,
           metalType: j.metalType,
@@ -117,13 +155,14 @@ const JewelryListing = () => {
         setJewelry(items);
         setTotal(res?.data?.meta?.total || items.length);
         setError(null);
+        setSelectedIds(new Set());
       })
       .catch(() => {
         setError('Failed to load jewelry');
         setJewelry([]);
       })
       .finally(() => setLoading(false));
-  }, [sellerId, page, limit, refreshKey]);
+  }, [sellerId, page, limit, refreshKey, activeCategory]);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
@@ -140,6 +179,15 @@ const JewelryListing = () => {
             type="button"
           >
             Bulk Upload
+          </button>
+          <button
+            type="button"
+            disabled={selectedCount === 0}
+            onClick={() => setBulkDeleteOpen(true)}
+            className="px-4 py-2 rounded font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: 'var(--destructive)', color: 'white' }}
+          >
+            Delete Selected ({selectedCount})
           </button>
           <BulkUploadModal
             open={bulkModalOpen}
@@ -184,6 +232,31 @@ const JewelryListing = () => {
           </button>
         </div>
       </div>
+      <div className="mb-4 overflow-x-auto">
+        <div className="inline-flex gap-2 min-w-max">
+          {categoryTabs.map((category) => {
+            const active = activeCategory === category;
+            return (
+              <button
+                key={category}
+                type="button"
+                onClick={() => {
+                  setActiveCategory(category);
+                  setPage(1);
+                }}
+                className="px-3 py-1.5 rounded-full border text-sm font-medium transition"
+                style={{
+                  backgroundColor: active ? 'var(--primary)' : 'var(--card)',
+                  color: active ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
+                  borderColor: active ? 'var(--primary)' : 'var(--border)',
+                }}
+              >
+                {category}
+              </button>
+            );
+          })}
+        </div>
+      </div>
       {loading && <p>Loading...</p>}
       {error && <p className="text-red-500">{error}</p>}
       {!loading && !error && (
@@ -206,6 +279,14 @@ const JewelryListing = () => {
               <table className="min-w-full rounded-lg shadow border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
                 <thead className="border-b" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }}>
                   <tr>
+                    <th className="px-4 py-2 text-left">
+                      <input
+                        type="checkbox"
+                        checked={allVisibleSelected}
+                        onChange={toggleSelectAllVisible}
+                        aria-label="Select all jewelry"
+                      />
+                    </th>
                     <th className="px-4 py-2 text-left">Image</th>
                     <th className="px-4 py-2 text-left">Name</th>
                     <th className="px-4 py-2 text-left">SKU</th>
@@ -221,6 +302,14 @@ const JewelryListing = () => {
                 <tbody>
                   {jewelry.map((item) => (
                     <tr key={item.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
+                      <td className="px-4 py-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(Number(item.id))}
+                          onChange={() => toggleSelectOne(Number(item.id))}
+                          aria-label={`Select ${item.name}`}
+                        />
+                      </td>
                       <td className="px-4 py-2">
                         <Image
                           src={item.image1 || "https://media.istockphoto.com/id/1493089752/vector/box-and-package-icon-concept.jpg"}
@@ -247,19 +336,33 @@ const JewelryListing = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {jewelry.map((item) => (
-                <JewelryProductCard
-                  key={item.id}
-                  product={item}
-                  onDelete={() => {
-                    setJewelry((prev) => prev.filter((j) => j.id !== item.id));
-                    setTotal((prev) => Math.max(0, prev - 1));
-                  }}
-                  onUpdateProduct={(updatedProduct) => {
-                    setJewelry((prev) => prev.map((j) => 
-                      j.id === updatedProduct.id ? updatedProduct : j
-                    ));
-                  }}
-                />
+                <div key={item.id} className="relative">
+                  <label className="absolute z-10 top-3 right-14 h-6 w-6 rounded bg-white/90 border border-gray-300 flex items-center justify-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(Number(item.id))}
+                      onChange={() => toggleSelectOne(Number(item.id))}
+                      aria-label={`Select ${item.name}`}
+                    />
+                  </label>
+                  <JewelryProductCard
+                    product={item}
+                    onDelete={() => {
+                      setJewelry((prev) => prev.filter((j) => j.id !== item.id));
+                      setTotal((prev) => Math.max(0, prev - 1));
+                      setSelectedIds((prev) => {
+                        const next = new Set(prev);
+                        next.delete(Number(item.id));
+                        return next;
+                      });
+                    }}
+                    onUpdateProduct={(updatedProduct) => {
+                      setJewelry((prev) => prev.map((j) =>
+                        j.id === updatedProduct.id ? updatedProduct : j
+                      ));
+                    }}
+                  />
+                </div>
               ))}
             </div>
           )}
@@ -283,6 +386,32 @@ const JewelryListing = () => {
           </div>
         </>
       )}
+      <ConfirmModal
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        title="Delete selected jewelry?"
+        description={`This will permanently delete ${selectedCount} selected jewelry product(s).`}
+        onYes={async () => {
+          try {
+            const token = getCookie('token');
+            if (!token) throw new Error('User not authenticated');
+            const ids = Array.from(selectedIds)
+              .map((id) => Number(id))
+              .filter((id) => Number.isInteger(id) && id > 0);
+            if (ids.length === 0) throw new Error('Please select at least one jewelry item');
+            await jewelryService.bulkDeleteJewelry(ids, token);
+            setJewelry((prev) => prev.filter((j) => !selectedIds.has(Number(j.id))));
+            setTotal((prev) => Math.max(0, prev - ids.length));
+            setSelectedIds(new Set());
+            setBulkDeleteOpen(false);
+            toast.success('Selected jewelry deleted successfully');
+          } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Failed to delete selected jewelry';
+            toast.error(message);
+          }
+        }}
+        onNo={() => setBulkDeleteOpen(false)}
+      />
     </div>
   );
 };
