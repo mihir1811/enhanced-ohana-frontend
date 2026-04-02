@@ -72,18 +72,18 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
   };
 
   useEffect(() => {
-    console.log(page, limit, "page, limit")
     setLoading(true);
     
     let fetchPromise;
-    if (stoneType === 'labGrownDiamond') {
-      fetchPromise = diamondService.getLabDiamonds({ page, limit, sellerId });
+    if (sellerId) {
+      // For seller-side tabs, use seller filter without hard stoneType filter to avoid enum/value drift.
+      fetchPromise = diamondService.getDiamonds({ page, limit, sellerId });
+    } else if (stoneType === 'labGrownDiamond') {
+      fetchPromise = diamondService.getLabDiamonds({ page, limit });
     } else if (stoneType === 'naturalDiamond') {
-      fetchPromise = diamondService.getNaturalDiamonds({ page, limit, sellerId });
+      fetchPromise = diamondService.getNaturalDiamonds({ page, limit });
     } else {
-      fetchPromise = sellerId 
-        ? diamondService.getDiamondsBySeller(sellerId, { page, limit })
-        : diamondService.getDiamonds({ page, limit });
+      fetchPromise = diamondService.getDiamonds({ page, limit });
     }
 
     fetchPromise
@@ -158,7 +158,7 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
         setDiamonds([]);
       })
       .finally(() => setLoading(false));
-  }, [page, limit, refreshKey]);
+  }, [page, limit, refreshKey, sellerId, stoneType]);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 

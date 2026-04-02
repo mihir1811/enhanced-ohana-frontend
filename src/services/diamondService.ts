@@ -251,7 +251,13 @@ class DiamondService {
 
   // Get diamonds by seller
   async getDiamondsBySeller(sellerId: string, params?: SearchParams): Promise<ApiResponse<DiamondData[]>> {
-    return apiService.get<DiamondData[]>(`/diamond/seller/${sellerId}`, sanitizeParams(params));
+    const queryParams = { sellerId, ...params };
+    try {
+      return await apiService.get<DiamondData[]>('/diamond', sanitizeParams(queryParams));
+    } catch {
+      // Backward compatibility for deployments exposing /seller/:id path.
+      return apiService.get<DiamondData[]>(`/diamond/seller/${sellerId}`, sanitizeParams(params));
+    }
   }
 
   // Get melee diamonds by seller
