@@ -729,6 +729,17 @@ export default function DiamondResults({
     }).format(numPrice)
   }
 
+  const fallbackDiamondImage = '/placeholder.png'
+  const normalizeImageSrc = (src: unknown): string | null => {
+    if (typeof src !== 'string') return null
+    const s = src.trim()
+    if (!s) return null
+    if (s.startsWith('http://') || s.startsWith('https://')) return s
+    if (s.startsWith('/')) return s
+    // next/image requires absolute URL or leading slash for relative paths
+    return `/${s}`
+  }
+
   // Grid view: Professional diamond card inspired by industry standards
   const DiamondGridCard = ({ diamond }: { diamond: Diamond }) => {
     // Support both diamond.images and legacy image1-image6
@@ -740,7 +751,9 @@ export default function DiamondResults({
       ...(diamond.images || []),
       diamondWithImages.image1, diamondWithImages.image2, diamondWithImages.image3, 
       diamondWithImages.image4, diamondWithImages.image5, diamondWithImages.image6
-    ].filter((img, i, arr) => img && typeof img === 'string' && img.trim() && arr.indexOf(img) === i);
+    ]
+      .map(normalizeImageSrc)
+      .filter((img, i, arr): img is string => Boolean(img) && arr.indexOf(img) === i);
     const [imgIdx, setImgIdx] = useState(0);
     const hasImages = allImages.length > 0;
 
@@ -794,7 +807,13 @@ export default function DiamondResults({
               )}
             </>
           ) : (
-            <span className="text-6xl opacity-30">💎</span>
+            <Image
+              src={fallbackDiamondImage}
+              alt="Diamond"
+              width={400}
+              height={400}
+              className="w-full h-full object-contain p-10 opacity-70"
+            />
           )}
 
           {/* Wishlist - Top Right */}

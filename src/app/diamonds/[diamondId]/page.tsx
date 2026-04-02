@@ -6,13 +6,14 @@ import Footer from '@/components/Footer';
 import { SECTION_WIDTH } from '@/lib/constants';
 import { ProductDetailSkeleton } from '@/components/ui/ProductDetailSkeleton';
 import { Card } from '@/components/ui/card';
+import { cookies } from 'next/headers';
 
 export default async function DiamondDetailPage({
   params,
 }: {
-  params: { diamondId: string };
+  params: Promise<{ diamondId: string }>;
 }) {
-  const diamondId = params?.diamondId;
+  const { diamondId } = await params;
 
   let diamond = null;
   let error: string | null = null;
@@ -21,7 +22,9 @@ export default async function DiamondDetailPage({
     if (!diamondId) {
       error = 'Failed to load diamond';
     } else {
-      const apiRes = await diamondService.getDiamondById(diamondId);
+      const cookieStore = await cookies();
+      const token = cookieStore.get('token')?.value;
+      const apiRes = await diamondService.getDiamondById(diamondId, token);
       if (apiRes?.data) {
         diamond = transformApiDiamond(apiRes.data);
       } else {

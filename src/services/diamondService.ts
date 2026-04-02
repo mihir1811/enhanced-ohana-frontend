@@ -118,6 +118,12 @@ const sanitizeParams = (params: Record<string, any> | undefined): Record<string,
 }
 
 class DiamondService {
+  private getTokenFromBrowserCookie(): string | undefined {
+    // Used only when called from the browser (document is not available on the server).
+    if (typeof document === 'undefined') return undefined;
+    const match = document.cookie.match(/(?:^|;)\s*token=([^;]+)/);
+    return match?.[1];
+  }
   // Get seller info by sellerId
   async getSellerInfo(sellerId: string): Promise<ApiResponse<SellerInfo>> {
     const url = buildApiUrl(API_CONFIG.ENDPOINTS.SELLER.INFO, { seller_id: sellerId });
@@ -219,21 +225,23 @@ class DiamondService {
   }
 
   // Get single diamond by ID
-  async getDiamondById(id: string | number): Promise<ApiResponse<DiamondData>> {
+  async getDiamondById(id: string | number, token?: string): Promise<ApiResponse<DiamondData>> {
     const diamondId = typeof id === 'string' ? parseInt(id, 10) : id;
     if (isNaN(diamondId)) {
       throw new Error('Invalid diamond ID provided');
     }
-    return apiService.get<DiamondData>(`/diamond/${diamondId}`);
+    const authToken = token ?? this.getTokenFromBrowserCookie();
+    return apiService.get<DiamondData>(`${API_CONFIG.ENDPOINTS.DIAMONDS.BASE}/${diamondId}`, undefined, authToken);
   }
 
   // Get melee diamond by ID
-  async getMeleeDiamondById(id: string | number): Promise<ApiResponse<DiamondData>> {
+  async getMeleeDiamondById(id: string | number, token?: string): Promise<ApiResponse<DiamondData>> {
     const diamondId = typeof id === 'string' ? parseInt(id, 10) : id;
     if (isNaN(diamondId)) {
       throw new Error('Invalid diamond ID provided');
     }
-    return apiService.get<DiamondData>(`/melee-diamond/${diamondId}`);
+    const authToken = token ?? this.getTokenFromBrowserCookie();
+    return apiService.get<DiamondData>(`/melee-diamond/${diamondId}`, undefined, authToken);
   }
 
   // Search diamonds
