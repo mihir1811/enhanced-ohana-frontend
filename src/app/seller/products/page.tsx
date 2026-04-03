@@ -121,14 +121,14 @@ export default function SellerProductsPage() {
   }, [tabs, activeTab])
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="space-y-2">
+      <div className="flex items-center justify-between gap-2">
         {/* Title + Description */}
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+          <h1 className="text-xl font-semibold text-foreground">
             Products
           </h1>
-          <p className="mt-1 text-sm sm:text-base text-muted-foreground">
+          <p className="mt-0.5 hidden text-xs text-muted-foreground md:block">
             Manage your product catalog and inventory.
           </p>
         </div>
@@ -136,12 +136,12 @@ export default function SellerProductsPage() {
         {/* Button */}
         <button
           onClick={handleAddProduct}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium shadow-sm 
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium shadow-sm text-sm
                bg-primary text-primary-foreground hover:bg-primary/90 transition cursor-pointer"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
+            className="h-4 w-4"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

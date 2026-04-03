@@ -29,6 +29,9 @@ export interface DiamondProduct {
   isSold?: boolean;
   auctionId?: number;
   auctionEndTime?: string;
+  totalPcs?: number;
+  caratWeightPerpcs?: string;
+  totalCaratWeight?: string;
 }
 
 interface Props {
@@ -186,23 +189,29 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
   const [auctionStart, setAuctionStart] = useState("");
   const [auctionEnd, setAuctionEnd] = useState("");
   const [creatingAuction, setCreatingAuction] = useState(false);
-  const safeStockNumber = Number.isFinite(Number(product.stockNumber)) ? Number(product.stockNumber) : 0;
+  const fallbackImage =
+    "https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg?s=2048x2048&w=is&k=20&c=dFWJz1EFJt7Tq2lA-hgTpSW119YywTWtS4EwU3fpKrE=";
+  const normalizeImageSrc = (src?: string | null) => {
+    const raw = String(src || "").trim();
+    if (!raw) return fallbackImage;
+    if (/^https?:\/\//i.test(raw) || raw.startsWith("/")) return raw;
+    return `/${raw.replace(/^\.?\/*/, "")}`;
+  };
 
   const images = [
-    product.image1,
-    product.image2,
-    product.image3,
-    product.image4,
-    product.image5,
-    product.image6,
+    normalizeImageSrc(product.image1),
+    normalizeImageSrc(product.image2),
+    normalizeImageSrc(product.image3),
+    normalizeImageSrc(product.image4),
+    normalizeImageSrc(product.image5),
+    normalizeImageSrc(product.image6),
   ].filter(Boolean) as string[];
 
   const displayImages =
     images.length > 0
       ? images
-      : [
-          "https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg?s=2048x2048&w=is&k=20&c=dFWJz1EFJt7Tq2lA-hgTpSW119YywTWtS4EwU3fpKrE=",
-        ];
+      : [fallbackImage];
+  const safeStockNumber = Number.isFinite(Number(product.stockNumber)) ? Number(product.stockNumber) : 0;
 
   // Helper for fade animation
   const handleImageChange = (newIdx: number) => {
@@ -215,13 +224,16 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
   };
 
   return (
-    <div className="relative rounded-2xl shadow-lg border hover:shadow-2xl transition-all flex flex-col overflow-hidden group" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}>
+    <div
+      className="relative rounded-2xl border shadow-sm hover:shadow-xl transition-all duration-200 flex flex-col overflow-hidden group hover:-translate-y-0.5"
+      style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+    >
       {/* Dropdown at top right */}
       <div className="absolute top-3 right-3 z-10">
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <button
-              className="cursor-pointer p-2 rounded-full border shadow hover:opacity-90"
+              className="cursor-pointer p-2 rounded-full border shadow-sm hover:opacity-90"
               aria-label="More actions"
               onClick={e => e.stopPropagation()}
               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
@@ -324,36 +336,46 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
         {getStatusTag(product.isDeleted, product.stockNumber)}
       </div> */}
       {/* Image */}
-      <div className="relative w-full aspect-square flex items-center justify-center" style={{ backgroundColor: 'var(--muted)' }}>
+      <div className="relative w-full aspect-square flex items-center justify-center overflow-hidden" style={{ backgroundColor: 'var(--muted)' }}>
         <img
           src={displayImages[imgIdx]}
           alt={product.name}
-          className={`object-cover w-full h-full rounded-t-2xl transition-opacity duration-300 ${animating ? 'opacity-0' : 'opacity-100'}`}
+          className={`object-cover w-full h-full rounded-t-2xl transition-all duration-300 ${animating ? 'opacity-0' : 'opacity-100'} group-hover:scale-[1.02]`}
           style={{ pointerEvents: 'none' }}
+          onError={(e) => {
+            const img = e.currentTarget;
+            if (img.src !== fallbackImage) {
+              img.src = fallbackImage;
+            }
+          }}
         />
+        <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/25 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
         {displayImages.length > 1 && (
           <>
             {/* Prev Arrow */}
             <button
-              className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full p-1 shadow flex items-center justify-center z-10"
+              className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full p-1.5 shadow flex items-center justify-center z-10 backdrop-blur-sm"
               onClick={e => {
                 e.stopPropagation();
                 handleImageChange(imgIdx === 0 ? displayImages.length - 1 : imgIdx - 1);
               }}
               aria-label="Previous image"
               type="button"
+              style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
             >
               <ChevronLeft className="w-5 h-5" style={{ color: 'var(--primary)' }} />
             </button>
             {/* Next Arrow */}
             <button
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 shadow flex items-center justify-center z-10"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1.5 shadow flex items-center justify-center z-10 backdrop-blur-sm"
               onClick={e => {
                 e.stopPropagation();
                 handleImageChange(imgIdx === displayImages.length - 1 ? 0 : imgIdx + 1);
               }}
               aria-label="Next image"
               type="button"
+              style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
             >
               <ChevronRight className="w-5 h-5" style={{ color: 'var(--primary)' }} />
             </button>
@@ -372,7 +394,7 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
               ))}
             </div>
             {/* Carousel icon at bottom right */}
-            <div className="absolute bottom-3 right-3 rounded-full p-1 shadow flex items-center justify-center" style={{ backgroundColor: 'var(--card)' }}>
+            <div className="absolute bottom-3 right-3 rounded-full p-1.5 shadow flex items-center justify-center border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
               <span title="Carousel available">
                 <Images className="w-5 h-5" style={{ color: 'var(--primary)' }} />
               </span>
@@ -381,46 +403,66 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
         )}
       </div>
       {/* Info */}
-      <div className="p-4 flex flex-col gap-2 flex-1">
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold text-lg line-clamp-2" style={{ color: 'var(--card-foreground)' }}>
+      <div className="p-4 flex flex-col gap-3 flex-1">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-semibold text-base leading-6 line-clamp-2" style={{ color: 'var(--card-foreground)' }}>
             {product.name}
           </h3>
+          {product.isOnAuction && (
+            <span
+              className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold border"
+              style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)', borderColor: 'var(--border)' }}
+            >
+              ON AUCTION
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--muted-foreground)' }}>
-          <span className="rounded-full px-2 py-1 font-semibold" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
-            Diamond
+          <span className="rounded-full px-2 py-1 font-medium border" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }}>
+            {isMelee ? 'Melee Diamond' : 'Natural Diamond'}
           </span>
-          <span className="rounded-full px-2 py-1 font-semibold" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
+          <span className="rounded-full px-2 py-1 font-medium" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
             {product.shape}
           </span>
         </div>
         <div className="flex items-baseline gap-2">
-          <span className="text-xl font-extrabold" style={{ color: 'var(--primary)' }}>
+          <span className="text-2xl font-bold tracking-tight" style={{ color: 'var(--primary)' }}>
             ${Number(product.price).toLocaleString()}
           </span>
         </div>
-        <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs mb-2">
-          <div className="flex items-center gap-1">
-            <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Stock #:</span>
-            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{safeStockNumber}</span>
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="rounded-lg border px-2 py-1.5" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--muted)' }}>
+            <div className="font-medium" style={{ color: 'var(--muted-foreground)' }}>{isMelee ? 'Cut' : 'Shape'}</div>
+            <div className="font-semibold" style={{ color: 'var(--foreground)' }}>{isMelee ? (product.cut || '-') : (product.shape || '-')}</div>
           </div>
-          <div className="flex items-center gap-1">
-            <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Color:</span>
-            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.color || '-'}</span>
+          <div className="rounded-lg border px-2 py-1.5" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--muted)' }}>
+            <div className="font-medium" style={{ color: 'var(--muted-foreground)' }}>Color</div>
+            <div className="font-semibold" style={{ color: 'var(--foreground)' }}>{product.color || '-'}</div>
           </div>
-          <div className="flex items-center gap-1">
-            <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Clarity:</span>
-            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.clarity || '-'}</span>
+          <div className="rounded-lg border px-2 py-1.5" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--muted)' }}>
+            <div className="font-medium" style={{ color: 'var(--muted-foreground)' }}>Clarity</div>
+            <div className="font-semibold" style={{ color: 'var(--foreground)' }}>{product.clarity || '-'}</div>
           </div>
-          <div className="flex items-center gap-1">
-            <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Cut:</span>
-            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.cut || '-'}</span>
+          <div className="rounded-lg border px-2 py-1.5" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--muted)' }}>
+            <div className="font-medium" style={{ color: 'var(--muted-foreground)' }}>{isMelee ? 'Total Carat' : 'Cut'}</div>
+            <div className="font-semibold" style={{ color: 'var(--foreground)' }}>
+              {isMelee ? (product.totalCaratWeight ? `${product.totalCaratWeight} ct` : '-') : (product.cut || '-')}
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Shape:</span>
-            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.shape || '-'}</span>
-          </div>
+          {isMelee && (
+            <>
+              <div className="rounded-lg border px-2 py-1.5" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--muted)' }}>
+                <div className="font-medium" style={{ color: 'var(--muted-foreground)' }}>Total Pcs</div>
+                <div className="font-semibold" style={{ color: 'var(--foreground)' }}>{product.totalPcs ?? '-'}</div>
+              </div>
+              <div className="rounded-lg border px-2 py-1.5" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--muted)' }}>
+                <div className="font-medium" style={{ color: 'var(--muted-foreground)' }}>Carat / Pcs</div>
+                <div className="font-semibold" style={{ color: 'var(--foreground)' }}>
+                  {product.caratWeightPerpcs ? `${product.caratWeightPerpcs} ct` : '-'}
+                </div>
+              </div>
+            </>
+          )}
         </div>
         {/* Auction Timer */}
         {/*  
@@ -428,32 +470,18 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
           <CountdownTimer endTime={product.auctionEndTime} />
         )}
           */}
-        <div className="flex items-center justify-between text-xs mt-auto" style={{ color: 'var(--muted-foreground)' }}>
+        <div className="flex items-center justify-between text-xs mt-auto pt-1 border-t" style={{ color: 'var(--muted-foreground)', borderColor: 'var(--border)' }}>
           <div className="flex items-center gap-1">
-            <span className="font-semibold">Updated:</span>
-            <span className="font-bold" style={{ color: 'var(--foreground)' }}>
+            <span className="font-medium">Updated:</span>
+            <span className="font-semibold" style={{ color: 'var(--foreground)' }}>
               {new Date(product.updatedAt).toLocaleDateString()}
             </span>
           </div>
-          <div className="flex items-center gap-1">
-            {/* <span className="font-semibold">Stock:</span>
-            <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.stockNumber}</span> */}
-            {/* {product.isOnAuction && (
-              <div className="ml-2 relative">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg border-2 border-white animate-pulse">
-                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className="drop-shadow-sm">
-                    <g>
-                      <rect x="8.5" y="2" width="3" height="10" rx="1.5" fill="white" />
-                      <rect x="7.5" y="10" width="5" height="2" rx="1" fill="#fef3c7" stroke="white" strokeWidth="1" />
-                      <rect x="6" y="13.5" width="8" height="2" rx="1" fill="#fef3c7" stroke="white" strokeWidth="1" />
-                    </g>
-                  </svg>
-                </div>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white animate-ping"></div>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white"></div>
-              </div>
-            )} */}
-          </div>
+          {product.isSold && (
+            <span className="rounded-full px-2 py-0.5 border text-[10px] font-semibold" style={{ borderColor: 'var(--border)', color: 'var(--destructive)' }}>
+              SOLD
+            </span>
+          )}
         </div>
       </div>
       {/* Quick View Modal */}
@@ -483,6 +511,12 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
                 alt={product.name}
                 className={`object-cover w-full h-full rounded-lg transition-opacity duration-300 ${animating ? 'opacity-0' : 'opacity-100'}`}
                 style={{ pointerEvents: 'none' }}
+                onError={(e) => {
+                  const img = e.currentTarget;
+                  if (img.src !== fallbackImage) {
+                    img.src = fallbackImage;
+                  }
+                }}
               />
               {displayImages.length > 1 && (
                 <>
@@ -542,6 +576,13 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
               <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Clarity:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.clarity || '-'}</span></div>
               <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Cut:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.cut || '-'}</span></div>
               <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Shape:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.shape || '-'}</span></div>
+              {isMelee && (
+                <>
+                  <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Total Pcs:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.totalPcs ?? '-'}</span></div>
+                  <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Carat / Pcs:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.caratWeightPerpcs ? `${product.caratWeightPerpcs} ct` : '-'}</span></div>
+                  <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Total Carat:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.totalCaratWeight ? `${product.totalCaratWeight} ct` : '-'}</span></div>
+                </>
+              )}
               <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Updated:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{new Date(product.updatedAt).toLocaleDateString()}</span></div>
               <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Auction:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.isOnAuction ? 'Yes' : 'No'}</span></div>
               <div><span className="font-semibold" style={{ color: 'var(--muted-foreground)' }}>Sold:</span> <span className="font-bold" style={{ color: 'var(--foreground)' }}>{product.isSold ? 'Yes' : 'No'}</span></div>

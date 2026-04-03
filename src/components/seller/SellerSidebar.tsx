@@ -89,6 +89,11 @@ const navigation = [
 export default function SellerSidebar({ sidebarOpen, setSidebarOpen }: SellerSidebarProps) {
   const pathname = usePathname()
   const [isDesktopHovered, setIsDesktopHovered] = useState(false)
+  const isActiveRoute = (href: string) => {
+    if (pathname === href) return true
+    if (href === '/seller/dashboard') return pathname === '/seller' || pathname === '/seller/dashboard'
+    return pathname.startsWith(`${href}/`)
+  }
 
   return (
     <>
@@ -130,23 +135,24 @@ export default function SellerSidebar({ sidebarOpen, setSidebarOpen }: SellerSid
         <nav className="flex-1 py-4">
           <ul className="space-y-2">
             {navigation.map((item) => {
-              const isActive = pathname === item.href
+              const isActive = isActiveRoute(item.href)
               return (
                 <li key={item.name}>
                   <Link
                     href={item.href}
-                    className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+                    className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all"
                     style={{
-                      backgroundColor: isActive ? 'var(--sidebar-accent)' : 'transparent',
-                      color: isActive ? 'var(--sidebar-accent-foreground)' : 'var(--sidebar-foreground)',
+                      backgroundColor: isActive ? 'var(--sidebar-primary)' : 'transparent',
+                      color: isActive ? 'var(--sidebar-primary-foreground)' : 'var(--sidebar-foreground)',
                     }}
                     onClick={() => setSidebarOpen(false)}
                   >
                     <div
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border bg-background transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg border transition-colors"
                       style={{
-                        borderColor: 'var(--sidebar-border)',
-                        color: isActive ? 'var(--sidebar-accent-foreground)' : 'var(--sidebar-foreground)',
+                        backgroundColor: isActive ? 'color-mix(in srgb, var(--sidebar-primary-foreground) 18%, transparent)' : 'var(--background)',
+                        borderColor: isActive ? 'transparent' : 'var(--sidebar-border)',
+                        color: isActive ? 'var(--sidebar-primary-foreground)' : 'var(--sidebar-foreground)',
                       }}
                     >
                       {item.icon}
@@ -221,24 +227,25 @@ export default function SellerSidebar({ sidebarOpen, setSidebarOpen }: SellerSid
           <nav className="flex flex-1 flex-col mt-2">
             <ul role="list" className="flex flex-1 flex-col gap-y-4">
               {navigation.map((item) => {
-                const isActive = pathname === item.href
+                const isActive = isActiveRoute(item.href)
                 return (
                   <li key={item.name}>
                     <Link
                       href={item.href}
-                      className={`group flex items-center rounded-lg px-2 py-2 text-sm leading-6 font-medium transition-colors ${
+                      className={`group flex items-center rounded-lg px-2 py-2 text-sm leading-6 font-medium transition-all ${
                         isDesktopHovered ? 'justify-start gap-3' : 'justify-center'
                       }`}
                       style={{
-                        backgroundColor: isActive ? 'var(--sidebar-accent)' : 'transparent',
-                        color: isActive ? 'var(--sidebar-accent-foreground)' : 'var(--sidebar-foreground)',
+                        backgroundColor: isActive ? 'var(--sidebar-primary)' : 'transparent',
+                        color: isActive ? 'var(--sidebar-primary-foreground)' : 'var(--sidebar-foreground)',
                       }}
                     >
                       <div
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border bg-background transition-colors"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg border transition-colors"
                         style={{
-                          borderColor: 'var(--sidebar-border)',
-                          color: isActive ? 'var(--sidebar-accent-foreground)' : 'var(--sidebar-foreground)',
+                          backgroundColor: isActive ? 'color-mix(in srgb, var(--sidebar-primary-foreground) 18%, transparent)' : 'var(--background)',
+                          borderColor: isActive ? 'transparent' : 'var(--sidebar-border)',
+                          color: isActive ? 'var(--sidebar-primary-foreground)' : 'var(--sidebar-foreground)',
                         }}
                       >
                         {item.icon}

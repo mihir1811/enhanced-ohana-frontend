@@ -1,12 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import BulkUploadModal from './BulkUploadModal';
-import { diamondService, DiamondData } from '@/services/diamondService';
+import { diamondService } from '@/services/diamondService';
 import DiamondProductCard, { DiamondProduct } from './DiamondProductCard';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { toast } from 'react-hot-toast';
 import { getCookie } from '@/lib/cookie-utils';
+import { SellerTableColumnPicker } from './SellerTableColumnPicker';
+import {
+  DEFAULT_NATURAL_DIAMOND_VISIBILITY,
+  NATURAL_DIAMOND_COLUMNS,
+  type NaturalDiamondColumnId,
+  loadNaturalDiamondColumnVisibility,
+  saveNaturalDiamondColumnVisibility,
+} from './sellerTableColumnPreferences';
+import {
+  SellerListingToolbarDivider,
+  SellerListingToolbarGroup,
+  SellerProductListingHeader,
+} from './SellerProductListingHeader';
 
 const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType?: string }) => {
   const fallbackImage =
@@ -34,6 +47,33 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [columnVisibility, setColumnVisibility] =
+    useState<Record<NaturalDiamondColumnId, boolean>>(DEFAULT_NATURAL_DIAMOND_VISIBILITY);
+  const skipInitialColumnSave = useRef(true);
+
+  useEffect(() => {
+    setColumnVisibility(loadNaturalDiamondColumnVisibility());
+  }, []);
+
+  useEffect(() => {
+    if (skipInitialColumnSave.current) {
+      skipInitialColumnSave.current = false;
+      return;
+    }
+    saveNaturalDiamondColumnVisibility(columnVisibility);
+  }, [columnVisibility]);
+
+  const showCol = (id: NaturalDiamondColumnId) => columnVisibility[id];
+
+  const formatShortDate = (iso: string) => {
+    try {
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return '—';
+      return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch {
+      return '—';
+    }
+  };
 
   const handleUpdateProduct = (updated: DiamondProduct) => {
     setDiamonds((prev) =>
@@ -164,79 +204,106 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold">Diamonds</h2>
-        <div className="flex gap-2 items-center relative">
-          {/* Bulk Upload Button */}
-          <button
-            className="px-4 py-2 rounded font-semibold transition cursor-pointer"
-            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-            onClick={() => setBulkModalOpen(true)}
-            type="button"
-          >
-            Bulk Upload
-          </button>
-          <button
-            type="button"
-            disabled={selectedCount === 0}
-            onClick={() => setBulkDeleteOpen(true)}
-            className="px-4 py-2 rounded font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ backgroundColor: 'var(--destructive)', color: 'white' }}
-          >
-            Delete Selected ({selectedCount})
-          </button>
-          <BulkUploadModal
-            open={bulkModalOpen}
-            onClose={() => setBulkModalOpen(false)}
-            onFileSelect={handleBulkFileSelect}
-          />
-          <button
-            className={"cursor-pointer relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
-            style={{
-              backgroundColor: view === 'list' ? 'var(--primary)' : 'var(--card)',
-              color: view === 'list' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
-              borderColor: view === 'list' ? 'var(--primary)' : 'var(--border)'
-            }}
-            onClick={() => setView('list')}
-            aria-label="List View"
-            type="button"
-          >
-            {/* List Icon SVG */}
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />
-            </svg>
-            {/* Tooltip */}
-            <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap" style={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', border: '1px solid var(--border)' }}>
-              List View
-            </span>
-          </button>
-          {/* Grid View Icon Button */}
-          <button
-            className={"cursor-pointer relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
-            style={{
-              backgroundColor: view === 'grid' ? 'var(--primary)' : 'var(--card)',
-              color: view === 'grid' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
-              borderColor: view === 'grid' ? 'var(--primary)' : 'var(--border)'
-            }}
-            onClick={() => setView('grid')}
-            aria-label="Grid View"
-            type="button"
-          >
-            {/* Grid Icon SVG */}
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <rect x="4" y="4" width="6" height="6" rx="1" fill="currentColor" />
-              <rect x="14" y="4" width="6" height="6" rx="1" fill="currentColor" />
-              <rect x="4" y="14" width="6" height="6" rx="1" fill="currentColor" />
-              <rect x="14" y="14" width="6" height="6" rx="1" fill="currentColor" />
-            </svg>
-            {/* Tooltip */}
-            <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap" style={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', border: '1px solid var(--border)' }}>
-              Grid View
-            </span>
-          </button>
+      <SellerProductListingHeader
+        title="Diamonds"
+        subtitle="Switch between table and grid; columns can be customized in table view."
+        actions={
+          <>
+            <button
+              className="rounded-md px-4 py-2 text-sm font-semibold shadow-sm transition hover:opacity-95"
+              style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+              onClick={() => setBulkModalOpen(true)}
+              type="button"
+            >
+              Bulk upload
+            </button>
+            <SellerListingToolbarDivider />
+            <button
+              type="button"
+              disabled={selectedCount === 0}
+              onClick={() => setBulkDeleteOpen(true)}
+              className="rounded-md border px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
+              style={{
+                backgroundColor: 'var(--card)',
+                borderColor: 'var(--destructive)',
+                color: 'var(--destructive)',
+              }}
+            >
+              Delete selected ({selectedCount})
+            </button>
+            <BulkUploadModal
+              open={bulkModalOpen}
+              onClose={() => setBulkModalOpen(false)}
+              onFileSelect={handleBulkFileSelect}
+            />
+            <SellerListingToolbarDivider />
+            <SellerListingToolbarGroup>
+              <button
+                className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-md transition-colors duration-150 group"
+                style={{
+                  backgroundColor: view === 'list' ? 'var(--primary)' : 'transparent',
+                  color: view === 'list' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
+                }}
+                onClick={() => setView('list')}
+                aria-label="Table view"
+                aria-pressed={view === 'list'}
+                type="button"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />
+                </svg>
+                <span className="pointer-events-none absolute left-1/2 top-full z-10 mt-2 -translate-x-1/2 whitespace-nowrap rounded border px-2 py-1 text-xs opacity-0 transition-opacity group-hover:opacity-100" style={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', borderColor: 'var(--border)' }}>
+                  Table
+                </span>
+              </button>
+              <button
+                className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-md transition-colors duration-150 group"
+                style={{
+                  backgroundColor: view === 'grid' ? 'var(--primary)' : 'transparent',
+                  color: view === 'grid' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
+                }}
+                onClick={() => setView('grid')}
+                aria-label="Grid view"
+                aria-pressed={view === 'grid'}
+                type="button"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <rect x="4" y="4" width="6" height="6" rx="1" fill="currentColor" />
+                  <rect x="14" y="4" width="6" height="6" rx="1" fill="currentColor" />
+                  <rect x="4" y="14" width="6" height="6" rx="1" fill="currentColor" />
+                  <rect x="14" y="14" width="6" height="6" rx="1" fill="currentColor" />
+                </svg>
+                <span className="pointer-events-none absolute left-1/2 top-full z-10 mt-2 -translate-x-1/2 whitespace-nowrap rounded border px-2 py-1 text-xs opacity-0 transition-opacity group-hover:opacity-100" style={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', borderColor: 'var(--border)' }}>
+                  Grid
+                </span>
+              </button>
+              {view === 'list' && (
+                <SellerTableColumnPicker
+                  variant="toolbar"
+                  columns={NATURAL_DIAMOND_COLUMNS}
+                  visible={columnVisibility}
+                  title="Diamond table columns"
+                  onToggle={(id, checked) => {
+                    setColumnVisibility((prev) => ({
+                      ...prev,
+                      [id as NaturalDiamondColumnId]: checked,
+                    }));
+                  }}
+                />
+              )}
+            </SellerListingToolbarGroup>
+          </>
+        }
+      />
+      {loading && (
+        <div
+          className="flex items-center gap-3 rounded-lg border px-4 py-6"
+          style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)', color: 'var(--muted-foreground)' }}
+        >
+          <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden />
+          <span className="text-sm">Loading diamonds…</span>
         </div>
-      </div>
-      {loading && <p>Loading...</p>}
+      )}
       {error && <p className="text-red-500">{error}</p>}
       {!loading && !error && (
         <>
@@ -254,11 +321,11 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
               </button>
             </div>
           ) : view === 'list' ? (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-xl border shadow-sm" style={{ borderColor: 'var(--border)' }}>
               {/* Table view */}
               <table
-                className="min-w-full rounded-lg shadow border border-collapse"
-                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                className="min-w-full border-collapse text-sm"
+                style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
               >
                 <thead className="border-b" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }}>
                   <tr>
@@ -270,20 +337,39 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
                         aria-label="Select all diamonds"
                       />
                     </th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Image</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Name</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Price</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Color</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Clarity</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Cut</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Shape</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Stock</th>
+                    {showCol('image') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Image</th>
+                    )}
+                    {showCol('name') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Name</th>
+                    )}
+                    {showCol('price') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Price</th>
+                    )}
+                    {showCol('color') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Color</th>
+                    )}
+                    {showCol('clarity') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Clarity</th>
+                    )}
+                    {showCol('cut') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Cut</th>
+                    )}
+                    {showCol('shape') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Shape</th>
+                    )}
+                    {showCol('stock') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Stock</th>
+                    )}
+                    {showCol('updated') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Updated</th>
+                    )}
                     <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {diamonds.map((diamond) => (
-                    <tr key={diamond.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
+                    <tr key={diamond.id} className="border-t transition-colors hover:bg-muted/40" style={{ borderColor: 'var(--border)' }}>
                       <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
                         <input
                           type="checkbox"
@@ -292,22 +378,49 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
                           aria-label={`Select ${diamond.name}`}
                         />
                       </td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
-                        <Image
-                          src={normalizeImageSrc(diamond.image1)}
-                          alt={diamond.name}
-                          width={64}
-                          height={64}
-                          className="w-16 h-16 object-cover rounded"
-                        />
-                      </td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.name}</td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)', color: 'var(--primary)' }}>${Number(diamond.price).toLocaleString()}</td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.color}</td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.clarity}</td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.cut}</td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.shape}</td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.stockNumber}</td>
+                      {showCol('image') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
+                          <Image
+                            src={normalizeImageSrc(diamond.image1)}
+                            alt={diamond.name}
+                            width={64}
+                            height={64}
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                        </td>
+                      )}
+                      {showCol('name') && (
+                        <td
+                          className="max-w-[min(22rem,40vw)] px-4 py-2 border-r"
+                          style={{ borderColor: 'var(--border)' }}
+                          title={diamond.name}
+                        >
+                          <span className="line-clamp-2 font-medium leading-snug">{diamond.name}</span>
+                        </td>
+                      )}
+                      {showCol('price') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)', color: 'var(--primary)' }}>${Number(diamond.price).toLocaleString()}</td>
+                      )}
+                      {showCol('color') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.color}</td>
+                      )}
+                      {showCol('clarity') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.clarity}</td>
+                      )}
+                      {showCol('cut') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.cut}</td>
+                      )}
+                      {showCol('shape') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.shape}</td>
+                      )}
+                      {showCol('stock') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.stockNumber}</td>
+                      )}
+                      {showCol('updated') && (
+                        <td className="px-4 py-2 border-r text-sm" style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}>
+                          {formatShortDate(diamond.updatedAt)}
+                        </td>
+                      )}
                       <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
                         <div className="flex items-center gap-2">
                           <button
@@ -356,9 +469,13 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
               {diamonds.map((diamond) => (
                 <div key={diamond.id} className="relative">
-                  <label className="absolute z-10 top-3 left-3 h-6 w-6 rounded bg-white/90 border border-gray-300 flex items-center justify-center cursor-pointer">
+                  <label
+                    className="absolute z-10 top-3 left-3 flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border shadow-sm backdrop-blur-sm"
+                    style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+                  >
                     <input
                       type="checkbox"
+                      className="h-4 w-4 cursor-pointer accent-[var(--primary)]"
                       checked={selectedIds.has(diamond.id)}
                       onChange={() => toggleSelectOne(diamond.id)}
                       aria-label={`Select ${diamond.name}`}
