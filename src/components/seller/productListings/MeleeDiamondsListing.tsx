@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import BulkUploadModal from './BulkUploadModal';
 import { diamondService } from '@/services/diamondService';
@@ -7,6 +7,14 @@ import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { toast } from 'react-hot-toast';
 import { getCookie } from '@/lib/cookie-utils';
+import { SellerTableColumnPicker } from './SellerTableColumnPicker';
+import {
+  DEFAULT_MELEE_DIAMOND_VISIBILITY,
+  MELEE_DIAMOND_COLUMNS,
+  type MeleeDiamondColumnId,
+  loadMeleeDiamondColumnVisibility,
+  saveMeleeDiamondColumnVisibility,
+} from './sellerTableColumnPreferences';
 
 const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType?: string }) => {
   const fallbackImage =
@@ -21,6 +29,16 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : fallback;
   };
+  const normalizeCode = (value: unknown) => String(value ?? '').trim().toUpperCase();
+  const formatRange = (fromValue: unknown, toValue: unknown, singleValue?: unknown) => {
+    const from = normalizeCode(fromValue);
+    const to = normalizeCode(toValue);
+    const single = normalizeCode(singleValue);
+    if (from && to) return from === to ? from : `${from} - ${to}`;
+    if (from) return from;
+    if (to) return to;
+    return single;
+  };
 
   const [diamonds, setDiamonds] = useState<DiamondProduct[]>([]);
   const [view, setView] = useState<'list' | 'grid'>('grid');
@@ -34,6 +52,33 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [columnVisibility, setColumnVisibility] =
+    useState<Record<MeleeDiamondColumnId, boolean>>(DEFAULT_MELEE_DIAMOND_VISIBILITY);
+  const skipInitialColumnSave = useRef(true);
+
+  useEffect(() => {
+    setColumnVisibility(loadMeleeDiamondColumnVisibility());
+  }, []);
+
+  useEffect(() => {
+    if (skipInitialColumnSave.current) {
+      skipInitialColumnSave.current = false;
+      return;
+    }
+    saveMeleeDiamondColumnVisibility(columnVisibility);
+  }, [columnVisibility]);
+
+  const showCol = (id: MeleeDiamondColumnId) => columnVisibility[id];
+
+  const formatShortDate = (iso: string) => {
+    try {
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return '—';
+      return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch {
+      return '—';
+    }
+  };
 
   const handleBulkFileSelect = () => {
     setBulkModalOpen(false);
@@ -104,11 +149,17 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
           const images = Array.isArray(d.images) ? (d.images as unknown[]).map((v) => String(v)) : [];
           const idRaw = d.id as string | number | undefined;
           const idNum = typeof idRaw === 'string' ? parseInt(idRaw, 10) : Number(idRaw ?? 0);
+          const colorRange = formatRange(d.colorFrom, d.colorTo, d.color);
+          const clarityRange = formatRange(d.clarityMin, d.clarityMax, d.clarity);
+          const cutRange = formatRange(d.cutFrom, d.cutTo, d.cut);
+          const totalPcs = toSafeNumber(d.totalPcs ?? d.stockNumber, 0);
+          const caratWeightPerpcs = String(d.caratWeightPerpcs ?? d.caratWeightPerPiece ?? '').trim();
+          const totalCaratWeight = String(d.totalCaratWeight ?? d.caratWeight ?? d.totalCarat ?? '').trim();
           return {
             id: isNaN(idNum) ? 0 : idNum,
             name:
               (d.name as string | undefined)
-              || `Melee Parcel ${String(d.color ?? '')} ${String(d.clarity ?? '')} - ${String(d.caratWeight ?? d.carat ?? '')}ct`,
+              || `Melee Parcel ${colorRange || '-'} ${clarityRange || '-'} ${cutRange ? `(${cutRange})` : ''} - ${totalCaratWeight || String(d.caratWeight ?? d.carat ?? '')}ct`,
             price: String((d.price as number | string | undefined) ?? (d.totalPrice as number | string | undefined) ?? 0),
             image1: normalizeImageSrc((d.image1 as string | null | undefined) ?? (images[0] ?? null)),
             image2: normalizeImageSrc((d.image2 as string | null | undefined) ?? (images[1] ?? null)),
@@ -116,11 +167,14 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
             image4: normalizeImageSrc((d.image4 as string | null | undefined) ?? (images[3] ?? null)),
             image5: normalizeImageSrc((d.image5 as string | null | undefined) ?? (images[4] ?? null)),
             image6: normalizeImageSrc((d.image6 as string | null | undefined) ?? (images[5] ?? null)),
-            stockNumber: toSafeNumber(d.stockNumber, 0),
-            color: String(d.color ?? ''),
-            clarity: String(d.clarity ?? ''),
-            cut: String(d.cut ?? ''),
+            stockNumber: totalPcs,
+            color: colorRange,
+            clarity: clarityRange,
+            cut: cutRange,
             shape: String(d.shape ?? ''),
+            totalPcs,
+            caratWeightPerpcs,
+            totalCaratWeight,
             isDeleted: Boolean(d.isDeleted ?? false),
             updatedAt: String((d.updatedAt as string | undefined) ?? new Date().toISOString()),
             isOnAuction: Boolean(d.isOnAuction ?? false),
@@ -212,6 +266,19 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
               Grid View
             </span>
           </button>
+          {view === 'list' && (
+            <SellerTableColumnPicker
+              columns={MELEE_DIAMOND_COLUMNS}
+              visible={columnVisibility}
+              title="Melee table columns"
+              onToggle={(id, checked) => {
+                setColumnVisibility((prev) => ({
+                  ...prev,
+                  [id as MeleeDiamondColumnId]: checked,
+                }));
+              }}
+            />
+          )}
         </div>
       </div>
 
@@ -249,12 +316,39 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
                         aria-label="Select all melee diamonds"
                       />
                     </th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Image</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Name</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Price</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Color</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Clarity</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Stock</th>
+                    {showCol('image') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Image</th>
+                    )}
+                    {showCol('name') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Name</th>
+                    )}
+                    {showCol('price') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Price</th>
+                    )}
+                    {showCol('color') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Color</th>
+                    )}
+                    {showCol('clarity') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Clarity</th>
+                    )}
+                    {showCol('cut') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Cut</th>
+                    )}
+                    {showCol('totalPcs') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Total Pcs</th>
+                    )}
+                    {showCol('caratWeightPerpcs') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Carat/Pcs</th>
+                    )}
+                    {showCol('totalCaratWeight') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Total Carat</th>
+                    )}
+                    {showCol('stock') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Stock</th>
+                    )}
+                    {showCol('updated') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Updated</th>
+                    )}
                     <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Actions</th>
                   </tr>
                 </thead>
@@ -269,21 +363,54 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
                           aria-label={`Select ${diamond.name}`}
                         />
                       </td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
-                        <div className="w-12 h-12 relative rounded overflow-hidden">
-                          <Image
-                            src={diamond.image1 || '/placeholder-diamond.png'}
-                            alt={diamond.name}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                      </td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.name}</td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>${diamond.price}</td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.color}</td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.clarity}</td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.stockNumber}</td>
+                      {showCol('image') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
+                          <div className="w-12 h-12 relative rounded overflow-hidden">
+                            <Image
+                              src={normalizeImageSrc(diamond.image1)}
+                              alt={diamond.name}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        </td>
+                      )}
+                      {showCol('name') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.name}</td>
+                      )}
+                      {showCol('price') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>${Number(diamond.price).toLocaleString()}</td>
+                      )}
+                      {showCol('color') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.color}</td>
+                      )}
+                      {showCol('clarity') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.clarity}</td>
+                      )}
+                      {showCol('cut') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.cut || '-'}</td>
+                      )}
+                      {showCol('totalPcs') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.totalPcs ?? '-'}</td>
+                      )}
+                      {showCol('caratWeightPerpcs') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
+                          {diamond.caratWeightPerpcs ? `${diamond.caratWeightPerpcs} ct` : '-'}
+                        </td>
+                      )}
+                      {showCol('totalCaratWeight') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
+                          {diamond.totalCaratWeight ? `${diamond.totalCaratWeight} ct` : '-'}
+                        </td>
+                      )}
+                      {showCol('stock') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.stockNumber}</td>
+                      )}
+                      {showCol('updated') && (
+                        <td className="px-4 py-2 border-r text-sm" style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}>
+                          {formatShortDate(diamond.updatedAt)}
+                        </td>
+                      )}
                       <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
                         <div className="flex gap-2">
                           <button

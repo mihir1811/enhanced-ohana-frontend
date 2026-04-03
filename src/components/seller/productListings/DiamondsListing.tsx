@@ -1,12 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import BulkUploadModal from './BulkUploadModal';
-import { diamondService, DiamondData } from '@/services/diamondService';
+import { diamondService } from '@/services/diamondService';
 import DiamondProductCard, { DiamondProduct } from './DiamondProductCard';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { toast } from 'react-hot-toast';
 import { getCookie } from '@/lib/cookie-utils';
+import { SellerTableColumnPicker } from './SellerTableColumnPicker';
+import {
+  DEFAULT_NATURAL_DIAMOND_VISIBILITY,
+  NATURAL_DIAMOND_COLUMNS,
+  type NaturalDiamondColumnId,
+  loadNaturalDiamondColumnVisibility,
+  saveNaturalDiamondColumnVisibility,
+} from './sellerTableColumnPreferences';
 
 const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType?: string }) => {
   const fallbackImage =
@@ -34,6 +42,33 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [columnVisibility, setColumnVisibility] =
+    useState<Record<NaturalDiamondColumnId, boolean>>(DEFAULT_NATURAL_DIAMOND_VISIBILITY);
+  const skipInitialColumnSave = useRef(true);
+
+  useEffect(() => {
+    setColumnVisibility(loadNaturalDiamondColumnVisibility());
+  }, []);
+
+  useEffect(() => {
+    if (skipInitialColumnSave.current) {
+      skipInitialColumnSave.current = false;
+      return;
+    }
+    saveNaturalDiamondColumnVisibility(columnVisibility);
+  }, [columnVisibility]);
+
+  const showCol = (id: NaturalDiamondColumnId) => columnVisibility[id];
+
+  const formatShortDate = (iso: string) => {
+    try {
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return '—';
+      return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch {
+      return '—';
+    }
+  };
 
   const handleUpdateProduct = (updated: DiamondProduct) => {
     setDiamonds((prev) =>
@@ -234,6 +269,19 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
               Grid View
             </span>
           </button>
+          {view === 'list' && (
+            <SellerTableColumnPicker
+              columns={NATURAL_DIAMOND_COLUMNS}
+              visible={columnVisibility}
+              title="Diamond table columns"
+              onToggle={(id, checked) => {
+                setColumnVisibility((prev) => ({
+                  ...prev,
+                  [id as NaturalDiamondColumnId]: checked,
+                }));
+              }}
+            />
+          )}
         </div>
       </div>
       {loading && <p>Loading...</p>}
@@ -270,14 +318,33 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
                         aria-label="Select all diamonds"
                       />
                     </th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Image</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Name</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Price</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Color</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Clarity</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Cut</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Shape</th>
-                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Stock</th>
+                    {showCol('image') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Image</th>
+                    )}
+                    {showCol('name') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Name</th>
+                    )}
+                    {showCol('price') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Price</th>
+                    )}
+                    {showCol('color') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Color</th>
+                    )}
+                    {showCol('clarity') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Clarity</th>
+                    )}
+                    {showCol('cut') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Cut</th>
+                    )}
+                    {showCol('shape') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Shape</th>
+                    )}
+                    {showCol('stock') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Stock</th>
+                    )}
+                    {showCol('updated') && (
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Updated</th>
+                    )}
                     <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Actions</th>
                   </tr>
                 </thead>
@@ -292,22 +359,43 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
                           aria-label={`Select ${diamond.name}`}
                         />
                       </td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
-                        <Image
-                          src={normalizeImageSrc(diamond.image1)}
-                          alt={diamond.name}
-                          width={64}
-                          height={64}
-                          className="w-16 h-16 object-cover rounded"
-                        />
-                      </td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.name}</td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)', color: 'var(--primary)' }}>${Number(diamond.price).toLocaleString()}</td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.color}</td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.clarity}</td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.cut}</td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.shape}</td>
-                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.stockNumber}</td>
+                      {showCol('image') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
+                          <Image
+                            src={normalizeImageSrc(diamond.image1)}
+                            alt={diamond.name}
+                            width={64}
+                            height={64}
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                        </td>
+                      )}
+                      {showCol('name') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.name}</td>
+                      )}
+                      {showCol('price') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)', color: 'var(--primary)' }}>${Number(diamond.price).toLocaleString()}</td>
+                      )}
+                      {showCol('color') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.color}</td>
+                      )}
+                      {showCol('clarity') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.clarity}</td>
+                      )}
+                      {showCol('cut') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.cut}</td>
+                      )}
+                      {showCol('shape') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.shape}</td>
+                      )}
+                      {showCol('stock') && (
+                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.stockNumber}</td>
+                      )}
+                      {showCol('updated') && (
+                        <td className="px-4 py-2 border-r text-sm" style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}>
+                          {formatShortDate(diamond.updatedAt)}
+                        </td>
+                      )}
                       <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
                         <div className="flex items-center gap-2">
                           <button
