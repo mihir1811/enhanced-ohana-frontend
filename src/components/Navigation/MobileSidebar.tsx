@@ -77,8 +77,17 @@ export default function MobileSidebar({
       items: [
         { href: '/user/profile', label: 'My Profile', icon: '👤' },
         { href: '/user/orders', label: 'Order History', icon: '📦' },
+        { href: '/user/inquiries', label: 'My inquiries', icon: '📋' },
         { href: '/user/wishlist', label: 'My Wishlist', icon: '❤️' },
         { href: '/user/profile', label: 'Saved Addresses', icon: '📍' }
+      ]
+    },
+    {
+      id: 'help',
+      title: 'Help',
+      items: [
+        { href: '/inquiry', label: 'Inquiry', icon: '✉️' },
+        { href: '/contact-us', label: 'Contact & support', icon: '💬' }
       ]
     }
   ], [])

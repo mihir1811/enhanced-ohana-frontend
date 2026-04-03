@@ -97,6 +97,7 @@ export default function Footer() {
               {[
                 { label: 'About Us', href: '/about' },
                 { label: 'Our Story', href: '/story' },
+                { label: 'Inquiry', href: '/inquiry' },
                 { label: 'Expert Consultation', href: '/expert-consultation' },
                 { label: 'Diamond Education', href: '/education' },
                 { label: 'Become a Seller', href: '/become-seller' }
@@ -155,6 +156,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="mt-16 pt-8 border-t flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0" style={{ borderColor: 'var(--border)' }}>
           <div className="flex flex-wrap justify-center md:justify-start gap-6 text-xs" style={{ color: 'var(--muted-foreground)' }}>
+            <Link href="/inquiry" className="hover:text-amber-500 transition-colors">Inquiry</Link>
             <Link href="/privacy" className="hover:text-amber-500 transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-amber-500 transition-colors">Terms of Service</Link>
             <Link href="/shipping" className="hover:text-amber-500 transition-colors">Shipping & Returns</Link>
