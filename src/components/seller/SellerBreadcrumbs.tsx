@@ -8,6 +8,7 @@ const LABELS: Record<string, string> = {
   dashboard: 'Dashboard',
   products: 'Products',
   orders: 'Orders',
+  inquiries: 'Inquiries',
   'add-product': 'Add Product',
   profile: 'Profile',
   edit: 'Edit',
