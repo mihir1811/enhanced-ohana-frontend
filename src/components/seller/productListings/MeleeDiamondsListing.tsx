@@ -15,6 +15,11 @@ import {
   loadMeleeDiamondColumnVisibility,
   saveMeleeDiamondColumnVisibility,
 } from './sellerTableColumnPreferences';
+import {
+  SellerListingToolbarDivider,
+  SellerListingToolbarGroup,
+  SellerProductListingHeader,
+} from './SellerProductListingHeader';
 
 const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType?: string }) => {
   const fallbackImage =
@@ -38,6 +43,13 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
     if (from) return from;
     if (to) return to;
     return single;
+  };
+
+  /** Short title without duplicating total carat (shown in its own column). */
+  const buildMeleeFallbackName = (colorRange: string, clarityRange: string, cutRange: string) => {
+    const parts = [colorRange, clarityRange, cutRange].filter(Boolean);
+    if (parts.length === 0) return 'Melee parcel';
+    return `Melee · ${parts.join(' · ')}`;
   };
 
   const [diamonds, setDiamonds] = useState<DiamondProduct[]>([]);
@@ -153,13 +165,20 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
           const clarityRange = formatRange(d.clarityMin, d.clarityMax, d.clarity);
           const cutRange = formatRange(d.cutFrom, d.cutTo, d.cut);
           const totalPcs = toSafeNumber(d.totalPcs ?? d.stockNumber, 0);
+          const stockFromApi = d.stockNumber;
+          const stockNumber =
+            stockFromApi !== undefined && stockFromApi !== null && String(stockFromApi).trim() !== ''
+              ? toSafeNumber(stockFromApi, totalPcs)
+              : totalPcs;
           const caratWeightPerpcs = String(d.caratWeightPerpcs ?? d.caratWeightPerPiece ?? '').trim();
           const totalCaratWeight = String(d.totalCaratWeight ?? d.caratWeight ?? d.totalCarat ?? '').trim();
           return {
             id: isNaN(idNum) ? 0 : idNum,
             name:
-              (d.name as string | undefined)
-              || `Melee Parcel ${colorRange || '-'} ${clarityRange || '-'} ${cutRange ? `(${cutRange})` : ''} - ${totalCaratWeight || String(d.caratWeight ?? d.carat ?? '')}ct`,
+              (() => {
+                const n = typeof d.name === 'string' ? d.name.trim() : '';
+                return n || buildMeleeFallbackName(colorRange, clarityRange, cutRange);
+              })(),
             price: String((d.price as number | string | undefined) ?? (d.totalPrice as number | string | undefined) ?? 0),
             image1: normalizeImageSrc((d.image1 as string | null | undefined) ?? (images[0] ?? null)),
             image2: normalizeImageSrc((d.image2 as string | null | undefined) ?? (images[1] ?? null)),
@@ -167,7 +186,7 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
             image4: normalizeImageSrc((d.image4 as string | null | undefined) ?? (images[3] ?? null)),
             image5: normalizeImageSrc((d.image5 as string | null | undefined) ?? (images[4] ?? null)),
             image6: normalizeImageSrc((d.image6 as string | null | undefined) ?? (images[5] ?? null)),
-            stockNumber: totalPcs,
+            stockNumber,
             color: colorRange,
             clarity: clarityRange,
             cut: cutRange,
@@ -201,88 +220,108 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold">Melee Diamond Parcels</h2>
-        <div className="flex gap-2 items-center relative">
-          <button
-            className="px-4 py-2 rounded font-semibold transition cursor-pointer"
-            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-            onClick={() => setBulkModalOpen(true)}
-            type="button"
-          >
-            Bulk Upload
-          </button>
-          <button
-            type="button"
-            disabled={selectedCount === 0}
-            onClick={() => setBulkDeleteOpen(true)}
-            className="px-4 py-2 rounded font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ backgroundColor: 'var(--destructive)', color: 'white' }}
-          >
-            Delete Selected ({selectedCount})
-          </button>
-          <BulkUploadModal
-            open={bulkModalOpen}
-            onClose={() => setBulkModalOpen(false)}
-            onFileSelect={handleBulkFileSelect}
-            productType="meleeDiamond"
-          />
-          <button
-            className={"cursor-pointer relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
-            style={{
-              backgroundColor: view === 'list' ? 'var(--primary)' : 'var(--card)',
-              color: view === 'list' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
-              borderColor: view === 'list' ? 'var(--primary)' : 'var(--border)'
-            }}
-            onClick={() => setView('list')}
-            aria-label="List View"
-            type="button"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />
-            </svg>
-            <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap" style={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', border: '1px solid var(--border)' }}>
-              List View
-            </span>
-          </button>
-          <button
-            className={"cursor-pointer relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
-            style={{
-              backgroundColor: view === 'grid' ? 'var(--primary)' : 'var(--card)',
-              color: view === 'grid' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
-              borderColor: view === 'grid' ? 'var(--primary)' : 'var(--border)'
-            }}
-            onClick={() => setView('grid')}
-            aria-label="Grid View"
-            type="button"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <rect x="4" y="4" width="6" height="6" rx="1" fill="currentColor" />
-              <rect x="14" y="4" width="6" height="6" rx="1" fill="currentColor" />
-              <rect x="4" y="14" width="6" height="6" rx="1" fill="currentColor" />
-              <rect x="14" y="14" width="6" height="6" rx="1" fill="currentColor" />
-            </svg>
-            <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap" style={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', border: '1px solid var(--border)' }}>
-              Grid View
-            </span>
-          </button>
-          {view === 'list' && (
-            <SellerTableColumnPicker
-              columns={MELEE_DIAMOND_COLUMNS}
-              visible={columnVisibility}
-              title="Melee table columns"
-              onToggle={(id, checked) => {
-                setColumnVisibility((prev) => ({
-                  ...prev,
-                  [id as MeleeDiamondColumnId]: checked,
-                }));
+      <SellerProductListingHeader
+        title="Melee diamond parcels"
+        subtitle="Ranges and weights are shown in columns—use list view for dense inventory review."
+        actions={
+          <>
+            <button
+              className="rounded-md px-4 py-2 text-sm font-semibold shadow-sm transition hover:opacity-95"
+              style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+              onClick={() => setBulkModalOpen(true)}
+              type="button"
+            >
+              Bulk upload
+            </button>
+            <SellerListingToolbarDivider />
+            <button
+              type="button"
+              disabled={selectedCount === 0}
+              onClick={() => setBulkDeleteOpen(true)}
+              className="rounded-md border px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
+              style={{
+                backgroundColor: 'var(--card)',
+                borderColor: 'var(--destructive)',
+                color: 'var(--destructive)',
               }}
+            >
+              Delete selected ({selectedCount})
+            </button>
+            <BulkUploadModal
+              open={bulkModalOpen}
+              onClose={() => setBulkModalOpen(false)}
+              onFileSelect={handleBulkFileSelect}
+              productType="meleeDiamond"
             />
-          )}
-        </div>
-      </div>
+            <SellerListingToolbarDivider />
+            <SellerListingToolbarGroup>
+              <button
+                className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-md transition-colors duration-150 group"
+                style={{
+                  backgroundColor: view === 'list' ? 'var(--primary)' : 'transparent',
+                  color: view === 'list' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
+                }}
+                onClick={() => setView('list')}
+                aria-label="Table view"
+                aria-pressed={view === 'list'}
+                type="button"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />
+                </svg>
+                <span className="pointer-events-none absolute left-1/2 top-full z-10 mt-2 -translate-x-1/2 whitespace-nowrap rounded border px-2 py-1 text-xs opacity-0 transition-opacity group-hover:opacity-100" style={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', borderColor: 'var(--border)' }}>
+                  Table
+                </span>
+              </button>
+              <button
+                className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-md transition-colors duration-150 group"
+                style={{
+                  backgroundColor: view === 'grid' ? 'var(--primary)' : 'transparent',
+                  color: view === 'grid' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
+                }}
+                onClick={() => setView('grid')}
+                aria-label="Grid view"
+                aria-pressed={view === 'grid'}
+                type="button"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <rect x="4" y="4" width="6" height="6" rx="1" fill="currentColor" />
+                  <rect x="14" y="4" width="6" height="6" rx="1" fill="currentColor" />
+                  <rect x="4" y="14" width="6" height="6" rx="1" fill="currentColor" />
+                  <rect x="14" y="14" width="6" height="6" rx="1" fill="currentColor" />
+                </svg>
+                <span className="pointer-events-none absolute left-1/2 top-full z-10 mt-2 -translate-x-1/2 whitespace-nowrap rounded border px-2 py-1 text-xs opacity-0 transition-opacity group-hover:opacity-100" style={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', borderColor: 'var(--border)' }}>
+                  Grid
+                </span>
+              </button>
+              {view === 'list' && (
+                <SellerTableColumnPicker
+                  variant="toolbar"
+                  columns={MELEE_DIAMOND_COLUMNS}
+                  visible={columnVisibility}
+                  title="Melee table columns"
+                  onToggle={(id, checked) => {
+                    setColumnVisibility((prev) => ({
+                      ...prev,
+                      [id as MeleeDiamondColumnId]: checked,
+                    }));
+                  }}
+                />
+              )}
+            </SellerListingToolbarGroup>
+          </>
+        }
+      />
 
-      {loading && <p>Loading...</p>}
+      {loading && (
+        <div
+          className="flex items-center gap-3 rounded-lg border px-4 py-6"
+          style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)', color: 'var(--muted-foreground)' }}
+        >
+          <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden />
+          <span className="text-sm">Loading parcels…</span>
+        </div>
+      )}
       {error && <p className="text-red-500">{error}</p>}
       
       {!loading && !error && (
@@ -301,10 +340,10 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
               </button>
             </div>
           ) : view === 'list' ? (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-xl border shadow-sm" style={{ borderColor: 'var(--border)' }}>
               <table
-                className="min-w-full rounded-lg shadow border border-collapse"
-                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                className="min-w-full border-collapse text-sm"
+                style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
               >
                 <thead className="border-b" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }}>
                   <tr>
@@ -344,7 +383,9 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
                       <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Total Carat</th>
                     )}
                     {showCol('stock') && (
-                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Stock</th>
+                      <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }} title="Units available to sell">
+                        In stock
+                      </th>
                     )}
                     {showCol('updated') && (
                       <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Updated</th>
@@ -354,7 +395,11 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
                 </thead>
                 <tbody>
                   {diamonds.map((diamond) => (
-                    <tr key={diamond.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
+                    <tr
+                      key={diamond.id}
+                      className="border-t transition-colors hover:bg-muted/40"
+                      style={{ borderColor: 'var(--border)' }}
+                    >
                       <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
                         <input
                           type="checkbox"
@@ -376,7 +421,13 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
                         </td>
                       )}
                       {showCol('name') && (
-                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.name}</td>
+                        <td
+                          className="max-w-[min(22rem,40vw)] px-4 py-2 border-r"
+                          style={{ borderColor: 'var(--border)' }}
+                          title={diamond.name}
+                        >
+                          <span className="line-clamp-2 font-medium leading-snug">{diamond.name}</span>
+                        </td>
                       )}
                       {showCol('price') && (
                         <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>${Number(diamond.price).toLocaleString()}</td>
@@ -404,7 +455,19 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
                         </td>
                       )}
                       {showCol('stock') && (
-                        <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>{diamond.stockNumber}</td>
+                        <td
+                          className="px-4 py-2 border-r tabular-nums"
+                          style={{ borderColor: 'var(--border)' }}
+                          title={
+                            diamond.totalPcs != null &&
+                            diamond.stockNumber === diamond.totalPcs &&
+                            diamond.totalPcs > 0
+                              ? 'Matches parcel piece count (total pcs)'
+                              : undefined
+                          }
+                        >
+                          {diamond.stockNumber}
+                        </td>
                       )}
                       {showCol('updated') && (
                         <td className="px-4 py-2 border-r text-sm" style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}>
@@ -415,25 +478,29 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
                         <div className="flex gap-2">
                           <button
                             type="button"
-                            className="p-1 hover:opacity-80 transition-colors"
+                            className="rounded-md p-1.5 transition-colors hover:bg-muted/60"
                             style={{ color: 'var(--primary)' }}
-                            title="View"
+                            title="View public listing"
+                            aria-label={`View ${diamond.name}`}
                             onClick={() => typeof window !== 'undefined' && window.open(`/diamonds/melee/${diamond.id}`, '_blank')}
                           >
                             <Eye className="w-5 h-5" />
                           </button>
                           <button
                             type="button"
-                            className="p-1 hover:opacity-80 transition-colors"
+                            className="rounded-md p-1.5 transition-colors hover:bg-muted/60"
                             style={{ color: 'var(--primary)' }}
-                            title="Edit"
+                            title="Edit parcel"
+                            aria-label={`Edit ${diamond.name}`}
                             onClick={() => typeof window !== 'undefined' && (window.location.href = `/seller/products/${diamond.id}/edit`)}
                           >
                             <Pencil className="w-5 h-5" />
                           </button>
-                          <button 
-                            className="p-1 hover:text-red-500 transition-colors" 
-                            title="Delete"
+                          <button
+                            type="button"
+                            className="rounded-md p-1.5 transition-colors hover:bg-red-500/10"
+                            title="Delete parcel"
+                            aria-label={`Delete ${diamond.name}`}
                             onClick={() => setDeleteId(diamond.id)}
                           >
                             <Trash2 className="w-5 h-5" />
@@ -449,9 +516,13 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
               {diamonds.map((diamond) => (
             <div key={diamond.id} className="relative">
-              <label className="absolute z-10 top-3 left-3 h-6 w-6 rounded bg-white/90 border border-gray-300 flex items-center justify-center cursor-pointer">
+              <label
+                className="absolute z-10 top-3 left-3 flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border shadow-sm backdrop-blur-sm"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+              >
                 <input
                   type="checkbox"
+                  className="h-4 w-4 cursor-pointer accent-[var(--primary)]"
                   checked={selectedIds.has(diamond.id)}
                   onChange={() => toggleSelectOne(diamond.id)}
                   aria-label={`Select ${diamond.name}`}

@@ -49,7 +49,7 @@ export const MELEE_DIAMOND_COLUMNS: { id: MeleeDiamondColumnId; label: string }[
   { id: 'totalPcs', label: 'Total Pcs' },
   { id: 'caratWeightPerpcs', label: 'Carat/Pcs' },
   { id: 'totalCaratWeight', label: 'Total Carat' },
-  { id: 'stock', label: 'Stock' },
+  { id: 'stock', label: 'In stock' },
   { id: 'updated', label: 'Updated' },
 ]
 
@@ -74,9 +74,9 @@ export const DEFAULT_MELEE_DIAMOND_VISIBILITY: Record<MeleeDiamondColumnId, bool
   color: true,
   clarity: true,
   cut: true,
-  totalPcs: false,
-  caratWeightPerpcs: false,
-  totalCaratWeight: false,
+  totalPcs: true,
+  caratWeightPerpcs: true,
+  totalCaratWeight: true,
   stock: true,
   updated: false,
 }

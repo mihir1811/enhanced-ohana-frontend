@@ -189,22 +189,28 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
   const [auctionStart, setAuctionStart] = useState("");
   const [auctionEnd, setAuctionEnd] = useState("");
   const [creatingAuction, setCreatingAuction] = useState(false);
+  const fallbackImage =
+    "https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg?s=2048x2048&w=is&k=20&c=dFWJz1EFJt7Tq2lA-hgTpSW119YywTWtS4EwU3fpKrE=";
+  const normalizeImageSrc = (src?: string | null) => {
+    const raw = String(src || "").trim();
+    if (!raw) return fallbackImage;
+    if (/^https?:\/\//i.test(raw) || raw.startsWith("/")) return raw;
+    return `/${raw.replace(/^\.?\/*/, "")}`;
+  };
 
   const images = [
-    product.image1,
-    product.image2,
-    product.image3,
-    product.image4,
-    product.image5,
-    product.image6,
+    normalizeImageSrc(product.image1),
+    normalizeImageSrc(product.image2),
+    normalizeImageSrc(product.image3),
+    normalizeImageSrc(product.image4),
+    normalizeImageSrc(product.image5),
+    normalizeImageSrc(product.image6),
   ].filter(Boolean) as string[];
 
   const displayImages =
     images.length > 0
       ? images
-      : [
-          "https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg?s=2048x2048&w=is&k=20&c=dFWJz1EFJt7Tq2lA-hgTpSW119YywTWtS4EwU3fpKrE=",
-        ];
+      : [fallbackImage];
   const safeStockNumber = Number.isFinite(Number(product.stockNumber)) ? Number(product.stockNumber) : 0;
 
   // Helper for fade animation
@@ -336,6 +342,12 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
           alt={product.name}
           className={`object-cover w-full h-full rounded-t-2xl transition-all duration-300 ${animating ? 'opacity-0' : 'opacity-100'} group-hover:scale-[1.02]`}
           style={{ pointerEvents: 'none' }}
+          onError={(e) => {
+            const img = e.currentTarget;
+            if (img.src !== fallbackImage) {
+              img.src = fallbackImage;
+            }
+          }}
         />
         <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/25 to-transparent pointer-events-none" />
         <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
@@ -499,6 +511,12 @@ const DiamondProductCard: React.FC<Props> = ({ product, onQuickView, onDelete, i
                 alt={product.name}
                 className={`object-cover w-full h-full rounded-lg transition-opacity duration-300 ${animating ? 'opacity-0' : 'opacity-100'}`}
                 style={{ pointerEvents: 'none' }}
+                onError={(e) => {
+                  const img = e.currentTarget;
+                  if (img.src !== fallbackImage) {
+                    img.src = fallbackImage;
+                  }
+                }}
               />
               {displayImages.length > 1 && (
                 <>

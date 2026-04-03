@@ -1,6 +1,7 @@
 'use client'
 
 import { Columns3 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -18,6 +19,8 @@ type SellerTableColumnPickerProps = {
   onToggle: (id: string, checked: boolean) => void
   /** Shown in the trigger and menu label */
   title?: string
+  /** Compact trigger for use inside bordered toolbar groups */
+  variant?: 'default' | 'toolbar'
 }
 
 export function SellerTableColumnPicker({
@@ -25,18 +28,29 @@ export function SellerTableColumnPicker({
   visible,
   onToggle,
   title = 'Table columns',
+  variant = 'default',
 }: SellerTableColumnPickerProps) {
+  const toolbar = variant === 'toolbar'
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="cursor-pointer relative px-3 py-2 rounded-md border flex items-center gap-2 text-sm font-medium shadow-sm hover:opacity-95 transition-colors duration-150"
-          style={{
-            backgroundColor: 'var(--muted)',
-            color: 'var(--foreground)',
-            borderColor: 'var(--border)',
-          }}
+          className={cn(
+            'relative flex cursor-pointer items-center gap-2 rounded-md text-sm font-medium transition-colors duration-150',
+            toolbar
+              ? 'h-9 border-0 bg-transparent px-2 shadow-none hover:bg-muted/70'
+              : 'border px-3 py-2 font-medium shadow-sm hover:opacity-95',
+          )}
+          style={
+            toolbar
+              ? { color: 'var(--foreground)' }
+              : {
+                  backgroundColor: 'var(--muted)',
+                  color: 'var(--foreground)',
+                  borderColor: 'var(--border)',
+                }
+          }
           aria-label={title}
         >
           <Columns3 className="w-4 h-4 shrink-0" />

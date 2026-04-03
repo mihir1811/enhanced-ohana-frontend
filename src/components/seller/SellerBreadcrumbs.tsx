@@ -18,6 +18,8 @@ const LABELS: Record<string, string> = {
 
 export default function SellerBreadcrumbs() {
   const pathname = usePathname()
+  // Products listing has its own page heading and controls; breadcrumbs add visual noise there.
+  if (pathname === '/seller/products') return null
   const segments = pathname.replace(/^\/seller\/?/, '').split('/').filter(Boolean)
 
   if (segments.length === 0 || (segments.length === 1 && segments[0] === 'dashboard')) return null
