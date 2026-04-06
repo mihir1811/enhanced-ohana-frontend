@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import BulkUploadModal from './BulkUploadModal';
 import { diamondService } from '@/services/diamondService';
@@ -22,6 +23,7 @@ import {
 } from './SellerProductListingHeader';
 
 const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType?: string }) => {
+  const shouldReduceMotion = useReducedMotion();
   const fallbackImage =
     'https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg?s=2048x2048&w=is&k=20&c=dFWJz1EFJt7Tq2lA-hgTpSW119YywTWtS4EwU3fpKrE=';
   const normalizeImageSrc = (src?: string | null) => {
@@ -201,24 +203,33 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
   }, [page, limit, refreshKey, sellerId, stoneType]);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
+  const buttonMotion = !shouldReduceMotion ? { whileHover: { y: -1, scale: 1.01 }, whileTap: { scale: 0.99 } } : {};
+  const sectionMotion = shouldReduceMotion
+    ? {}
+    : {
+        initial: { opacity: 0, y: 10 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] },
+      };
 
   return (
-    <div>
+    <motion.div {...sectionMotion}>
       <SellerProductListingHeader
         title="Diamonds"
         subtitle="Switch between table and grid; columns can be customized in table view."
         actions={
           <>
-            <button
+            <motion.button
               className="rounded-md px-4 py-2 text-sm font-semibold shadow-sm transition hover:opacity-95"
               style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
               onClick={() => setBulkModalOpen(true)}
               type="button"
+              {...buttonMotion}
             >
               Bulk upload
-            </button>
+            </motion.button>
             <SellerListingToolbarDivider />
-            <button
+            <motion.button
               type="button"
               disabled={selectedCount === 0}
               onClick={() => setBulkDeleteOpen(true)}
@@ -228,13 +239,15 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
                 borderColor: 'var(--destructive)',
                 color: 'var(--destructive)',
               }}
+              {...buttonMotion}
             >
               Delete selected ({selectedCount})
-            </button>
+            </motion.button>
             <BulkUploadModal
               open={bulkModalOpen}
               onClose={() => setBulkModalOpen(false)}
               onFileSelect={handleBulkFileSelect}
+              productType={stoneType === 'labGrownDiamond' ? 'labGrownDiamond' : 'naturalDiamond'}
             />
             <SellerListingToolbarDivider />
             <SellerListingToolbarGroup>
@@ -467,8 +480,14 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
-              {diamonds.map((diamond) => (
-                <div key={diamond.id} className="relative">
+              {diamonds.map((diamond, idx) => (
+                <motion.div
+                  key={diamond.id}
+                  className="relative"
+                  initial={!shouldReduceMotion ? { opacity: 0, y: 10 } : undefined}
+                  animate={!shouldReduceMotion ? { opacity: 1, y: 0 } : undefined}
+                  transition={!shouldReduceMotion ? { duration: 0.25, delay: Math.min(idx * 0.03, 0.18) } : undefined}
+                >
                   <label
                     className="absolute z-10 top-3 left-3 flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border shadow-sm backdrop-blur-sm"
                     style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
@@ -494,27 +513,29 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
                     }}
                     onUpdateProduct={handleUpdateProduct}
                   />
-                </div>
+                </motion.div>
               ))}
             </div>
           )}
           {/* Pagination Controls */}
           <div className="flex gap-2 mt-4">
-            <button
+            <motion.button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
               className="px-3 py-1 border rounded disabled:opacity-50"
+              {...buttonMotion}
             >
               Prev
-            </button>
+            </motion.button>
             <span>Page {page} of {totalPages}</span>
-            <button
+            <motion.button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
               className="px-3 py-1 border rounded disabled:opacity-50"
+              {...buttonMotion}
             >
               Next
-            </button>
+            </motion.button>
           </div>
           <ConfirmModal
             open={deleteId !== null}
@@ -567,7 +588,7 @@ const DiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType
           />
         </>
       )}
-    </div>
+    </motion.div>
   );
 };
 
