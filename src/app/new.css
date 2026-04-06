@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --theme-color: #000000;
+    --theme-color-secondary: #ffffff;
+    --theme-color-tertiary: #ffffff;
+
+    --theme-1-button-bg: #000000;
+  }
+}
+
+:root {
+    --theme-color: #000000;
+    --theme-color-secondary: #ffffff;
+    --theme-color-tertiary: #ffffff;
+
+    --theme-1-button-bg: #000000;
+}
+
+.dark {
+    --theme-color: #000000;
+    --theme-color-secondary: #ffffff;
+    --theme-color-tertiary: #ffffff;
+
+    --theme-1-button-bg: #000000;
+
+}

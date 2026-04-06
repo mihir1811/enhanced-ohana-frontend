@@ -6,12 +6,18 @@ import { useDispatch } from 'react-redux'
 import { useAppDispatch } from '@/store/hooks'
 import { fetchSellerInfo } from '@/features/seller/sellerSlice'
 import Link from 'next/link'
+import { Inter, Playfair_Display } from 'next/font/google'
+import { motion, useReducedMotion } from 'framer-motion'
 import { setCredentials } from '../../features/auth/authSlice'
 import { API_CONFIG, buildApiUrl } from '@/lib/constants'
+
+const inter = Inter({ subsets: ['latin'] })
+const playfair = Playfair_Display({ subsets: ['latin'], weight: ['500', '600', '700'] })
 
 export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const shouldReduceMotion = useReducedMotion()
   const redirectTo = searchParams.get('redirect') || ''
   const dispatch = useDispatch()
   const appDispatch = useAppDispatch()
@@ -46,6 +52,25 @@ export default function LoginPage() {
   }
 
   const canSubmit = formData.userName && isPasswordValid(formData.password)
+  const easeOut = [0.22, 1, 0.36, 1] as const
+  const rise = shouldReduceMotion ? 0 : 18
+
+  const headerMotion = shouldReduceMotion
+    ? {}
+    : {
+        initial: { opacity: 0, y: -10 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.5, ease: easeOut },
+      }
+
+  const sideMotion = (delay = 0) =>
+    shouldReduceMotion
+      ? {}
+      : {
+          initial: { opacity: 0, y: rise },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: 0.65, delay, ease: easeOut },
+        }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -109,406 +134,154 @@ export default function LoginPage() {
   }
 
   return (
-    <div
-      className="min-h-screen relative overflow-hidden"
-      style={{
-        background:
-          'radial-gradient(circle at top right, color-mix(in srgb, var(--status-warning) 15%, transparent), transparent 70%), radial-gradient(circle at bottom left, color-mix(in srgb, var(--primary) 10%, transparent), transparent 70%), var(--background)'
-      }}
-    >
-      {/* Background Elements */}
-      <div className="absolute inset-0">
-        {/* Animated gradient orbs */}
-        <div
-          className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl animate-float"
-          style={{ background: 'color-mix(in srgb, var(--status-warning) 20%, transparent)' }}
-        ></div>
-        <div
-          className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full blur-3xl animate-float delay-1000"
-          style={{ background: 'color-mix(in srgb, var(--status-warning) 12%, transparent)' }}
-        ></div>
-        <div
-          className="absolute top-1/2 right-1/3 w-64 h-64 rounded-full blur-3xl animate-float delay-500"
-          style={{ background: 'color-mix(in srgb, var(--primary) 10%, transparent)' }}
-        ></div>
-        
-        {/* Grid pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:100px_100px]"></div>
-        
-        {/* Sparkle effects */}
-        <div
-          className="absolute top-1/5 left-1/5 w-1 h-1 rounded-full animate-ping"
-          style={{ backgroundColor: 'var(--status-warning)' }}
-        ></div>
-        <div
-          className="absolute top-2/3 left-2/3 w-1.5 h-1.5 rounded-full animate-ping delay-700"
-          style={{ backgroundColor: 'var(--chart-2)' }}
-        ></div>
-        <div
-          className="absolute bottom-1/3 left-1/2 w-1 h-1 rounded-full animate-ping delay-300"
-          style={{ backgroundColor: 'var(--chart-1)' }}
-        ></div>
-      </div>
+    <div className={`${inter.className} min-h-screen bg-[#f5f6fa] text-[#171923] dark:bg-[#0d1117] dark:text-[#e6edf3]`}>
+      <motion.header className="border-b border-black/5 bg-white/90 backdrop-blur dark:border-white/10 dark:bg-[#111827]/90" {...headerMotion}>
+        <div className="mx-auto flex h-16 max-w-full items-center justify-between px-4 sm:px-6 lg:px-10">
+          <Link href="/" className={`${playfair.className} text-[34px] leading-none tracking-tight text-[#111] dark:text-white`}>
+            GemWorld
+          </Link>
+          <nav className="hidden items-center gap-9 text-[15px] text-[#454a57] md:flex dark:text-[#a8b3c7]">
+            <Link href="#" className="transition hover:text-[#111] dark:hover:text-white">Collections</Link>
+            <Link href="#" className="transition hover:text-[#111] dark:hover:text-white">Knowledge</Link>
+            <Link href="#" className="transition hover:text-[#111] dark:hover:text-white">About</Link>
+          </nav>
+        </div>
+      </motion.header>
 
-      <div className="relative z-10 flex min-h-screen">
-        {/* Left Section - Welcome Back */}
-        <div className="hidden lg:flex flex-1 items-center justify-center p-12">
-          <div className="max-w-lg space-y-8">
-            {/* Brand Section */}
-            <div className="space-y-6">
-              <div className="flex items-center space-x-3">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center shadow-2xl"
-                  style={{
-                    backgroundImage:
-                      'linear-gradient(to bottom right, var(--status-warning), color-mix(in srgb, var(--status-warning) 70%, black))'
-                  }}
-                >
-                  <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2L3.09 8.26L12 14L20.91 8.26L12 2ZM21 16.5C21 16.88 20.79 17.21 20.47 17.38L12.57 21.82C12.41 21.94 12.21 22 12 22S11.59 21.94 11.43 21.82L3.53 17.38C3.21 17.21 3 16.88 3 16.5V7.5C3 7.12 3.21 6.79 3.53 6.62L11.43 2.18C11.59 2.06 11.79 2 12 2S12.41 2.06 12.57 2.18L20.47 6.62C20.79 6.79 21 7.12 21 7.5V16.5Z"/>
-                  </svg>
+      <main className="mx-auto grid max-w-full grid-cols-1 px-4 py-6 sm:px-6 md:py-8 lg:min-h-[760px] lg:grid-cols-[1fr_1fr] lg:px-10 lg:py-0">
+        <motion.section className="relative min-h-[340px] overflow-hidden rounded-2xl lg:rounded-none lg:min-h-[760px]" {...sideMotion(0.1)}>
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage:
+                "linear-gradient(180deg, rgba(7, 15, 35, 0.35) 0%, rgba(7, 21, 50, 0.92) 100%), url('https://images.unsplash.com/photo-1617038220319-276d3cfab638?q=80&w=1400&auto=format&fit=crop')",
+            }}
+          />
+          <div className="relative z-10 flex h-full flex-col justify-end p-6 text-white sm:p-8 lg:p-12">
+            <motion.h1 className={`${playfair.className} max-w-[14ch] text-4xl leading-[1.05] sm:text-5xl`} {...sideMotion(0.2)}>
+              Return to the Sanctuary.
+            </motion.h1>
+            <div className="mt-6 max-w-[560px] rounded-2xl border border-white/15 bg-black/20 p-6 backdrop-blur-sm">
+              <p className="text-sm leading-7 text-white/90 sm:text-[17px]">
+                Access your curated dashboard, track exclusive pieces, and continue your journey with
+                the world&apos;s finest gemstone marketplace.
+              </p>
+              <div className="mt-6 flex items-center gap-3 text-xs tracking-[0.24em] text-white/80">
+                <div className="flex -space-x-2">
+                  <span className="h-8 w-8 rounded-lg border border-white/50 bg-white/25" />
+                  <span className="h-8 w-8 rounded-lg border border-white/50 bg-white/25" />
+                  <span className="h-8 w-8 rounded-lg border border-white/50 bg-white/25" />
                 </div>
-                <div>
-                  <h1
-                    className="text-2xl font-bold bg-clip-text text-transparent"
-                    style={{
-                      backgroundImage:
-                        'linear-gradient(to right, var(--status-warning), var(--primary))'
-                    }}
-                  >
-                    Gem World
-                  </h1>
-                  <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Premium Marketplace</p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h2 className="text-4xl font-bold leading-tight" style={{ color: 'var(--foreground)' }}>
-                  Welcome Back to
-                  <br />
-                  <span
-                    className="bg-clip-text text-transparent"
-                    style={{
-                      backgroundImage:
-                        'linear-gradient(to right, var(--status-warning), var(--primary))'
-                    }}
-                  >
-                    Luxury & Elegance
-                  </span>
-                </h2>
-                <p className="text-lg leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>
-                  Continue your journey in the world&apos;s finest jewelry marketplace. 
-                  Access your dashboard, manage your collection, and discover new treasures.
-                </p>
-              </div>
-            </div>
-            
-            {/* Features for logged in users */}
-            <div className="space-y-6">
-              <div className="flex items-start space-x-4 group">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center border transition-colors"
-                  style={{
-                    backgroundColor: 'color-mix(in srgb, var(--status-success) 16%, transparent)',
-                    borderColor: 'color-mix(in srgb, var(--status-success) 40%, transparent)'
-                  }}
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    style={{ color: 'var(--status-success)' }}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <div className="space-y-1">
-                  <h3
-                    className="font-semibold transition-colors group-hover:opacity-80"
-                    style={{ color: 'var(--foreground)' }}
-                  >
-                    Personal Dashboard
-                  </h3>
-                  <p className="text-slate-400 text-sm leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>Access your personalized marketplace experience</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start space-x-4 group">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center border transition-colors"
-                  style={{
-                    backgroundColor: 'color-mix(in srgb, var(--status-info) 16%, transparent)',
-                    borderColor: 'color-mix(in srgb, var(--status-info) 40%, transparent)'
-                  }}
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    style={{ color: 'var(--status-info)' }}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                </div>
-                <div className="space-y-1">
-                  <h3
-                    className="font-semibold transition-colors group-hover:opacity-80"
-                    style={{ color: 'var(--foreground)' }}
-                  >
-                    Saved Collections
-                  </h3>
-                  <p className="text-slate-400 text-sm leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>View your favorite pieces and wishlists</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start space-x-4 group">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center border transition-colors"
-                  style={{
-                    backgroundColor: 'color-mix(in srgb, var(--chart-3) 16%, transparent)',
-                    borderColor: 'color-mix(in srgb, var(--chart-3) 40%, transparent)'
-                  }}
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    style={{ color: 'var(--chart-3)' }}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                  </svg>
-                </div>
-                <div className="space-y-1">
-                  <h3 className="font-semibold transition-colors group-hover:opacity-80" style={{ color: 'var(--foreground)' }}>Trusted Account</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>Enjoy verified buyer or seller privileges</p>
-                </div>
+                <span>WELCOME BACK, CURATOR</span>
               </div>
             </div>
           </div>
-        </div>
+        </motion.section>
 
-        {/* Right Section - Login Form */}
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="w-full max-w-md">
-            {/* Glassmorphic Card */}
-            <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl p-8 space-y-8">
-              {/* Header */}
-              <div className="text-center space-y-4">
-                <div
-                  className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto shadow-2xl"
-                  style={{
-                    backgroundImage:
-                      'linear-gradient(to bottom right, var(--status-warning), color-mix(in srgb, var(--status-warning) 70%, black))'
-                  }}
-                >
-                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2L3.09 8.26L12 14L20.91 8.26L12 2ZM21 16.5C21 16.88 20.79 17.21 20.47 17.38L12.57 21.82C12.41 21.94 12.21 22 12 22S11.59 21.94 11.43 21.82L3.53 17.38C3.21 17.21 3 16.88 3 16.5V7.5C3 7.12 3.21 6.79 3.53 6.62L11.43 2.18C11.59 2.06 11.79 2 12 2S12.41 2.06 12.57 2.18L20.47 6.62C20.79 6.79 21 7.12 21 7.5V16.5Z"/>
-                  </svg>
+        <motion.section className="flex items-center justify-center py-8 lg:min-h-[760px] lg:py-14" {...sideMotion(0.22)}>
+          <div className="w-full max-w-[420px] rounded-2xl bg-transparent p-0 dark:bg-[#0f1724]/80 dark:p-6">
+            <motion.p className="text-[11px] font-semibold tracking-[0.3em] text-[#8d7b42] dark:text-[#d4b24f]" {...sideMotion(0.28)}>
+              SIGN IN
+            </motion.p>
+            <motion.h2 className={`${playfair.className} mt-2 text-5xl leading-none text-[#121826] dark:text-white`} {...sideMotion(0.32)}>
+              GemWorld Login
+            </motion.h2>
+            <motion.p className="mt-4 max-w-[36ch] text-[15px] leading-7 text-[#505767] dark:text-[#a8b3c7]" {...sideMotion(0.36)}>
+              Continue where you left off and access your personalized gemstone journey.
+            </motion.p>
+
+            <motion.form onSubmit={handleSubmit} className="mt-9 space-y-7" {...sideMotion(0.42)}>
+              {error && (
+                <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-300" role="alert">
+                  {error}
                 </div>
-                <div>
-                  <h2 className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>Welcome Back</h2>
-                  <p className="text-sm mt-2" style={{ color: 'var(--muted-foreground)' }}>
-                    Sign in to your account
-                  </p>
+              )}
+
+              <label className="block">
+                <span className="block text-[11px] font-semibold tracking-[0.16em] text-[#6a7080] dark:text-[#9fb0c4]">USERNAME</span>
+                <input
+                  name="userName"
+                  type="text"
+                  required
+                  autoComplete="username"
+                  value={formData.userName}
+                  onChange={handleInputChange}
+                  placeholder="juliancurator"
+                  className="mt-3 h-10 w-full border-0 border-b border-[#c9c1a3] bg-transparent px-0 text-[17px] text-[#131924] placeholder:text-[#c4c8d0] focus:outline-none dark:border-[#3f4d66] dark:text-[#e6edf3] dark:placeholder:text-[#6f7b91]"
+                />
+              </label>
+
+              <label className="block">
+                <span className="block text-[11px] font-semibold tracking-[0.16em] text-[#6a7080] dark:text-[#9fb0c4]">PASSWORD</span>
+                <div className="relative mt-3">
+                  <input
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    autoComplete="current-password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    placeholder="••••••••••"
+                    className="h-10 w-full border-0 border-b border-[#c9c1a3] bg-transparent px-0 pr-9 text-[17px] text-[#131924] placeholder:text-[#c4c8d0] focus:outline-none dark:border-[#3f4d66] dark:text-[#e6edf3] dark:placeholder:text-[#6f7b91]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((p) => !p)}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 p-1 text-[#a8adba] transition hover:text-[#525866] dark:text-[#6f7b91] dark:hover:text-[#c9d3e3]"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Zm10 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                    </svg>
+                  </button>
                 </div>
+                {formData.password && !isPasswordValid(formData.password) ? (
+                  <span className="mt-2 block text-[11px] text-amber-700 dark:text-amber-400">Min 8 chars, 1 uppercase, 1 number, 1 special.</span>
+                ) : null}
+              </label>
+
+              <div className="flex justify-end">
+                <Link href="/forgot-password" className="text-xs text-[#8d7b42] hover:underline dark:text-[#d4b24f]">
+                  Forgot password?
+                </Link>
               </div>
 
-              {/* Login Form */}
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {error && (
-                  <div
-                    id="login-error"
-                    role="alert"
-                    aria-live="polite"
-                    className="p-4 rounded-xl text-sm backdrop-blur-sm border"
-                    style={{
-                      backgroundColor:
-                        'color-mix(in srgb, var(--destructive) 10%, transparent)',
-                      borderColor: 'color-mix(in srgb, var(--destructive) 40%, transparent)',
-                      color: 'var(--destructive)'
-                    }}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--destructive)' }} aria-hidden>
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z"
-                        />
-                      </svg>
-                      <span>{error}</span>
-                    </div>
-                  </div>
-                )}
+              <motion.button
+                type="submit"
+                disabled={isLoading || !canSubmit}
+                className="h-12 w-full rounded-lg text-[12px] font-semibold tracking-[0.18em] text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+                style={{ background: 'linear-gradient(90deg,#8f6a00,#f0bb06)' }}
+                whileHover={
+                  !shouldReduceMotion && canSubmit && !isLoading
+                    ? { y: -1.5, scale: 1.01, filter: 'brightness(1.04)' }
+                    : undefined
+                }
+                whileTap={!shouldReduceMotion && canSubmit && !isLoading ? { scale: 0.992 } : undefined}
+              >
+                {isLoading ? 'SIGNING IN...' : 'SIGN IN'}
+              </motion.button>
+            </motion.form>
 
-                {/* Username Field */}
-                <div className="space-y-2">
-                  <label
-                    htmlFor="userName"
-                    className="text-sm font-medium"
-                    style={{ color: 'var(--muted-foreground)' }}
-                  >
-                    Username
-                  </label>
-                  <div className="relative group">
-                    <div
-                      className="absolute inset-0 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{
-                        background:
-                          'linear-gradient(to right, color-mix(in srgb, var(--status-warning) 20%, transparent), color-mix(in srgb, var(--primary) 20%, transparent))'
-                      }}
-                    ></div>
-                    <input
-                      id="userName"
-                      name="userName"
-                      type="text"
-                      required
-                      autoComplete="username"
-                      value={formData.userName}
-                      onChange={handleInputChange}
-                      aria-invalid={!!error}
-                      aria-describedby={error ? 'login-error' : undefined}
-                      className="relative w-full px-4 py-3 rounded-xl placeholder-slate-400 focus:ring-2 focus-visible:ring-2 focus-visible:ring-offset-2 transition-all duration-300 backdrop-blur-sm border outline-none"
-                      style={{
-                        backgroundColor: 'color-mix(in srgb, var(--card) 10%, transparent)',
-                        borderColor: 'color-mix(in srgb, var(--border) 80%, transparent)',
-                        color: 'var(--foreground)',
-                        boxShadow: '0 0 0 1px color-mix(in srgb, var(--border) 40%, transparent)'
-                      }}
-                      placeholder="Enter your username"
-                    />
-                  </div>
-                </div>
-
-                {/* Password Field */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <label
-                      htmlFor="password"
-                      className="text-sm font-medium"
-                      style={{ color: 'var(--muted-foreground)' }}
-                    >
-                      Password
-                    </label>
-                    {formData.password && !isPasswordValid(formData.password) && (
-                      <span id="password-hint" className="text-[10px] animate-pulse" style={{ color: 'var(--status-warning)' }} role="status">
-                        Min 8 chars, 1 Upper, 1 Number, 1 Special
-                      </span>
-                    )}
-                  </div>
-                  <div className="relative group">
-                    <div
-                      className="absolute inset-0 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{
-                        background:
-                          'linear-gradient(to right, color-mix(in srgb, var(--status-warning) 20%, transparent), color-mix(in srgb, var(--primary) 20%, transparent))'
-                      }}
-                    ></div>
-                    <input
-                      id="password"
-                      name="password"
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      autoComplete="current-password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      aria-invalid={!!error || (!!formData.password && !isPasswordValid(formData.password))}
-                      aria-describedby={formData.password && !isPasswordValid(formData.password) ? 'password-hint' : undefined}
-                      className="relative w-full px-4 py-3 pr-12 rounded-xl placeholder-slate-400 focus:ring-2 focus-visible:ring-2 focus-visible:ring-offset-2 transition-all duration-300 backdrop-blur-sm border outline-none"
-                      style={{
-                        backgroundColor: 'color-mix(in srgb, var(--card) 10%, transparent)',
-                        borderColor: 'color-mix(in srgb, var(--border) 80%, transparent)',
-                        color: 'var(--foreground)',
-                        boxShadow: '0 0 0 1px color-mix(in srgb, var(--border) 40%, transparent)'
-                      }}
-                      placeholder="Enter your password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:opacity-70 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 rounded"
-                      style={{ color: 'var(--muted-foreground)' }}
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    >
-                      {showPassword ? (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                      ) : (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Forgot Password */}
-                <div className="flex justify-end">
-                  <Link
-                    href="/forgot-password"
-                    className="text-sm transition-colors"
-                    style={{ color: 'var(--status-warning)' }}
-                  >
-                    Forgot your password?
-                  </Link>
-                </div>
-
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  disabled={isLoading || !canSubmit}
-                  className="w-full py-4 px-6 rounded-xl font-semibold focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale shadow-2xl transform hover:-translate-y-0.5 disabled:transform-none"
-                  style={{
-                    backgroundColor: 'var(--status-warning)',
-                    color: 'white',
-                    boxShadow: canSubmit ? '0 18px 45px color-mix(in srgb, var(--status-warning) 32%, transparent)' : 'none'
-                  }}
-                >
-                  {isLoading ? (
-                    <div className="flex items-center justify-center space-x-3">
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" style={{ borderTopColor: 'var(--primary-foreground)' }}></div>
-                      <span>Signing you in...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center space-x-2">
-                      <span>Sign In</span>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                      </svg>
-                    </div>
-                  )}
-                </button>
-              </form>
-
-              {/* Register Link */}
-                  <div className="pt-6 border-t" style={{ borderColor: 'color-mix(in srgb, var(--border) 60%, transparent)' }}>
-                <div className="text-center space-y-4">
-                  <p className="text-slate-400" style={{ color: 'var(--muted-foreground)' }}>
-                    Don&apos;t have an account?
-                  </p>
-                  <Link 
-                    href="/register" 
-                    className="block w-full py-3 px-6 rounded-xl font-medium transition-all duration-300 transform hover:-translate-y-0.5 border-2"
-                    style={{
-                      borderColor: 'color-mix(in srgb, var(--status-warning) 60%, transparent)',
-                      color: 'var(--status-warning)',
-                      backgroundColor: 'color-mix(in srgb, var(--status-warning) 8%, transparent)'
-                    }}
-                  >
-                    Create Account
-                  </Link>
-                </div>
-              </div>
-            </div>
+            <p className="mt-9 text-center text-sm text-[#6a7080] dark:text-[#9fb0c4]">
+              Don&apos;t have an account?{' '}
+              <Link href="/register" className="font-semibold text-[#111] dark:text-white">Create Account</Link>
+            </p>
           </div>
+        </motion.section>
+      </main>
+
+      <motion.footer className="border-t border-black/5 bg-white/60 dark:border-white/10 dark:bg-[#111827]/80" {...sideMotion(0.48)}>
+        <div className="mx-auto flex max-w-full flex-col items-center justify-between gap-4 px-4 py-5 text-[11px] text-[#6f7380] sm:px-6 md:flex-row lg:px-10 dark:text-[#94a3b8]">
+          <span className={`${playfair.className} text-xl text-[#111] dark:text-white`}>GemWorld</span>
+          <div className="flex flex-wrap items-center justify-center gap-5">
+            <Link href="#" className="underline underline-offset-4">PRIVACY POLICY</Link>
+            <Link href="#" className="underline underline-offset-4">TERMS OF SERVICE</Link>
+            <Link href="#" className="underline underline-offset-4">ETHICAL SOURCING</Link>
+            <Link href="#" className="underline underline-offset-4">GIA CERTIFICATION</Link>
+          </div>
+          <span className="text-center">© 2024 GEMWORLD EDITORIAL. ALL RIGHTS RESERVED.</span>
         </div>
-      </div>
+      </motion.footer>
     </div>
   )
 }

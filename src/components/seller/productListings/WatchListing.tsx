@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import BulkUploadModal from './BulkUploadModal';
 import { watchService, WatchProduct } from '@/services/watch.service';
@@ -11,6 +12,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 
 const WatchListing = () => {
+  const shouldReduceMotion = useReducedMotion();
   const sellerId = useSelector((state: RootState) => state.seller.profile?.id);
   const [watches, setWatches] = useState<WatchProduct[]>([]);
   const [view, setView] = useState<'list' | 'grid'>('grid');
@@ -91,6 +93,14 @@ const WatchListing = () => {
   const visibleIds = watches.map((w) => Number(w.id)).filter((id) => Number.isFinite(id));
   const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id));
   const selectedCount = selectedIds.size;
+  const buttonMotion = !shouldReduceMotion ? { whileHover: { y: -1, scale: 1.01 }, whileTap: { scale: 0.99 } } : {};
+  const sectionMotion = shouldReduceMotion
+    ? {}
+    : {
+        initial: { opacity: 0, y: 10 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] as const },
+      };
 
   const toggleSelectOne = (id: number) => {
     setSelectedIds((prev) => {
@@ -114,33 +124,35 @@ const WatchListing = () => {
   };
 
   return (
-    <div>
+    <motion.div {...sectionMotion}>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">Watches</h2>
         <div className="flex gap-2 items-center relative">
           {/* Bulk Upload Button */}
-          <button
+          <motion.button
             className="px-4 py-2 bg-primary text-primary-foreground rounded font-semibold hover:bg-primary/90 border border-primary transition cursor-pointer"
             onClick={() => setBulkModalOpen(true)}
             type="button"
+            {...buttonMotion}
           >
             Bulk Upload
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             type="button"
             disabled={selectedCount === 0}
             onClick={() => setBulkDeleteOpen(true)}
             className="px-4 py-2 rounded font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ backgroundColor: 'var(--destructive)', color: 'white' }}
+            {...buttonMotion}
           >
             Delete Selected ({selectedCount})
-          </button>
+          </motion.button>
           <BulkUploadModal
             open={bulkModalOpen}
             onClose={() => setBulkModalOpen(false)}
             onFileSelect={handleBulkFileSelect}
           />
-          <button
+          <motion.button
             className={`cursor-pointer relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group ${
               view === 'list'
                 ? 'bg-primary text-primary-foreground border-primary hover:bg-primary/90'
@@ -149,6 +161,7 @@ const WatchListing = () => {
             onClick={() => setView('list')}
             aria-label="List View"
             type="button"
+            {...buttonMotion}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />
@@ -156,8 +169,8 @@ const WatchListing = () => {
             <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap bg-popover text-popover-foreground border border-border">
               List View
             </span>
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             className={`cursor-pointer relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group ${
               view === 'grid'
                 ? 'bg-primary text-primary-foreground border-primary hover:bg-primary/90'
@@ -166,6 +179,7 @@ const WatchListing = () => {
             onClick={() => setView('grid')}
             aria-label="Grid View"
             type="button"
+            {...buttonMotion}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <rect x="4" y="4" width="6" height="6" rx="1" fill="currentColor" />
@@ -176,7 +190,7 @@ const WatchListing = () => {
             <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap bg-popover text-popover-foreground border border-border">
               Grid View
             </span>
-          </button>
+          </motion.button>
         </div>
       </div>
       {loading && <p>Loading...</p>}
@@ -187,14 +201,15 @@ const WatchListing = () => {
             <div className="rounded-xl border p-12 text-center" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
               <p className="text-lg font-medium mb-2" style={{ color: 'var(--foreground)' }}>No watch products yet</p>
               <p className="text-sm mb-4" style={{ color: 'var(--muted-foreground)' }}>Add your first watch from the Add Product page to get started.</p>
-              <button
+              <motion.button
                 type="button"
                 className="px-4 py-2 rounded font-medium transition"
                 style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
                 onClick={() => typeof window !== 'undefined' && (window.location.href = '/seller/add-product')}
+                {...buttonMotion}
               >
                 Add Product
-              </button>
+              </motion.button>
             </div>
           ) : view === 'list' ? (
             <div className="overflow-x-auto">
@@ -291,8 +306,14 @@ const WatchListing = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {watches.map((watch) => (
-                <div key={watch.id} className="relative">
+              {watches.map((watch, idx) => (
+                <motion.div
+                  key={watch.id}
+                  className="relative"
+                  initial={!shouldReduceMotion ? { opacity: 0, y: 10 } : undefined}
+                  animate={!shouldReduceMotion ? { opacity: 1, y: 0 } : undefined}
+                  transition={!shouldReduceMotion ? { duration: 0.25, delay: Math.min(idx * 0.03, 0.18) } : undefined}
+                >
                   <label className="absolute z-10 top-3 right-14 h-6 w-6 rounded bg-white/90 border border-gray-300 flex items-center justify-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -308,27 +329,29 @@ const WatchListing = () => {
                       setDeleteId(watch.id);
                     }}
                   />
-                </div>
+                </motion.div>
               ))}
             </div>
           )}
           {/* Pagination Controls */}
           <div className="flex gap-2 mt-4">
-            <button
+            <motion.button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
               className="px-3 py-1 border rounded disabled:opacity-50"
+              {...buttonMotion}
             >
               Prev
-            </button>
+            </motion.button>
             <span>Page {page} of {totalPages}</span>
-            <button
+            <motion.button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
               className="px-3 py-1 border rounded disabled:opacity-50"
+              {...buttonMotion}
             >
               Next
-            </button>
+            </motion.button>
           </div>
           <ConfirmModal
             open={deleteId !== null}
@@ -389,7 +412,7 @@ const WatchListing = () => {
           />
         </>
       )}
-    </div>
+    </motion.div>
   );
 };
 

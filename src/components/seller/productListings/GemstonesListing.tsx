@@ -1,6 +1,7 @@
 
 
 import React, { useEffect, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import BulkUploadModal from './BulkUploadModal';
 import { gemstoneService } from '@/services/gemstoneService';
@@ -34,6 +35,7 @@ type GemstoneApiResponse = {
 
 
 const GemstonesListing = () => {
+  const shouldReduceMotion = useReducedMotion();
   const [gemstones, setGemstones] = useState<GemstoneProduct[]>([]);
   const [view, setView] = useState<'list' | 'grid'>('grid');
   const [loading, setLoading] = useState(true);
@@ -94,37 +96,47 @@ const GemstonesListing = () => {
   }, [page, limit, sellerId, refreshKey]);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
+  const buttonMotion = !shouldReduceMotion ? { whileHover: { y: -1, scale: 1.01 }, whileTap: { scale: 0.99 } } : {};
+  const sectionMotion = shouldReduceMotion
+    ? {}
+    : {
+        initial: { opacity: 0, y: 10 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] as const },
+      };
 
   return (
-    <div>
+    <motion.div {...sectionMotion}>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">Single Gemstones</h2>
         <div className="flex gap-2 items-center relative">
           {/* Bulk Upload Button */}
-          <button
+          <motion.button
             className="cursor-pointer px-4 py-2 rounded font-semibold transition"
             style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
             onClick={() => setBulkModalOpen(true)}
             type="button"
+            {...buttonMotion}
           >
             Bulk Upload
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             type="button"
             disabled={selectedCount === 0}
             onClick={() => setBulkDeleteOpen(true)}
             className="px-4 py-2 rounded font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ backgroundColor: 'var(--destructive)', color: 'white' }}
+            {...buttonMotion}
           >
             Delete Selected ({selectedCount})
-          </button>
+          </motion.button>
           <BulkUploadModal
             open={bulkModalOpen}
             onClose={() => setBulkModalOpen(false)}
             onFileSelect={handleBulkFileSelect}
             productType="gemstone"
           />
-          <button
+          <motion.button
             className={"cursor-pointer relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
             style={{
               backgroundColor: view === 'grid' ? 'var(--primary)' : 'var(--card)',
@@ -134,6 +146,7 @@ const GemstonesListing = () => {
             onClick={() => setView('grid')}
             aria-label="Grid View"
             type="button"
+            {...buttonMotion}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" />
@@ -141,8 +154,8 @@ const GemstonesListing = () => {
             <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap" style={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', border: '1px solid var(--border)' }}>
               Grid View
             </span>
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             className={"cursor-pointer relative p-2 rounded border flex items-center justify-center transition-colors duration-150 group"}
             style={{
               backgroundColor: view === 'list' ? 'var(--primary)' : 'var(--card)',
@@ -152,6 +165,7 @@ const GemstonesListing = () => {
             onClick={() => setView('list')}
             aria-label="List View"
             type="button"
+            {...buttonMotion}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />
@@ -159,7 +173,7 @@ const GemstonesListing = () => {
             <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap" style={{ backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', border: '1px solid var(--border)' }}>
               List View
             </span>
-          </button>
+          </motion.button>
         </div>
       </div>
       {loading && <p>Loading...</p>}
@@ -170,14 +184,15 @@ const GemstonesListing = () => {
             <div className="rounded-xl border p-12 text-center" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
               <p className="text-lg font-medium mb-2" style={{ color: 'var(--foreground)' }}>No single gemstones yet</p>
               <p className="text-sm mb-4" style={{ color: 'var(--muted-foreground)' }}>Add your first gemstone with Bulk Upload to get started.</p>
-              <button
+              <motion.button
                 type="button"
                 className="px-4 py-2 rounded font-medium transition"
                 style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
                 onClick={() => setBulkModalOpen(true)}
+                {...buttonMotion}
               >
                 Bulk Upload
-              </button>
+              </motion.button>
             </div>
           ) : view === 'list' ? (
             <div className="overflow-x-auto">
@@ -250,8 +265,14 @@ const GemstonesListing = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
-              {gemstones.map((gem) => (
-                <div key={gem.id} className="relative">
+              {gemstones.map((gem, idx) => (
+                <motion.div
+                  key={gem.id}
+                  className="relative"
+                  initial={!shouldReduceMotion ? { opacity: 0, y: 10 } : undefined}
+                  animate={!shouldReduceMotion ? { opacity: 1, y: 0 } : undefined}
+                  transition={!shouldReduceMotion ? { duration: 0.25, delay: Math.min(idx * 0.03, 0.18) } : undefined}
+                >
                   <label className="absolute z-10 top-3 right-14 h-6 w-6 rounded bg-white/90 border border-gray-300 flex items-center justify-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -277,27 +298,29 @@ const GemstonesListing = () => {
                       ));
                     }}
                   />
-                </div>
+                </motion.div>
               ))}
             </div>
           )}
           {/* Pagination Controls */}
           <div className="flex gap-2 mt-4">
-            <button
+            <motion.button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
               className="px-3 py-1 border rounded disabled:opacity-50"
+              {...buttonMotion}
             >
               Prev
-            </button>
+            </motion.button>
             <span>Page {page} of {totalPages}</span>
-            <button
+            <motion.button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
               className="px-3 py-1 border rounded disabled:opacity-50"
+              {...buttonMotion}
             >
               Next
-            </button>
+            </motion.button>
           </div>
         </>
       )}
@@ -327,7 +350,7 @@ const GemstonesListing = () => {
         }}
         onNo={() => setBulkDeleteOpen(false)}
       />
-    </div>
+    </motion.div>
   );
 };
 

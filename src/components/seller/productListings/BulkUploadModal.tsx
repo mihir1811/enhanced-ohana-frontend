@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { toast } from "react-hot-toast";
 import { FileSpreadsheet, Upload, Loader2, X, FileCheck, Trash2 } from "lucide-react";
 import { diamondService } from "@/services/diamondService";
@@ -28,6 +29,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   onFileSelect,
   productType: overrideProductType,
 }) => {
+  const shouldReduceMotion = useReducedMotion();
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const errorsRef = React.useRef<HTMLDivElement | null>(null);
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
@@ -39,10 +41,10 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   if (!overrideProductType) {
     switch (sellerType) {
       case "naturalDiamond":
-        productType = "diamond";
+        productType = "naturalDiamond";
         break;
       case "labGrownDiamond":
-        productType = "diamond";
+        productType = "labGrownDiamond";
         break;
       case "gemstone":
         productType = "gemstone";
@@ -171,10 +173,15 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   };
 
   const SAMPLE_FILE_MAP: Record<string, string> = {
-    diamond: "/sample--diamond.xlsx",
-    meleeDiamond: "/sample-melee-diamond.xlsx",
-    gemstone: "/sample--gemstone.xlsx",
-    "melee-gemstone": "/sample--gemstone.xlsx",
+    // diamond: "/sample-natural-diamond.xlsx",
+    naturalDiamond: "/sample-natural-diamond.xlsx",
+    labGrownDiamond: "/sample-lab-grown-diamond.xlsx",
+    meleeDiamond: "/sample-natural-melee-diamond.xlsx",
+    naturalMeleeDiamond: "/sample-natural-melee-diamond.xlsx",
+    labGrownMeleeDiamond: "/sample-lab-grown-melee-diamond.xlsx",
+    gemstone: "/sample-gemstone.xlsx",
+    "melee-gemstone": "/sample-gemstone.xlsx",
+    jewellery: "/sample-jewellery.xlsx",
   };
 
   const handleSampleDownload = async () => {
@@ -207,24 +214,32 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     onClose();
   };
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm"
-        onClick={handleClose}
-        aria-hidden="true"
-      />
+    <AnimatePresence>
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <motion.div
+            className="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm"
+            onClick={handleClose}
+            aria-hidden="true"
+            initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
+          />
 
-      {/* Modal */}
-      <div
-        className="relative w-full max-w-md max-h-[90vh] min-h-[320px] overflow-hidden flex flex-col rounded-xl shadow-2xl border bg-[var(--card)] dark:bg-[var(--card)] text-[var(--card-foreground)] border-[var(--border)] dark:border-slate-700/50 z-10"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="bulk-upload-title"
-      >
+          {/* Modal */}
+          <motion.div
+            className="relative w-full max-w-md max-h-[90vh] min-h-[320px] overflow-hidden flex flex-col rounded-xl shadow-2xl border bg-[var(--card)] dark:bg-[var(--card)] text-[var(--card-foreground)] border-[var(--border)] dark:border-slate-700/50 z-10"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="bulk-upload-title"
+            initial={shouldReduceMotion ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 12, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={shouldReduceMotion ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 10, scale: 0.98 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.22, ease: [0.22, 1, 0.36, 1] }}
+          >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] dark:border-slate-700/50 shrink-0">
           <h2 id="bulk-upload-title" className="text-lg font-semibold" style={{ color: "var(--foreground)" }}>
@@ -425,8 +440,10 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             </div>
           )}
         </div>
-      </div>
-    </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 };
 
