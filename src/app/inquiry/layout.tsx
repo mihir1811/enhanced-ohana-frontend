@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Inquiry | Gem World',
-  description: 'Send Gem World a product or general inquiry.',
+  title: 'Product Inquiry | Gem World',
+  description:
+    'Submit product inquiries for diamond, gemstone, bullion, watch, and jewelry requirements on Gem World.',
 }
 
 export default function InquiryLayout({ children }: { children: React.ReactNode }) {

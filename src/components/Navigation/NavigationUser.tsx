@@ -289,7 +289,9 @@ export default function NavigationUser() {
     { href: '/watches', label: 'Watches' },
     { href: '/bullions', label: 'Bullions' },
     // { href: '/auctions', label: 'Auctions' },
-    { href: '/diamond-education', label: 'Diamond Education' }
+    { href: '/diamond-education', label: 'Diamond Education' }, 
+    { href: '/inquiry', label: 'Inquiry' }
+    
   ], [])
 
   const calculateNavDropdownPosition = (element: HTMLElement, itemHref: string) => {
@@ -557,6 +559,7 @@ export default function NavigationUser() {
                     )}
                   </div>
                 ))}
+             
               </div>
             </div>
 
@@ -668,13 +671,6 @@ export default function NavigationUser() {
                 )}
               </div>
 
-              <Link
-                href="/inquiry"
-                className="flex-shrink-0 px-2 py-1.5 text-sm font-medium rounded-lg transition-colors hover:bg-[var(--muted)]"
-                style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }}
-              >
-                Inquiry
-              </Link>
 
               {/* Notifications */}
               <Link href="/user/orders" className="relative group p-2 transition-all duration-300 hover:bg-[var(--muted)] dark:hover:bg-slate-800/50 rounded-lg flex-shrink-0 min-w-fit flex items-center justify-center" style={{ color: 'var(--foreground)', borderRadius: 'var(--radius-md)' }} title="Order History">
