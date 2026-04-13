@@ -11,6 +11,7 @@ import { useSelector } from 'react-redux';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { toast } from 'react-hot-toast';
 import { getCookie } from '@/lib/cookie-utils';
+import ListingBulkActionBar from './ListingBulkActionBar';
 
 // Redux state interface
 interface RootState {
@@ -166,6 +167,12 @@ const JewelryListing = () => {
       .finally(() => setLoading(false));
   }, [sellerId, page, limit, refreshKey, activeCategory]);
 
+  useEffect(() => {
+    const openBulkUpload = () => setBulkModalOpen(true);
+    window.addEventListener('seller-products:bulk-upload', openBulkUpload);
+    return () => window.removeEventListener('seller-products:bulk-upload', openBulkUpload);
+  }, []);
+
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const buttonMotion = !shouldReduceMotion ? { whileHover: { y: -1, scale: 1.01 }, whileTap: { scale: 0.99 } } : {};
   const sectionMotion = shouldReduceMotion
@@ -181,26 +188,6 @@ const JewelryListing = () => {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">Jewelry</h2>
         <div className="flex gap-2 items-center relative">
-          {/* Bulk Upload Button */}
-          <motion.button
-            className="cursor-pointer px-4 py-2 rounded font-semibold transition"
-            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-            onClick={() => setBulkModalOpen(true)}
-            type="button"
-            {...buttonMotion}
-          >
-            Bulk Upload
-          </motion.button>
-          <motion.button
-            type="button"
-            disabled={selectedCount === 0}
-            onClick={() => setBulkDeleteOpen(true)}
-            className="px-4 py-2 rounded font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ backgroundColor: 'var(--destructive)', color: 'white' }}
-            {...buttonMotion}
-          >
-            Delete Selected ({selectedCount})
-          </motion.button>
           <BulkUploadModal
             open={bulkModalOpen}
             onClose={() => setBulkModalOpen(false)}
@@ -408,6 +395,14 @@ const JewelryListing = () => {
               Next
             </motion.button>
           </div>
+          <ListingBulkActionBar
+            selectedCount={selectedCount}
+            onDelete={() => setBulkDeleteOpen(true)}
+            onExport={() => toast('Export can be added here')}
+            onClear={() => setSelectedIds(new Set())}
+            onSelectAll={() => setSelectedIds(new Set(visibleIds))}
+            disableSelectAll={visibleIds.length === 0 || allVisibleSelected}
+          />
         </>
       )}
       <ConfirmModal

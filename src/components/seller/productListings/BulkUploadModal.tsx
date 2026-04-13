@@ -74,8 +74,55 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   const [uploadResult, setUploadResult] = React.useState<{
     inserted?: number;
     failed?: number;
-    errors?: Array<{ row: number; errors: Array<{ field: string; constraints?: Record<string, string> }> }>;
+    errors?: Array<{
+      row: number;
+      errors: Array<{ field: string; constraints?: Record<string, string> }>;
+    }>;
   } | null>(null);
+
+  const normalizeUploadErrors = (
+    rawErrors: unknown,
+  ): Array<{ row: number; errors: Array<{ field: string; constraints?: Record<string, string> }> }> => {
+    if (!Array.isArray(rawErrors)) return [];
+
+    return rawErrors.map((entry, index) => {
+      const e = (entry ?? {}) as Record<string, unknown>;
+      const rowValue = typeof e.row === "number" ? e.row : index + 2;
+      const nested = Array.isArray(e.errors) ? e.errors : [];
+
+      const normalizedNested = nested.map((item) => {
+        const node = (item ?? {}) as Record<string, unknown>;
+        const constraints =
+          node.constraints && typeof node.constraints === "object"
+            ? (node.constraints as Record<string, string>)
+            : undefined;
+
+        return {
+          field: typeof node.field === "string" ? node.field : "unknown",
+          constraints,
+        };
+      });
+
+      // Fallback to a message if backend sends string/object in a different shape.
+      if (normalizedNested.length === 0) {
+        const fallbackMessage =
+          typeof e.message === "string"
+            ? e.message
+            : typeof e.error === "string"
+              ? e.error
+              : "Invalid row data";
+        return {
+          row: rowValue,
+          errors: [{ field: "row", constraints: { message: fallbackMessage } }],
+        };
+      }
+
+      return {
+        row: rowValue,
+        errors: normalizedNested,
+      };
+    });
+  };
 
   const handleUpload = async () => {
     if (!selectedFile) return;
@@ -90,8 +137,23 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
         // jewellery + attributes + stones
         result = await jewelryService.uploadJewelryExcel(selectedFile, token, hasUpdate);
       } else {
-        const apiProductType = productType === "melee-gemstone" ? "gemstone" : productType;
-        result = await diamondService.uploadExcel(selectedFile, apiProductType, token, hasUpdate);
+        // Backend expects AuctionProductType values for /products/upload-file.
+        // Map seller-facing product types to supported API values.
+        const apiProductType =
+          productType === "naturalDiamond" || productType === "labGrownDiamond"
+            ? "diamond"
+            : productType === "naturalMeleeDiamond" ||
+                productType === "labGrownMeleeDiamond"
+              ? "meleeDiamond"
+              : productType === "melee-gemstone"
+                ? "gemstone"
+                : productType;
+        result = await diamondService.uploadExcel(
+          selectedFile,
+          apiProductType,
+          token,
+          hasUpdate,
+        );
       }
       const raw = result as unknown as Record<string, unknown>;
       const data = (raw?.data ?? raw) as {
@@ -106,7 +168,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
       const inserted = data?.inserted ?? 0;
       const updated = data?.updated ?? 0;
       const failed = data?.failed ?? 0;
-      const errs = data?.errors ?? [];
+      const errs = normalizeUploadErrors(data?.errors);
 
       setUploadResult({ inserted, failed, errors: errs });
 
@@ -424,7 +486,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                   >
                     <span className="font-medium text-[var(--foreground)]">Row {err.row}:</span>
                     <ul className="mt-1 ml-2 list-disc space-y-0.5 text-[var(--destructive)]">
-                      {err.errors.map((e, i) => (
+                      {(Array.isArray(err.errors) ? err.errors : []).map((e, i) => (
                         <li key={i}>{e.constraints ? Object.values(e.constraints).join(", ") : e.field}</li>
                       ))}
                     </ul>

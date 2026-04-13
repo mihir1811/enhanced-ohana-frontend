@@ -8,6 +8,7 @@ import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { toast } from 'react-hot-toast';
 import { useSelector } from 'react-redux';
+import ListingBulkActionBar from './ListingBulkActionBar';
 
 interface RootState {
   seller: { profile?: { id: string } };
@@ -27,6 +28,8 @@ const BullionListing = () => {
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
   const handleBulkFileSelect = () => {
     // Called after successful upload in modal
@@ -97,6 +100,7 @@ const BullionListing = () => {
         setBullions(bullionsArr);
         setTotal(totalCount);
         setError(null);
+        setSelectedIds(new Set());
       })
       .catch((err) => {
         console.error(err);
@@ -106,7 +110,38 @@ const BullionListing = () => {
       .finally(() => setLoading(false));
   }, [page, limit, refreshKey, sellerId]);
 
+  useEffect(() => {
+    const openBulkUpload = () => setBulkModalOpen(true);
+    window.addEventListener('seller-products:bulk-upload', openBulkUpload);
+    return () => window.removeEventListener('seller-products:bulk-upload', openBulkUpload);
+  }, []);
+
   const totalPages = Math.max(1, Math.ceil(total / limit));
+  const visibleIds = bullions.map((b) => Number(b.id)).filter((id) => Number.isFinite(id));
+  const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id));
+  const selectedCount = selectedIds.size;
+
+  const toggleSelectOne = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllVisible = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        visibleIds.forEach((id) => next.delete(id));
+      } else {
+        visibleIds.forEach((id) => next.add(id));
+      }
+      return next;
+    });
+  };
+
   const buttonMotion = !shouldReduceMotion ? { whileHover: { y: -1, scale: 1.01 }, whileTap: { scale: 0.99 } } : {};
   const sectionMotion = shouldReduceMotion
     ? {}
@@ -121,16 +156,6 @@ const BullionListing = () => {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">Bullion</h2>
         <div className="flex gap-2 items-center relative">
-          {/* Bulk Upload Button */}
-          <motion.button
-            className="px-4 py-2 rounded font-semibold transition cursor-pointer"
-            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-            onClick={() => setBulkModalOpen(true)}
-            type="button"
-            {...buttonMotion}
-          >
-            Bulk Upload
-          </motion.button>
           <BulkUploadModal
             open={bulkModalOpen}
             onClose={() => setBulkModalOpen(false)}
@@ -205,6 +230,14 @@ const BullionListing = () => {
               >
                 <thead className="border-b" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }}>
                   <tr>
+                    <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>
+                      <input
+                        type="checkbox"
+                        checked={allVisibleSelected}
+                        onChange={toggleSelectAllVisible}
+                        aria-label="Select all bullion"
+                      />
+                    </th>
                     <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Image</th>
                     <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Type</th>
                     <th className="px-4 py-2 text-left border-r" style={{ borderColor: 'var(--border)' }}>Price</th>
@@ -218,6 +251,14 @@ const BullionListing = () => {
                 <tbody>
                   {bullions.map((bullion) => (
                     <tr key={bullion.id} className="border-t" style={{ borderColor: 'var(--border)' }}>
+                      <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(Number(bullion.id))}
+                          onChange={() => toggleSelectOne(Number(bullion.id))}
+                          aria-label={`Select ${bullion.stockNumber}`}
+                        />
+                      </td>
                       <td className="px-4 py-2 border-r" style={{ borderColor: 'var(--border)' }}>
                          {/* Placeholder for image */}
                          <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">No Img</div>
@@ -269,10 +310,19 @@ const BullionListing = () => {
               {bullions.map((bullion, idx) => (
                 <motion.div
                   key={bullion.id}
+                  className="relative"
                   initial={!shouldReduceMotion ? { opacity: 0, y: 10 } : undefined}
                   animate={!shouldReduceMotion ? { opacity: 1, y: 0 } : undefined}
                   transition={!shouldReduceMotion ? { duration: 0.25, delay: Math.min(idx * 0.03, 0.18) } : undefined}
                 >
+                  <label className="absolute left-2 top-2 z-10 rounded bg-white/90 px-1 py-0.5 shadow">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(Number(bullion.id))}
+                      onChange={() => toggleSelectOne(Number(bullion.id))}
+                      aria-label={`Select ${bullion.stockNumber}`}
+                    />
+                  </label>
                   <BullionProductCard
                     product={bullion}
                     onDelete={() => setDeleteId(bullion.id)}
@@ -301,6 +351,14 @@ const BullionListing = () => {
               Next
             </motion.button>
           </div>
+          <ListingBulkActionBar
+            selectedCount={selectedCount}
+            onDelete={() => setBulkDeleteOpen(true)}
+            onExport={() => toast('Export can be added here')}
+            onClear={() => setSelectedIds(new Set())}
+            onSelectAll={() => setSelectedIds(new Set(visibleIds))}
+            disableSelectAll={visibleIds.length === 0 || allVisibleSelected}
+          />
           <ConfirmModal
             open={deleteId !== null}
             onOpenChange={(open) => {
@@ -316,12 +374,39 @@ const BullionListing = () => {
                 await bullionService.deleteBullion(idToDelete);
                 setBullions((prev) => prev.filter((d) => d.id !== idToDelete));
                 setTotal((prev) => Math.max(0, prev - 1));
+                setSelectedIds((prev) => {
+                  const next = new Set(prev);
+                  next.delete(idToDelete);
+                  return next;
+                });
                 toast.success('Product deleted successfully!');
               } catch {
                 toast.error('Failed to delete product.');
               }
             }}
             onNo={() => setDeleteId(null)}
+          />
+          <ConfirmModal
+            open={bulkDeleteOpen}
+            onOpenChange={setBulkDeleteOpen}
+            title="Delete selected bullion?"
+            description={`This will permanently delete ${selectedCount} selected bullion product(s).`}
+            onYes={async () => {
+              try {
+                const ids = Array.from(selectedIds);
+                if (ids.length === 0) throw new Error('Please select at least one bullion product');
+                await bullionService.bulkDeleteBullions(ids);
+                setBullions((prev) => prev.filter((b) => !selectedIds.has(Number(b.id))));
+                setTotal((prev) => Math.max(0, prev - ids.length));
+                setSelectedIds(new Set());
+                setBulkDeleteOpen(false);
+                toast.success('Selected bullion deleted successfully');
+              } catch (err) {
+                const message = err instanceof Error ? err.message : 'Failed to delete selected bullion';
+                toast.error(message);
+              }
+            }}
+            onNo={() => setBulkDeleteOpen(false)}
           />
         </>
       )}
