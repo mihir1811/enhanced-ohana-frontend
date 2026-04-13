@@ -17,10 +17,10 @@ import {
   saveMeleeDiamondColumnVisibility,
 } from './sellerTableColumnPreferences';
 import {
-  SellerListingToolbarDivider,
   SellerListingToolbarGroup,
   SellerProductListingHeader,
 } from './SellerProductListingHeader';
+import ListingBulkActionBar from './ListingBulkActionBar';
 
 const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, stoneType?: string }) => {
   const shouldReduceMotion = useReducedMotion();
@@ -218,6 +218,12 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
       .finally(() => setLoading(false));
   }, [page, limit, refreshKey, sellerId]);
 
+  useEffect(() => {
+    const openBulkUpload = () => setBulkModalOpen(true);
+    window.addEventListener('seller-products:bulk-upload', openBulkUpload);
+    return () => window.removeEventListener('seller-products:bulk-upload', openBulkUpload);
+  }, []);
+
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const buttonMotion = !shouldReduceMotion ? { whileHover: { y: -1, scale: 1.01 }, whileTap: { scale: 0.99 } } : {};
   const sectionMotion = shouldReduceMotion
@@ -235,57 +241,12 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
         subtitle="Ranges and weights are shown in columns—use list view for dense inventory review."
         actions={
           <>
-            <motion.button
-              className="rounded-md px-4 py-2 text-sm font-semibold shadow-sm transition hover:opacity-95"
-              style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-              onClick={() => setBulkModalOpen(true)}
-              type="button"
-              {...buttonMotion}
-            >
-              Bulk upload
-            </motion.button>
-            <SellerListingToolbarDivider />
-            <motion.button
-              type="button"
-              disabled={visibleIds.length === 0 || allVisibleSelected}
-              onClick={() => setSelectedIds(new Set(visibleIds))}
-              className="rounded-md border px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
-              style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
-              {...buttonMotion}
-            >
-              Select all
-            </motion.button>
-            <motion.button
-              type="button"
-              disabled={selectedCount === 0}
-              onClick={() => setSelectedIds(new Set())}
-              className="rounded-md border px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
-              style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
-              {...buttonMotion}
-            >
-              Deselect all
-            </motion.button>
-            <motion.button
-              type="button"
-              disabled={selectedCount === 0}
-              onClick={() => setBulkDeleteOpen(true)}
-              className="rounded-md border px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
-              style={{
-                backgroundColor: 'var(--card)',
-                borderColor: 'var(--destructive)',
-                color: 'var(--destructive)',
-              }}
-              {...buttonMotion}
-            >
-              Delete selected ({selectedCount})
-            </motion.button>
             <BulkUploadModal
               open={bulkModalOpen}
               onClose={() => setBulkModalOpen(false)}
               onFileSelect={handleBulkFileSelect}
               productType={stoneType === 'labGrownDiamond' ? 'labGrownMeleeDiamond' : 'naturalMeleeDiamond'}
             />
-            <SellerListingToolbarDivider />
             <SellerListingToolbarGroup>
               <button
                 className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-md transition-colors duration-150 group"
@@ -610,6 +571,14 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
           </motion.button>
         </div>
       )}
+      <ListingBulkActionBar
+        selectedCount={selectedCount}
+        onDelete={() => setBulkDeleteOpen(true)}
+        onExport={() => toast('Export can be added here')}
+        onClear={() => setSelectedIds(new Set())}
+        onSelectAll={() => setSelectedIds(new Set(visibleIds))}
+        disableSelectAll={visibleIds.length === 0 || allVisibleSelected}
+      />
     </>
   )}
 

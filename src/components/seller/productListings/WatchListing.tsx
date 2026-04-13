@@ -10,6 +10,7 @@ import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { toast } from 'react-hot-toast';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
+import ListingBulkActionBar from './ListingBulkActionBar';
 
 const WatchListing = () => {
   const shouldReduceMotion = useReducedMotion();
@@ -89,6 +90,12 @@ const WatchListing = () => {
       .finally(() => setLoading(false));
   }, [page, limit, refreshKey, sellerId]);
 
+  useEffect(() => {
+    const openBulkUpload = () => setBulkModalOpen(true);
+    window.addEventListener('seller-products:bulk-upload', openBulkUpload);
+    return () => window.removeEventListener('seller-products:bulk-upload', openBulkUpload);
+  }, []);
+
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const visibleIds = watches.map((w) => Number(w.id)).filter((id) => Number.isFinite(id));
   const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id));
@@ -128,45 +135,6 @@ const WatchListing = () => {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">Watches</h2>
         <div className="flex gap-2 items-center relative">
-          {/* Bulk Upload Button */}
-          <motion.button
-            className="px-4 py-2 bg-primary text-primary-foreground rounded font-semibold hover:bg-primary/90 border border-primary transition cursor-pointer"
-            onClick={() => setBulkModalOpen(true)}
-            type="button"
-            {...buttonMotion}
-          >
-            Bulk Upload
-          </motion.button>
-          <motion.button
-            type="button"
-            disabled={visibleIds.length === 0 || allVisibleSelected}
-            onClick={() => setSelectedIds(new Set(visibleIds))}
-            className="px-4 py-2 rounded font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed border"
-            style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
-            {...buttonMotion}
-          >
-            Select All
-          </motion.button>
-          <motion.button
-            type="button"
-            disabled={selectedCount === 0}
-            onClick={() => setSelectedIds(new Set())}
-            className="px-4 py-2 rounded font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed border"
-            style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', borderColor: 'var(--border)' }}
-            {...buttonMotion}
-          >
-            Deselect All
-          </motion.button>
-          <motion.button
-            type="button"
-            disabled={selectedCount === 0}
-            onClick={() => setBulkDeleteOpen(true)}
-            className="px-4 py-2 rounded font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ backgroundColor: 'var(--destructive)', color: 'white' }}
-            {...buttonMotion}
-          >
-            Delete Selected ({selectedCount})
-          </motion.button>
           <BulkUploadModal
             open={bulkModalOpen}
             onClose={() => setBulkModalOpen(false)}
@@ -373,6 +341,14 @@ const WatchListing = () => {
               Next
             </motion.button>
           </div>
+          <ListingBulkActionBar
+            selectedCount={selectedCount}
+            onDelete={() => setBulkDeleteOpen(true)}
+            onExport={() => toast('Export can be added here')}
+            onClear={() => setSelectedIds(new Set())}
+            onSelectAll={() => setSelectedIds(new Set(visibleIds))}
+            disableSelectAll={visibleIds.length === 0 || allVisibleSelected}
+          />
           <ConfirmModal
             open={deleteId !== null}
             onOpenChange={(open) => {

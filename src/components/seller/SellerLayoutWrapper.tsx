@@ -15,6 +15,13 @@ interface SellerLayoutWrapperProps {
 export default function SellerLayoutWrapper({ children }: SellerLayoutWrapperProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const sellerThemeVars: React.CSSProperties = {
+    ['--primary' as string]: '#4f46e5',
+    ['--primary-foreground' as string]: '#ffffff',
+    ['--ring' as string]: '#6366f1',
+    ['--sidebar-primary' as string]: '#4f46e5',
+    ['--sidebar-primary-foreground' as string]: '#ffffff',
+  }
 
   useEffect(() => {
     // Simulate layout initialization
@@ -27,7 +34,7 @@ export default function SellerLayoutWrapper({ children }: SellerLayoutWrapperPro
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--background)' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--background)', ...sellerThemeVars }}>
         <div className="flex flex-col items-center space-y-4">
           <div 
             className="w-12 h-12 rounded-xl flex items-center justify-center"
@@ -58,7 +65,7 @@ export default function SellerLayoutWrapper({ children }: SellerLayoutWrapperPro
 
   return (
     <LoadingProvider>
-      <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--background)', ...sellerThemeVars }}>
         {/* Sidebar */}
         <SellerSidebar 
           sidebarOpen={sidebarOpen} 

@@ -1,9 +1,9 @@
 'use client';
 
-// import Link from 'next/link';
+import Link from 'next/link';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-// import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, PlusCircle } from 'lucide-react';
 import AddDiamondForm from '@/components/seller/addProductForms/AddDiamondForm';
 import AddGemstoneForm from '@/components/seller/addProductForms/AddGemstoneForm';
 import AddJewelryForm from '@/components/seller/addProductForms/AddJewelryForm';
@@ -56,16 +56,32 @@ export default function Page() {
   };
 
   return (
-    <div className="container mx-auto py-8">
-      {/* <Link
-        href="/seller/products"
-        className="inline-flex items-center gap-1 text-sm font-medium mb-6 hover:underline"
-        style={{ color: 'var(--muted-foreground)' }}
+    <div className="mx-auto w-full max-w-[1400px] px-4 py-6 md:px-6">
+      <div
+        className="rounded-2xl border p-4 md:p-6"
+        style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
       >
-        <ChevronLeft className="w-4 h-4" />
-        Back to Products
-      </Link> */}
-      {renderForm()}
+        <div className="mb-5 flex items-start justify-between gap-3 border-b pb-4" style={{ borderColor: 'var(--border)' }}>
+          <div>
+            <h1 className="flex items-center gap-2 text-2xl font-semibold" style={{ color: 'var(--foreground)' }}>
+              <PlusCircle className="h-5 w-5" />
+              Add Product
+            </h1>
+            <p className="mt-1 text-sm" style={{ color: 'var(--muted-foreground)' }}>
+              Create a new listing with complete product details.
+            </p>
+          </div>
+          <Link
+            href="/seller/products"
+            className="inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm font-medium transition hover:bg-muted"
+            style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back
+          </Link>
+        </div>
+        {renderForm()}
+      </div>
     </div>
   );
 }
