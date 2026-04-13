@@ -247,6 +247,26 @@ const MeleeDiamondsListing = ({ sellerId, stoneType }: { sellerId?: string, ston
             <SellerListingToolbarDivider />
             <motion.button
               type="button"
+              disabled={visibleIds.length === 0 || allVisibleSelected}
+              onClick={() => setSelectedIds(new Set(visibleIds))}
+              className="rounded-md border px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
+              style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+              {...buttonMotion}
+            >
+              Select all
+            </motion.button>
+            <motion.button
+              type="button"
+              disabled={selectedCount === 0}
+              onClick={() => setSelectedIds(new Set())}
+              className="rounded-md border px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
+              style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+              {...buttonMotion}
+            >
+              Deselect all
+            </motion.button>
+            <motion.button
+              type="button"
               disabled={selectedCount === 0}
               onClick={() => setBulkDeleteOpen(true)}
               className="rounded-md border px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"

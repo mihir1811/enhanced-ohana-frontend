@@ -122,6 +122,26 @@ const GemstonesListing = () => {
           </motion.button>
           <motion.button
             type="button"
+            disabled={visibleIds.length === 0 || allVisibleSelected}
+            onClick={() => setSelectedIds(new Set(visibleIds))}
+            className="px-4 py-2 rounded font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+            {...buttonMotion}
+          >
+            Select All
+          </motion.button>
+          <motion.button
+            type="button"
+            disabled={selectedCount === 0}
+            onClick={() => setSelectedIds(new Set())}
+            className="px-4 py-2 rounded font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+            {...buttonMotion}
+          >
+            Deselect All
+          </motion.button>
+          <motion.button
+            type="button"
             disabled={selectedCount === 0}
             onClick={() => setBulkDeleteOpen(true)}
             className="px-4 py-2 rounded font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"

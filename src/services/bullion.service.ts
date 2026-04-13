@@ -210,6 +210,20 @@ class BullionService {
     }
     return response.json();
   }
+
+  async bulkDeleteBullions(ids: number[]): Promise<any> {
+    const token = getCookie('token') || undefined;
+    const response = await fetch(`${buildApiUrl(API_CONFIG.ENDPOINTS.BULLION.BASE)}/bulk-delete`, {
+      method: 'POST',
+      headers: this.getHeaders(token),
+      body: JSON.stringify({ ids }),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData?.message || 'Failed to bulk delete bullion');
+    }
+    return response.json();
+  }
 }
 
 export const bullionService = new BullionService();
